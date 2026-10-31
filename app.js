@@ -8,6 +8,76 @@
     // -------------------------------------------------------------
     // Initial State & Sample Data (Matches Video Demo & Standards)
     // -------------------------------------------------------------
+
+    // -------------------------------------------------------------
+    // Project Roadmap & Procedural Timeline Model
+    // -------------------------------------------------------------
+    const sampleTimelinePhases = [{"id": "phase_1", "code": "I", "title": "Triển khai", "isPackage": false, "packageName": "", "tasks": [{"stt": "1", "name": "QĐ giao kế hoạch", "docNo": "110/QĐ-TCTCHKVN", "signer": "TCT", "date": "2026-01-12", "duration": "2", "note": "", "status": "Đã xong"}, {"stt": "2", "name": "Biên bản kiểm tra đột xuất", "docNo": "", "signer": "Các phòng VCA", "date": "2026-04-04", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "3", "name": "[TRIỂN KHAI] Tờ trình", "docNo": "01/ĐKNCC/TTr-KTHT", "signer": "PKTHT", "date": "2026-07-21", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "4", "name": "[TL TỔ THẨM ĐỊNH] Tờ Trình", "docNo": "02/ĐKNCC/TTr-KTHT", "signer": "PKTHT", "date": "2026-07-22", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "5", "name": "[TL TỔ THẨM ĐỊNH] Quyết định", "docNo": "930a/QĐ-CHKQTCT", "signer": "GĐ", "date": "2026-07-28", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "6", "name": "BÁO CÁO BẢO TRÌ", "docNo": "03/BCTHBT-KTHT", "signer": "", "date": "2026-07-29", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "", "name": "Phê duyệt dự toán G1", "docNo": "", "signer": "", "date": "", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "7", "name": "[KH LCNT] Tờ trình", "docNo": "04/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-07-29", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "8", "name": "[KH LCNT] BB Thẩm định", "docNo": "", "signer": "", "date": "2026-07-30", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "9", "name": "[KH LCNT] BC Thẩm định", "docNo": "05/BC-HĐTĐ-KQTĐ", "signer": "", "date": "2026-07-30", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "10", "name": "[KH LCNT] QĐ Phê Duyệt", "docNo": "968/QĐ-CHKQTCT", "signer": "", "date": "2026-07-31", "duration": "1", "note": "", "status": "Đã xong"}]}, {"id": "phase_2", "code": "II", "title": "Gói thầu số 1: Thẩm tra bản vẽ thiết kế thi công và dự toán công trình", "isPackage": true, "packageName": "Gói thầu số 1: Thẩm tra bản vẽ thiết kế thi công và dự toán công trình", "tasks": [{"stt": "11", "name": "[LCNT] Tờ trình", "docNo": "06/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-07-31", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "12", "name": "[LCNT] Thư mời Quan tâm", "docNo": "969/CHKQTCT-KTHT", "signer": "", "date": "2026-07-31", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "", "name": "Biên bản thương thảo hợp đồng", "docNo": "", "signer": "", "date": "2026-08-03", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "13", "name": "[KQ LCNT GÓI 1] Tờ trình", "docNo": "07/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-08-03", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "14", "name": "[KQ LCNT GÓI 1] BB Thẩm định", "docNo": "", "signer": "", "date": "2026-08-03", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "15", "name": "[KQ LCNT GÓI 1] BC Thẩm định", "docNo": "08/BC-HĐTĐ-KQTĐ", "signer": "", "date": "2026-08-03", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "16", "name": "[KQ LCNT GÓI 1] QĐ Phê Duyệt", "docNo": "994/QĐ-CHKQTCT", "signer": "", "date": "2026-08-05", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "17", "name": "[KQ LCNT GÓI 1] Thông báo", "docNo": "", "signer": "", "date": "2026-08-05", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "18", "name": "HỢP ĐỒNG", "docNo": "26059", "signer": "", "date": "2026-08-17", "duration": "1", "note": "5 ngày", "status": "Đã xin số xong"}, {"stt": "19", "name": "Sản phẩm gói 1 (thẩm tra TK và DT)", "docNo": "", "signer": "", "date": "2026-08-18", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "", "name": "NGHIỆM THU", "docNo": "", "signer": "", "date": "2026-08-28", "duration": "", "note": "", "status": "Đã xong"}, {"stt": "", "name": "[THIẾT KẾ & DỰ TOÁN] Tờ trình", "docNo": "09/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-08-19", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "", "name": "[THIẾT KẾ & DỰ TOÁN] BB họp thẩm định", "docNo": "", "signer": "", "date": "2026-08-20", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "", "name": "[THIẾT KẾ & DỰ TOÁN] BC thẩm định", "docNo": "10/BC-HĐTĐ-KQTĐ", "signer": "", "date": "2026-08-20", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "", "name": "[THIẾT KẾ & DỰ TOÁN] Quyết định", "docNo": "1125/QĐ-CHKQTCT", "signer": "", "date": "2026-08-28", "duration": "0", "note": "", "status": "Đã xong"}]}, {"id": "phase_3", "code": "IV", "title": "Gói thầu số 2: Thi công XDCT", "isPackage": true, "packageName": "Gói thầu số 2: Thi công XDCT", "tasks": [{"stt": "24", "name": "[KH LCNT] Tờ trình", "docNo": "11/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-08-28", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "25", "name": "[KH LCNT] BB Thẩm định", "docNo": "", "signer": "", "date": "2026-08-28", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "26", "name": "[KH LCNT] BC Thẩm định", "docNo": "12/BC-HĐTĐ-KQTĐ", "signer": "", "date": "", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "27", "name": "[KH LCNT] QĐ Phê Duyệt", "docNo": "1126/QĐ-CHKQTCT", "signer": "", "date": "2026-08-28", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "", "name": "[LCNT] Tờ trình", "docNo": "13/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-08-28", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "29", "name": "[LCNT] Thư mời Quan tâm", "docNo": "1131/CHKQTCT-KTHT", "signer": "", "date": "2026-08-28", "duration": "3", "note": "", "status": "Đã xong"}, {"stt": "30", "name": "Biên bản thương thảo hợp đồng", "docNo": "", "signer": "", "date": "2026-08-31", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "31", "name": "[KQ LCNT] Tờ trình", "docNo": "14/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-08-31", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "32", "name": "[KQ LCNT] BB Thẩm định", "docNo": "", "signer": "", "date": "2026-08-31", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "33", "name": "[KQ LCNT] BC Thẩm định", "docNo": "15/BC-HĐTĐ-KQTĐ", "signer": "", "date": "2026-08-31", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "34", "name": "[KQ LCNT] QĐ Phê Duyệt", "docNo": "1143 /QĐ-CHKQTCT", "signer": "", "date": "2026-09-03", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "35", "name": "[KQ LCNT] Thông báo", "docNo": "", "signer": "", "date": "2026-09-03", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "36", "name": "HỢP ĐỒNG", "docNo": "26076", "signer": "", "date": "2026-09-04", "duration": "30", "note": "", "status": "Đã xong"}, {"stt": "", "name": "LẬP BP ĐẢM BẢO ANAT", "docNo": "", "signer": "", "date": "2026-09-04", "duration": "15", "note": "", "status": "Chưa xong"}, {"stt": "", "name": "NGHIỆM THU", "docNo": "", "signer": "", "date": "2026-10-19", "duration": "", "note": "", "status": "Chưa xong"}]}];
+
+    const defaultRoadmap = {
+        projectName: "Sửa chữa góc cua đường khẩn nguy chữa cháy phía tây Sân đỗ tàu bay",
+        investorName: "Cảng Hàng không Quốc tế Cần Thơ",
+        investorUpper: "CẢNG HÀNG KHÔNG QUỐC TẾ CẦN THƠ",
+        pmuName: "PHÒNG KỸ THUẬT HẠ TẦNG",
+        approver: "Tổng công ty Cảng hàng không Việt Nam (TCT)",
+        fundingSource: "Quỹ đầu tư phát triển TCT",
+        decisionPlanNo: "110/QĐ-TCTCHKVN",
+        decisionPlanDate: "2026-01-12",
+        packages: [
+            {
+                id: "pkg_1",
+                name: "Gói thầu số 1: Thẩm tra bản vẽ thiết kế thi công và dự toán công trình",
+                category: "tu_van",
+                categoryLabel: "Tư vấn",
+                procurementTypeId: "chi_dinh_thau_rut_gon",
+                estimatedPrice: "35.000.000",
+                contractType: "Trọn gói",
+                duration: "15 ngày",
+                status: "Đã xong",
+                fields: {
+                    "TEN_GOI_THAU": "Thẩm tra bản vẽ thiết kế thi công và dự toán công trình",
+                    "GIA_GOI_THAU_SO": "35.000.000",
+                    "GIA_GOI_THAU_CHU": "Ba mươi lăm triệu đồng chẵn",
+                    "HINH_THUC_LCNT": "Chỉ định thầu rút gọn",
+                    "LOAI_HOP_DONG": "Trọn gói",
+                    "THOI_GIAN_THUC_HIEN": "15 ngày",
+                    "SO_TO_TRINH": "06/ĐKNCC/TTr-KTHT",
+                    "NGAY_TO_TRINH": "31/07/2026",
+                    "SO_QUYET_DINH": "994/QĐ-CHKQTCT",
+                    "NGAY_QUYET_DINH": "05/08/2026",
+                    "GIA_TRI_HOP_DONG_SO": "34.500.000",
+                    "GIA_TRI_HOP_DONG_CHU": "Ba mươi tư triệu năm trăm nghìn đồng"
+                }
+            },
+            {
+                id: "pkg_2",
+                name: "Gói thầu số 2: Thi công XDCT",
+                category: "xay_lap",
+                categoryLabel: "Xây lắp",
+                procurementTypeId: "chi_dinh_thau_rut_gon",
+                estimatedPrice: "850.000.000",
+                contractType: "Trọn gói",
+                duration: "30 ngày",
+                status: "Đang thực hiện",
+                fields: {
+                    "TEN_GOI_THAU": "Thi công XDCT sửa chữa góc cua đường khẩn nguy chữa cháy",
+                    "GIA_GOI_THAU_SO": "850.000.000",
+                    "GIA_GOI_THAU_CHU": "Tám trăm năm mươi triệu đồng chẵn",
+                    "HINH_THUC_LCNT": "Chỉ định thầu rút gọn",
+                    "LOAI_HOP_DONG": "Trọn gói",
+                    "THOI_GIAN_THUC_HIEN": "30 ngày",
+                    "SO_TO_TRINH": "11/ĐKNCC/TTr-KTHT",
+                    "NGAY_TO_TRINH": "28/08/2026",
+                    "SO_QUYET_DINH": "1143/QĐ-CHKQTCT",
+                    "NGAY_QUYET_DINH": "03/09/2026",
+                    "GIA_TRI_HOP_DONG_SO": "835.000.000",
+                    "GIA_TRI_HOP_DONG_CHU": "Tám trăm ba mươi lăm triệu đồng"
+                }
+            }
+        ],
+        timelinePhases: sampleTimelinePhases
+    };
+
     const defaultGeneralInfo = {
         TEN_CHU_DAU_TU: "UBND phường Hoàn Kiếm",
         TEN_CHU_DAU_TU_VIET_HOA: "UBND PHƯỜNG HOÀN KIẾM",
@@ -150,6 +220,8 @@
 
     // State
     let appState = {
+        activeMainTab: "roadmap", // "roadmap" (1. Định hướng & Tiến độ) vs "docs" (2. Tạo Hồ Sơ)
+        projectRoadmap: JSON.parse(JSON.stringify(defaultRoadmap)),
         generalInfo: JSON.parse(JSON.stringify(defaultGeneralInfo)),
         packages: JSON.parse(JSON.stringify(defaultPackages)),
         activePackageIndex: 0,
@@ -331,6 +403,438 @@
         return new Set(commonGeneralKeys.concat(["TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO"]));
     }
 
+
+
+    // -------------------------------------------------------------
+    // Roadmap & Timeline Controller Functions
+    // -------------------------------------------------------------
+    function switchMainTab(tabName) {
+        appState.activeMainTab = tabName;
+        const viewRoadmap = document.getElementById("viewRoadmap");
+        const viewDocs = document.getElementById("viewDocs");
+        const btnNavRoadmap = document.getElementById("btnNavRoadmap");
+        const btnNavDocs = document.getElementById("btnNavDocs");
+        const headerProcurement = document.getElementById("headerProcurementTypeWrapper");
+
+        if (tabName === "roadmap") {
+            if (viewRoadmap) viewRoadmap.classList.remove("hidden");
+            if (viewDocs) viewDocs.classList.add("hidden");
+            if (headerProcurement) headerProcurement.classList.add("hidden");
+
+            if (btnNavRoadmap) btnNavRoadmap.className = "px-2.5 py-1 text-xs font-bold rounded flex items-center gap-1.5 transition-all bg-emerald-600 text-white shadow-xs";
+            if (btnNavDocs) btnNavDocs.className = "px-2.5 py-1 text-xs font-bold rounded flex items-center gap-1.5 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60";
+
+            renderRoadmapUI();
+        } else {
+            if (viewRoadmap) viewRoadmap.classList.add("hidden");
+            if (viewDocs) viewDocs.classList.remove("hidden");
+            if (headerProcurement) headerProcurement.classList.remove("hidden");
+
+            if (btnNavDocs) btnNavDocs.className = "px-2.5 py-1 text-xs font-bold rounded flex items-center gap-1.5 transition-all bg-emerald-600 text-white shadow-xs";
+            if (btnNavRoadmap) btnNavRoadmap.className = "px-2.5 py-1 text-xs font-bold rounded flex items-center gap-1.5 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60";
+
+            syncRoadmapToDocs();
+            renderPackageDropdown();
+            populateFormInputs();
+            renderDocTabs();
+            renderDocumentPreview();
+            applyVariableFilter();
+        }
+        saveState();
+    }
+
+    function syncRoadmapToDocs() {
+        if (!appState.projectRoadmap) return;
+        const rm = appState.projectRoadmap;
+
+        // Đồng bộ thông tin chung
+        appState.generalInfo.TEN_DU_AN = rm.projectName || appState.generalInfo.TEN_DU_AN;
+        appState.generalInfo.TEN_CONG_TRINH = rm.projectName || appState.generalInfo.TEN_CONG_TRINH;
+        appState.generalInfo.TEN_CHU_DAU_TU = rm.investorName || appState.generalInfo.TEN_CHU_DAU_TU;
+        appState.generalInfo.TEN_CHU_DAU_TU_VIET_HOA = (rm.investorName || appState.generalInfo.TEN_CHU_DAU_TU).toUpperCase();
+        appState.generalInfo.CAP_QUYET_DINH_DAU_TU = rm.approver || appState.generalInfo.CAP_QUYET_DINH_DAU_TU;
+        appState.generalInfo.NGUON_VON = rm.fundingSource || appState.generalInfo.NGUON_VON;
+
+        // Đồng bộ danh sách gói thầu
+        if (Array.isArray(rm.packages) && rm.packages.length > 0) {
+            appState.packages = rm.packages.map((pkg, idx) => {
+                const existing = appState.packages[idx] || { fields: {} };
+                return {
+                    name: pkg.name || `Gói thầu ${idx + 1}`,
+                    procurementTypeId: pkg.procurementTypeId || "chi_dinh_thau_rut_gon",
+                    fields: {
+                        ...existing.fields,
+                        TEN_GOI_THAU: pkg.fields?.TEN_GOI_THAU || pkg.name,
+                        GIA_GOI_THAU_SO: pkg.fields?.GIA_GOI_THAU_SO || pkg.estimatedPrice || "",
+                        GIA_GOI_THAU_CHU: pkg.fields?.GIA_GOI_THAU_CHU || "",
+                        HINH_THUC_LCNT: pkg.fields?.HINH_THUC_LCNT || getProcurementTypeName(pkg.procurementTypeId),
+                        LOAI_HOP_DONG: pkg.contractType || pkg.fields?.LOAI_HOP_DONG || "Trọn gói",
+                        THOI_GIAN_THUC_HIEN: pkg.duration || pkg.fields?.THOI_GIAN_THUC_HIEN || "30 ngày",
+                        ...(pkg.fields || {})
+                    }
+                };
+            });
+        }
+
+        // Đảm bảo activePackageIndex hợp lệ
+        if (appState.activePackageIndex >= appState.packages.length) {
+            appState.activePackageIndex = 0;
+        }
+
+        // Cập nhật selectedProcurementTypeId theo gói đang active
+        const curPkg = appState.packages[appState.activePackageIndex];
+        if (curPkg && curPkg.procurementTypeId) {
+            appState.selectedProcurementTypeId = curPkg.procurementTypeId;
+            if (procurementTypeSelect) {
+                procurementTypeSelect.value = curPkg.procurementTypeId;
+            }
+        }
+    }
+
+    function getProcurementTypeName(id) {
+        const pt = PROCUREMENT_MATRIX.procurementTypes.find(t => t.id === id);
+        return pt ? pt.name : "Chỉ định thầu rút gọn";
+    }
+
+    function renderRoadmapUI() {
+        if (!appState.projectRoadmap) {
+            appState.projectRoadmap = JSON.parse(JSON.stringify(defaultRoadmap));
+        }
+        const rm = appState.projectRoadmap;
+
+        // Điền các trường thuộc tính dự án
+        const rmProjectName = document.getElementById("rmProjectName");
+        const rmInvestorName = document.getElementById("rmInvestorName");
+        const rmApprover = document.getElementById("rmApprover");
+        const rmFundingSource = document.getElementById("rmFundingSource");
+        const rmPackageCountBadge = document.getElementById("rmPackageCountBadge");
+
+        if (rmProjectName) rmProjectName.value = rm.projectName || "";
+        if (rmInvestorName) rmInvestorName.value = rm.investorName || "";
+        if (rmApprover) rmApprover.value = rm.approver || "";
+        if (rmFundingSource) rmFundingSource.value = rm.fundingSource || "";
+        if (rmPackageCountBadge) rmPackageCountBadge.textContent = rm.packages ? rm.packages.length : 0;
+
+        // Render Package Cards
+        const rmPackagesList = document.getElementById("rmPackagesList");
+        if (rmPackagesList) {
+            rmPackagesList.innerHTML = "";
+            (rm.packages || []).forEach((pkg, idx) => {
+                const card = document.createElement("div");
+                card.className = "bg-slate-50 hover:bg-white rounded border border-slate-200 hover:border-emerald-300 p-2.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between";
+
+                const categoryColors = {
+                    "tu_van": "bg-blue-50 text-blue-700 border-blue-200",
+                    "xay_lap": "bg-amber-50 text-amber-800 border-amber-200",
+                    "mua_sam": "bg-emerald-50 text-emerald-800 border-emerald-200",
+                    "phi_tu_van": "bg-purple-50 text-purple-700 border-purple-200"
+                };
+                const catClass = categoryColors[pkg.category] || "bg-slate-100 text-slate-700 border-slate-200";
+
+                const isDone = pkg.status === "Đã xong";
+                const statusBadge = isDone 
+                    ? `<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded text-[10px] font-bold"><i class="fa-solid fa-check"></i> Đã hoàn thành</span>`
+                    : `<span class="bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded text-[10px] font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Đang thực hiện</span>`;
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-start justify-between gap-1 pb-1.5 mb-1.5 border-b border-slate-200/60">
+                            <div class="flex items-center space-x-1.5 min-w-0">
+                                <span class="bg-slate-800 text-white font-bold text-[10px] px-1.5 py-0.2 rounded shrink-0">#${idx + 1}</span>
+                                <h3 class="font-bold text-slate-900 text-xs truncate" title="${pkg.name}">${pkg.name}</h3>
+                            </div>
+                            <span class="border font-bold px-1.5 py-0.2 rounded text-[10px] shrink-0 ${catClass}">${pkg.categoryLabel || pkg.category || "Tư vấn"}</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] mb-2.5">
+                            <div>
+                                <span class="text-slate-400 block text-[9.5px] uppercase font-bold">Giá gói thầu dự kiến</span>
+                                <span class="font-bold text-slate-800">${pkg.estimatedPrice || "---"} VNĐ</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 block text-[9.5px] uppercase font-bold">Loại hợp đồng / Thời gian</span>
+                                <span class="font-medium text-slate-700">${pkg.contractType || "Trọn gói"} (${pkg.duration || "---"})</span>
+                            </div>
+                            <div class="col-span-2">
+                                <span class="text-slate-400 block text-[9.5px] uppercase font-bold">Phương thức LCNT định hướng</span>
+                                <select class="pkg-procurement-select w-full bg-white border border-slate-300 rounded px-1.5 py-0.5 text-[10.5px] font-bold text-emerald-900 mt-0.5" data-pkg-idx="${idx}">
+                                    ${PROCUREMENT_MATRIX.procurementTypes.map(pt => `<option value="${pt.id}" ${pt.id === (pkg.procurementTypeId || "chi_dinh_thau_rut_gon") ? "selected" : ""}>${pt.name}</option>`).join("")}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+                        ${statusBadge}
+                        <div class="flex items-center space-x-1">
+                            <button type="button" class="btn-create-docs px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded shadow-2xs text-[10.5px] flex items-center space-x-1" data-pkg-idx="${idx}">
+                                <i class="fa-solid fa-file-signature text-[10px]"></i>
+                                <span>Soạn hồ sơ gói này</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Handle procurement type change for this package
+                const sel = card.querySelector(".pkg-procurement-select");
+                sel.addEventListener("change", (e) => {
+                    pkg.procurementTypeId = e.target.value;
+                    saveState();
+                });
+
+                // Handle Click "Soạn hồ sơ gói này"
+                const btnCreate = card.querySelector(".btn-create-docs");
+                btnCreate.addEventListener("click", () => {
+                    appState.activePackageIndex = idx;
+                    appState.selectedProcurementTypeId = pkg.procurementTypeId || "chi_dinh_thau_rut_gon";
+                    switchMainTab("docs");
+                    showToast(`Đã chuyển sang soạn hồ sơ cho: ${pkg.name}`);
+                });
+
+                rmPackagesList.appendChild(card);
+            });
+        }
+
+        // Render Timeline Checklist
+        renderTimelineTable();
+    }
+
+    function renderTimelineTable(filterMode = "all") {
+        const rmTimelineContainer = document.getElementById("rmTimelineContainer");
+        const rmTimelineStats = document.getElementById("rmTimelineStats");
+        if (!rmTimelineContainer || !appState.projectRoadmap) return;
+
+        const phases = appState.projectRoadmap.timelinePhases || [];
+        rmTimelineContainer.innerHTML = "";
+
+        let totalTasks = 0;
+        let finishedTasks = 0;
+
+        phases.forEach((phase, pIdx) => {
+            const phaseWrapper = document.createElement("div");
+            phaseWrapper.className = "border border-slate-200 rounded overflow-hidden";
+
+            let tasksToRender = phase.tasks || [];
+            totalTasks += tasksToRender.length;
+            finishedTasks += tasksToRender.filter(t => t.status === "Đã xong").length;
+
+            if (filterMode === "unfinished") {
+                tasksToRender = tasksToRender.filter(t => t.status !== "Đã xong");
+            }
+
+            const phaseTasksDone = (phase.tasks || []).filter(t => t.status === "Đã xong").length;
+            const phaseTotal = (phase.tasks || []).length;
+            const isPhaseDone = phaseTasksDone === phaseTotal && phaseTotal > 0;
+
+            phaseWrapper.innerHTML = `
+                <div class="bg-slate-50 px-2.5 py-1.5 border-b border-slate-200 flex items-center justify-between cursor-pointer phase-header">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-5 h-5 bg-slate-800 text-white rounded text-[10px] font-bold flex items-center justify-center">${phase.code || (pIdx + 1)}</span>
+                        <span class="font-bold text-xs text-slate-800">${phase.title}</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-full ${isPhaseDone ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'}">${phaseTasksDone}/${phaseTotal} việc</span>
+                        <i class="fa-solid fa-chevron-down text-slate-400 text-[10px] transition-transform"></i>
+                    </div>
+                </div>
+                <div class="phase-content overflow-x-auto">
+                    <table class="w-full text-[11px] text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100/70 border-b border-slate-200 text-slate-600 font-bold text-[10px]">
+                                <th class="p-1.5 w-10 text-center">STT</th>
+                                <th class="p-1.5">Tên công việc / Thủ tục</th>
+                                <th class="p-1.5 w-36">Số văn bản</th>
+                                <th class="p-1.5 w-28">Đơn vị ký duyệt</th>
+                                <th class="p-1.5 w-24">Ngày ban hành</th>
+                                <th class="p-1.5 w-24 text-center">Tiến độ</th>
+                                <th class="p-1.5 w-24 text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            ${tasksToRender.map((task, tIdx) => {
+                                const isDone = task.status === "Đã xong";
+                                const badgeClass = isDone 
+                                    ? "bg-emerald-100 text-emerald-800 border-emerald-200" 
+                                    : (task.status === "Đang làm" ? "bg-amber-100 text-amber-900 border-amber-300" : "bg-slate-100 text-slate-700 border-slate-200");
+                                
+                                return `
+                                    <tr class="hover:bg-slate-50/80 transition-colors">
+                                        <td class="p-1.5 text-center text-slate-400 font-bold">${task.stt || (tIdx + 1)}</td>
+                                        <td class="p-1.5 font-bold text-slate-800">${task.name}</td>
+                                        <td class="p-1.5 font-mono text-[10.5px] text-slate-700">${task.docNo || '<span class="text-slate-300 italic">Chưa có số</span>'}</td>
+                                        <td class="p-1.5 text-slate-600">${task.signer || "---"}</td>
+                                        <td class="p-1.5 text-slate-600">${task.date || "---"}</td>
+                                        <td class="p-1.5 text-center">
+                                            <span class="inline-block px-1.5 py-0.2 rounded border font-bold text-[9.5px] ${badgeClass}">${task.status || "Chưa làm"}</span>
+                                        </td>
+                                        <td class="p-1.5 text-center">
+                                            <button type="button" class="btn-task-soan px-1.5 py-0.5 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-300 hover:border-emerald-300 rounded font-bold text-[10px]" data-phase-idx="${pIdx}" data-task-idx="${tIdx}">
+                                                <i class="fa-solid fa-pen-to-square text-[9px]"></i> Soạn VB
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join("")}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // Toggle collapse
+            const header = phaseWrapper.querySelector(".phase-header");
+            const content = phaseWrapper.querySelector(".phase-content");
+            const chevron = phaseWrapper.querySelector(".fa-chevron-down");
+            header.addEventListener("click", () => {
+                content.classList.toggle("hidden");
+                chevron.style.transform = content.classList.contains("hidden") ? "rotate(-90deg)" : "rotate(0deg)";
+            });
+
+            // Handle "Soạn VB" button
+            phaseWrapper.querySelectorAll(".btn-task-soan").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const pI = parseInt(btn.getAttribute("data-phase-idx"), 10);
+                    const tI = parseInt(btn.getAttribute("data-task-idx"), 10);
+                    const t = phases[pI].tasks[tI];
+
+                    // Match package
+                    if (phases[pI].isPackage) {
+                        const pkgName = phases[pI].title;
+                        const pkgIdx = (appState.projectRoadmap.packages || []).findIndex(p => p.name.includes(pkgName) || pkgName.includes(p.name));
+                        if (pkgIdx >= 0) {
+                            appState.activePackageIndex = pkgIdx;
+                        }
+                    }
+
+                    switchMainTab("docs");
+                    showToast(`Chuyển sang soạn thảo: ${t.name}`);
+                });
+            });
+
+            rmTimelineContainer.appendChild(phaseWrapper);
+        });
+
+        if (rmTimelineStats) {
+            rmTimelineStats.textContent = `${phases.length} giai đoạn | Đã xong ${finishedTasks}/${totalTasks} việc (${totalTasks > 0 ? Math.round(finishedTasks/totalTasks*100) : 0}%)`;
+        }
+    }
+
+    // Parse CSV Timeline from User text
+    function parseCsvTimelineText(csvText) {
+        if (!csvText || !csvText.trim()) return null;
+
+        const lines = csvText.trim().split(/\r?\n/);
+        let projectTitle = "Dự án mới";
+        if (lines[0].includes("Thứ tự thủ tục:")) {
+            projectTitle = lines[0].split("Thứ tự thủ tục:")[1].split(",")[0].trim();
+        }
+
+        const phases = [];
+        let currentPhase = null;
+
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+
+            // Simple CSV split handling quotes
+            const row = [];
+            let inQuotes = false;
+            let currentVal = "";
+            for (let c = 0; c < line.length; c++) {
+                const char = line[c];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    row.push(currentVal.trim());
+                    currentVal = "";
+                } else {
+                    currentVal += char;
+                }
+            }
+            row.push(currentVal.trim());
+
+            if (row.length === 0 || !row.some(x => x)) continue;
+
+            const stt = row[0] || "";
+            const name = row[1] || "";
+
+            // Check header row
+            if (stt === "Stt" || name === "Tên công việc") continue;
+
+            // Check Phase Header (I, II, III, IV, or "Gói thầu...")
+            const isPhaseHeader = ["I", "II", "III", "IV", "V", "VI", "VII"].includes(stt) || name.toLowerCase().includes("gói thầu") || name.toLowerCase().includes("triển khai");
+
+            if (isPhaseHeader) {
+                const title = name || stt;
+                const isPkg = title.toLowerCase().includes("gói thầu") || title.toLowerCase().includes("gói");
+                currentPhase = {
+                    id: `phase_${phases.length + 1}`,
+                    code: stt || String(phases.length + 1),
+                    title: title,
+                    isPackage: isPkg,
+                    packageName: isPkg ? title : "",
+                    tasks: []
+                };
+                phases.push(currentPhase);
+                continue;
+            }
+
+            if (!currentPhase) {
+                currentPhase = {
+                    id: "phase_1",
+                    code: "I",
+                    title: "Triển khai",
+                    isPackage: false,
+                    tasks: []
+                };
+                phases.push(currentPhase);
+            }
+
+            currentPhase.tasks.push({
+                stt: stt,
+                name: name,
+                docNo: row[2] || row[3] || "",
+                signer: row[4] || "",
+                date: row[6] || "",
+                duration: row[7] || "",
+                note: row[8] || "",
+                status: row[9] || "Đã xong"
+            });
+        }
+
+        // Extract packages from phases
+        const extractedPackages = [];
+        phases.forEach((p, idx) => {
+            if (p.isPackage) {
+                const isConsulting = p.title.toLowerCase().includes("thẩm tra") || p.title.toLowerCase().includes("tư vấn") || p.title.toLowerCase().includes("thiết kế");
+                extractedPackages.push({
+                    id: `pkg_${idx + 1}`,
+                    name: p.title,
+                    category: isConsulting ? "tu_van" : "xay_lap",
+                    categoryLabel: isConsulting ? "Tư vấn" : "Xây lắp",
+                    procurementTypeId: "chi_dinh_thau_rut_gon",
+                    estimatedPrice: isConsulting ? "35.000.000" : "850.000.000",
+                    contractType: "Trọn gói",
+                    duration: isConsulting ? "15 ngày" : "30 ngày",
+                    status: "Đang thực hiện",
+                    fields: {
+                        TEN_GOI_THAU: p.title.replace(/^Gói thầu số \d+:\s*/i, ""),
+                        GIA_GOI_THAU_SO: isConsulting ? "35.000.000" : "850.000.000",
+                        GIA_GOI_THAU_CHU: isConsulting ? "Ba mươi lăm triệu đồng chẵn" : "Tám trăm năm mươi triệu đồng chẵn",
+                        HINH_THUC_LCNT: "Chỉ định thầu rút gọn",
+                        LOAI_HOP_DONG: "Trọn gói",
+                        THOI_GIAN_THUC_HIEN: isConsulting ? "15 ngày" : "30 ngày"
+                    }
+                });
+            }
+        });
+
+        return {
+            projectName: projectTitle,
+            packages: extractedPackages.length > 0 ? extractedPackages : defaultRoadmap.packages,
+            timelinePhases: phases
+        };
+    }
 
     // -------------------------------------------------------------
     // Jump to Field & Missing Fields Tracking (Hỗ trợ định vị ô chưa điền)
@@ -1839,11 +2343,148 @@
     // -------------------------------------------------------------
     // Initial Boot Sequence
     // -------------------------------------------------------------
-    initProcurementTypeSelector();
+
+    // -------------------------------------------------------------
+    // Roadmap & Timeline Event Listeners
+    // -------------------------------------------------------------
+    const btnNavRoadmap = document.getElementById("btnNavRoadmap");
+    const btnNavDocs = document.getElementById("btnNavDocs");
+    const btnGoToDocs = document.getElementById("btnGoToDocs");
+
+    if (btnNavRoadmap) btnNavRoadmap.addEventListener("click", () => switchMainTab("roadmap"));
+    if (btnNavDocs) btnNavDocs.addEventListener("click", () => switchMainTab("docs"));
+    if (btnGoToDocs) btnGoToDocs.addEventListener("click", () => switchMainTab("docs"));
+
+    // Sync input changes from Roadmap to state
+    const rmProjectName = document.getElementById("rmProjectName");
+    const rmInvestorName = document.getElementById("rmInvestorName");
+    const rmApprover = document.getElementById("rmApprover");
+    const rmFundingSource = document.getElementById("rmFundingSource");
+
+    if (rmProjectName) rmProjectName.addEventListener("input", (e) => {
+        if (!appState.projectRoadmap) appState.projectRoadmap = {};
+        appState.projectRoadmap.projectName = e.target.value;
+        appState.generalInfo.TEN_DU_AN = e.target.value;
+        appState.generalInfo.TEN_CONG_TRINH = e.target.value;
+        saveState();
+    });
+
+    if (rmInvestorName) rmInvestorName.addEventListener("input", (e) => {
+        if (!appState.projectRoadmap) appState.projectRoadmap = {};
+        appState.projectRoadmap.investorName = e.target.value;
+        appState.generalInfo.TEN_CHU_DAU_TU = e.target.value;
+        appState.generalInfo.TEN_CHU_DAU_TU_VIET_HOA = e.target.value.toUpperCase();
+        saveState();
+    });
+
+    if (rmApprover) rmApprover.addEventListener("input", (e) => {
+        if (!appState.projectRoadmap) appState.projectRoadmap = {};
+        appState.projectRoadmap.approver = e.target.value;
+        appState.generalInfo.CAP_QUYET_DINH_DAU_TU = e.target.value;
+        saveState();
+    });
+
+    if (rmFundingSource) rmFundingSource.addEventListener("input", (e) => {
+        if (!appState.projectRoadmap) appState.projectRoadmap = {};
+        appState.projectRoadmap.fundingSource = e.target.value;
+        appState.generalInfo.NGUON_VON = e.target.value;
+        saveState();
+    });
+
+    // Add Package button
+    const btnAddPackageRoadmap = document.getElementById("btnAddPackageRoadmap");
+    const btnAddPackageCard = document.getElementById("btnAddPackageCard");
+    function handleAddNewPackage() {
+        const pCount = (appState.projectRoadmap.packages || []).length + 1;
+        const newPkg = {
+            id: `pkg_${Date.now()}`,
+            name: `Gói thầu số ${pCount}: Mua sắm trang thiết bị & dịch vụ`,
+            category: "mua_sam",
+            categoryLabel: "Mua sắm",
+            procurementTypeId: "chi_dinh_thau_rut_gon",
+            estimatedPrice: "100.000.000",
+            contractType: "Trọn gói",
+            duration: "30 ngày",
+            status: "Chưa thực hiện",
+            fields: {
+                TEN_GOI_THAU: `Gói thầu số ${pCount}: Mua sắm trang thiết bị & dịch vụ`,
+                GIA_GOI_THAU_SO: "100.000.000",
+                GIA_GOI_THAU_CHU: "Một trăm triệu đồng chẵn",
+                HINH_THUC_LCNT: "Chỉ định thầu rút gọn",
+                LOAI_HOP_DONG: "Trọn gói",
+                THOI_GIAN_THUC_HIEN: "30 ngày"
+            }
+        };
+        appState.projectRoadmap.packages.push(newPkg);
+        renderRoadmapUI();
+        saveState();
+        showToast("Đã bổ sung gói thầu mới vào định hướng dự án!");
+    }
+    if (btnAddPackageRoadmap) btnAddPackageRoadmap.addEventListener("click", handleAddNewPackage);
+    if (btnAddPackageCard) btnAddPackageCard.addEventListener("click", handleAddNewPackage);
+
+    // Timeline Filter Buttons
+    const rmFilterAllTasks = document.getElementById("rmFilterAllTasks");
+    const rmFilterUnfinishedTasks = document.getElementById("rmFilterUnfinishedTasks");
+
+    if (rmFilterAllTasks) rmFilterAllTasks.addEventListener("click", () => {
+        rmFilterAllTasks.className = "px-2 py-0.5 text-[10.5px] font-bold rounded bg-slate-800 text-white h-5.5";
+        rmFilterUnfinishedTasks.className = "px-2 py-0.5 text-[10.5px] font-bold rounded bg-slate-100 hover:bg-slate-200 text-slate-700 h-5.5";
+        renderTimelineTable("all");
+    });
+
+    if (rmFilterUnfinishedTasks) rmFilterUnfinishedTasks.addEventListener("click", () => {
+        rmFilterUnfinishedTasks.className = "px-2 py-0.5 text-[10.5px] font-bold rounded bg-slate-800 text-white h-5.5";
+        rmFilterAllTasks.className = "px-2 py-0.5 text-[10.5px] font-bold rounded bg-slate-100 hover:bg-slate-200 text-slate-700 h-5.5";
+        renderTimelineTable("unfinished");
+    });
+
+    // Modal Import CSV Logic
+    const importCsvModal = document.getElementById("importCsvModal");
+    const btnOpenImportCsvModal = document.getElementById("btnOpenImportCsvModal");
+    const btnCloseCsvModal = document.getElementById("btnCloseCsvModal");
+    const btnCancelCsvModal = document.getElementById("btnCancelCsvModal");
+    const btnLoadSampleCsv = document.getElementById("btnLoadSampleCsv");
+    const btnConfirmImportCsv = document.getElementById("btnConfirmImportCsv");
+    const csvInputTextarea = document.getElementById("csvInputTextarea");
+
+    const sampleCsvRawString = "Thứ tự thủ tục: Sửa chữa góc cua đường khẩn nguy chữa cháy phía tây Sân đỗ tàu bay,,,,,,,,,,,\nStt,Tên công việc,Số VBản,Số VBản,Người/Đơn vị ký duyệt,Thứ trong tuần,Ngày / tháng,Số ngày thực hiện văn bản,Ghi chú,Tiến độ,,\nI,Triển khai,,,,,,,,,,\n1,QĐ giao kế hoạch,110/QĐ-TCTCHKVN,,TCT,Thứ Hai,2026-01-12,2,,Đã xong,,\n2,Biên bản kiểm tra đột xuất,,,Các phòng VCA,Thứ Bảy,2026-04-04,1,,Đã xong,,\n3,[TRIỂN KHAI] Tờ trình,01/ĐKNCC/TTr-KTHT,,PKTHT,Thứ Ba,2026-07-21,1,,Đã xong,,\n4,[TL TỔ THẨM ĐỊNH] Tờ Trình,\"02/ĐKNCC/TTr-KTHT\",,PKTHT,Thứ Tư,2026-07-22,1,,Đã xong,,\n5,[TL TỔ THẨM ĐỊNH] Quyết định,930a/QĐ-CHKQTCT,930A,GĐ,Thứ Ba,2026-07-28,1,,Đã xong,,\n6,BÁO CÁO BẢO TRÌ,03/BCTHBT-KTHT,,,Thứ Tư,2026-07-29,1,,Đã xong,,\n,Phê duyệt dự toán G1,,,,-,,1,,Đã xong,,\n7,[KH LCNT] Tờ trình,\"04/ĐKNCC/TTr-KTHT\",,,Thứ Tư,2026-07-29,1,,Đã xong,,\n8,[KH LCNT] BB Thẩm định,,,,Thứ Năm,2026-07-30,1,,Đã xong,,\n9,[KH LCNT] BC Thẩm định,05/BC-HĐTĐ-KQTĐ,,,Thứ Năm,2026-07-30,1,,Đã xong,,\n10,[KH LCNT] QĐ Phê Duyệt,    968/QĐ-CHKQTCT,968,,Thứ Sáu,2026-07-31,1,,Đã xong,,\nII,Gói thầu số 1: Thẩm tra bản vẽ thiết kế thi công và dự toán công trình,,,,,,,,Đã xong,,\n11,[LCNT] Tờ trình,\"06/ĐKNCC/TTr-KTHT\",,,Thứ Sáu,2026-07-31,0,,Đã xong,,\n12,[LCNT] Thư mời Quan tâm,969/CHKQTCT-KTHT,969,,Thứ Sáu,2026-07-31,0,,Đã xong,có số chưa ?,\n,Biên bản thương thảo hợp đồng,,,,,2026-08-03,0,,Đã xong,,\n13,[KQ LCNT GÓI 1] Tờ trình,07/ĐKNCC/TTr-KTHT,,,Thứ Hai,2026-08-03,0,,Đã xong,,\n14,[KQ LCNT GÓI 1] BB Thẩm định,,,,Thứ Hai,2026-08-03,0,,Đã xong,,\n15,[KQ LCNT GÓI 1] BC Thẩm định,08/BC-HĐTĐ-KQTĐ,,,Thứ Hai,2026-08-03,0,,Đã xong,,\n16,[KQ LCNT GÓI 1] QĐ Phê Duyệt,    994/QĐ-CHKQTCT,994,,Thứ Tư,2026-08-05,1,,Đã xong,,\n17,[KQ LCNT GÓI 1] Thông báo,,,,Thứ Tư,2026-08-05,1,,Đã xong,,\n18,HỢP ĐỒNG,,26059,,Thứ Hai,2026-08-17,1,5 ngày,Đã xin số xong,,\n19,Sản phẩm gói 1 (thẩm tra TK và DT),,,,Thứ Ba,2026-08-18,1,,Đã xong,,\n,NGHIỆM THU,,,,Thứ Sáu,2026-08-28,,,Đã xong,,\n,[THIẾT KẾ & DỰ TOÁN] Tờ trình,09/ĐKNCC/TTr-KTHT,,,Thứ Tư,2026-08-19,1,,Đã xong,,\n,[THIẾT KẾ & DỰ TOÁN] BB họp thẩm định,,,,Thứ Năm,2026-08-20,0,,Đã xong,,\n,[THIẾT KẾ & DỰ TOÁN] BC thẩm định,10/BC-HĐTĐ-KQTĐ,,,Thứ Năm,2026-08-20,0,,Đã xong,,\n,[THIẾT KẾ & DỰ TOÁN] Quyết định,1125/QĐ-CHKQTCT,,,Thứ Sáu,2026-08-28,0,,Đã xong,,\nIV,Gói thầu số 2: Thi công XDCT,,,,-,,,,,,\n24,[KH LCNT] Tờ trình,11/ĐKNCC/TTr-KTHT,,,Thứ Sáu,2026-08-28,1,,Đã xong,,\n25,[KH LCNT] BB Thẩm định,,,,Thứ Sáu,2026-08-28,0,,Đã xong,,\n26,[KH LCNT] BC Thẩm định,12/BC-HĐTĐ-KQTĐ,,,Thứ Sáu,,0,,Đã xong,,\n27,[KH LCNT] QĐ Phê Duyệt,1126/QĐ-CHKQTCT,,,Thứ Sáu,2026-08-28,0,,Đã xong,,\n,[LCNT] Tờ trình,13/ĐKNCC/TTr-KTHT,,,Thứ Sáu,2026-08-28,0,,Đã xong,,\n29,[LCNT] Thư mời Quan tâm,1131/CHKQTCT-KTHT,,,Thứ Sáu,2026-08-28,3,,Đã xong,,\n30,Biên bản thương thảo hợp đồng,,,,Thứ Hai,2026-08-31,0,,Đã xong,đợi bb đề xuất của DTC,\"30/8 DTC gửi nhưng lỗi giá, đã phản hồi và báo cb\"\n31,[KQ LCNT] Tờ trình,14/ĐKNCC/TTr-KTHT,,,Thứ Hai,2026-08-31,0,,Đã xong,,\n32,[KQ LCNT] BB Thẩm định,,,,Thứ Hai,2026-08-31,0,,Đã xong,,\n33,[KQ LCNT] BC Thẩm định,15/BC-HĐTĐ-KQTĐ,,,Thứ Hai,2026-08-31,0,,Đã xong,,\n34,[KQ LCNT] QĐ Phê Duyệt,   1143 /QĐ-CHKQTCT,,,Thứ Năm,2026-09-03,0,,Đã xong,,\n35,[KQ LCNT] Thông báo,,,,Thứ Năm,2026-09-03,1,,Đã xong,,\n36,HỢP ĐỒNG,,26076,,Thứ Sáu,2026-09-04,30,,Đã xong,,\n,LẬP BP ĐẢM BẢO ANAT,,,,,2026-09-04,15,,,,\n,NGHIỆM THU,,,,Thứ Hai,2026-10-19,,,,,";
+
+    if (btnOpenImportCsvModal) btnOpenImportCsvModal.addEventListener("click", () => {
+        importCsvModal.classList.remove("hidden");
+    });
+    if (btnCloseCsvModal) btnCloseCsvModal.addEventListener("click", () => importCsvModal.classList.add("hidden"));
+    if (btnCancelCsvModal) btnCancelCsvModal.addEventListener("click", () => importCsvModal.classList.add("hidden"));
+
+    if (btnLoadSampleCsv) btnLoadSampleCsv.addEventListener("click", () => {
+        csvInputTextarea.value = sampleCsvRawString;
+    });
+
+    if (btnConfirmImportCsv) btnConfirmImportCsv.addEventListener("click", () => {
+        const text = csvInputTextarea.value;
+        if (!text || !text.trim()) {
+            alert("Vui lòng dán nội dung CSV hoặc bấm 'Nạp dữ liệu mẫu Sân bay Cần Thơ'!");
+            return;
+        }
+        const parsed = parseCsvTimelineText(text);
+        if (parsed) {
+            appState.projectRoadmap.projectName = parsed.projectName || appState.projectRoadmap.projectName;
+            appState.projectRoadmap.packages = parsed.packages;
+            appState.projectRoadmap.timelinePhases = parsed.timelinePhases;
+            syncRoadmapToDocs();
+            renderRoadmapUI();
+            importCsvModal.classList.add("hidden");
+            saveState();
+            showToast(`Đã phân tích thành công: ${parsed.packages.length} gói thầu & ${parsed.timelinePhases.length} giai đoạn!`);
+        }
+    });
+
+        initProcurementTypeSelector();
     renderDocTabs();
     renderCustomVariablesUI();
     renderPackageDropdown();
     populateFormInputs();
     applyVariableFilter();
+    switchMainTab(appState.activeMainTab || "roadmap");
 
 })();
