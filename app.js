@@ -2326,10 +2326,19 @@
     }
 
     async function renderDocxBlob(docId, replacements) {
-        let templateUrl = prebuiltDocxMap[docId] || "templates/3_To_trinh_chi_dinh_thau.docx";
-        const response = await fetch(templateUrl);
-        if (!response.ok) throw new Error("Could not load template " + templateUrl);
-        const arrayBuffer = await response.arrayBuffer();
+        const allDocs = getAllDocsForCurrentType();
+        const docObj = allDocs.find(d => d.id === docId);
+        let templateUrl = (docObj && docObj.templateFile !== undefined) ? docObj.templateFile : (prebuiltDocxMap[docId] || "");
+        if (!templateUrl) templateUrl = "templates/3_To_trinh_chi_dinh_thau.docx";
+
+        let arrayBuffer;
+        if (window.customUploadedDocx && window.customUploadedDocx[templateUrl]) {
+            arrayBuffer = window.customUploadedDocx[templateUrl];
+        } else {
+            const response = await fetch(templateUrl);
+            if (!response.ok) throw new Error("Không thể tải file mẫu: " + templateUrl);
+            arrayBuffer = await response.arrayBuffer();
+        }
 
         const zip = await JSZip.loadAsync(arrayBuffer);
         let docXml = await zip.file("word/document.xml").async("string");
@@ -2809,12 +2818,24 @@
                 ? "w-full text-left p-2 rounded bg-emerald-100/70 border border-emerald-400 font-bold text-emerald-950 text-[11px] shadow-2xs transition-all flex items-start justify-between"
                 : "w-full text-left p-2 rounded bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-[11px] transition-all flex items-start justify-between";
 
-            const docsCount = pt.phases.reduce((sum, ph) => sum + (ph.documents ? ph.documents.length : 0), 0);
+            const allTypeDocs = [];
+            pt.phases.forEach(ph => (ph.documents || []).forEach(d => allTypeDocs.push(d)));
+            const docsCount = allTypeDocs.length;
+            const tplsCount = allTypeDocs.filter(d => {
+                const t = d.templateFile !== undefined ? d.templateFile : (prebuiltDocxMap[d.id] || "");
+                return Boolean(t && t.trim() !== "");
+            }).length;
 
             btn.innerHTML = `
                 <div class="min-w-0 pr-1">
                     <div class="truncate">${pt.name}</div>
-                    <div class="text-[9.5px] text-slate-500 font-normal">${docsCount} mẫu văn bản</div>
+                    <div class="text-[9.5px] text-slate-500 font-normal flex items-center gap-1.5 mt-0.5">
+                        <span>${docsCount} mẫu văn bản</span>
+                        <span>•</span>
+                        <span class="${tplsCount === docsCount ? 'text-emerald-700 font-bold' : (tplsCount > 0 ? 'text-teal-700' : 'text-amber-700 font-bold')}">
+                            ${tplsCount}/${docsCount} có mẫu
+                        </span>
+                    </div>
                 </div>
                 ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[10px] mt-1 shrink-0"></i>' : ''}
             `;
@@ -2859,17 +2880,46 @@
 
         if (allDocs.length === 0) {
             const emptyTr = document.createElement("tr");
-            emptyTr.innerHTML = `<td colspan="4" class="p-3 text-center text-slate-400 italic text-[11px]">Chưa có mẫu văn bản nào. Bấm "+ Thêm mẫu văn bản" để bổ sung.</td>`;
+            emptyTr.innerHTML = `<td colspan="5" class="p-3 text-center text-slate-400 italic text-[11px]">Chưa có mẫu văn bản nào. Bấm "+ Thêm mẫu văn bản" để bổ sung.</td>`;
             matrixDocsTableBody.appendChild(emptyTr);
             return;
         }
+
+        const SYSTEM_TEMPLATES = [
+            { value: "", label: "-- Chưa gán mẫu (để trống) --" },
+            { value: "templates/01_To_trinh_KHLCNT.docx", label: "01_To_trinh_KHLCNT.docx" },
+            { value: "templates/02_Quyet_dinh_KHLCNT.docx", label: "02_Quyet_dinh_KHLCNT.docx" },
+            { value: "templates/1_Giay_moi_tham_gia.docx", label: "1_Giay_moi_tham_gia.docx" },
+            { value: "templates/2_Bien_ban_hoan_thien_hop_dong.docx", label: "2_Bien_ban_hoan_thien_hop_dong.docx" },
+            { value: "templates/3_To_trinh_chi_dinh_thau.docx", label: "3_To_trinh_chi_dinh_thau.docx" },
+            { value: "templates/4_Quyet_dinh_chi_dinh_thau.docx", label: "4_Quyet_dinh_chi_dinh_thau.docx" },
+            { value: "templates/07_Hop_dong_kinh_te.docx", label: "07_Hop_dong_kinh_te.docx" }
+        ];
 
         allDocs.forEach((doc, idx) => {
             const tr = document.createElement("tr");
             tr.className = "hover:bg-slate-50 h-7 transition-colors";
 
+            // Determine template assignment
+            const currentTpl = doc.templateFile !== undefined ? doc.templateFile : (prebuiltDocxMap[doc.id] || "");
+            const hasTpl = Boolean(currentTpl && currentTpl.trim() !== "");
+
+            // Build options for select
+            let optionsHtml = '';
+            let matched = false;
+            SYSTEM_TEMPLATES.forEach(t => {
+                const isSel = t.value === currentTpl;
+                if (isSel) matched = true;
+                optionsHtml += `<option value="${t.value}" ${isSel ? 'selected' : ''}>${t.label}</option>`;
+            });
+
+            if (currentTpl && !matched) {
+                const shortName = currentTpl.split('/').pop();
+                optionsHtml = `<option value="${currentTpl}" selected>📄 ${shortName} (Tùy chỉnh)</option>` + optionsHtml;
+            }
+
             tr.innerHTML = `
-                <td class="py-1 px-2 text-center">
+                <td class="py-1 px-1.5 text-center">
                     <div class="flex items-center justify-center space-x-0.5">
                         <button type="button" class="btn-move-up w-5 h-5 rounded bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-800 text-[9px] flex items-center justify-center disabled:opacity-30 disabled:hover:bg-slate-100" ${idx === 0 ? "disabled" : ""} title="Di chuyển văn bản lên trên">
                             <i class="fa-solid fa-arrow-up"></i>
@@ -2879,13 +2929,30 @@
                         </button>
                     </div>
                 </td>
-                <td class="py-1 px-2">
+                <td class="py-1 px-1.5">
                     <input type="text" class="doc-code-input w-full bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 font-mono text-[10px] text-slate-800" value="${doc.code || ''}">
                 </td>
-                <td class="py-1 px-2">
+                <td class="py-1 px-1.5">
                     <input type="text" class="doc-name-input w-full bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 text-[11px] font-medium text-slate-800" value="${doc.name || ''}">
                 </td>
-                <td class="py-1 px-2 text-center">
+                <td class="py-1 px-1.5">
+                    <div class="flex items-center space-x-1">
+                        <span class="doc-tpl-indicator shrink-0">
+                            ${hasTpl 
+                                ? '<i class="fa-solid fa-file-word text-blue-600 text-[11px]" title="Đã gán file mẫu Word"></i>' 
+                                : '<i class="fa-solid fa-triangle-exclamation text-amber-500 text-[11px]" title="Chưa có mẫu template"></i>'
+                            }
+                        </span>
+                        <select class="doc-tpl-select flex-1 rounded px-1.5 py-0.5 h-6 text-[10px] transition-colors ${hasTpl ? 'bg-emerald-50/70 border border-emerald-300 text-emerald-950 font-medium' : 'bg-amber-50 border border-amber-300 text-amber-900 font-bold'}">
+                            ${optionsHtml}
+                        </select>
+                        <label class="cursor-pointer text-slate-400 hover:text-emerald-700 p-0.5 shrink-0" title="Tải file Word .docx mẫu từ máy tính để gán cho văn bản này">
+                            <i class="fa-solid fa-file-arrow-up text-xs"></i>
+                            <input type="file" accept=".docx" class="hidden doc-tpl-upload">
+                        </label>
+                    </div>
+                </td>
+                <td class="py-1 px-1.5 text-center">
                     <button type="button" class="btn-del-doc text-slate-400 hover:text-rose-600 text-[11px] p-1" title="Xóa mẫu này khỏi hình thức LCNT">
                         <i class="fa-regular fa-trash-can"></i>
                     </button>
@@ -2903,6 +2970,41 @@
             if (nameInput) {
                 nameInput.addEventListener("input", (e) => {
                     pt.phases[doc._phaseIdx].documents[doc._docIdx].name = e.target.value.trim();
+                });
+            }
+
+            // Template Select handler
+            const tplSelect = tr.querySelector(".doc-tpl-select");
+            const tplIndicator = tr.querySelector(".doc-tpl-indicator");
+            if (tplSelect) {
+                tplSelect.addEventListener("change", (e) => {
+                    const chosen = e.target.value;
+                    pt.phases[doc._phaseIdx].documents[doc._docIdx].templateFile = chosen;
+                    if (chosen) {
+                        tplSelect.className = "doc-tpl-select flex-1 rounded px-1.5 py-0.5 h-6 text-[10px] transition-colors bg-emerald-50/70 border border-emerald-300 text-emerald-950 font-medium";
+                        if (tplIndicator) tplIndicator.innerHTML = '<i class="fa-solid fa-file-word text-blue-600 text-[11px]" title="Đã gán file mẫu Word"></i>';
+                    } else {
+                        tplSelect.className = "doc-tpl-select flex-1 rounded px-1.5 py-0.5 h-6 text-[10px] transition-colors bg-amber-50 border border-amber-300 text-amber-900 font-bold";
+                        if (tplIndicator) tplIndicator.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-500 text-[11px]" title="Chưa có mẫu template"></i>';
+                    }
+                });
+            }
+
+            // Template Upload handler
+            const tplUpload = tr.querySelector(".doc-tpl-upload");
+            if (tplUpload) {
+                tplUpload.addEventListener("change", (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (re) => {
+                        if (!window.customUploadedDocx) window.customUploadedDocx = {};
+                        window.customUploadedDocx[file.name] = re.target.result;
+                        pt.phases[doc._phaseIdx].documents[doc._docIdx].templateFile = file.name;
+                        renderAdminDocsTable(pt);
+                        showToast(`Đã gán file mẫu "${file.name}" cho văn bản!`, "success");
+                    };
+                    reader.readAsArrayBuffer(file);
                 });
             }
 
