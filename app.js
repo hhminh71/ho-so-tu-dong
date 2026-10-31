@@ -222,6 +222,7 @@
     let appState = {
         activeMainTab: "roadmap", // "roadmap" (1. Định hướng & Tiến độ) vs "docs" (2. Tạo Hồ Sơ)
         projectRoadmap: JSON.parse(JSON.stringify(defaultRoadmap)),
+        selectedRoadmapPackageIndex: 0, // 0: Gói 1, 1: Gói 2, -1: Tất cả, "trien_khai": Chỉ Triển khai
         generalInfo: JSON.parse(JSON.stringify(defaultGeneralInfo)),
         packages: JSON.parse(JSON.stringify(defaultPackages)),
         activePackageIndex: 0,
@@ -501,6 +502,9 @@
             appState.projectRoadmap = JSON.parse(JSON.stringify(defaultRoadmap));
         }
         const rm = appState.projectRoadmap;
+        if (appState.selectedRoadmapPackageIndex === undefined) {
+            appState.selectedRoadmapPackageIndex = 0; // Default to Gói 1
+        }
 
         // Điền các trường thuộc tính dự án
         const rmProjectName = document.getElementById("rmProjectName");
@@ -515,13 +519,17 @@
         if (rmFundingSource) rmFundingSource.value = rm.fundingSource || "";
         if (rmPackageCountBadge) rmPackageCountBadge.textContent = rm.packages ? rm.packages.length : 0;
 
-        // Render Package Cards
+        // Render Package Cards (Ultra-compact styling)
         const rmPackagesList = document.getElementById("rmPackagesList");
         if (rmPackagesList) {
             rmPackagesList.innerHTML = "";
             (rm.packages || []).forEach((pkg, idx) => {
                 const card = document.createElement("div");
-                card.className = "bg-slate-50 hover:bg-white rounded border border-slate-200 hover:border-emerald-300 p-2.5 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between";
+                const isSelected = appState.selectedRoadmapPackageIndex === idx;
+
+                card.className = isSelected 
+                    ? "bg-emerald-50/30 hover:bg-white rounded border-2 border-emerald-500 p-1.5 shadow-xs transition-all flex flex-col justify-between cursor-pointer ring-1 ring-emerald-300"
+                    : "bg-slate-50 hover:bg-white rounded border border-slate-200 hover:border-slate-300 p-1.5 shadow-2xs transition-all flex flex-col justify-between cursor-pointer";
 
                 const categoryColors = {
                     "tu_van": "bg-blue-50 text-blue-700 border-blue-200",
@@ -533,58 +541,76 @@
 
                 const isDone = pkg.status === "Đã xong";
                 const statusBadge = isDone 
-                    ? `<span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded text-[10px] font-bold"><i class="fa-solid fa-check"></i> Đã hoàn thành</span>`
-                    : `<span class="bg-amber-100 text-amber-900 px-1.5 py-0.2 rounded text-[10px] font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Đang thực hiện</span>`;
+                    ? `<span class="bg-emerald-100 text-emerald-800 px-1 py-0.2 rounded text-[9.5px] font-bold"><i class="fa-solid fa-check"></i> Xong</span>`
+                    : `<span class="bg-amber-100 text-amber-900 px-1 py-0.2 rounded text-[9.5px] font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Đang làm</span>`;
+
+                const activeBadge = isSelected
+                    ? `<span class="bg-emerald-600 text-white font-bold px-1.5 py-0.2 rounded text-[9.5px] flex items-center gap-0.5"><i class="fa-solid fa-eye"></i> Đang xem thủ tục</span>`
+                    : `<span class="text-slate-400 hover:text-emerald-700 text-[9.5px] font-bold underline flex items-center gap-0.5"><i class="fa-regular fa-eye"></i> Bấm để xem thủ tục</span>`;
 
                 card.innerHTML = `
                     <div>
-                        <div class="flex items-start justify-between gap-1 pb-1.5 mb-1.5 border-b border-slate-200/60">
-                            <div class="flex items-center space-x-1.5 min-w-0">
-                                <span class="bg-slate-800 text-white font-bold text-[10px] px-1.5 py-0.2 rounded shrink-0">#${idx + 1}</span>
-                                <h3 class="font-bold text-slate-900 text-xs truncate" title="${pkg.name}">${pkg.name}</h3>
+                        <div class="flex items-center justify-between gap-1 pb-1 mb-1 border-b border-slate-200/60">
+                            <div class="flex items-center space-x-1 min-w-0">
+                                <span class="bg-slate-800 text-white font-bold text-[9.5px] px-1 py-0.2 rounded shrink-0">#${idx + 1}</span>
+                                <h3 class="font-bold text-slate-900 text-[11px] truncate" title="${pkg.name}">${pkg.name}</h3>
                             </div>
-                            <span class="border font-bold px-1.5 py-0.2 rounded text-[10px] shrink-0 ${catClass}">${pkg.categoryLabel || pkg.category || "Tư vấn"}</span>
+                            <span class="border font-bold px-1.5 py-0 rounded text-[9.5px] shrink-0 ${catClass}">${pkg.categoryLabel || pkg.category || "Tư vấn"}</span>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] mb-2.5">
+                        <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10.5px] mb-1">
                             <div>
-                                <span class="text-slate-400 block text-[9.5px] uppercase font-bold">Giá gói thầu dự kiến</span>
+                                <span class="text-slate-400 block text-[9px] uppercase font-bold">Giá gói dự kiến</span>
                                 <span class="font-bold text-slate-800">${pkg.estimatedPrice || "---"} VNĐ</span>
                             </div>
                             <div>
-                                <span class="text-slate-400 block text-[9.5px] uppercase font-bold">Loại hợp đồng / Thời gian</span>
-                                <span class="font-medium text-slate-700">${pkg.contractType || "Trọn gói"} (${pkg.duration || "---"})</span>
+                                <span class="text-slate-400 block text-[9px] uppercase font-bold">Loại HĐ / Thời gian</span>
+                                <span class="font-medium text-slate-700 truncate block">${pkg.contractType || "Trọn gói"} (${pkg.duration || "---"})</span>
                             </div>
-                            <div class="col-span-2">
-                                <span class="text-slate-400 block text-[9.5px] uppercase font-bold">Phương thức LCNT định hướng</span>
-                                <select class="pkg-procurement-select w-full bg-white border border-slate-300 rounded px-1.5 py-0.5 text-[10.5px] font-bold text-emerald-900 mt-0.5" data-pkg-idx="${idx}">
+                            <div class="col-span-2 mt-0.5">
+                                <span class="text-slate-400 block text-[9px] uppercase font-bold">Phương thức LCNT định hướng</span>
+                                <select class="pkg-procurement-select w-full bg-white border border-slate-300 rounded px-1 py-0 h-5 text-[10px] font-bold text-emerald-950 mt-0.2 cursor-pointer" data-pkg-idx="${idx}">
                                     ${PROCUREMENT_MATRIX.procurementTypes.map(pt => `<option value="${pt.id}" ${pt.id === (pkg.procurementTypeId || "chi_dinh_thau_rut_gon") ? "selected" : ""}>${pt.name}</option>`).join("")}
                                 </select>
                             </div>
                         </div>
                     </div>
 
-                    <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
-                        ${statusBadge}
+                    <div class="pt-1 border-t border-slate-200/60 flex items-center justify-between">
                         <div class="flex items-center space-x-1">
-                            <button type="button" class="btn-create-docs px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded shadow-2xs text-[10.5px] flex items-center space-x-1" data-pkg-idx="${idx}">
-                                <i class="fa-solid fa-file-signature text-[10px]"></i>
-                                <span>Soạn hồ sơ gói này</span>
+                            ${statusBadge}
+                            ${activeBadge}
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            <button type="button" class="btn-create-docs px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded shadow-2xs text-[10px] flex items-center space-x-1 h-5.5" data-pkg-idx="${idx}" title="Chuyển sang Tab 2 để soạn hồ sơ cho gói thầu này">
+                                <i class="fa-solid fa-file-signature text-[9px]"></i>
+                                <span>Soạn hồ sơ</span>
                             </button>
                         </div>
                     </div>
                 `;
 
+                // Click card selects package and reveals its timeline procedures
+                card.addEventListener("click", (e) => {
+                    if (e.target.closest(".pkg-procurement-select") || e.target.closest(".btn-create-docs")) {
+                        return;
+                    }
+                    appState.selectedRoadmapPackageIndex = idx;
+                    renderRoadmapUI();
+                });
+
                 // Handle procurement type change for this package
                 const sel = card.querySelector(".pkg-procurement-select");
                 sel.addEventListener("change", (e) => {
+                    e.stopPropagation();
                     pkg.procurementTypeId = e.target.value;
                     saveState();
                 });
 
                 // Handle Click "Soạn hồ sơ gói này"
                 const btnCreate = card.querySelector(".btn-create-docs");
-                btnCreate.addEventListener("click", () => {
+                btnCreate.addEventListener("click", (e) => {
+                    e.stopPropagation();
                     appState.activePackageIndex = idx;
                     appState.selectedProcurementTypeId = pkg.procurementTypeId || "chi_dinh_thau_rut_gon";
                     switchMainTab("docs");
@@ -595,8 +621,66 @@
             });
         }
 
+        // Render Package Filter Pills on Timeline Header
+        renderPackageFilterPills();
+
         // Render Timeline Checklist
         renderTimelineTable();
+    }
+
+    function renderPackageFilterPills() {
+        const pillsContainer = document.getElementById("rmPackageFilterPills");
+        if (!pillsContainer || !appState.projectRoadmap) return;
+        pillsContainer.innerHTML = "";
+
+        const pkgs = appState.projectRoadmap.packages || [];
+
+        // Pill: I. Triển khai + Gói đang chọn
+        pkgs.forEach((p, idx) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            const isActive = appState.selectedRoadmapPackageIndex === idx;
+            btn.className = isActive 
+                ? "px-2 py-0.2 rounded font-bold text-[10px] bg-emerald-600 text-white shadow-2xs" 
+                : "px-2 py-0.2 rounded font-medium text-[10px] text-slate-700 hover:bg-slate-200";
+            btn.innerHTML = `<i class="fa-solid fa-box text-[8.5px] mr-0.5"></i> Gói ${idx + 1}`;
+            btn.title = `Xem mục Triển khai + Thủ tục của ${p.name}`;
+            btn.addEventListener("click", () => {
+                appState.selectedRoadmapPackageIndex = idx;
+                renderRoadmapUI();
+            });
+            pillsContainer.appendChild(btn);
+        });
+
+        // Pill: Chỉ mục Triển khai
+        const btnOnlyInit = document.createElement("button");
+        btnOnlyInit.type = "button";
+        const isInitActive = appState.selectedRoadmapPackageIndex === "trien_khai";
+        btnOnlyInit.className = isInitActive 
+            ? "px-1.5 py-0.2 rounded font-bold text-[10px] bg-indigo-600 text-white shadow-2xs" 
+            : "px-1.5 py-0.2 rounded font-medium text-[10px] text-slate-700 hover:bg-slate-200";
+        btnOnlyInit.textContent = "Chỉ Triển khai";
+        btnOnlyInit.title = "Chỉ xem các bước Triển khai chung của dự án";
+        btnOnlyInit.addEventListener("click", () => {
+            appState.selectedRoadmapPackageIndex = "trien_khai";
+            renderRoadmapUI();
+        });
+        pillsContainer.appendChild(btnOnlyInit);
+
+        // Pill: Xem tất cả
+        const btnAll = document.createElement("button");
+        btnAll.type = "button";
+        const isAllActive = appState.selectedRoadmapPackageIndex === -1;
+        btnAll.className = isAllActive 
+            ? "px-1.5 py-0.2 rounded font-bold text-[10px] bg-slate-800 text-white shadow-2xs" 
+            : "px-1.5 py-0.2 rounded font-medium text-[10px] text-slate-700 hover:bg-slate-200";
+        btnAll.textContent = "Tất cả gói";
+        btnAll.title = "Xem toàn bộ thủ tục của tất cả các gói";
+        btnAll.addEventListener("click", () => {
+            appState.selectedRoadmapPackageIndex = -1;
+            renderRoadmapUI();
+        });
+        pillsContainer.appendChild(btnAll);
     }
 
     function renderTimelineTable(filterMode = "all") {
@@ -607,12 +691,51 @@
         const phases = appState.projectRoadmap.timelinePhases || [];
         rmTimelineContainer.innerHTML = "";
 
+        const selPkgIdx = appState.selectedRoadmapPackageIndex;
+        const pkgs = appState.projectRoadmap.packages || [];
+        const currentPkg = (selPkgIdx >= 0 && selPkgIdx < pkgs.length) ? pkgs[selPkgIdx] : null;
+
         let totalTasks = 0;
         let finishedTasks = 0;
+        let renderedPhaseCount = 0;
 
         phases.forEach((phase, pIdx) => {
+            const isInitPhase = phase.code === "I" || phase.title.toLowerCase().includes("triển khai") || !phase.isPackage;
+            
+            // Logic lọc Phase:
+            // 1. Nếu selPkgIdx === "trien_khai": chỉ hiện phase Triển khai
+            // 2. Nếu selPkgIdx === -1: hiện tất cả
+            // 3. Nếu selPkgIdx >= 0: LUÔN HIỆN Phase Triển khai + CHỈ HIỆN Phase của Gói đang chọn!
+            let shouldShowPhase = false;
+            if (selPkgIdx === -1) {
+                shouldShowPhase = true;
+            } else if (selPkgIdx === "trien_khai") {
+                shouldShowPhase = isInitPhase;
+            } else if (selPkgIdx >= 0 && currentPkg) {
+                if (isInitPhase) {
+                    shouldShowPhase = true; // LUÔN HIỆN MỤC TRIỂN KHAI
+                } else {
+                    // Kiểm tra xem phase này có thuộc gói đang chọn không
+                    const pTitle = phase.title.toLowerCase();
+                    const pkgName = currentPkg.name.toLowerCase();
+                    const pkgNum = `gói thầu số ${selPkgIdx + 1}`.toLowerCase();
+                    const pkgNumShort = `gói ${selPkgIdx + 1}`.toLowerCase();
+
+                    if (pTitle.includes(pkgNum) || pTitle.includes(pkgNumShort) || pTitle.includes(pkgName) || pkgName.includes(pTitle)) {
+                        shouldShowPhase = true;
+                    }
+                    // Nếu là giai đoạn thiết kế dự toán gắn liền với gói 1
+                    if (selPkgIdx === 0 && pTitle.includes("thiết kế & dự toán")) {
+                        shouldShowPhase = true;
+                    }
+                }
+            }
+
+            if (!shouldShowPhase) return;
+            renderedPhaseCount++;
+
             const phaseWrapper = document.createElement("div");
-            phaseWrapper.className = "border border-slate-200 rounded overflow-hidden";
+            phaseWrapper.className = "border border-slate-200 rounded overflow-hidden shadow-2xs";
 
             let tasksToRender = phase.tasks || [];
             totalTasks += tasksToRender.length;
@@ -626,28 +749,33 @@
             const phaseTotal = (phase.tasks || []).length;
             const isPhaseDone = phaseTasksDone === phaseTotal && phaseTotal > 0;
 
+            const badgePhaseColor = isInitPhase 
+                ? "bg-slate-800 text-white" 
+                : "bg-emerald-700 text-white";
+
             phaseWrapper.innerHTML = `
-                <div class="bg-slate-50 px-2.5 py-1.5 border-b border-slate-200 flex items-center justify-between cursor-pointer phase-header">
-                    <div class="flex items-center space-x-2">
-                        <span class="w-5 h-5 bg-slate-800 text-white rounded text-[10px] font-bold flex items-center justify-center">${phase.code || (pIdx + 1)}</span>
-                        <span class="font-bold text-xs text-slate-800">${phase.title}</span>
+                <div class="bg-slate-50 hover:bg-slate-100/70 px-2 py-1 border-b border-slate-200 flex items-center justify-between cursor-pointer phase-header h-6.5 select-none transition-colors">
+                    <div class="flex items-center space-x-1.5 min-w-0">
+                        <span class="w-4 h-4 rounded text-[9.5px] font-bold flex items-center justify-center ${badgePhaseColor}">${phase.code || (pIdx + 1)}</span>
+                        <span class="font-bold text-[11px] text-slate-800 truncate">${phase.title}</span>
+                        ${isInitPhase ? '<span class="text-[9px] bg-slate-200 text-slate-700 px-1 py-0 rounded font-medium">Toàn dự án</span>' : `<span class="text-[9px] bg-emerald-100 text-emerald-800 px-1 py-0 rounded font-medium">Gói ${selPkgIdx !== undefined && selPkgIdx >= 0 ? selPkgIdx + 1 : ''}</span>`}
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-full ${isPhaseDone ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'}">${phaseTasksDone}/${phaseTotal} việc</span>
-                        <i class="fa-solid fa-chevron-down text-slate-400 text-[10px] transition-transform"></i>
+                    <div class="flex items-center space-x-1.5 shrink-0">
+                        <span class="text-[9.5px] font-bold px-1.5 py-0 rounded-full ${isPhaseDone ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'}">${phaseTasksDone}/${phaseTotal} việc</span>
+                        <i class="fa-solid fa-chevron-down text-slate-400 text-[9px] transition-transform"></i>
                     </div>
                 </div>
                 <div class="phase-content overflow-x-auto">
-                    <table class="w-full text-[11px] text-left border-collapse">
+                    <table class="w-full text-[10.5px] text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-100/70 border-b border-slate-200 text-slate-600 font-bold text-[10px]">
-                                <th class="p-1.5 w-10 text-center">STT</th>
-                                <th class="p-1.5">Tên công việc / Thủ tục</th>
-                                <th class="p-1.5 w-36">Số văn bản</th>
-                                <th class="p-1.5 w-28">Đơn vị ký duyệt</th>
-                                <th class="p-1.5 w-24">Ngày ban hành</th>
-                                <th class="p-1.5 w-24 text-center">Tiến độ</th>
-                                <th class="p-1.5 w-24 text-center">Thao tác</th>
+                            <tr class="bg-slate-100/70 border-b border-slate-200 text-slate-600 font-bold text-[9px] uppercase tracking-wider h-5">
+                                <th class="py-0.5 px-1.5 w-8 text-center">STT</th>
+                                <th class="py-0.5 px-1.5">Tên công việc / Thủ tục</th>
+                                <th class="py-0.5 px-1.5 w-36">Số văn bản</th>
+                                <th class="py-0.5 px-1.5 w-24">Đơn vị ký</th>
+                                <th class="py-0.5 px-1.5 w-20">Ngày ký</th>
+                                <th class="py-0.5 px-1.5 w-20 text-center">Tiến độ</th>
+                                <th class="py-0.5 px-1.5 w-16 text-center">Soạn</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -658,18 +786,18 @@
                                     : (task.status === "Đang làm" ? "bg-amber-100 text-amber-900 border-amber-300" : "bg-slate-100 text-slate-700 border-slate-200");
                                 
                                 return `
-                                    <tr class="hover:bg-slate-50/80 transition-colors">
-                                        <td class="p-1.5 text-center text-slate-400 font-bold">${task.stt || (tIdx + 1)}</td>
-                                        <td class="p-1.5 font-bold text-slate-800">${task.name}</td>
-                                        <td class="p-1.5 font-mono text-[10.5px] text-slate-700">${task.docNo || '<span class="text-slate-300 italic">Chưa có số</span>'}</td>
-                                        <td class="p-1.5 text-slate-600">${task.signer || "---"}</td>
-                                        <td class="p-1.5 text-slate-600">${task.date || "---"}</td>
-                                        <td class="p-1.5 text-center">
-                                            <span class="inline-block px-1.5 py-0.2 rounded border font-bold text-[9.5px] ${badgeClass}">${task.status || "Chưa làm"}</span>
+                                    <tr class="hover:bg-slate-50 transition-colors h-5.5">
+                                        <td class="py-0.5 px-1.5 text-center text-slate-400 font-bold text-[10px]">${task.stt || (tIdx + 1)}</td>
+                                        <td class="py-0.5 px-1.5 font-bold text-slate-800 text-[10.5px]">${task.name}</td>
+                                        <td class="py-0.5 px-1.5 font-mono text-[10px] text-slate-700">${task.docNo || '<span class="text-slate-300 italic">Chưa có số</span>'}</td>
+                                        <td class="py-0.5 px-1.5 text-slate-600 text-[10px]">${task.signer || "---"}</td>
+                                        <td class="py-0.5 px-1.5 text-slate-600 text-[10px]">${task.date || "---"}</td>
+                                        <td class="py-0.5 px-1.5 text-center">
+                                            <span class="inline-block px-1 py-0 rounded border font-bold text-[9px] ${badgeClass}">${task.status || "Chưa làm"}</span>
                                         </td>
-                                        <td class="p-1.5 text-center">
-                                            <button type="button" class="btn-task-soan px-1.5 py-0.5 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-300 hover:border-emerald-300 rounded font-bold text-[10px]" data-phase-idx="${pIdx}" data-task-idx="${tIdx}">
-                                                <i class="fa-solid fa-pen-to-square text-[9px]"></i> Soạn VB
+                                        <td class="py-0.5 px-1.5 text-center">
+                                            <button type="button" class="btn-task-soan px-1.5 py-0 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-300 hover:border-emerald-300 rounded font-bold text-[9px] h-4.5" data-phase-idx="${pIdx}" data-task-idx="${tIdx}" title="Mở sang Tab 2 để soạn văn bản này">
+                                                <i class="fa-solid fa-pen-to-square text-[8px]"></i> Soạn
                                             </button>
                                         </td>
                                     </tr>
@@ -698,12 +826,8 @@
                     const t = phases[pI].tasks[tI];
 
                     // Match package
-                    if (phases[pI].isPackage) {
-                        const pkgName = phases[pI].title;
-                        const pkgIdx = (appState.projectRoadmap.packages || []).findIndex(p => p.name.includes(pkgName) || pkgName.includes(p.name));
-                        if (pkgIdx >= 0) {
-                            appState.activePackageIndex = pkgIdx;
-                        }
+                    if (phases[pI].isPackage && currentPkg) {
+                        appState.activePackageIndex = selPkgIdx >= 0 ? selPkgIdx : 0;
                     }
 
                     switchMainTab("docs");
@@ -715,7 +839,10 @@
         });
 
         if (rmTimelineStats) {
-            rmTimelineStats.textContent = `${phases.length} giai đoạn | Đã xong ${finishedTasks}/${totalTasks} việc (${totalTasks > 0 ? Math.round(finishedTasks/totalTasks*100) : 0}%)`;
+            const scopeText = selPkgIdx >= 0 && currentPkg 
+                ? `Đang xem: Mục Triển khai + Gói ${selPkgIdx + 1}` 
+                : (selPkgIdx === "trien_khai" ? "Đang xem: Mục Triển khai" : "Đang xem: Tất cả");
+            rmTimelineStats.textContent = `${scopeText} | Đã xong ${finishedTasks}/${totalTasks} việc (${totalTasks > 0 ? Math.round(finishedTasks/totalTasks*100) : 0}%)`;
         }
     }
 

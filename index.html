@@ -66,97 +66,105 @@
     </header>
 
     <!-- ============================================================= -->
-    <!-- VIEW 1: ĐỊNH HƯỚNG DỰ ÁN & KIỂM SOÁT TIẾN ĐỘ THỦ TỤC -->
+    <!-- VIEW 1: ĐỊNH HƯỚNG DỰ ÁN & KIỂM SOÁT TIẾN ĐỘ THỦ TỤC (ULTRA-COMPACT) -->
     <!-- ============================================================= -->
-    <div id="viewRoadmap" class="max-w-[1600px] mx-auto px-2 py-2 space-y-2.5 w-full">
+    <div id="viewRoadmap" class="max-w-[1600px] mx-auto px-2 py-1 space-y-1.5 w-full">
         
-        <!-- Project Info & Quick Actions Banner -->
-        <div class="bg-white rounded border border-slate-200 p-2.5 shadow-xs">
-            <div class="flex flex-wrap items-center justify-between gap-2 pb-2 mb-2 border-b border-slate-100">
-                <div class="flex items-center space-x-2">
-                    <div class="w-7 h-7 bg-emerald-600 text-white rounded flex items-center justify-center font-bold text-sm shadow-xs">
-                        <i class="fa-solid fa-compass-drafting"></i>
+        <!-- Project Info & Quick Actions Banner (Ultra-slim h-auto) -->
+        <div class="bg-white rounded border border-slate-200 p-1.5 shadow-2xs">
+            <div class="flex flex-wrap items-center justify-between gap-1 pb-1 mb-1 border-b border-slate-100">
+                <div class="flex items-center space-x-1.5">
+                    <div class="w-5 h-5 bg-emerald-600 text-white rounded flex items-center justify-center font-bold text-xs shadow-2xs">
+                        <i class="fa-solid fa-compass-drafting text-[10px]"></i>
                     </div>
-                    <div>
-                        <h1 class="text-sm font-bold text-slate-900 leading-tight">Định Hướng Kế Hoạch & Kiểm Soát Tiến Độ Dự Án</h1>
-                        <p class="text-[10.5px] text-slate-500">Xác định các gói thầu, phương thức LCNT, giá trị dự kiến và theo dõi dòng thời gian thủ tục</p>
-                    </div>
+                    <span class="text-xs font-bold text-slate-900 leading-tight">Định Hướng Kế Hoạch & Kiểm Soát Tiến Độ Dự Án</span>
+                    <span class="text-[10px] text-slate-400 hidden sm:inline">| Thiết lập gói thầu, phương thức LCNT & kiểm soát tiến độ thủ tục</span>
                 </div>
 
-                <div class="flex items-center space-x-1.5">
-                    <button id="btnOpenImportCsvModal" type="button" class="px-2.5 py-1 text-xs font-bold rounded border transition-all flex items-center space-x-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300 shadow-2xs h-7">
-                        <i class="fa-solid fa-file-csv text-amber-600"></i>
-                        <span>Nhập tiến độ CSV / Excel</span>
+                <div class="flex items-center space-x-1">
+                    <button id="btnOpenImportCsvModal" type="button" class="px-2 py-0.5 text-[10.5px] font-bold rounded border transition-all flex items-center space-x-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300 shadow-2xs h-6">
+                        <i class="fa-solid fa-file-csv text-amber-600 text-[10px]"></i>
+                        <span>Nhập tiến độ CSV</span>
                     </button>
-                    <button id="btnAddPackageRoadmap" type="button" class="px-2.5 py-1 text-xs font-bold rounded border transition-all flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300 shadow-2xs h-7">
-                        <i class="fa-solid fa-plus text-emerald-600"></i>
+                    <button id="btnAddPackageRoadmap" type="button" class="px-2 py-0.5 text-[10.5px] font-bold rounded border transition-all flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300 shadow-2xs h-6">
+                        <i class="fa-solid fa-plus text-emerald-600 text-[10px]"></i>
                         <span>Thêm gói thầu</span>
                     </button>
-                    <button id="btnGoToDocs" type="button" class="px-3 py-1 text-xs font-bold rounded shadow-xs transition-all flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-700 text-white h-7">
+                    <button id="btnGoToDocs" type="button" class="px-2.5 py-0.5 text-[10.5px] font-bold rounded shadow-2xs transition-all flex items-center space-x-1 bg-emerald-600 hover:bg-emerald-700 text-white h-6">
                         <span>Sang Tạo Hồ Sơ</span>
-                        <i class="fa-solid fa-arrow-right"></i>
+                        <i class="fa-solid fa-arrow-right text-[9px]"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Project Attributes Grid (Ultra-compact, 4 columns) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
+            <!-- Project Attributes Grid (Ultra-compact, h-6 inputs) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1 text-[11px]">
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Tên dự án *</label>
-                    <input id="rmProjectName" type="text" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-0.5 h-6.5 text-[11px] font-bold text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500" value="Sửa chữa góc cua đường khẩn nguy chữa cháy phía tây Sân đỗ tàu bay">
+                    <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Tên dự án *</label>
+                    <input id="rmProjectName" type="text" class="w-full bg-slate-50 border border-slate-300 rounded px-1.5 py-0 h-6 text-[11px] font-bold text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500" value="Sửa chữa góc cua đường khẩn nguy chữa cháy phía tây Sân đỗ tàu bay">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Chủ đầu tư / Đơn vị thực hiện *</label>
-                    <input id="rmInvestorName" type="text" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-0.5 h-6.5 text-[11px] font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500" value="Cảng Hàng không Quốc tế Cần Thơ">
+                    <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Chủ đầu tư / Đơn vị thực hiện *</label>
+                    <input id="rmInvestorName" type="text" class="w-full bg-slate-50 border border-slate-300 rounded px-1.5 py-0 h-6 text-[11px] font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500" value="Cảng Hàng không Quốc tế Cần Thơ">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Cấp quyết định đầu tư</label>
-                    <input id="rmApprover" type="text" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-0.5 h-6.5 text-[11px] font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500" value="Tổng công ty Cảng hàng không Việt Nam (TCT)">
+                    <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Cấp quyết định đầu tư</label>
+                    <input id="rmApprover" type="text" class="w-full bg-slate-50 border border-slate-300 rounded px-1.5 py-0 h-6 text-[11px] font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500" value="Tổng công ty Cảng hàng không Việt Nam (TCT)">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-0.5">Nguồn vốn</label>
-                    <input id="rmFundingSource" type="text" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-0.5 h-6.5 text-[11px] font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500" value="Quỹ đầu tư phát triển TCT">
+                    <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Nguồn vốn</label>
+                    <input id="rmFundingSource" type="text" class="w-full bg-slate-50 border border-slate-300 rounded px-1.5 py-0 h-6 text-[11px] font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500" value="Quỹ đầu tư phát triển TCT">
                 </div>
             </div>
         </div>
 
-        <!-- Procurement Packages Matrix Section -->
-        <div class="bg-white rounded border border-slate-200 p-2.5 shadow-xs">
-            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-boxes-stacked text-emerald-600 text-xs"></i>
-                    <h2 class="text-xs font-bold text-slate-800 uppercase tracking-tight">Kế Hoạch Các Gói Thầu (<span id="rmPackageCountBadge">2</span> gói)</h2>
-                    <span class="text-[10px] text-slate-400">| Bấm "Soạn hồ sơ" ở gói nào sẽ tự động nạp phương thức và hồ sơ của gói đó</span>
+        <!-- Procurement Packages Matrix Section (Compact) -->
+        <div class="bg-white rounded border border-slate-200 p-1.5 shadow-2xs">
+            <div class="flex items-center justify-between pb-1 mb-1 border-b border-slate-100">
+                <div class="flex items-center space-x-1.5">
+                    <i class="fa-solid fa-boxes-stacked text-emerald-600 text-[11px]"></i>
+                    <h2 class="text-[11.5px] font-bold text-slate-800 uppercase tracking-tight">Kế Hoạch Các Gói Thầu (<span id="rmPackageCountBadge">2</span> gói)</h2>
+                    <span class="text-[10px] text-slate-400 hidden md:inline">| Bấm vào gói thầu để hiển thị thủ tục tương ứng bên dưới</span>
                 </div>
-                <button id="btnAddPackageCard" type="button" class="px-2 py-0.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded border border-emerald-200 flex items-center space-x-1 h-6">
-                    <i class="fa-solid fa-plus text-[10px]"></i>
-                    <span>Thêm gói thầu</span>
-                </button>
+                <div class="flex items-center space-x-1">
+                    <button id="btnAddPackageCard" type="button" class="px-2 py-0.5 text-[10.5px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded border border-emerald-200 flex items-center space-x-1 h-5.5">
+                        <i class="fa-solid fa-plus text-[9px]"></i>
+                        <span>Thêm gói</span>
+                    </button>
+                </div>
             </div>
 
-            <!-- Packages Cards Container -->
-            <div id="rmPackagesList" class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <!-- Packages Cards Container (Ultra-slim cards) -->
+            <div id="rmPackagesList" class="grid grid-cols-1 md:grid-cols-2 gap-1.5">
                 <!-- Injected dynamically by JS -->
             </div>
         </div>
 
-        <!-- Procedural Timeline & Checklist Section -->
-        <div class="bg-white rounded border border-slate-200 p-2.5 shadow-xs">
-            <div class="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-timeline text-indigo-600 text-xs"></i>
-                    <h2 class="text-xs font-bold text-slate-800 uppercase tracking-tight">Trình Tự Thủ Tục & Tiến Độ Văn Bản Thực Hiện</h2>
-                    <span id="rmTimelineStats" class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded font-medium">3 giai đoạn | 41 đầu việc</span>
+        <!-- Procedural Timeline & Checklist Section (Phụ thuộc vào gói được chọn) -->
+        <div class="bg-white rounded border border-slate-200 p-1.5 shadow-2xs">
+            <div class="flex flex-wrap items-center justify-between gap-1 pb-1 mb-1 border-b border-slate-100">
+                <div class="flex items-center space-x-1.5 min-w-0">
+                    <i class="fa-solid fa-timeline text-indigo-600 text-[11px]"></i>
+                    <h2 class="text-[11.5px] font-bold text-slate-800 uppercase tracking-tight">Trình Tự Thủ Tục & Tiến Độ Văn Bản</h2>
+                    <span id="rmTimelineStats" class="text-[9.5px] bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded font-medium">Đã xong 38/41 việc</span>
                 </div>
-                <div class="flex items-center space-x-1 text-xs">
-                    <span class="text-[10px] font-bold text-slate-500">Lọc:</span>
-                    <button id="rmFilterAllTasks" type="button" class="px-2 py-0.5 text-[10.5px] font-bold rounded bg-slate-800 text-white h-5.5">Tất cả</button>
-                    <button id="rmFilterUnfinishedTasks" type="button" class="px-2 py-0.5 text-[10.5px] font-bold rounded bg-slate-100 hover:bg-slate-200 text-slate-700 h-5.5">Đang làm & Chưa xong</button>
+
+                <!-- Package Filter Selector for Timeline -->
+                <div class="flex items-center space-x-1 text-[10.5px]">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase">Xem thủ tục:</span>
+                    <div id="rmPackageFilterPills" class="flex items-center space-x-0.5 bg-slate-100 p-0.5 rounded border border-slate-200">
+                        <!-- Populated dynamically: [Tất cả] [Triển khai] [Gói 1] [Gói 2]... -->
+                    </div>
+
+                    <div class="flex items-center space-x-0.5 ml-1 border-l pl-1 border-slate-200">
+                        <button id="rmFilterAllTasks" type="button" class="px-1.5 py-0.2 text-[10px] font-bold rounded bg-slate-800 text-white h-5">Tất cả</button>
+                        <button id="rmFilterUnfinishedTasks" type="button" class="px-1.5 py-0.2 text-[10px] font-bold rounded bg-slate-100 hover:bg-slate-200 text-slate-700 h-5">Chưa xong</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Timeline Accordion / Table Container -->
-            <div id="rmTimelineContainer" class="space-y-2">
+            <!-- Timeline Accordion / Table Container (Ultra-compact rows) -->
+            <div id="rmTimelineContainer" class="space-y-1">
                 <!-- Injected dynamically by JS -->
             </div>
         </div>
