@@ -220,3 +220,12 @@ input[type="text"]:hover, select:hover, textarea:hover {
     pointer-events: none;
     filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
 }
+
+/* Utilities for horizontal scroll tabs */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}

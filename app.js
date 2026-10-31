@@ -2134,42 +2134,93 @@
         });
     }
 
+    function selectDocumentById(docId) {
+        const docs = getAllDocsForCurrentType();
+        const target = docs.find(d => d.id === docId);
+        if (!target) return;
+        appState.activeDocId = target.id;
+        if (window.history && window.history.replaceState && appState.activeMainTab === "docs") {
+            window.history.replaceState({
+                tab: "docs",
+                activeDocId: target.id,
+                pkgIdx: appState.activePackageIndex
+            }, "", "#docs");
+        }
+        saveState();
+        renderDocTabs();
+        renderDocumentPreview();
+        applyVariableFilter();
+    }
+
     function renderDocTabs() {
-        if (!docTypeTabs) return;
-        docTypeTabs.innerHTML = "";
         const docs = getAllDocsForCurrentType();
 
         if (!docs.some(d => d.id === appState.activeDocId)) {
             if (docs.length > 0) appState.activeDocId = docs[0].id;
         }
 
-        docs.forEach(doc => {
-            const btn = document.createElement("button");
-            const isActive = doc.id === appState.activeDocId;
-            btn.type = "button";
-            btn.setAttribute("data-doc-id", doc.id);
-            btn.className = `tab-btn px-2 py-0.5 text-[11px] rounded transition-all whitespace-nowrap ${isActive ? 'active shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-300/50'}`;
-            btn.title = `${doc.name} (${doc.desc || ''})`;
-            btn.innerHTML = `<span class="font-bold">${doc.code}</span>`;
+        const activeIdx = docs.findIndex(d => d.id === appState.activeDocId);
+        const curNum = activeIdx >= 0 ? activeIdx + 1 : 1;
+        const totalDocs = docs.length;
 
-            btn.addEventListener("click", () => {
-                document.querySelectorAll("#docTypeTabs .tab-btn").forEach(b => b.classList.remove("active"));
-                btn.classList.add("active");
-                appState.activeDocId = doc.id;
-                if (window.history && window.history.replaceState && appState.activeMainTab === "docs") {
-                    window.history.replaceState({
-                        tab: "docs",
-                        activeDocId: doc.id,
-                        pkgIdx: appState.activePackageIndex
-                    }, "", "#docs");
-                }
-                saveState();
-                renderDocumentPreview();
-                applyVariableFilter();
+        // 1. Update Dropdown Combobox (for quick jump across 20+ docs)
+        const docQuickSelector = document.getElementById("docQuickSelector");
+        if (docQuickSelector) {
+            docQuickSelector.innerHTML = "";
+            docs.forEach((d, idx) => {
+                const opt = document.createElement("option");
+                opt.value = d.id;
+                const numStr = String(idx + 1).padStart(2, '0');
+                const totalStr = String(totalDocs).padStart(2, '0');
+                opt.textContent = `${numStr}/${totalStr}. [${d.code}] ${d.name}`;
+                if (d.id === appState.activeDocId) opt.selected = true;
+                docQuickSelector.appendChild(opt);
             });
+        }
 
-            docTypeTabs.appendChild(btn);
-        });
+        // 2. Update Counter Badge & Stepper Buttons
+        const docCounterBadge = document.getElementById("docCounterBadge");
+        if (docCounterBadge) {
+            docCounterBadge.textContent = `${String(curNum).padStart(2, '0')} / ${String(totalDocs).padStart(2, '0')}`;
+        }
+        const btnPrevDoc = document.getElementById("btnPrevDoc");
+        const btnNextDoc = document.getElementById("btnNextDoc");
+        if (btnPrevDoc) btnPrevDoc.disabled = activeIdx <= 0;
+        if (btnNextDoc) btnNextDoc.disabled = activeIdx >= totalDocs - 1;
+
+        // 3. Update Modal Button Text
+        const btnOpenAllDocsModalText = document.getElementById("btnOpenAllDocsModalText");
+        if (btnOpenAllDocsModalText) {
+            btnOpenAllDocsModalText.textContent = `Tất cả (${totalDocs})`;
+        }
+
+        // 4. Render Horizontal Tab Strip
+        if (docTypeTabs) {
+            docTypeTabs.innerHTML = "";
+            docs.forEach((doc, idx) => {
+                const btn = document.createElement("button");
+                const isActive = doc.id === appState.activeDocId;
+                btn.type = "button";
+                btn.setAttribute("data-doc-id", doc.id);
+                btn.className = `tab-btn px-2 py-0.5 text-[10.5px] rounded transition-all whitespace-nowrap flex items-center gap-1 ${isActive ? 'active shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-300/50'}`;
+                btn.title = `${idx + 1}/${totalDocs}: ${doc.name} (${doc.desc || ''})`;
+                btn.innerHTML = `<span class="opacity-60 font-mono text-[9px]">${idx + 1}.</span><span class="font-bold">${doc.code}</span>`;
+
+                btn.addEventListener("click", () => {
+                    selectDocumentById(doc.id);
+                });
+
+                docTypeTabs.appendChild(btn);
+
+                if (isActive) {
+                    setTimeout(() => {
+                        try {
+                            btn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+                        } catch (e) {}
+                    }, 50);
+                }
+            });
+        }
     }
 
     // -------------------------------------------------------------
@@ -3513,6 +3564,137 @@
         });
     }
 
+        // Controllers for Document Quick Selector, Stepper, and All Docs Modal
+        const docQuickSelector = document.getElementById("docQuickSelector");
+        if (docQuickSelector) {
+            docQuickSelector.addEventListener("change", (e) => {
+                selectDocumentById(e.target.value);
+            });
+        }
+
+        const btnPrevDoc = document.getElementById("btnPrevDoc");
+        if (btnPrevDoc) {
+            btnPrevDoc.addEventListener("click", () => {
+                const docs = getAllDocsForCurrentType();
+                const curIdx = docs.findIndex(d => d.id === appState.activeDocId);
+                if (curIdx > 0) {
+                    selectDocumentById(docs[curIdx - 1].id);
+                }
+            });
+        }
+
+        const btnNextDoc = document.getElementById("btnNextDoc");
+        if (btnNextDoc) {
+            btnNextDoc.addEventListener("click", () => {
+                const docs = getAllDocsForCurrentType();
+                const curIdx = docs.findIndex(d => d.id === appState.activeDocId);
+                if (curIdx >= 0 && curIdx < docs.length - 1) {
+                    selectDocumentById(docs[curIdx + 1].id);
+                }
+            });
+        }
+
+        // Horizontal Tabs Scroll Buttons
+        const tabsWrapper = document.getElementById("docTypeTabsWrapper");
+        const btnScrollTabsLeft = document.getElementById("btnScrollTabsLeft");
+        const btnScrollTabsRight = document.getElementById("btnScrollTabsRight");
+        if (btnScrollTabsLeft && tabsWrapper) {
+            btnScrollTabsLeft.addEventListener("click", () => {
+                tabsWrapper.scrollBy({ left: -200, behavior: "smooth" });
+            });
+        }
+        if (btnScrollTabsRight && tabsWrapper) {
+            btnScrollTabsRight.addEventListener("click", () => {
+                tabsWrapper.scrollBy({ left: 200, behavior: "smooth" });
+            });
+        }
+
+        // Quick Export Zip button on Preview Header
+        const btnQuickExportZip = document.getElementById("btnQuickExportZip");
+        if (btnQuickExportZip) {
+            btnQuickExportZip.addEventListener("click", () => {
+                const modal = document.getElementById("batchExportModal");
+                if (modal) modal.classList.remove("hidden");
+            });
+        }
+
+        // Modal: All Documents in Procedure Catalog
+        function renderAllDocsCatalogModal() {
+            const docs = getAllDocsForCurrentType();
+            const procType = getCurrentProcurementType();
+            const tbody = document.getElementById("modalAllDocsTableBody");
+            const titleEl = document.getElementById("modalAllDocsTitle");
+            const subtitleEl = document.getElementById("modalAllDocsSubtitle");
+            const countEl = document.getElementById("modalAllDocsCount");
+            if (!tbody) return;
+
+            if (titleEl) titleEl.textContent = `Danh mục Văn bản: ${procType.name}`;
+            if (subtitleEl) subtitleEl.textContent = `Thứ tự toàn bộ ${docs.length} văn bản / biểu mẫu trong quy trình này`;
+            if (countEl) countEl.textContent = `Tổng số: ${docs.length} văn bản`;
+
+            tbody.innerHTML = "";
+            docs.forEach((doc, idx) => {
+                const tr = document.createElement("tr");
+                const isActive = doc.id === appState.activeDocId;
+                tr.className = isActive ? "bg-emerald-50 font-semibold" : "hover:bg-slate-50";
+
+                const hasTemplate = Boolean(doc.template || doc.templateUrl);
+                tr.innerHTML = `
+                    <td class="p-2 text-center text-slate-500 font-mono text-[11px]">${String(idx + 1).padStart(2, '0')}</td>
+                    <td class="p-2 font-mono font-bold text-slate-800 text-[11px]">${doc.code}</td>
+                    <td class="p-2">
+                        <div class="text-slate-900 font-medium">${doc.name}</div>
+                        ${doc.desc ? `<div class="text-[10px] text-slate-500">${doc.desc}</div>` : ''}
+                    </td>
+                    <td class="p-2 text-center">
+                        ${hasTemplate 
+                            ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] bg-emerald-100 text-emerald-800 font-medium"><i class="fa-solid fa-circle-check text-[9px]"></i> Đã có mẫu</span>`
+                            : `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] bg-blue-100 text-blue-800 font-medium"><i class="fa-solid fa-wand-magic-sparkles text-[9px]"></i> Mẫu chuẩn</span>`
+                        }
+                    </td>
+                    <td class="p-2 text-center">
+                        <button type="button" class="btn-select-doc-from-modal px-2 py-1 text-[10.5px] rounded ${isActive ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-300'} transition-all cursor-pointer" data-doc-id="${doc.id}">
+                            ${isActive ? 'Đang xem' : 'Xem & Soạn'}
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            tbody.querySelectorAll(".btn-select-doc-from-modal").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const id = btn.getAttribute("data-doc-id");
+                    selectDocumentById(id);
+                    document.getElementById("modalAllDocsCatalog")?.classList.add("hidden");
+                });
+            });
+        }
+
+        const btnOpenAllDocsModal = document.getElementById("btnOpenAllDocsModal");
+        const modalAllDocsCatalog = document.getElementById("modalAllDocsCatalog");
+        const btnCloseAllDocsModal = document.getElementById("btnCloseAllDocsModal");
+        const btnCloseAllDocsModalBtn = document.getElementById("btnCloseAllDocsModalBtn");
+        const btnModalDownloadZip = document.getElementById("btnModalDownloadZip");
+
+        if (btnOpenAllDocsModal && modalAllDocsCatalog) {
+            btnOpenAllDocsModal.addEventListener("click", () => {
+                renderAllDocsCatalogModal();
+                modalAllDocsCatalog.classList.remove("hidden");
+            });
+        }
+        if (btnCloseAllDocsModal && modalAllDocsCatalog) {
+            btnCloseAllDocsModal.addEventListener("click", () => modalAllDocsCatalog.classList.add("hidden"));
+        }
+        if (btnCloseAllDocsModalBtn && modalAllDocsCatalog) {
+            btnCloseAllDocsModalBtn.addEventListener("click", () => modalAllDocsCatalog.classList.add("hidden"));
+        }
+        if (btnModalDownloadZip) {
+            btnModalDownloadZip.addEventListener("click", () => {
+                modalAllDocsCatalog?.classList.add("hidden");
+                document.getElementById("batchExportModal")?.classList.remove("hidden");
+            });
+        }
+
         btnExportSingleDoc.addEventListener("click", async () => {
         const activeDoc = getCurrentActiveDoc();
         if (!activeDoc) return;
@@ -3535,7 +3717,7 @@
             showToast("Lỗi khi xuất file docx: " + err.message, "error");
         } finally {
             btnExportSingleDoc.disabled = false;
-            btnExportSingleDoc.innerHTML = `<i class="fa-solid fa-download"></i> <span>Xuất Word (.docx)</span>`;
+            btnExportSingleDoc.innerHTML = `<i class="fa-solid fa-download"></i> <span>Tải Word (.docx)</span>`;
         }
     });
 
@@ -4649,6 +4831,10 @@
     window.switchMainTab = switchMainTab;
     window.applyVariableToSelection = applyVariableToSelection;
     window.renderDocumentPreview = renderDocumentPreview;
+    window.getAllDocsForCurrentType = getAllDocsForCurrentType;
+    window.renderDocTabs = renderDocTabs;
+    window.selectDocumentById = selectDocumentById;
+    window.renderAllDocsCatalogModal = renderAllDocsCatalogModal;
     window.makeVariableInlineEditable = makeVariableInlineEditable;
     window.commitVariableEdit = commitVariableEdit;
     window.openProcurementMatrixModal = () => {

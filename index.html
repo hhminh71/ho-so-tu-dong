@@ -720,31 +720,81 @@
             <!-- Right Column: Live Document Preview (7 of 12 cols, Sticky) -->
             <div class="lg:col-span-7 sticky top-12">
                 <div class="bg-white rounded border border-slate-200 shadow-xs overflow-hidden flex flex-col">
-                    <!-- Preview Navigation Bar -->
-                    <div class="bg-slate-100 border-b border-slate-200 px-2 py-1 flex flex-wrap items-center justify-between gap-1 h-8">
-                        <div class="flex items-center space-x-1 overflow-x-auto max-w-[75%]">
-                            <span class="text-[10px] font-bold text-slate-500 mr-0.5 whitespace-nowrap"><i class="fa-regular fa-eye"></i> Xem:</span>
-                            <div class="inline-flex rounded bg-slate-200 p-0.5 space-x-0.5" id="docTypeTabs">
-                                <!-- Populated dynamically based on selected procurement type -->
+                    <!-- Preview Navigation & Control Bar (Sticky & Multi-Doc Support) -->
+                    <div class="bg-slate-100 border-b border-slate-200 flex flex-col shrink-0">
+                        <!-- Top Toolbar: Document Quick Selector & Action Buttons (ALWAYS PINNED & VISIBLE) -->
+                        <div class="px-2.5 py-1.5 flex items-center justify-between gap-2 border-b border-slate-200/80 bg-slate-50/90">
+                            <!-- Left: Quick Doc Dropdown + Stepper + Modal Opener -->
+                            <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                                <label for="docQuickSelector" class="text-[10.5px] font-bold text-slate-600 shrink-0 hidden sm:flex items-center gap-1">
+                                    <i class="fa-solid fa-list-check text-emerald-600 text-xs"></i>
+                                    <span>Văn bản:</span>
+                                </label>
+                                
+                                <!-- Document Dropdown Combobox (lists all 1 to 20+ docs in order) -->
+                                <select id="docQuickSelector" class="bg-white border border-slate-300 text-slate-800 text-[11px] font-bold rounded px-2 py-0.5 h-7 focus:ring-emerald-500 shadow-2xs max-w-[260px] md:max-w-[320px] lg:max-w-[340px] truncate cursor-pointer" title="Chọn văn bản cần xem hoặc soạn trong danh sách thứ tự">
+                                    <!-- Populated dynamically -->
+                                </select>
+
+                                <!-- Stepper Buttons (< | >) + Counter Badge -->
+                                <div class="flex items-center space-x-0.5 shrink-0">
+                                    <button id="btnPrevDoc" type="button" class="w-6 h-6 flex items-center justify-center bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded shadow-2xs text-[10px] cursor-pointer" title="Văn bản trước đó">
+                                        <i class="fa-solid fa-chevron-left"></i>
+                                    </button>
+                                    <span id="docCounterBadge" class="text-[10px] font-bold font-mono px-1.5 py-0.5 bg-slate-200 text-slate-700 rounded whitespace-nowrap min-w-[42px] text-center">01/07</span>
+                                    <button id="btnNextDoc" type="button" class="w-6 h-6 flex items-center justify-center bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded shadow-2xs text-[10px] cursor-pointer" title="Văn bản kế tiếp">
+                                        <i class="fa-solid fa-chevron-right"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Button View All Documents in Procedure -->
+                                <button id="btnOpenAllDocsModal" type="button" class="hidden md:flex items-center gap-1 px-2 py-0.5 text-[10.5px] font-medium bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-300 rounded shadow-2xs h-7 shrink-0 cursor-pointer" title="Xem danh mục toàn bộ thứ tự văn bản trong quy trình này">
+                                    <i class="fa-solid fa-list-ol text-emerald-600 text-[10px]"></i>
+                                    <span id="btnOpenAllDocsModalText">Tất cả (7)</span>
+                                </button>
+                            </div>
+
+                            <!-- Right: Download and Edit Action Buttons (ALWAYS PINNED & VISIBLE) -->
+                            <div class="flex items-center space-x-1 shrink-0">
+                                <button id="btnTogglePreviewEdit" type="button" class="text-[10.5px] bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 font-bold px-2 py-0.5 rounded border border-slate-300 shadow-2xs flex items-center space-x-1 h-7 transition-all cursor-pointer" title="Bật/Tắt chế độ chỉnh sửa trực tiếp nội dung văn bản trên trang Preview">
+                                    <i class="fa-solid fa-pen-to-square text-emerald-600 text-[10px]"></i>
+                                    <span id="btnTogglePreviewEditText">Sửa trực tiếp</span>
+                                </button>
+                                <button id="btnResetPreviewDoc" type="button" class="hidden text-[10px] bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 font-medium px-1.5 py-0.5 rounded border border-slate-200 h-7 transition-all cursor-pointer" title="Khôi phục lại nội dung mẫu mặc định ban đầu của văn bản này">
+                                    <i class="fa-solid fa-rotate-left text-[9px]"></i>
+                                    <span>Khôi phục</span>
+                                </button>
+                                <!-- Primary Download Button: Single Doc Word (.docx) -->
+                                <button id="btnExportSingleDoc" type="button" class="text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-0.5 rounded shadow-xs flex items-center space-x-1 h-7 transition-all cursor-pointer" title="Tải văn bản đang xem về máy dưới dạng Microsoft Word (.docx)">
+                                    <i class="fa-solid fa-download"></i>
+                                    <span>Tải Word (.docx)</span>
+                                </button>
+                                <!-- Bulk Download Button: All Docs in Package ZIP -->
+                                <button id="btnQuickExportZip" type="button" class="text-[10.5px] bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-2 py-0.5 rounded shadow-2xs flex items-center space-x-1 h-7 transition-all cursor-pointer" title="Tải toàn bộ các file văn bản của gói thầu này (.zip)">
+                                    <i class="fa-solid fa-file-zipper text-emerald-600 text-[10px]"></i>
+                                    <span>Tải trọn bộ ZIP</span>
+                                </button>
                             </div>
                         </div>
 
-                        <!-- Preview Edit controls & Single doc download -->
-                        <div class="flex items-center space-x-1 shrink-0">
-                            <span id="previewEditHint" class="text-[9.5px] text-slate-500 hidden xl:inline-flex items-center gap-1 font-medium bg-slate-200/60 px-1.5 py-0.5 rounded select-none">
-                                <i class="fa-solid fa-i-cursor text-indigo-500 text-[8.5px]"></i> Quét khối &amp; Chuột phải để gán / gộp biến
+                        <!-- Sub Toolbar: Horizontal Tabs Strip with Smooth Scroll Arrows -->
+                        <div class="px-2 py-1 bg-slate-100 flex items-center gap-1 min-w-0">
+                            <span class="text-[10px] font-bold text-slate-500 mr-0.5 whitespace-nowrap shrink-0">
+                                <i class="fa-regular fa-eye"></i> Xem tab:
                             </span>
-                            <button id="btnTogglePreviewEdit" type="button" class="text-[10.5px] bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 font-bold px-2 py-0.5 rounded border border-slate-300 shadow-2xs flex items-center space-x-1 h-6 transition-all cursor-pointer" title="Bật/Tắt chế độ chỉnh sửa trực tiếp nội dung văn bản trên trang Preview">
-                                <i class="fa-solid fa-pen-to-square text-emerald-600 text-[10px]"></i>
-                                <span id="btnTogglePreviewEditText">Sửa trực tiếp</span>
+                            <!-- Left Scroll Arrow -->
+                            <button id="btnScrollTabsLeft" type="button" class="shrink-0 w-5 h-5 flex items-center justify-center bg-white hover:bg-slate-200 text-slate-600 rounded border border-slate-200 text-[9px] shadow-2xs cursor-pointer" title="Cuộn sang trái">
+                                <i class="fa-solid fa-chevron-left"></i>
                             </button>
-                            <button id="btnResetPreviewDoc" type="button" class="hidden text-[10px] bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 font-medium px-1.5 py-0.5 rounded border border-slate-200 h-6 transition-all cursor-pointer" title="Khôi phục lại nội dung mẫu mặc định ban đầu của văn bản này">
-                                <i class="fa-solid fa-rotate-left text-[9px]"></i>
-                                <span>Khôi phục</span>
-                            </button>
-                            <button id="btnExportSingleDoc" class="text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2 py-0.5 rounded shadow-xs flex items-center space-x-1 h-6 cursor-pointer">
-                                <i class="fa-solid fa-download"></i>
-                                <span>Xuất Word (.docx)</span>
+                            <!-- Scrollable Tabs Wrapper -->
+                            <div id="docTypeTabsWrapper" class="overflow-x-auto scroll-smooth no-scrollbar flex-1 flex items-center space-x-1 py-0.5">
+                                <div class="inline-flex rounded bg-slate-200 p-0.5 space-x-0.5" id="docTypeTabs">
+                                    <!-- Populated dynamically based on selected procurement type -->
+                                </div>
+                            </div>
+                            <!-- Right Scroll Arrow -->
+                            <button id="btnScrollTabsRight" type="button" class="shrink-0 w-5 h-5 flex items-center justify-center bg-white hover:bg-slate-200 text-slate-600 rounded border border-slate-200 text-[9px] shadow-2xs cursor-pointer" title="Cuộn sang phải">
+                                <i class="fa-solid fa-chevron-right"></i>
                             </button>
                         </div>
                     </div>
@@ -761,6 +811,57 @@
         </div>
     </main>
     </div><!-- End of viewDocs -->
+
+    <!-- Modal: Danh mục Toàn bộ Thứ tự Văn bản trong Quy trình -->
+    <div id="modalAllDocsCatalog" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 hidden backdrop-blur-xs">
+        <div class="bg-white rounded-xl max-w-2xl w-full p-4 shadow-2xl border border-slate-100 text-xs flex flex-col max-h-[85vh]">
+            <div class="flex items-center justify-between border-b pb-2.5 border-slate-200">
+                <div class="flex items-center space-x-2">
+                    <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">
+                        <i class="fa-solid fa-list-ol"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm" id="modalAllDocsTitle">Danh mục Toàn bộ Văn bản Quy trình</h3>
+                        <p class="text-[10px] text-slate-500" id="modalAllDocsSubtitle">Thứ tự các bước và tình trạng biểu mẫu</p>
+                    </div>
+                </div>
+                <button id="btnCloseAllDocsModal" class="text-slate-400 hover:text-slate-600 text-sm p-1 cursor-pointer">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Table of all documents in procedure -->
+            <div class="overflow-y-auto flex-1 my-3 pr-1">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-slate-100 text-slate-700 text-[11px] font-bold sticky top-0">
+                        <tr>
+                            <th class="p-2 border-b border-slate-200 w-12 text-center">STT</th>
+                            <th class="p-2 border-b border-slate-200 w-36">Mã văn bản</th>
+                            <th class="p-2 border-b border-slate-200">Tên văn bản / Thủ tục</th>
+                            <th class="p-2 border-b border-slate-200 w-28 text-center">Biểu mẫu</th>
+                            <th class="p-2 border-b border-slate-200 w-24 text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalAllDocsTableBody" class="divide-y divide-slate-100">
+                        <!-- Injected by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex items-center justify-between border-t pt-2.5 border-slate-200 text-xs">
+                <span class="text-slate-500 text-[11px]" id="modalAllDocsCount">Tổng số: 0 văn bản</span>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btnModalDownloadZip" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer">
+                        <i class="fa-solid fa-file-zipper"></i>
+                        <span>Tải trọn bộ (.zip)</span>
+                    </button>
+                    <button type="button" id="btnCloseAllDocsModalBtn" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded transition-all cursor-pointer">
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal: Xuất hàng loạt -->
     <div id="batchExportModal" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 hidden backdrop-blur-xs">
