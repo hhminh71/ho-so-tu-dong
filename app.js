@@ -480,6 +480,17 @@
         "cdtrg_7": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_GOI_THAU", "SO_BIEN_BAN_HOAN_THIEN", "NGAY_BIEN_BAN", "DIA_DIEM_HOP", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY", "DIA_CHI_TRU_SO", "KHO_BAC_NHA_NUOC", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "TEN_NHA_THAU_VIET_TAT", "DAI_DIEN_NHA_THAU", "CHUC_VU_DAI_DIEN", "DIA_CHI_NHA_THAU", "MA_SO_THUE", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN"]
     };
 
+    const commonGeneralKeys = [
+        "TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CO_QUAN_TRINH_QUYET_DINH",
+        "CAP_QUYET_DINH_DAU_TU", "DIA_DANH", "TINH_THANH_PHO", "DIA_CHI_TRU_SO", "TEN_DU_AN",
+        "TEN_CONG_TRINH", "NGUON_VON", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU",
+        "HINH_THUC_LCNT", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "THOI_GIAN_TO_CHUC_LCNT",
+        "SO_TO_TRINH", "NGAY_TO_TRINH", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "SO_GIAY_MOI", "NGAY_GIAY_MOI",
+        "SO_BIEN_BAN_HOAN_THIEN", "NGAY_BIEN_BAN", "SO_HOP_DONG", "NGAY_HOP_DONG",
+        "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "DAI_DIEN_NHA_THAU", "CHUC_VU_DAI_DIEN",
+        "DIA_CHI_NHA_THAU", "MA_SO_THUE", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU"
+    ];
+
     function getRelevantVarsForDoc(docId) {
         if (DOC_VAR_MAP[docId]) {
             return new Set(DOC_VAR_MAP[docId]);
@@ -556,23 +567,59 @@
         appState.generalInfo.CAP_QUYET_DINH_DAU_TU = rm.approver || appState.generalInfo.CAP_QUYET_DINH_DAU_TU;
         appState.generalInfo.NGUON_VON = rm.fundingSource || appState.generalInfo.NGUON_VON;
 
-        // Đồng bộ danh sách gói thầu
+        // Đồng bộ danh sách gói thầu và link ngày tháng, số văn bản từ Tab tiến độ
         if (Array.isArray(rm.packages) && rm.packages.length > 0) {
             appState.packages = rm.packages.map((pkg, idx) => {
                 const existing = appState.packages[idx] || { fields: {} };
+                const fieldsMerged = {
+                    ...existing.fields,
+                    TEN_GOI_THAU: pkg.fields?.TEN_GOI_THAU || pkg.name,
+                    GIA_GOI_THAU_SO: pkg.fields?.GIA_GOI_THAU_SO || pkg.estimatedPrice || "",
+                    GIA_GOI_THAU_CHU: pkg.fields?.GIA_GOI_THAU_CHU || "",
+                    HINH_THUC_LCNT: pkg.fields?.HINH_THUC_LCNT || getProcurementTypeName(pkg.procurementTypeId),
+                    LOAI_HOP_DONG: pkg.contractType || pkg.fields?.LOAI_HOP_DONG || "Trọn gói",
+                    THOI_GIAN_THUC_HIEN: pkg.duration || pkg.fields?.THOI_GIAN_THUC_HIEN || "30 ngày",
+                    ...(pkg.fields || {})
+                };
+
+                // Link số văn bản & ngày ký từ timeline phase của gói này
+                const phases = rm.timelinePhases || [];
+                const pkgPhase = phases.find(p => p.isPackage && (
+                    p.title.includes(pkg.name) || 
+                    p.title.includes(`gói thầu số ${idx + 1}`) || 
+                    p.title.includes(`gói ${idx + 1}`)
+                )) || phases[idx + 1];
+
+                if (pkgPhase && Array.isArray(pkgPhase.tasks)) {
+                    pkgPhase.tasks.forEach(t => {
+                        const name = (t.name || "").toLowerCase();
+                        const docCode = (t.docCode || "").toLowerCase();
+                        const docNo = t.docNo ? t.docNo.trim() : "";
+                        const vnDate = t.date ? formatDateToVN(t.date) : "";
+
+                        if (docCode.includes("ttr-khlcnt") || (name.includes("tờ trình") && (name.includes("kh lcnt") || name.includes("khlcnt")))) {
+                            if (docNo) fieldsMerged.SO_TO_TRINH = docNo;
+                            if (vnDate) fieldsMerged.NGAY_TO_TRINH = vnDate;
+                        } else if (docCode.includes("qd-khlcnt") || ((name.includes("qđ") || name.includes("quyết định")) && (name.includes("kh lcnt") || name.includes("khlcnt")))) {
+                            if (docNo) fieldsMerged.SO_QUYET_DINH = docNo;
+                            if (vnDate) fieldsMerged.NGAY_QUYET_DINH = vnDate;
+                        } else if (docCode.includes("gm") || name.includes("thư mời") || name.includes("giấy mời")) {
+                            if (docNo) fieldsMerged.SO_GIAY_MOI = docNo;
+                            if (vnDate) fieldsMerged.NGAY_GIAY_MOI = vnDate;
+                        } else if (docCode.includes("bb") || (name.includes("biên bản") && (name.includes("thương thảo") || name.includes("hoàn thiện")))) {
+                            if (docNo) fieldsMerged.SO_BIEN_BAN_HOAN_THIEN = docNo;
+                            if (vnDate) fieldsMerged.NGAY_BIEN_BAN = vnDate;
+                        } else if (docCode.includes("hd") || name.includes("hợp đồng")) {
+                            if (docNo) fieldsMerged.SO_HOP_DONG = docNo;
+                            if (vnDate) fieldsMerged.NGAY_HOP_DONG = vnDate;
+                        }
+                    });
+                }
+
                 return {
                     name: pkg.name || `Gói thầu ${idx + 1}`,
                     procurementTypeId: pkg.procurementTypeId || "chi_dinh_thau_rut_gon",
-                    fields: {
-                        ...existing.fields,
-                        TEN_GOI_THAU: pkg.fields?.TEN_GOI_THAU || pkg.name,
-                        GIA_GOI_THAU_SO: pkg.fields?.GIA_GOI_THAU_SO || pkg.estimatedPrice || "",
-                        GIA_GOI_THAU_CHU: pkg.fields?.GIA_GOI_THAU_CHU || "",
-                        HINH_THUC_LCNT: pkg.fields?.HINH_THUC_LCNT || getProcurementTypeName(pkg.procurementTypeId),
-                        LOAI_HOP_DONG: pkg.contractType || pkg.fields?.LOAI_HOP_DONG || "Trọn gói",
-                        THOI_GIAN_THUC_HIEN: pkg.duration || pkg.fields?.THOI_GIAN_THUC_HIEN || "30 ngày",
-                        ...(pkg.fields || {})
-                    }
+                    fields: fieldsMerged
                 };
             });
         }
@@ -2204,7 +2251,76 @@
         applyVariableFilter();
     }
 
-    // Handle input change
+    function syncDocFieldChangeToTimeline(field, val) {
+        if (!appState.projectRoadmap || !Array.isArray(appState.projectRoadmap.timelinePhases)) return;
+        const phases = appState.projectRoadmap.timelinePhases;
+        const selPkgIdx = appState.activePackageIndex !== undefined ? appState.activePackageIndex : 0;
+        const pkgs = appState.projectRoadmap.packages || [];
+        const currentPkg = pkgs[selPkgIdx];
+
+        let pkgPhase = null;
+        if (currentPkg) {
+            pkgPhase = phases.find(p => p.isPackage && (
+                p.title.includes(currentPkg.name) || 
+                p.title.includes(`gói thầu số ${selPkgIdx + 1}`) || 
+                p.title.includes(`gói ${selPkgIdx + 1}`)
+            ));
+        }
+        if (!pkgPhase && phases.length > 1) {
+            pkgPhase = phases[selPkgIdx + 1] || phases[1];
+        }
+
+        if (pkgPhase && Array.isArray(pkgPhase.tasks)) {
+            let matchedTask = null;
+            let isDateField = false;
+
+            if (field === "SO_TO_TRINH") {
+                matchedTask = pkgPhase.tasks.find(t => (t.name || "").toLowerCase().includes("tờ trình") && !((t.name || "").toLowerCase().includes("kết quả") || (t.name || "").toLowerCase().includes("kq")));
+            } else if (field === "NGAY_TO_TRINH") {
+                matchedTask = pkgPhase.tasks.find(t => (t.name || "").toLowerCase().includes("tờ trình") && !((t.name || "").toLowerCase().includes("kết quả") || (t.name || "").toLowerCase().includes("kq")));
+                isDateField = true;
+            } else if (field === "SO_QUYET_DINH") {
+                matchedTask = pkgPhase.tasks.find(t => (t.name || "").toLowerCase().includes("quyết định") || (t.name || "").toLowerCase().includes("qđ"));
+            } else if (field === "NGAY_QUYET_DINH") {
+                matchedTask = pkgPhase.tasks.find(t => (t.name || "").toLowerCase().includes("quyết định") || (t.name || "").toLowerCase().includes("qđ"));
+                isDateField = true;
+            } else if (field === "SO_GIAY_MOI") {
+                matchedTask = pkgPhase.tasks.find(t => (t.name || "").toLowerCase().includes("thư mời") || (t.name || "").toLowerCase().includes("giấy mời"));
+            } else if (field === "NGAY_GIAY_MOI") {
+                matchedTask = pkgPhase.tasks.find(t => (t.name || "").toLowerCase().includes("thư mời") || (t.name || "").toLowerCase().includes("giấy mời"));
+                isDateField = true;
+            } else if (field === "SO_BIEN_BAN_HOAN_THIEN" || field === "SO_BIEN_BAN") {
+                matchedTask = pkgPhase.tasks.find(t => (t.name || "").toLowerCase().includes("biên bản"));
+            } else if (field === "NGAY_BIEN_BAN") {
+                matchedTask = pkgPhase.tasks.find(t => (t.name || "").toLowerCase().includes("biên bản"));
+                isDateField = true;
+            } else if (field === "SO_HOP_DONG") {
+                matchedTask = pkgPhase.tasks.find(t => (t.name || "").toLowerCase().includes("hợp đồng"));
+            } else if (field === "NGAY_HOP_DONG" || field === "NGAY_KY_HOP_DONG") {
+                matchedTask = pkgPhase.tasks.find(t => (t.name || "").toLowerCase().includes("hợp đồng"));
+                isDateField = true;
+            }
+
+            if (matchedTask) {
+                if (isDateField) {
+                    let isoDate = val;
+                    if (val && val.includes("/")) {
+                        const parts = val.split("/");
+                        if (parts.length === 3) isoDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                    }
+                    if (isoDate && isoDate.length === 10) {
+                        matchedTask.date = isoDate;
+                        matchedTask.dayOfWeek = getDayOfWeekInVietnamese(isoDate);
+                        matchedTask.dateFormula = { type: "manual" };
+                    }
+                } else {
+                    matchedTask.docNo = val;
+                }
+            }
+        }
+    }
+
+    // Handle input change with two-way sync
     document.getElementById("formAccordionContainer").addEventListener("input", function (e) {
         const input = e.target.closest("[data-field]");
         if (!input) return;
@@ -2224,6 +2340,9 @@
                 }
             }
         }
+
+        // Đồng bộ ngược lại task ở Tab Tiến độ nếu người dùng đổi số/ngày tại form
+        syncDocFieldChangeToTimeline(field, val);
 
         saveState();
         updateProgress();
@@ -2526,18 +2645,126 @@
     // -------------------------------------------------------------
     function getMergedData() {
         const currentPkg = appState.packages[appState.activePackageIndex] || { fields: {} };
-        return {
+        const merged = {
             ...appState.generalInfo,
             ...currentPkg.fields
         };
+        // Tự động link ngày tháng & số văn bản từ Tab 1: Định hướng & Tiến độ
+        syncTimelineDatesAndDocNosToData(merged);
+        return merged;
+    }
+
+    function formatDateToVN(dateStr) {
+        if (!dateStr || String(dateStr).trim() === "") return "";
+        const str = String(dateStr).trim();
+        if (str.includes("/")) return str;
+        if (str.includes("-")) {
+            const parts = str.split("-");
+            if (parts.length === 3) {
+                return `${parts[2].padStart(2, "0")}/${parts[1].padStart(2, "0")}/${parts[0]}`;
+            }
+        }
+        return str;
+    }
+
+    function syncTimelineDatesAndDocNosToData(merged) {
+        if (!appState.projectRoadmap || !Array.isArray(appState.projectRoadmap.timelinePhases)) return;
+        const phases = appState.projectRoadmap.timelinePhases;
+        const selPkgIdx = appState.activePackageIndex !== undefined ? appState.activePackageIndex : 0;
+        const pkgs = appState.projectRoadmap.packages || [];
+        const currentPkg = pkgs[selPkgIdx];
+
+        // 1. Map package-level phase
+        let pkgPhase = null;
+        if (currentPkg) {
+            pkgPhase = phases.find(p => p.isPackage && (
+                p.title.includes(currentPkg.name) || 
+                p.title.includes(`gói thầu số ${selPkgIdx + 1}`) || 
+                p.title.includes(`gói ${selPkgIdx + 1}`)
+            ));
+        }
+        if (!pkgPhase && phases.length > 1) {
+            pkgPhase = phases[selPkgIdx + 1] || phases[1];
+        }
+
+        if (pkgPhase && Array.isArray(pkgPhase.tasks)) {
+            pkgPhase.tasks.forEach(t => {
+                const name = (t.name || "").toLowerCase();
+                const docCode = (t.docCode || "").toLowerCase();
+                const docNo = t.docNo ? t.docNo.trim() : "";
+                const vnDate = t.date ? formatDateToVN(t.date) : "";
+
+                // Tờ trình KHLCNT
+                if (docCode.includes("ttr-khlcnt") || (name.includes("tờ trình") && (name.includes("kh lcnt") || name.includes("khlcnt")))) {
+                    if (docNo) merged.SO_TO_TRINH = docNo;
+                    if (vnDate) merged.NGAY_TO_TRINH = vnDate;
+                }
+                // Quyết định KHLCNT
+                else if (docCode.includes("qd-khlcnt") || ((name.includes("qđ") || name.includes("quyết định")) && (name.includes("kh lcnt") || name.includes("khlcnt")))) {
+                    if (docNo) merged.SO_QUYET_DINH = docNo;
+                    if (vnDate) merged.NGAY_QUYET_DINH = vnDate;
+                }
+                // Giấy mời / Thư mời
+                else if (docCode.includes("gm") || name.includes("thư mời") || name.includes("giấy mời")) {
+                    if (docNo) merged.SO_GIAY_MOI = docNo;
+                    if (vnDate) merged.NGAY_GIAY_MOI = vnDate;
+                }
+                // Biên bản thương thảo / hoàn thiện
+                else if (docCode.includes("bb") || (name.includes("biên bản") && (name.includes("thương thảo") || name.includes("hoàn thiện")))) {
+                    if (docNo) {
+                        merged.SO_BIEN_BAN_HOAN_THIEN = docNo;
+                        merged.SO_BIEN_BAN = docNo;
+                    }
+                    if (vnDate) merged.NGAY_BIEN_BAN = vnDate;
+                }
+                // Tờ trình KQ LCNT / chỉ định thầu
+                else if (docCode.includes("ttr-kqlcnt") || (name.includes("tờ trình") && (name.includes("kq lcnt") || name.includes("kết quả")))) {
+                    if (docNo) merged.SO_TO_TRINH_KQLCNT = docNo;
+                    if (vnDate) merged.NGAY_TO_TRINH_KQLCNT = vnDate;
+                }
+                // Quyết định KQ LCNT / chỉ định thầu
+                else if (docCode.includes("qd-kqlcnt") || ((name.includes("qđ") || name.includes("quyết định")) && (name.includes("kq lcnt") || name.includes("kết quả") || name.includes("chỉ định thầu")))) {
+                    if (docNo) merged.SO_QUYET_DINH_KQLCNT = docNo;
+                    if (vnDate) merged.NGAY_QUYET_DINH_KQLCNT = vnDate;
+                }
+                // Hợp đồng
+                else if (docCode.includes("hd") || name.includes("hợp đồng")) {
+                    if (docNo) merged.SO_HOP_DONG = docNo;
+                    if (vnDate) {
+                        merged.NGAY_HOP_DONG = vnDate;
+                        merged.NGAY_KY_HOP_DONG = vnDate;
+                    }
+                }
+            });
+        }
+
+        // 2. Map according to the currently active document
+        const activeDoc = getCurrentActiveDoc();
+        if (activeDoc) {
+            // If active doc is Tờ trình KQ LCNT (cdtrg_5), use its specific numbers in preview
+            if (activeDoc.id === "cdtrg_5" && merged.SO_TO_TRINH_KQLCNT) {
+                merged.SO_TO_TRINH = merged.SO_TO_TRINH_KQLCNT;
+                if (merged.NGAY_TO_TRINH_KQLCNT) merged.NGAY_TO_TRINH = merged.NGAY_TO_TRINH_KQLCNT;
+            }
+            // If active doc is QĐ KQ LCNT (cdtrg_6), use its specific numbers
+            if (activeDoc.id === "cdtrg_6" && merged.SO_QUYET_DINH_KQLCNT) {
+                merged.SO_QUYET_DINH = merged.SO_QUYET_DINH_KQLCNT;
+                if (merged.NGAY_QUYET_DINH_KQLCNT) merged.NGAY_QUYET_DINH = merged.NGAY_QUYET_DINH_KQLCNT;
+            }
+            // If active doc is Hợp đồng (cdtrg_7)
+            if (activeDoc.id === "cdtrg_7") {
+                if (merged.SO_QUYET_DINH_KQLCNT) merged.SO_QUYET_DINH = merged.SO_QUYET_DINH_KQLCNT;
+                if (merged.NGAY_QUYET_DINH_KQLCNT) merged.NGAY_QUYET_DINH = merged.NGAY_QUYET_DINH_KQLCNT;
+            }
+        }
     }
 
     function valOrPlaceholder(key, data) {
         const val = data[key];
         if (val && String(val).trim() !== "") {
-            return `<span class="filled-val">${val}</span>`;
+            return `<span class="filled-val" data-var-key="${key}" title="Biến: {${key}} (Quét khối hoặc chuột phải để đổi/gộp biến)">${val}</span>`;
         }
-        return `<span class="placeholder-tag" data-missing-key="${key}" title="Bấm để nhảy tới ô nhập liệu ${key}"><i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${key}}</span>`;
+        return `<span class="placeholder-tag" data-var-key="${key}" data-missing-key="${key}" title="Bấm để nhảy tới ô nhập liệu {${key}}"><i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${key}}</span>`;
     }
 
     function renderDocumentPreview() {
@@ -3043,7 +3270,31 @@
             `;
         }
 
-        documentPreviewContent.innerHTML = html;
+        // Kiểm tra xem văn bản này đã có bản chỉnh sửa tùy biến trực tiếp hay chưa
+        if (!appState.customDocumentHtml) appState.customDocumentHtml = {};
+        const btnResetPreviewDoc = document.getElementById("btnResetPreviewDoc");
+
+        if (appState.customDocumentHtml[docId]) {
+            // Tải lại bản tùy biến của người dùng và điền các giá trị biến mới nhất
+            const tempDiv = document.createElement("div");
+            tempDiv.innerHTML = appState.customDocumentHtml[docId];
+            tempDiv.querySelectorAll("[data-var-key]").forEach(el => {
+                const k = el.getAttribute("data-var-key");
+                const currentVal = data[k];
+                if (currentVal && String(currentVal).trim() !== "") {
+                    el.className = "filled-val";
+                    el.textContent = currentVal;
+                } else {
+                    el.className = "placeholder-tag";
+                    el.innerHTML = `<i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${k}}`;
+                }
+            });
+            documentPreviewContent.innerHTML = tempDiv.innerHTML;
+            if (btnResetPreviewDoc) btnResetPreviewDoc.classList.remove("hidden");
+        } else {
+            documentPreviewContent.innerHTML = html;
+            if (btnResetPreviewDoc) btnResetPreviewDoc.classList.add("hidden");
+        }
     }
 
     // -------------------------------------------------------------
@@ -3615,6 +3866,14 @@
         }
         if (e.target.closest("#btnCloseFormulaModal") || e.target.closest("#btnCancelFormulaModal")) {
             const m = document.getElementById("modalTaskFormulaConfig");
+            if (m) m.classList.add("hidden");
+        }
+        if (e.target.closest("#btnCloseCreateVarModal") || e.target.closest("#btnCancelCreateVar")) {
+            const m = document.getElementById("modalCreateVarFromPreview");
+            if (m) m.classList.add("hidden");
+        }
+        if (e.target.closest("#btnCloseMergeVarsModal") || e.target.closest("#btnCancelMergeVars")) {
+            const m = document.getElementById("modalMergeVars");
             if (m) m.classList.add("hidden");
         }
     });
@@ -4372,6 +4631,9 @@
     window.openTaskFormulaModal = openTaskFormulaModal;
     window.openEditPackageModal = openEditPackageModal;
     window.renderAdminMatrixModal = renderAdminMatrixModal;
+    window.switchMainTab = switchMainTab;
+    window.applyVariableToSelection = applyVariableToSelection;
+    window.renderDocumentPreview = renderDocumentPreview;
     window.openProcurementMatrixModal = () => {
         const dd = document.getElementById("userAccountDropdown");
         if (dd) dd.classList.add("hidden");
@@ -4398,6 +4660,405 @@
             pkgIdx: appState.activePackageIndex
         }, "", `#${initialTab}`);
     }
+
+
+    // =============================================================
+    // PREVIEW INLINE EDITING & CONTEXT MENU CONTROLLERS
+    // =============================================================
+    let isPreviewEditing = false;
+    let lastSelectedRange = null;
+    let lastSelectedText = "";
+    let lastSelectedSpan = null;
+
+    function slugifyToUpperSnake(str) {
+        if (!str) return "BIEN_MOI_" + Date.now().toString().slice(-4);
+        let s = str.trim()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/đ/g, "d").replace(/Đ/g, "D")
+            .replace(/[^a-zA-Z0-9\s_]/g, "")
+            .trim()
+            .replace(/\s+/g, "_")
+            .toUpperCase();
+        if (!s) s = "BIEN_MOI_" + Date.now().toString().slice(-4);
+        return s.slice(0, 30);
+    }
+
+    const btnTogglePreviewEdit = document.getElementById("btnTogglePreviewEdit");
+    const btnTogglePreviewEditText = document.getElementById("btnTogglePreviewEditText");
+    const btnResetPreviewDoc = document.getElementById("btnResetPreviewDoc");
+
+    if (btnTogglePreviewEdit) {
+        btnTogglePreviewEdit.addEventListener("click", () => {
+            isPreviewEditing = !isPreviewEditing;
+            if (documentPreviewContent) {
+                documentPreviewContent.setAttribute("contenteditable", isPreviewEditing ? "true" : "false");
+            }
+            if (isPreviewEditing) {
+                btnTogglePreviewEdit.className = "text-[10.5px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2 py-0.5 rounded shadow-2xs flex items-center space-x-1 h-6 transition-all cursor-pointer";
+                if (btnTogglePreviewEditText) btnTogglePreviewEditText.textContent = "Khóa xem";
+                showToast("Đã bật chỉnh sửa trực tiếp. Bạn có thể gõ nội dung hoặc quét khối chuột phải để gán/gộp biến xạ.");
+            } else {
+                btnTogglePreviewEdit.className = "text-[10.5px] bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 font-bold px-2 py-0.5 rounded border border-slate-300 shadow-2xs flex items-center space-x-1 h-6 transition-all cursor-pointer";
+                if (btnTogglePreviewEditText) btnTogglePreviewEditText.textContent = "Sửa trực tiếp";
+            }
+        });
+    }
+
+    // Save custom HTML when user edits preview directly
+    if (documentPreviewContent) {
+        documentPreviewContent.addEventListener("input", () => {
+            const activeDoc = getCurrentActiveDoc();
+            if (!activeDoc) return;
+            if (!appState.customDocumentHtml) appState.customDocumentHtml = {};
+            appState.customDocumentHtml[activeDoc.id] = documentPreviewContent.innerHTML;
+            if (btnResetPreviewDoc) btnResetPreviewDoc.classList.remove("hidden");
+            saveState();
+        });
+
+        // Right-Click Context Menu Listener on Document Preview
+        documentPreviewContent.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            const sel = window.getSelection();
+            lastSelectedSpan = e.target.closest("[data-var-key]");
+
+            if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+                lastSelectedRange = sel.getRangeAt(0).cloneRange();
+                lastSelectedText = sel.toString().trim();
+            } else if (lastSelectedSpan) {
+                const range = document.createRange();
+                range.selectNodeContents(lastSelectedSpan);
+                sel.removeAllRanges();
+                sel.addRange(range);
+                lastSelectedRange = range.cloneRange();
+                lastSelectedText = lastSelectedSpan.textContent.trim();
+            } else {
+                lastSelectedRange = null;
+                lastSelectedText = "";
+            }
+
+            const menu = document.getElementById("previewContextMenu");
+            const previewLabel = document.getElementById("ctxSelectionPreview");
+            if (!menu) return;
+
+            if (previewLabel) {
+                previewLabel.textContent = lastSelectedText 
+                    ? `Vùng chọn: "${lastSelectedText.slice(0, 25)}${lastSelectedText.length > 25 ? '...' : ''}"` 
+                    : "Chọn văn bản để gán biến";
+            }
+
+            // Populate existing variables submenu
+            populateCtxVarsSubmenu();
+
+            // Position context menu
+            let x = e.clientX, y = e.clientY;
+            if (x + 270 > window.innerWidth) x = window.innerWidth - 275;
+            if (y + 280 > window.innerHeight) y = window.innerHeight - 285;
+
+            menu.style.left = `${Math.max(10, x)}px`;
+            menu.style.top = `${Math.max(10, y)}px`;
+            menu.classList.remove("hidden");
+            document.getElementById("ctxLinkVarSubmenu")?.classList.add("hidden");
+        });
+    }
+
+    // Dismiss context menu on click outside
+    document.addEventListener("click", (e) => {
+        const menu = document.getElementById("previewContextMenu");
+        if (menu && !menu.contains(e.target)) {
+            menu.classList.add("hidden");
+            document.getElementById("ctxLinkVarSubmenu")?.classList.add("hidden");
+        }
+    });
+
+    // Populate Submenu for "Link vào Biến xạ có sẵn"
+    function populateCtxVarsSubmenu() {
+        const container = document.getElementById("ctxVarListContainer");
+        if (!container) return;
+        container.innerHTML = "";
+
+        const data = getMergedData();
+        const allKeys = Object.keys(data).concat(commonGeneralKeys);
+        const uniqueKeys = Array.from(new Set(allKeys)).filter(k => k && k.trim() !== "");
+
+        uniqueKeys.sort().forEach(key => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "w-full text-left px-2 py-1 hover:bg-emerald-50 rounded text-[10px] flex items-center justify-between transition-colors border-b border-slate-50";
+            const val = data[key] ? String(data[key]).slice(0, 22) : "(trống)";
+            btn.innerHTML = `
+                <div class="truncate pr-1">
+                    <span class="font-bold text-slate-800 font-mono">{${key}}</span>
+                    <span class="text-slate-400 block text-[9px] truncate">${val}</span>
+                </div>
+                <i class="fa-solid fa-link text-emerald-600 text-[8.5px] shrink-0"></i>
+            `;
+
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                applyVariableToSelection(key);
+                document.getElementById("previewContextMenu")?.classList.add("hidden");
+            });
+
+            container.appendChild(btn);
+        });
+
+        // Filter search input
+        const searchInput = document.getElementById("ctxVarSearchInput");
+        if (searchInput) {
+            searchInput.value = "";
+            searchInput.oninput = (e) => {
+                const q = e.target.value.toLowerCase();
+                container.querySelectorAll("button").forEach(btn => {
+                    const text = btn.textContent.toLowerCase();
+                    btn.style.display = text.includes(q) ? "flex" : "none";
+                });
+            };
+        }
+    }
+
+    // Toggle Link Submenu
+    const ctxMenuLinkVar = document.getElementById("ctxMenuLinkVar");
+    if (ctxMenuLinkVar) {
+        ctxMenuLinkVar.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const sub = document.getElementById("ctxLinkVarSubmenu");
+            if (sub) sub.classList.toggle("hidden");
+        });
+    }
+
+    function applyVariableToSelection(varKey) {
+        const activeDoc = getCurrentActiveDoc();
+        if (!activeDoc || !lastSelectedRange) {
+            showToast("Vui lòng quét khối một vùng văn bản trên Preview trước!", "error");
+            return;
+        }
+
+        const data = getMergedData();
+        const span = document.createElement("span");
+        const val = data[varKey];
+        if (val && String(val).trim() !== "") {
+            span.className = "filled-val";
+            span.textContent = val;
+        } else {
+            span.className = "placeholder-tag";
+            span.innerHTML = `<i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${varKey}}`;
+        }
+        span.setAttribute("data-var-key", varKey);
+        span.title = `Biến: {${varKey}}`;
+
+        lastSelectedRange.deleteContents();
+        lastSelectedRange.insertNode(span);
+
+        // Save custom document HTML
+        if (!appState.customDocumentHtml) appState.customDocumentHtml = {};
+        appState.customDocumentHtml[activeDoc.id] = documentPreviewContent.innerHTML;
+        if (btnResetPreviewDoc) btnResetPreviewDoc.classList.remove("hidden");
+
+        saveState();
+        showToast(`Đã link vùng chọn vào biến: {${varKey}}!`, "success");
+    }
+
+    // Context Menu: "Bổ sung Biến xạ mới"
+    const ctxMenuAddVar = document.getElementById("ctxMenuAddVar");
+    const modalCreateVar = document.getElementById("modalCreateVarFromPreview");
+    const inputNewVarKey = document.getElementById("inputNewVarKey");
+    const inputNewVarLabel = document.getElementById("inputNewVarLabel");
+    const inputNewVarVal = document.getElementById("inputNewVarVal");
+    const btnConfirmCreateVar = document.getElementById("btnConfirmCreateVar");
+
+    if (ctxMenuAddVar) {
+        ctxMenuAddVar.addEventListener("click", () => {
+            document.getElementById("previewContextMenu")?.classList.add("hidden");
+            if (!lastSelectedText && !lastSelectedRange) {
+                showToast("Vui lòng quét khối văn bản cần tạo biến trước!", "error");
+                return;
+            }
+
+            const suggestedKey = slugifyToUpperSnake(lastSelectedText);
+            if (inputNewVarKey) inputNewVarKey.value = suggestedKey;
+            if (inputNewVarLabel) inputNewVarLabel.value = lastSelectedText || "Biến bổ sung";
+            if (inputNewVarVal) inputNewVarVal.value = lastSelectedText;
+
+            if (modalCreateVar) modalCreateVar.classList.remove("hidden");
+        });
+    }
+
+    if (btnConfirmCreateVar) {
+        btnConfirmCreateVar.addEventListener("click", () => {
+            const key = inputNewVarKey ? inputNewVarKey.value.trim().toUpperCase() : "";
+            const label = inputNewVarLabel ? inputNewVarLabel.value.trim() : key;
+            const val = inputNewVarVal ? inputNewVarVal.value.trim() : "";
+
+            if (!key) {
+                alert("Vui lòng nhập Mã biến xạ!");
+                return;
+            }
+
+            // 1. Add to custom variables in localStorage
+            let customVars = [];
+            try {
+                const saved = localStorage.getItem("ho_so_custom_variables");
+                if (saved) customVars = JSON.parse(saved);
+            } catch (e) {}
+
+            const existingIdx = customVars.findIndex(v => v.key === key);
+            const varObj = { key: key, label: label, value: val, targetSheet: "Thông tin chung" };
+            if (existingIdx >= 0) {
+                customVars[existingIdx] = varObj;
+            } else {
+                customVars.push(varObj);
+            }
+            localStorage.setItem("ho_so_custom_variables", JSON.stringify(customVars));
+
+            // 2. Set value in appState
+            appState.generalInfo[key] = val;
+
+            // 3. Apply to selection in preview
+            applyVariableToSelection(key);
+
+            // 4. Update Section 10 UI on the left
+            renderCustomVariablesUI();
+            populateFormInputs();
+
+            if (modalCreateVar) modalCreateVar.classList.add("hidden");
+            showToast(`Đã tạo và gán thành công biến xạ: {${key}}!`, "success");
+        });
+    }
+
+    // Context Menu: "Gộp các biến xạ đã chọn"
+    const ctxMenuMergeVars = document.getElementById("ctxMenuMergeVars");
+    const modalMergeVars = document.getElementById("modalMergeVars");
+    const mergeVarsDetectedList = document.getElementById("mergeVarsDetectedList");
+    const inputMergedVarKey = document.getElementById("inputMergedVarKey");
+    const inputMergedVarLabel = document.getElementById("inputMergedVarLabel");
+    const btnConfirmMergeVars = document.getElementById("btnConfirmMergeVars");
+    let detectedVarsInSelection = [];
+
+    if (ctxMenuMergeVars) {
+        ctxMenuMergeVars.addEventListener("click", () => {
+            document.getElementById("previewContextMenu")?.classList.add("hidden");
+            if (!lastSelectedRange) {
+                showToast("Vui lòng quét khối đoạn văn bản chứa các biến cần gộp!", "error");
+                return;
+            }
+
+            // Find all [data-var-key] within selection
+            const frag = lastSelectedRange.cloneContents();
+            const spans = frag.querySelectorAll("[data-var-key]");
+            detectedVarsInSelection = Array.from(spans).map(s => s.getAttribute("data-var-key"));
+
+            if (mergeVarsDetectedList) {
+                if (detectedVarsInSelection.length > 0) {
+                    mergeVarsDetectedList.innerHTML = `
+                        <div class="font-bold text-purple-900 mb-0.5">Phát hiện ${detectedVarsInSelection.length} biến trong vùng chọn:</div>
+                        <div class="flex flex-wrap gap-1">
+                            ${detectedVarsInSelection.map(k => `<span class="bg-purple-200 text-purple-900 font-mono px-1 rounded text-[9px]">{${k}}</span>`).join("")}
+                        </div>
+                    `;
+                } else {
+                    mergeVarsDetectedList.innerHTML = `<span class="text-slate-500 italic">Vùng chọn sẽ được gom thành một biến duy nhất với giá trị: "${lastSelectedText}"</span>`;
+                }
+            }
+
+            const defaultKey = detectedVarsInSelection.length > 0 ? detectedVarsInSelection.join("_GOP_").slice(0, 25) : slugifyToUpperSnake(lastSelectedText);
+            if (inputMergedVarKey) inputMergedVarKey.value = defaultKey;
+            if (inputMergedVarLabel) inputMergedVarLabel.value = `Biến gộp (${detectedVarsInSelection.join(", ") || lastSelectedText.slice(0, 20)})`;
+
+            if (modalMergeVars) modalMergeVars.classList.remove("hidden");
+        });
+    }
+
+    if (btnConfirmMergeVars) {
+        btnConfirmMergeVars.addEventListener("click", () => {
+            const key = inputMergedVarKey ? inputMergedVarKey.value.trim().toUpperCase() : "";
+            const label = inputMergedVarLabel ? inputMergedVarLabel.value.trim() : key;
+            const val = lastSelectedText || "";
+
+            if (!key) {
+                alert("Vui lòng nhập Mã biến gộp!");
+                return;
+            }
+
+            // Add to custom variables
+            let customVars = [];
+            try {
+                const saved = localStorage.getItem("ho_so_custom_variables");
+                if (saved) customVars = JSON.parse(saved);
+            } catch (e) {}
+
+            customVars.push({ key: key, label: label, value: val, targetSheet: "Thông tin chung" });
+            localStorage.setItem("ho_so_custom_variables", JSON.stringify(customVars));
+
+            appState.generalInfo[key] = val;
+            applyVariableToSelection(key);
+            renderCustomVariablesUI();
+            populateFormInputs();
+
+            if (modalMergeVars) modalMergeVars.classList.add("hidden");
+            showToast(`Đã gộp thành công biến xạ: {${key}}!`, "success");
+        });
+    }
+
+    // Context Menu: "Hủy liên kết biến xạ (giữ chữ thường)"
+    const ctxMenuUnlinkVar = document.getElementById("ctxMenuUnlinkVar");
+    if (ctxMenuUnlinkVar) {
+        ctxMenuUnlinkVar.addEventListener("click", () => {
+            document.getElementById("previewContextMenu")?.classList.add("hidden");
+            const activeDoc = getCurrentActiveDoc();
+            if (!activeDoc || !lastSelectedRange) return;
+
+            const textNode = document.createTextNode(lastSelectedText);
+            lastSelectedRange.deleteContents();
+            lastSelectedRange.insertNode(textNode);
+
+            if (!appState.customDocumentHtml) appState.customDocumentHtml = {};
+            appState.customDocumentHtml[activeDoc.id] = documentPreviewContent.innerHTML;
+            if (btnResetPreviewDoc) btnResetPreviewDoc.classList.remove("hidden");
+            saveState();
+            showToast("Đã hủy liên kết biến xạ thành văn bản thuần!");
+        });
+    }
+
+    // Formatting Buttons in Context Menu
+    const ctxFormatBold = document.getElementById("ctxFormatBold");
+    const ctxFormatItalic = document.getElementById("ctxFormatItalic");
+    const ctxFormatUnderline = document.getElementById("ctxFormatUnderline");
+
+    [
+        { btn: ctxFormatBold, cmd: "bold" },
+        { btn: ctxFormatItalic, cmd: "italic" },
+        { btn: ctxFormatUnderline, cmd: "underline" }
+    ].forEach(({ btn, cmd }) => {
+        if (btn) {
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                document.execCommand(cmd, false, null);
+                const activeDoc = getCurrentActiveDoc();
+                if (activeDoc && documentPreviewContent) {
+                    if (!appState.customDocumentHtml) appState.customDocumentHtml = {};
+                    appState.customDocumentHtml[activeDoc.id] = documentPreviewContent.innerHTML;
+                    saveState();
+                }
+            });
+        }
+    });
+
+    // Reset preview document button
+    if (btnResetPreviewDoc) {
+        btnResetPreviewDoc.addEventListener("click", () => {
+            const activeDoc = getCurrentActiveDoc();
+            if (!activeDoc) return;
+            if (confirm(`Bạn có chắc muốn khôi phục lại nội dung văn bản mẫu ban đầu của: "${activeDoc.name}"?`)) {
+                if (appState.customDocumentHtml) {
+                    delete appState.customDocumentHtml[activeDoc.id];
+                }
+                saveState();
+                renderDocumentPreview();
+                showToast("Đã khôi phục lại mẫu văn bản gốc ban đầu!", "info");
+            }
+        });
+    }
+
 
     switchMainTab(initialTab, false);
 

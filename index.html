@@ -586,7 +586,7 @@
                     <button class="accordion-header w-full px-2.5 py-1 bg-slate-50 hover:bg-slate-100 flex items-center justify-between text-left text-xs font-bold text-slate-700 h-7 border-b border-slate-200">
                         <div class="flex items-center space-x-1.5">
                             <i class="fa-solid fa-hashtag text-rose-500"></i>
-                            <span>6. Số hiệu văn bản</span>
+                            <span>6. Số hiệu văn bản</span><span class="text-[9.5px] text-blue-600 font-bold flex items-center gap-0.5 ml-1" title="Tự động liên kết theo nội dung bên Tab 1: Định hướng & Tiến độ"><i class="fa-solid fa-link text-[8.5px]"></i> Link Tab Tiến độ</span>
                         </div>
                         <div class="flex items-center space-x-1.5">
                             <span class="sec-badge text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full font-bold" data-sec="6">0/4</span>
@@ -646,7 +646,7 @@
                     <button class="accordion-header w-full px-2.5 py-1 bg-slate-50 hover:bg-slate-100 flex items-center justify-between text-left text-xs font-bold text-slate-700 h-7 border-b border-slate-200">
                         <div class="flex items-center space-x-1.5">
                             <i class="fa-regular fa-calendar-days text-teal-600"></i>
-                            <span>8. Ngày tháng văn bản</span>
+                            <span>8. Ngày tháng văn bản</span><span class="text-[9.5px] text-blue-600 font-bold flex items-center gap-0.5 ml-1" title="Tự động liên kết theo nội dung bên Tab 1: Định hướng & Tiến độ"><i class="fa-solid fa-link text-[8.5px]"></i> Link Tab Tiến độ</span>
                         </div>
                         <div class="flex items-center space-x-1.5">
                             <span class="sec-badge text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full font-bold" data-sec="8">0/4</span>
@@ -729,11 +729,24 @@
                             </div>
                         </div>
 
-                        <!-- Single doc download -->
-                        <button id="btnExportSingleDoc" class="text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2 py-0.5 rounded shadow-xs flex items-center space-x-1 h-6">
-                            <i class="fa-solid fa-download"></i>
-                            <span>Xuất Word (.docx)</span>
-                        </button>
+                        <!-- Preview Edit controls & Single doc download -->
+                        <div class="flex items-center space-x-1 shrink-0">
+                            <span id="previewEditHint" class="text-[9.5px] text-slate-500 hidden xl:inline-flex items-center gap-1 font-medium bg-slate-200/60 px-1.5 py-0.5 rounded select-none">
+                                <i class="fa-solid fa-i-cursor text-indigo-500 text-[8.5px]"></i> Quét khối &amp; Chuột phải để gán / gộp biến
+                            </span>
+                            <button id="btnTogglePreviewEdit" type="button" class="text-[10.5px] bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 font-bold px-2 py-0.5 rounded border border-slate-300 shadow-2xs flex items-center space-x-1 h-6 transition-all cursor-pointer" title="Bật/Tắt chế độ chỉnh sửa trực tiếp nội dung văn bản trên trang Preview">
+                                <i class="fa-solid fa-pen-to-square text-emerald-600 text-[10px]"></i>
+                                <span id="btnTogglePreviewEditText">Sửa trực tiếp</span>
+                            </button>
+                            <button id="btnResetPreviewDoc" type="button" class="hidden text-[10px] bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 font-medium px-1.5 py-0.5 rounded border border-slate-200 h-6 transition-all cursor-pointer" title="Khôi phục lại nội dung mẫu mặc định ban đầu của văn bản này">
+                                <i class="fa-solid fa-rotate-left text-[9px]"></i>
+                                <span>Khôi phục</span>
+                            </button>
+                            <button id="btnExportSingleDoc" class="text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2 py-0.5 rounded shadow-xs flex items-center space-x-1 h-6 cursor-pointer">
+                                <i class="fa-solid fa-download"></i>
+                                <span>Xuất Word (.docx)</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Live Render Viewport -->
@@ -1156,5 +1169,114 @@
     </div>
 
     <script src="app.js"></script>
+
+    <!-- ============================================================= -->
+    <!-- PREVIEW CONTEXT MENU & VARIABLE CUSTOMIZATION MODALS -->
+    <!-- ============================================================= -->
+    <!-- Custom Context Menu for Document Preview -->
+    <div id="previewContextMenu" class="hidden fixed z-50 bg-white rounded-lg shadow-2xl border border-slate-200 py-1 w-64 text-xs select-none">
+        <div id="ctxSelectionPreview" class="px-3 py-1 bg-slate-50 border-b border-slate-100 text-[10px] text-slate-500 truncate font-mono">
+            Vùng chọn: "..."
+        </div>
+        <button type="button" id="ctxMenuAddVar" class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-900 font-medium flex items-center gap-2 transition-colors cursor-pointer">
+            <i class="fa-solid fa-square-plus text-emerald-600 text-xs w-4 text-center"></i>
+            <span>Bổ sung Biến xạ mới...</span>
+        </button>
+        <div class="relative" id="ctxMenuLinkVarWrapper">
+            <button type="button" id="ctxMenuLinkVar" class="w-full text-left px-3 py-1.5 hover:bg-blue-50 text-slate-700 hover:text-blue-900 font-medium flex items-center justify-between transition-colors cursor-pointer">
+                <span class="flex items-center gap-2">
+                    <i class="fa-solid fa-link text-blue-600 text-xs w-4 text-center"></i>
+                    <span>Link vào Biến xạ có sẵn</span>
+                </span>
+                <i class="fa-solid fa-chevron-right text-[9px] text-slate-400"></i>
+            </button>
+            <!-- Submenu for linking to existing variables -->
+            <div id="ctxLinkVarSubmenu" class="hidden absolute left-full top-0 ml-1 bg-white border border-slate-200 rounded-lg shadow-2xl p-1.5 w-64 max-h-72 flex flex-col z-50">
+                <input type="text" id="ctxVarSearchInput" placeholder="Tìm tên biến..." class="w-full text-[10px] border border-slate-300 rounded px-1.5 py-0.5 mb-1 focus:ring-1 focus:ring-emerald-500">
+                <div id="ctxVarListContainer" class="overflow-y-auto max-h-56 space-y-0.5">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+        <button type="button" id="ctxMenuMergeVars" class="w-full text-left px-3 py-1.5 hover:bg-purple-50 text-slate-700 hover:text-purple-900 font-medium flex items-center gap-2 transition-colors cursor-pointer">
+            <i class="fa-solid fa-object-group text-purple-600 text-xs w-4 text-center"></i>
+            <span>Gộp các biến xạ đã chọn...</span>
+        </button>
+        <button type="button" id="ctxMenuUnlinkVar" class="w-full text-left px-3 py-1.5 hover:bg-amber-50 text-slate-700 hover:text-amber-900 font-medium flex items-center gap-2 transition-colors cursor-pointer">
+            <i class="fa-solid fa-link-slash text-amber-600 text-xs w-4 text-center"></i>
+            <span>Hủy liên kết biến (giữ chữ thường)</span>
+        </button>
+        <div class="border-t border-slate-100 my-1"></div>
+        <div class="flex items-center justify-around px-2 py-0.5 text-slate-600 text-xs">
+            <button type="button" id="ctxFormatBold" class="px-2 py-0.5 hover:bg-slate-100 rounded font-bold" title="In đậm (Ctrl+B)">B</button>
+            <button type="button" id="ctxFormatItalic" class="px-2 py-0.5 hover:bg-slate-100 rounded italic" title="In nghiêng (Ctrl+I)">I</button>
+            <button type="button" id="ctxFormatUnderline" class="px-2 py-0.5 hover:bg-slate-100 rounded underline" title="Gạch chân (Ctrl+U)">U</button>
+        </div>
+    </div>
+
+    <!-- Modal: Bổ sung Biến xạ mới từ vùng chọn Preview -->
+    <div id="modalCreateVarFromPreview" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 hidden backdrop-blur-xs">
+        <div class="bg-white rounded-xl max-w-sm w-full p-3.5 shadow-2xl border border-slate-100 text-xs space-y-2.5">
+            <div class="flex items-center justify-between border-b pb-1.5 border-slate-200">
+                <div class="flex items-center space-x-1.5 font-bold text-slate-900">
+                    <i class="fa-solid fa-square-plus text-emerald-600"></i>
+                    <span>Bổ Sung Biến Xạ Mới Từ Vùng Chọn</span>
+                </div>
+                <button id="btnCloseCreateVarModal" type="button" class="text-slate-400 hover:text-slate-600 text-base cursor-pointer">&times;</button>
+            </div>
+            <div>
+                <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Mã biến xạ (KEY VIẾT HOA) *</label>
+                <input id="inputNewVarKey" type="text" placeholder="VD: TEN_PHONG_BAN" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 font-mono text-xs font-bold text-slate-800 uppercase focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                <span class="text-[9px] text-slate-400">Dùng chữ hoa không dấu, ngăn cách bằng gạch dưới _</span>
+            </div>
+            <div>
+                <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Tên hiển thị trên form *</label>
+                <input id="inputNewVarLabel" type="text" placeholder="VD: Tên phòng ban phụ trách" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+            </div>
+            <div>
+                <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Giá trị ban đầu</label>
+                <input id="inputNewVarVal" type="text" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+            </div>
+            <div class="flex items-center justify-end space-x-1.5 pt-1 border-t border-slate-100">
+                <button id="btnCancelCreateVar" type="button" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium cursor-pointer">Hủy</button>
+                <button id="btnConfirmCreateVar" type="button" class="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1 shadow-2xs cursor-pointer">
+                    <i class="fa-solid fa-check text-[10px]"></i>
+                    <span>Tạo &amp; Gán ngay</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Gộp các biến xạ -->
+    <div id="modalMergeVars" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 hidden backdrop-blur-xs">
+        <div class="bg-white rounded-xl max-w-sm w-full p-3.5 shadow-2xl border border-slate-100 text-xs space-y-2.5">
+            <div class="flex items-center justify-between border-b pb-1.5 border-slate-200">
+                <div class="flex items-center space-x-1.5 font-bold text-slate-900">
+                    <i class="fa-solid fa-object-group text-purple-600"></i>
+                    <span>Gộp Các Biến Xạ Đã Chọn</span>
+                </div>
+                <button id="btnCloseMergeVarsModal" type="button" class="text-slate-400 hover:text-slate-600 text-base cursor-pointer">&times;</button>
+            </div>
+            <div id="mergeVarsDetectedList" class="bg-purple-50 border border-purple-200 rounded p-1.5 text-[10px] space-y-1">
+                <!-- List of variables detected in selection -->
+            </div>
+            <div>
+                <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Mã biến gộp mới *</label>
+                <input id="inputMergedVarKey" type="text" placeholder="VD: THONG_TIN_GOP" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 font-mono text-xs font-bold text-slate-800 uppercase focus:bg-white focus:ring-1 focus:ring-purple-500">
+            </div>
+            <div>
+                <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Tên hiển thị trên form *</label>
+                <input id="inputMergedVarLabel" type="text" placeholder="VD: Thông tin gộp" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-purple-500">
+            </div>
+            <div class="flex items-center justify-end space-x-1.5 pt-1 border-t border-slate-100">
+                <button id="btnCancelMergeVars" type="button" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium cursor-pointer">Hủy</button>
+                <button id="btnConfirmMergeVars" type="button" class="px-3 py-1 rounded bg-purple-600 hover:bg-purple-700 text-white font-bold flex items-center gap-1 shadow-2xs cursor-pointer">
+                    <i class="fa-solid fa-check text-[10px]"></i>
+                    <span>Gộp &amp; Cập nhật</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
