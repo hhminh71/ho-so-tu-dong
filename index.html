@@ -187,10 +187,6 @@
                     <div class="flex items-center space-x-0.5 ml-1 border-l pl-1 border-slate-200">
                         <button id="rmFilterAllTasks" type="button" class="px-1.5 py-0.2 text-[10px] font-bold rounded bg-slate-800 text-white h-5">Tất cả</button>
                         <button id="rmFilterUnfinishedTasks" type="button" class="px-1.5 py-0.2 text-[10px] font-bold rounded bg-slate-100 hover:bg-slate-200 text-slate-700 h-5">Chưa xong</button>
-                        <button id="btnRecalculateDates" type="button" class="ml-1 px-2 py-0.2 text-[10px] font-bold rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 flex items-center space-x-1 h-5 shadow-2xs transition-colors" title="Tự động tính toán lại ngày và thứ trong tuần theo công thức dây chuyền">
-                            <i class="fa-solid fa-calculator text-[9px] text-indigo-600"></i>
-                            <span>Tính ngày tự động</span>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -1118,12 +1114,9 @@
             <div class="px-3.5 py-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
                 <button id="btnCancelFormulaModal" type="button" class="px-2.5 py-1 text-xs font-bold text-slate-600 bg-white border border-slate-300 rounded hover:bg-slate-100">Đóng</button>
                 <div class="flex items-center space-x-1.5">
-                    <button id="btnApplyFormulaSingle" type="button" class="px-3 py-1 text-xs font-bold text-indigo-700 bg-indigo-100 hover:bg-indigo-200 rounded border border-indigo-300">
-                        Áp dụng cho dòng này
-                    </button>
-                    <button id="btnApplyFormulaAndRecalcAll" type="button" class="px-3.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded shadow-xs flex items-center space-x-1">
-                        <i class="fa-solid fa-calculator"></i>
-                        <span>Lưu &amp; Tính lại toàn bộ</span>
+                    <button id="btnApplyFormulaSave" type="button" class="px-4 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded shadow-xs flex items-center space-x-1.5 transition-colors">
+                        <i class="fa-solid fa-check text-[11px]"></i>
+                        <span>Lưu &amp; Áp dụng</span>
                     </button>
                 </div>
             </div>

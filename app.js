@@ -26,7 +26,7 @@
     // -------------------------------------------------------------
     // Project Roadmap & Procedural Timeline Model
     // -------------------------------------------------------------
-    const sampleTimelinePhases = [{"id": "phase_1", "code": "I", "title": "Triển khai", "isPackage": false, "packageName": "", "tasks": [{"stt": "1", "name": "QĐ giao kế hoạch", "docNo": "110/QĐ-TCTCHKVN", "signer": "TCT", "date": "2026-01-12", "duration": "2", "note": "", "status": "Đã xong"}, {"stt": "2", "name": "Biên bản kiểm tra đột xuất", "docNo": "", "signer": "Các phòng VCA", "date": "2026-04-04", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "3", "name": "[TRIỂN KHAI] Tờ trình", "docNo": "01/ĐKNCC/TTr-KTHT", "signer": "PKTHT", "date": "2026-07-21", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "4", "name": "[TL TỔ THẨM ĐỊNH] Tờ Trình", "docNo": "02/ĐKNCC/TTr-KTHT", "signer": "PKTHT", "date": "2026-07-22", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "5", "name": "[TL TỔ THẨM ĐỊNH] Quyết định", "docNo": "930a/QĐ-CHKQTCT", "signer": "GĐ", "date": "2026-07-28", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "6", "name": "BÁO CÁO BẢO TRÌ", "docNo": "03/BCTHBT-KTHT", "signer": "", "date": "2026-07-29", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "", "name": "Phê duyệt dự toán G1", "docNo": "", "signer": "", "date": "", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "7", "name": "[KH LCNT] Tờ trình", "docNo": "04/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-07-29", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "8", "name": "[KH LCNT] BB Thẩm định", "docNo": "", "signer": "", "date": "2026-07-30", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "9", "name": "[KH LCNT] BC Thẩm định", "docNo": "05/BC-HĐTĐ-KQTĐ", "signer": "", "date": "2026-07-30", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "10", "name": "[KH LCNT] QĐ Phê Duyệt", "docNo": "968/QĐ-CHKQTCT", "signer": "", "date": "2026-07-31", "duration": "1", "note": "", "status": "Đã xong"}]}, {"id": "phase_2", "code": "II", "title": "Gói thầu số 1: Thẩm tra bản vẽ thiết kế thi công và dự toán công trình", "isPackage": true, "packageName": "Gói thầu số 1: Thẩm tra bản vẽ thiết kế thi công và dự toán công trình", "tasks": [{"stt": "11", "name": "[LCNT] Tờ trình", "docNo": "06/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-07-31", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "12", "name": "[LCNT] Thư mời Quan tâm", "docNo": "969/CHKQTCT-KTHT", "signer": "", "date": "2026-07-31", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "", "name": "Biên bản thương thảo hợp đồng", "docNo": "", "signer": "", "date": "2026-08-03", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "13", "name": "[KQ LCNT GÓI 1] Tờ trình", "docNo": "07/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-08-03", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "14", "name": "[KQ LCNT GÓI 1] BB Thẩm định", "docNo": "", "signer": "", "date": "2026-08-03", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "15", "name": "[KQ LCNT GÓI 1] BC Thẩm định", "docNo": "08/BC-HĐTĐ-KQTĐ", "signer": "", "date": "2026-08-03", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "16", "name": "[KQ LCNT GÓI 1] QĐ Phê Duyệt", "docNo": "994/QĐ-CHKQTCT", "signer": "", "date": "2026-08-05", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "17", "name": "[KQ LCNT GÓI 1] Thông báo", "docNo": "", "signer": "", "date": "2026-08-05", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "18", "name": "HỢP ĐỒNG", "docNo": "26059", "signer": "", "date": "2026-08-17", "duration": "1", "note": "5 ngày", "status": "Đã xin số xong"}, {"stt": "19", "name": "Sản phẩm gói 1 (thẩm tra TK và DT)", "docNo": "", "signer": "", "date": "2026-08-18", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "", "name": "NGHIỆM THU", "docNo": "", "signer": "", "date": "2026-08-28", "duration": "", "note": "", "status": "Đã xong"}, {"stt": "", "name": "[THIẾT KẾ & DỰ TOÁN] Tờ trình", "docNo": "09/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-08-19", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "", "name": "[THIẾT KẾ & DỰ TOÁN] BB họp thẩm định", "docNo": "", "signer": "", "date": "2026-08-20", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "", "name": "[THIẾT KẾ & DỰ TOÁN] BC thẩm định", "docNo": "10/BC-HĐTĐ-KQTĐ", "signer": "", "date": "2026-08-20", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "", "name": "[THIẾT KẾ & DỰ TOÁN] Quyết định", "docNo": "1125/QĐ-CHKQTCT", "signer": "", "date": "2026-08-28", "duration": "0", "note": "", "status": "Đã xong"}]}, {"id": "phase_3", "code": "IV", "title": "Gói thầu số 2: Thi công XDCT", "isPackage": true, "packageName": "Gói thầu số 2: Thi công XDCT", "tasks": [{"stt": "24", "name": "[KH LCNT] Tờ trình", "docNo": "11/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-08-28", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "25", "name": "[KH LCNT] BB Thẩm định", "docNo": "", "signer": "", "date": "2026-08-28", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "26", "name": "[KH LCNT] BC Thẩm định", "docNo": "12/BC-HĐTĐ-KQTĐ", "signer": "", "date": "", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "27", "name": "[KH LCNT] QĐ Phê Duyệt", "docNo": "1126/QĐ-CHKQTCT", "signer": "", "date": "2026-08-28", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "", "name": "[LCNT] Tờ trình", "docNo": "13/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-08-28", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "29", "name": "[LCNT] Thư mời Quan tâm", "docNo": "1131/CHKQTCT-KTHT", "signer": "", "date": "2026-08-28", "duration": "3", "note": "", "status": "Đã xong"}, {"stt": "30", "name": "Biên bản thương thảo hợp đồng", "docNo": "", "signer": "", "date": "2026-08-31", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "31", "name": "[KQ LCNT] Tờ trình", "docNo": "14/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-08-31", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "32", "name": "[KQ LCNT] BB Thẩm định", "docNo": "", "signer": "", "date": "2026-08-31", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "33", "name": "[KQ LCNT] BC Thẩm định", "docNo": "15/BC-HĐTĐ-KQTĐ", "signer": "", "date": "2026-08-31", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "34", "name": "[KQ LCNT] QĐ Phê Duyệt", "docNo": "1143 /QĐ-CHKQTCT", "signer": "", "date": "2026-09-03", "duration": "0", "note": "", "status": "Đã xong"}, {"stt": "35", "name": "[KQ LCNT] Thông báo", "docNo": "", "signer": "", "date": "2026-09-03", "duration": "1", "note": "", "status": "Đã xong"}, {"stt": "36", "name": "HỢP ĐỒNG", "docNo": "26076", "signer": "", "date": "2026-09-04", "duration": "30", "note": "", "status": "Đã xong"}, {"stt": "", "name": "LẬP BP ĐẢM BẢO ANAT", "docNo": "", "signer": "", "date": "2026-09-04", "duration": "15", "note": "", "status": "Chưa xong"}, {"stt": "", "name": "NGHIỆM THU", "docNo": "", "signer": "", "date": "2026-10-19", "duration": "", "note": "", "status": "Chưa xong"}]}];
+    const sampleTimelinePhases = [{"id": "phase_1", "code": "I", "title": "Triển khai", "isPackage": false, "packageName": "", "tasks": [{"stt": "1", "name": "QĐ giao kế hoạch", "docNo": "110/QĐ-TCTCHKVN", "signer": "TCT", "date": "2026-01-12", "duration": 2, "note": "", "status": "Đã xong", "id": "task_0_0", "dateFormula": {"type": "manual"}}, {"stt": "2", "name": "Biên bản kiểm tra đột xuất", "docNo": "", "signer": "Các phòng VCA", "date": "2026-04-04", "duration": 1, "note": "", "status": "Đã xong", "id": "task_0_1", "dateFormula": {"type": "manual"}}, {"stt": "3", "name": "[TRIỂN KHAI] Tờ trình", "docNo": "01/ĐKNCC/TTr-KTHT", "signer": "PKTHT", "date": "2026-07-21", "duration": 1, "note": "", "status": "Đã xong", "id": "task_0_2", "dateFormula": {"type": "manual"}}, {"stt": "4", "name": "[TL TỔ THẨM ĐỊNH] Tờ Trình", "docNo": "02/ĐKNCC/TTr-KTHT", "signer": "PKTHT", "date": "2026-07-22", "duration": 1, "note": "", "status": "Đã xong", "id": "task_0_3", "dateFormula": {"type": "default"}}, {"stt": "5", "name": "[TL TỔ THẨM ĐỊNH] Quyết định", "docNo": "930a/QĐ-CHKQTCT", "signer": "GĐ", "date": "2026-07-28", "duration": 1, "note": "", "status": "Đã xong", "id": "task_0_4", "dateFormula": {"type": "manual"}}, {"stt": "6", "name": "BÁO CÁO BẢO TRÌ", "docNo": "03/BCTHBT-KTHT", "signer": "", "date": "2026-07-29", "duration": 1, "note": "", "status": "Đã xong", "id": "task_0_5", "dateFormula": {"type": "default"}}, {"stt": "", "name": "Phê duyệt dự toán G1", "docNo": "", "signer": "", "date": "", "duration": 1, "note": "", "status": "Đã xong", "id": "task_0_6", "dateFormula": {"type": "manual"}}, {"stt": "7", "name": "[KH LCNT] Tờ trình", "docNo": "04/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-07-29", "duration": 1, "note": "", "status": "Đã xong", "id": "task_0_7", "dateFormula": {"type": "manual"}}, {"stt": "8", "name": "[KH LCNT] BB Thẩm định", "docNo": "", "signer": "", "date": "2026-07-30", "duration": 1, "note": "", "status": "Đã xong", "id": "task_0_8", "dateFormula": {"type": "manual"}}, {"stt": "9", "name": "[KH LCNT] BC Thẩm định", "docNo": "05/BC-HĐTĐ-KQTĐ", "signer": "", "date": "2026-07-30", "duration": 1, "note": "", "status": "Đã xong", "id": "task_0_9", "dateFormula": {"type": "manual"}}, {"stt": "10", "name": "[KH LCNT] QĐ Phê Duyệt", "docNo": "968/QĐ-CHKQTCT", "signer": "", "date": "2026-07-31", "duration": 1, "note": "", "status": "Đã xong", "id": "task_0_10", "dateFormula": {"type": "default"}}]}, {"id": "phase_2", "code": "II", "title": "Gói thầu số 1: Thẩm tra bản vẽ thiết kế thi công và dự toán công trình", "isPackage": true, "packageName": "Gói thầu số 1: Thẩm tra bản vẽ thiết kế thi công và dự toán công trình", "tasks": [{"stt": "11", "name": "[LCNT] Tờ trình", "docNo": "06/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-07-31", "duration": 0, "note": "", "status": "Đã xong", "id": "task_1_0", "dateFormula": {"type": "manual"}}, {"stt": "12", "name": "[LCNT] Thư mời Quan tâm", "docNo": "969/CHKQTCT-KTHT", "signer": "", "date": "2026-07-31", "duration": 0, "note": "", "status": "Đã xong", "id": "task_1_1", "dateFormula": {"type": "default"}}, {"stt": "", "name": "Biên bản thương thảo hợp đồng", "docNo": "", "signer": "", "date": "2026-08-03", "duration": 0, "note": "", "status": "Đã xong", "id": "task_1_2", "dateFormula": {"type": "manual"}}, {"stt": "13", "name": "[KQ LCNT GÓI 1] Tờ trình", "docNo": "07/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-08-03", "duration": 0, "note": "", "status": "Đã xong", "id": "task_1_3", "dateFormula": {"type": "default"}}, {"stt": "14", "name": "[KQ LCNT GÓI 1] BB Thẩm định", "docNo": "", "signer": "", "date": "2026-08-03", "duration": 0, "note": "", "status": "Đã xong", "id": "task_1_4", "dateFormula": {"type": "manual"}}, {"stt": "15", "name": "[KQ LCNT GÓI 1] BC Thẩm định", "docNo": "08/BC-HĐTĐ-KQTĐ", "signer": "", "date": "2026-08-03", "duration": 0, "note": "", "status": "Đã xong", "id": "task_1_5", "dateFormula": {"type": "manual"}}, {"stt": "16", "name": "[KQ LCNT GÓI 1] QĐ Phê Duyệt", "docNo": "994/QĐ-CHKQTCT", "signer": "", "date": "2026-08-05", "duration": 1, "note": "", "status": "Đã xong", "id": "task_1_6", "dateFormula": {"type": "manual"}}, {"stt": "17", "name": "[KQ LCNT GÓI 1] Thông báo", "docNo": "", "signer": "", "date": "2026-08-05", "duration": 1, "note": "", "status": "Đã xong", "id": "task_1_7", "dateFormula": {"type": "manual"}}, {"stt": "18", "name": "HỢP ĐỒNG", "docNo": "26059", "signer": "", "date": "2026-08-17", "duration": 1, "note": "5 ngày", "status": "Đã xin số xong", "id": "task_1_8", "dateFormula": {"type": "manual"}}, {"stt": "19", "name": "Sản phẩm gói 1 (thẩm tra TK và DT)", "docNo": "", "signer": "", "date": "2026-08-18", "duration": 1, "note": "", "status": "Đã xong", "id": "task_1_9", "dateFormula": {"type": "default"}}, {"stt": "", "name": "NGHIỆM THU", "docNo": "", "signer": "", "date": "2026-08-28", "duration": 0, "note": "", "status": "Đã xong", "id": "task_1_10", "dateFormula": {"type": "custom", "refTaskId": "task_1_14", "offsetDays": 0}}, {"stt": "", "name": "[THIẾT KẾ & DỰ TOÁN] Tờ trình", "docNo": "09/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-08-19", "duration": 1, "note": "", "status": "Đã xong", "id": "task_1_11", "dateFormula": {"type": "default"}}, {"stt": "", "name": "[THIẾT KẾ & DỰ TOÁN] BB họp thẩm định", "docNo": "", "signer": "", "date": "2026-08-20", "duration": 0, "note": "", "status": "Đã xong", "id": "task_1_12", "dateFormula": {"type": "default"}}, {"stt": "", "name": "[THIẾT KẾ & DỰ TOÁN] BC thẩm định", "docNo": "10/BC-HĐTĐ-KQTĐ", "signer": "", "date": "2026-08-20", "duration": 0, "note": "", "status": "Đã xong", "id": "task_1_13", "dateFormula": {"type": "default"}}, {"stt": "", "name": "[THIẾT KẾ & DỰ TOÁN] Quyết định", "docNo": "1125/QĐ-CHKQTCT", "signer": "", "date": "2026-08-28", "duration": 0, "note": "", "status": "Đã xong", "id": "task_1_14", "dateFormula": {"type": "manual"}}]}, {"id": "phase_3", "code": "IV", "title": "Gói thầu số 2: Thi công XDCT", "isPackage": true, "packageName": "Gói thầu số 2: Thi công XDCT", "tasks": [{"stt": "24", "name": "[KH LCNT] Tờ trình", "docNo": "11/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-08-28", "duration": 1, "note": "", "status": "Đã xong", "id": "task_2_0", "dateFormula": {"type": "custom", "refTaskId": "task_1_14", "offsetDays": 0}}, {"stt": "25", "name": "[KH LCNT] BB Thẩm định", "docNo": "", "signer": "", "date": "2026-08-28", "duration": 0, "note": "", "status": "Đã xong", "id": "task_2_1", "dateFormula": {"type": "manual"}}, {"stt": "26", "name": "[KH LCNT] BC Thẩm định", "docNo": "12/BC-HĐTĐ-KQTĐ", "signer": "", "date": "", "duration": 0, "note": "", "status": "Đã xong", "id": "task_2_2", "dateFormula": {"type": "manual"}}, {"stt": "27", "name": "[KH LCNT] QĐ Phê Duyệt", "docNo": "1126/QĐ-CHKQTCT", "signer": "", "date": "2026-08-28", "duration": 0, "note": "", "status": "Đã xong", "id": "task_2_3", "dateFormula": {"type": "manual"}}, {"stt": "", "name": "[LCNT] Tờ trình", "docNo": "13/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-08-28", "duration": 0, "note": "", "status": "Đã xong", "id": "task_2_4", "dateFormula": {"type": "default"}}, {"stt": "29", "name": "[LCNT] Thư mời Quan tâm", "docNo": "1131/CHKQTCT-KTHT", "signer": "", "date": "2026-08-28", "duration": 3, "note": "", "status": "Đã xong", "id": "task_2_5", "dateFormula": {"type": "default"}}, {"stt": "30", "name": "Biên bản thương thảo hợp đồng", "docNo": "", "signer": "", "date": "2026-08-31", "duration": 0, "note": "", "status": "Đã xong", "id": "task_2_6", "dateFormula": {"type": "default"}}, {"stt": "31", "name": "[KQ LCNT] Tờ trình", "docNo": "14/ĐKNCC/TTr-KTHT", "signer": "", "date": "2026-08-31", "duration": 0, "note": "", "status": "Đã xong", "id": "task_2_7", "dateFormula": {"type": "default"}}, {"stt": "32", "name": "[KQ LCNT] BB Thẩm định", "docNo": "", "signer": "", "date": "2026-08-31", "duration": 0, "note": "", "status": "Đã xong", "id": "task_2_8", "dateFormula": {"type": "default"}}, {"stt": "33", "name": "[KQ LCNT] BC Thẩm định", "docNo": "15/BC-HĐTĐ-KQTĐ", "signer": "", "date": "2026-08-31", "duration": 0, "note": "", "status": "Đã xong", "id": "task_2_9", "dateFormula": {"type": "default"}}, {"stt": "34", "name": "[KQ LCNT] QĐ Phê Duyệt", "docNo": "1143 /QĐ-CHKQTCT", "signer": "", "date": "2026-09-03", "duration": 0, "note": "", "status": "Đã xong", "id": "task_2_10", "dateFormula": {"type": "manual"}}, {"stt": "35", "name": "[KQ LCNT] Thông báo", "docNo": "", "signer": "", "date": "2026-09-03", "duration": 1, "note": "", "status": "Đã xong", "id": "task_2_11", "dateFormula": {"type": "default"}}, {"stt": "36", "name": "HỢP ĐỒNG", "docNo": "26076", "signer": "", "date": "2026-09-04", "duration": 30, "note": "", "status": "Đã xong", "id": "task_2_12", "dateFormula": {"type": "default"}}, {"stt": "", "name": "LẬP BP ĐẢM BẢO ANAT", "docNo": "", "signer": "", "date": "2026-09-04", "duration": 15, "note": "", "status": "Chưa xong", "id": "task_2_13", "dateFormula": {"type": "custom", "refTaskId": "task_2_12", "offsetDays": 0}}, {"stt": "", "name": "NGHIỆM THU", "docNo": "", "signer": "", "date": "2026-10-19", "duration": 0, "note": "", "status": "Chưa xong", "id": "task_2_14", "dateFormula": {"type": "custom", "refTaskId": "task_2_12", "offsetDays": 15}}]}];
 
     const defaultRoadmap = {
         projectName: "Sửa chữa góc cua đường khẩn nguy chữa cháy phía tây Sân đỗ tàu bay",
@@ -652,8 +652,9 @@
         // Render Package Filter Pills on Timeline Header
         renderPackageFilterPills();
 
-        // Render Timeline Checklist
+        // Render Timeline Checklist with auto-calculation
         renderTimelineTable();
+        recalculateAllTaskDates(false, true);
     }
 
     function renderPackageFilterPills() {
@@ -757,53 +758,164 @@
 
     function ensureTaskDefaults() {
         if (!appState.projectRoadmap || !appState.projectRoadmap.timelinePhases) return;
-        appState.projectRoadmap.timelinePhases.forEach((ph, pIdx) => {
-            (ph.tasks || []).forEach((t, tIdx) => {
-                if (!t.id) {
-                    t.id = `task_${pIdx}_${tIdx}_${Date.now()}`;
-                }
-                if (!t.dayOfWeek && t.date) {
-                    t.dayOfWeek = getDayOfWeekInVietnamese(t.date);
-                }
-                if (t.duration === undefined || t.duration === null || t.duration === "") {
-                    t.duration = 1;
-                }
-                if (!t.dateFormula) {
-                    t.dateFormula = { type: "default" };
-                }
+
+        const blueprintConfigs = {
+            // Phase 0
+            "0_0": { type: "manual", date: "2026-01-12", dur: 2 },
+            "0_1": { type: "manual", date: "2026-04-04", dur: 1 },
+            "0_2": { type: "manual", date: "2026-07-21", dur: 1 },
+            "0_3": { type: "default", dur: 1 },
+            "0_4": { type: "manual", date: "2026-07-28", dur: 1 },
+            "0_5": { type: "default", dur: 1 },
+            "0_6": { type: "manual", date: "", dur: 1 },
+            "0_7": { type: "manual", date: "2026-07-29", dur: 1 },
+            "0_8": { type: "manual", date: "2026-07-30", dur: 1 },
+            "0_9": { type: "manual", date: "2026-07-30", dur: 1 },
+            "0_10": { type: "default", dur: 1 },
+
+            // Phase 1
+            "1_0": { type: "manual", date: "2026-07-31", dur: 0 },
+            "1_1": { type: "default", dur: 0 },
+            "1_2": { type: "manual", date: "2026-08-03", dur: 0 },
+            "1_3": { type: "default", dur: 0 },
+            "1_4": { type: "manual", date: "2026-08-03", dur: 0 },
+            "1_5": { type: "manual", date: "2026-08-03", dur: 0 },
+            "1_6": { type: "manual", date: "2026-08-05", dur: 1 },
+            "1_7": { type: "manual", date: "2026-08-05", dur: 1 },
+            "1_8": { type: "manual", date: "2026-08-17", dur: 1 },
+            "1_9": { type: "default", dur: 1 },
+            "1_10": { type: "custom", refTaskId: "task_1_14", offsetDays: 0, dur: 0 },
+            "1_11": { type: "default", dur: 1 },
+            "1_12": { type: "default", dur: 0 },
+            "1_13": { type: "default", dur: 0 },
+            "1_14": { type: "manual", date: "2026-08-28", dur: 0 },
+
+            // Phase 2
+            "2_0": { type: "custom", refTaskId: "task_1_14", offsetDays: 0, dur: 1 },
+            "2_1": { type: "manual", date: "2026-08-28", dur: 0 },
+            "2_2": { type: "manual", date: "", dur: 0 },
+            "2_3": { type: "manual", date: "2026-08-28", dur: 0 },
+            "2_4": { type: "default", dur: 0 },
+            "2_5": { type: "default", dur: 3 },
+            "2_6": { type: "default", dur: 0 },
+            "2_7": { type: "default", dur: 0 },
+            "2_8": { type: "default", dur: 0 },
+            "2_9": { type: "default", dur: 0 },
+            "2_10": { type: "manual", date: "2026-09-03", dur: 0 },
+            "2_11": { type: "default", dur: 1 },
+            "2_12": { type: "default", dur: 30 },
+            "2_13": { type: "custom", refTaskId: "task_2_12", offsetDays: 0, dur: 15 },
+            "2_14": { type: "custom", refTaskId: "task_2_12", offsetDays: 15, dur: 0 }
+        };
+
+        if (!appState._roadmapEngineV2) {
+            appState.projectRoadmap.timelinePhases.forEach((ph, pIdx) => {
+                (ph.tasks || []).forEach((t, tIdx) => {
+                    t.id = `task_${pIdx}_${tIdx}`;
+                    const bp = blueprintConfigs[`${pIdx}_${tIdx}`];
+                    if (bp) {
+                        t.duration = bp.dur !== undefined ? bp.dur : (t.duration !== undefined ? t.duration : 1);
+                        if (bp.type === "custom") {
+                            t.dateFormula = { type: "custom", refTaskId: bp.refTaskId, offsetDays: bp.offsetDays || 0 };
+                        } else if (bp.type === "manual") {
+                            t.dateFormula = { type: "manual" };
+                            if (bp.date !== undefined && (!t.date || t.date === "")) t.date = bp.date;
+                        } else {
+                            t.dateFormula = { type: "default" };
+                        }
+                    } else if (!t.dateFormula) {
+                        t.dateFormula = t.date ? { type: "manual" } : { type: "default" };
+                    }
+                    if (!t.dayOfWeek && t.date) {
+                        t.dayOfWeek = getDayOfWeekInVietnamese(t.date);
+                    }
+                });
             });
-        });
+            appState._roadmapEngineV2 = true;
+        } else {
+            appState.projectRoadmap.timelinePhases.forEach((ph, pIdx) => {
+                (ph.tasks || []).forEach((t, tIdx) => {
+                    if (!t.id) t.id = `task_${pIdx}_${tIdx}`;
+                    if (!t.dayOfWeek && t.date) t.dayOfWeek = getDayOfWeekInVietnamese(t.date);
+                    if (t.duration === undefined || t.duration === null || t.duration === "") t.duration = 1;
+                    if (!t.dateFormula) {
+                        t.dateFormula = t.date ? { type: "manual" } : { type: "default" };
+                    }
+                });
+            });
+        }
     }
 
     function getPreviousTaskInProject(pIdx, tIdx) {
         const phases = appState.projectRoadmap.timelinePhases || [];
-        if (phases[pIdx] && tIdx > 0 && phases[pIdx].tasks[tIdx - 1]) {
-            return phases[pIdx].tasks[tIdx - 1];
-        }
-        for (let pi = pIdx - 1; pi >= 0; pi--) {
+        const priorTasks = [];
+        for (let pi = 0; pi <= pIdx; pi++) {
             const p = phases[pi];
-            if (p && p.tasks && p.tasks.length > 0) {
-                return p.tasks[p.tasks.length - 1];
+            if (!p || !p.tasks) continue;
+            const maxTi = (pi === pIdx) ? tIdx : p.tasks.length;
+            for (let ti = 0; ti < maxTi; ti++) {
+                priorTasks.push(p.tasks[ti]);
             }
         }
-        return null;
+        for (let i = priorTasks.length - 1; i >= 0; i--) {
+            if (priorTasks[i] && priorTasks[i].date) {
+                return priorTasks[i];
+            }
+        }
+        return priorTasks.length > 0 ? priorTasks[priorTasks.length - 1] : null;
+    }
+
+    function getModeBadgeHtml(task) {
+        const formula = task.dateFormula || { type: "default" };
+        if (formula.type === "custom") {
+            return `
+                <button type="button" class="btn-task-formula-badge inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 cursor-pointer shadow-2xs transition-colors" data-task-id="${task.id}" title="Chế độ Công thức riêng: Phụ thuộc vào mốc khác (Bấm để cài đặt)">
+                    <i class="fa-solid fa-link text-[8.5px] text-purple-600"></i>
+                    <span>Liên kết</span>
+                </button>
+            `;
+        } else if (formula.type === "manual") {
+            return `
+                <button type="button" class="btn-task-formula-badge inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 cursor-pointer shadow-2xs transition-colors" data-task-id="${task.id}" title="Chế độ Thủ công: Mốc ngày cố định do người dùng nhập (Bấm để cài đặt)">
+                    <i class="fa-solid fa-thumbtack text-[8.5px] text-amber-600"></i>
+                    <span>Thủ công</span>
+                </button>
+            `;
+        } else {
+            return `
+                <button type="button" class="btn-task-formula-badge inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 cursor-pointer shadow-2xs transition-colors" data-task-id="${task.id}" title="Chế độ Tự động: Ngày = Ngày việc trước + Thời gian việc trước (Bấm để cài đặt)">
+                    <i class="fa-solid fa-arrows-rotate text-[8.5px] text-blue-600"></i>
+                    <span>Tự động</span>
+                </button>
+            `;
+        }
     }
 
     function updateTimelineDomInPlace() {
         if (!appState.projectRoadmap || !appState.projectRoadmap.timelinePhases) return;
         const phases = appState.projectRoadmap.timelinePhases;
-        const rows = document.querySelectorAll("#rmTimelineContainer tr[data-phase-idx]");
-        rows.forEach(tr => {
-            const pI = parseInt(tr.getAttribute("data-phase-idx"), 10);
-            const tI = parseInt(tr.getAttribute("data-task-idx"), 10);
-            const t = phases[pI]?.tasks[tI];
-            if (!t) return;
+        const taskMap = {};
+        phases.forEach((p, pi) => {
+            (p.tasks || []).forEach((t, ti) => {
+                if (!t.id) t.id = `task_${pi}_${ti}`;
+                taskMap[t.id] = { task: t, p, pi, ti };
+            });
+        });
 
+        const rows = document.querySelectorAll("#rmTimelineContainer tr[data-task-id]");
+        rows.forEach(tr => {
+            const taskId = tr.getAttribute("data-task-id");
+            const info = taskMap[taskId];
+            if (!info) return;
+            const { task: t, p, pi, ti } = info;
+
+            // Date input
             const dateInput = tr.querySelector(".task-date-input");
             if (dateInput && document.activeElement !== dateInput) {
                 dateInput.value = t.date || "";
             }
 
+            // Day of week badge
             const dayBadge = tr.querySelector(".task-day-badge");
             if (dayBadge) {
                 const dayName = t.dayOfWeek || getDayOfWeekInVietnamese(t.date);
@@ -812,13 +924,38 @@
                 dayBadge.className = `task-day-badge text-[9.5px] font-bold ${isWeekend ? 'text-amber-700 bg-amber-50 px-1 py-0.2 rounded border border-amber-200' : 'text-slate-700'}`;
             }
 
+            // Mode Badge
+            const modeCell = tr.querySelector(".task-mode-cell");
+            if (modeCell) {
+                modeCell.innerHTML = getModeBadgeHtml(t);
+                const badgeBtn = modeCell.querySelector(".btn-task-formula-badge");
+                if (badgeBtn) {
+                    badgeBtn.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        openTaskFormulaModal(p, pi, t, ti);
+                    });
+                }
+            }
+
+            // Duration input
+            const durInput = tr.querySelector(".task-duration-input");
+            if (durInput && document.activeElement !== durInput) {
+                durInput.value = t.duration !== undefined ? t.duration : 1;
+            }
+
+            // Formula icon in duration cell
             const formulaBtn = tr.querySelector(".btn-task-formula");
             if (formulaBtn) {
                 const formula = t.dateFormula || { type: "default" };
-                const isCustom = formula.type === "custom";
                 const icon = formulaBtn.querySelector("i");
                 if (icon) {
-                    icon.className = `fa-solid fa-calculator text-[9px] ${isCustom ? 'text-indigo-600 font-bold' : ''}`;
+                    if (formula.type === "custom") {
+                        icon.className = "fa-solid fa-link text-[9px] text-purple-600 font-bold";
+                    } else if (formula.type === "manual") {
+                        icon.className = "fa-solid fa-thumbtack text-[9px] text-amber-600 font-bold";
+                    } else {
+                        icon.className = "fa-solid fa-arrows-rotate text-[9px] text-blue-500";
+                    }
                 }
             }
         });
@@ -829,38 +966,43 @@
         const phases = appState.projectRoadmap.timelinePhases;
 
         const allTasks = [];
+        const taskMap = {};
         phases.forEach((p, pi) => {
             (p.tasks || []).forEach((t, ti) => {
+                if (!t.id) t.id = `task_${pi}_${ti}`;
                 allTasks.push({ p, pi, t, ti });
+                taskMap[t.id] = t;
             });
         });
 
-        let lastTask = null;
+        let lastTaskWithDate = null;
 
         allTasks.forEach((item, idx) => {
             const { t } = item;
             const formula = t.dateFormula || { type: "default" };
 
             if (formula.type === "manual") {
-                // Fixed date anchor
-                lastTask = t;
+                // Fixed date anchor set by user
+                if (t.date) {
+                    lastTaskWithDate = t;
+                }
             } else if (formula.type === "custom" && formula.refTaskId) {
-                const refObj = allTasks.find(x => x.t.id === formula.refTaskId || x.t.name === formula.refTaskId);
-                if (refObj && refObj.t.date) {
-                    const refDur = parseInt(refObj.t.duration, 10) || 0;
+                // Dependent on milestone
+                const refTask = taskMap[formula.refTaskId] || allTasks.find(x => x.t.id === formula.refTaskId || x.t.name === formula.refTaskId)?.t;
+                if (refTask && refTask.date) {
+                    const refDur = parseInt(refTask.duration, 10) || 0;
                     const offset = parseInt(formula.offsetDays, 10) || 0;
-                    t.date = addDaysToDate(refObj.t.date, refDur + offset);
-                    lastTask = t;
+                    t.date = addDaysToDate(refTask.date, refDur + offset);
+                    lastTaskWithDate = t;
                 }
             } else {
+                // Default chain: Date = Prev Date + Prev Duration
                 if (idx === 0) {
-                    // First task: keeps its own date as starting anchor
-                    lastTask = t;
-                } else if (lastTask && lastTask.date) {
-                    // Ngày văn bản sau = Ngày văn bản trước + Số ngày thực hiện (ngang hàng với văn bản trước)
-                    const prevDur = parseInt(lastTask.duration, 10) || 0;
-                    t.date = addDaysToDate(lastTask.date, prevDur);
-                    lastTask = t;
+                    if (t.date) lastTaskWithDate = t;
+                } else if (lastTaskWithDate && lastTaskWithDate.date) {
+                    const prevDur = parseInt(lastTaskWithDate.duration, 10) || 0;
+                    t.date = addDaysToDate(lastTaskWithDate.date, prevDur);
+                    lastTaskWithDate = t;
                 }
             }
 
@@ -916,7 +1058,7 @@
                 (p.tasks || []).forEach((t, ti) => {
                     if (t === task) return;
                     const opt = document.createElement("option");
-                    opt.value = t.id || t.name;
+                    opt.value = t.id || `task_${pi}_${ti}`;
                     const dStr = t.date ? ` (${t.date})` : "";
                     opt.textContent = `[${p.code || (pi + 1)}] #${t.stt || (ti + 1)}: ${t.name}${dStr}`;
                     if (formula.refTaskId && (t.id === formula.refTaskId || t.name === formula.refTaskId)) {
@@ -969,7 +1111,6 @@
         } else {
             const prevTask = getPreviousTaskInProject(pIdx, tIdx);
             if (prevTask && prevTask.date) {
-                // Ngày văn bản sau = Ngày văn bản trước + Số ngày thực hiện của văn bản trước
                 const prevDur = parseInt(prevTask.duration, 10) || 0;
                 calculatedDate = addDaysToDate(prevTask.date, prevDur);
             } else {
@@ -997,6 +1138,14 @@
 
         const phases = appState.projectRoadmap.timelinePhases || [];
         rmTimelineContainer.innerHTML = "";
+
+        const taskMap = {};
+        phases.forEach((p, pi) => {
+            (p.tasks || []).forEach((t, ti) => {
+                if (!t.id) t.id = `task_${pi}_${ti}`;
+                taskMap[t.id] = t;
+            });
+        });
 
         const selPkgIdx = appState.selectedRoadmapPackageIndex;
         const pkgs = appState.projectRoadmap.packages || [];
@@ -1070,53 +1219,62 @@
                     <table class="w-full text-[10.5px] text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-100/70 border-b border-slate-200 text-slate-600 font-bold text-[9px] uppercase tracking-wider h-5">
-                                <th class="py-0.5 px-1.5 w-8 text-center">STT</th>
+                                <th class="py-0.5 px-1 w-7 text-center">STT</th>
                                 <th class="py-0.5 px-1.5">Tên công việc / Thủ tục</th>
-                                <th class="py-0.5 px-1.5 w-36">Số văn bản</th>
-                                <th class="py-0.5 px-1.5 w-20">Đơn vị ký</th>
-                                <th class="py-0.5 px-1.5 w-16 text-center">Thứ</th>
-                                <th class="py-0.5 px-1.5 w-24 text-center">Ngày ký</th>
-                                <th class="py-0.5 px-1.5 w-20 text-center">Thời gian</th>
-                                <th class="py-0.5 px-1.5 w-16 text-center">Tiến độ</th>
-                                <th class="py-0.5 px-1.5 w-12 text-center">Soạn</th>
+                                <th class="py-0.5 px-1 w-32">Số văn bản</th>
+                                <th class="py-0.5 px-1 w-20">Đơn vị ký</th>
+                                <th class="py-0.5 px-1 w-20 text-center" title="Chế độ tính ngày: Tự động tiếp nối, Liên kết mốc, hoặc Thủ công">Chế độ</th>
+                                <th class="py-0.5 px-1 w-14 text-center">Thứ</th>
+                                <th class="py-0.5 px-1 w-24 text-center">Ngày ký</th>
+                                <th class="py-0.5 px-1 w-16 text-center">Thời gian</th>
+                                <th class="py-0.5 px-1 w-16 text-center">Tiến độ</th>
+                                <th class="py-0.5 px-1 w-12 text-center">Soạn</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            ${tasksToRender.map((task, tIdx) => {
+                            ${tasksToRender.map((task) => {
+                                const realTaskIdx = (phase.tasks || []).indexOf(task);
                                 const isDone = task.status === "Đã xong";
                                 const badgeClass = isDone 
                                     ? "bg-emerald-100 text-emerald-800 border-emerald-200" 
                                     : (task.status === "Đang làm" ? "bg-amber-100 text-amber-900 border-amber-300" : "bg-slate-100 text-slate-700 border-slate-200");
                                 
-                                const dayName = getDayOfWeekInVietnamese(task.date);
+                                const dayName = task.dayOfWeek || getDayOfWeekInVietnamese(task.date);
                                 const isWeekend = dayName.includes("Chủ Nhật") || dayName.includes("Thứ Bảy");
                                 const formula = task.dateFormula || { type: "default" };
                                 const isCustomFormula = formula.type === "custom";
+                                const isManual = formula.type === "manual";
+                                const formulaIconClass = isCustomFormula 
+                                    ? "fa-solid fa-link text-[9px] text-purple-600 font-bold" 
+                                    : (isManual ? "fa-solid fa-thumbtack text-[9px] text-amber-600 font-bold" : "fa-solid fa-arrows-rotate text-[9px] text-blue-500");
                                 const formulaTooltip = isCustomFormula 
                                     ? "Công thức: Phụ thuộc vào công việc mốc khác (Bấm để sửa)" 
-                                    : (formula.type === "manual" ? "Ngày mốc cố định thủ công (Bấm để cài công thức)" : "Công thức mặc định: Tiếp nối ngày việc trước + thời gian (Bấm để sửa)");
+                                    : (isManual ? "Ngày mốc cố định thủ công (Bấm để cài công thức)" : "Công thức mặc định: Tiếp nối ngày việc trước + thời gian (Bấm để sửa)");
 
                                 return `
-                                    <tr class="hover:bg-slate-50 transition-colors h-6" data-phase-idx="${pIdx}" data-task-idx="${tIdx}">
-                                        <td class="py-0.5 px-1 text-center text-slate-400 font-bold text-[10px]">${task.stt || (tIdx + 1)}</td>
+                                    <tr class="hover:bg-slate-50 transition-colors h-6" data-phase-idx="${pIdx}" data-task-idx="${realTaskIdx}" data-task-id="${task.id}">
+                                        <td class="py-0.5 px-1 text-center text-slate-400 font-bold text-[10px]">${task.stt || (realTaskIdx + 1)}</td>
                                         <td class="py-0.5 px-1.5 font-bold text-slate-800 text-[10.5px]">
-                                            <div class="truncate max-w-[340px]" title="${task.name}">${task.name}</div>
+                                            <div class="truncate max-w-[320px]" title="${task.name}">${task.name}</div>
                                         </td>
                                         <td class="py-0.5 px-1">
-                                            <input type="text" class="task-docno-input w-full bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 hover:border-slate-300 focus:border-emerald-500 rounded px-1.5 py-0.5 font-mono text-[10px] text-slate-800 placeholder-slate-300 focus:ring-1 focus:ring-emerald-500 transition-all" value="${task.docNo || ''}" placeholder="Nhập số VB..." title="Chỉnh sửa số văn bản trực tiếp" data-p-idx="${pIdx}" data-t-idx="${tIdx}">
+                                            <input type="text" class="task-docno-input w-full bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 hover:border-slate-300 focus:border-emerald-500 rounded px-1.5 py-0.5 font-mono text-[10px] text-slate-800 placeholder-slate-300 focus:ring-1 focus:ring-emerald-500 transition-all" value="${task.docNo || ''}" placeholder="Nhập số VB..." title="Chỉnh sửa số văn bản trực tiếp" data-p-idx="${pIdx}" data-t-idx="${realTaskIdx}" data-task-id="${task.id}">
                                         </td>
                                         <td class="py-0.5 px-1 text-slate-600 text-[10px] truncate" title="${task.signer || ''}">${task.signer || "---"}</td>
+                                        <td class="py-0.5 px-1 text-center task-mode-cell">
+                                            ${getModeBadgeHtml(task)}
+                                        </td>
                                         <td class="py-0.5 px-1 text-center">
                                             <span class="task-day-badge text-[9.5px] font-bold ${isWeekend ? 'text-amber-700 bg-amber-50 px-1 py-0.2 rounded border border-amber-200' : 'text-slate-700'}">${dayName}</span>
                                         </td>
                                         <td class="py-0.5 px-1 text-center">
-                                            <input type="date" class="task-date-input w-full bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 hover:border-slate-300 focus:border-emerald-500 rounded px-1 py-0.5 font-mono text-[9.5px] text-slate-800 focus:ring-1 focus:ring-emerald-500" value="${task.date || ''}" title="Ngày ký / thực hiện văn bản" data-p-idx="${pIdx}" data-t-idx="${tIdx}">
+                                            <input type="date" class="task-date-input w-full bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 hover:border-slate-300 focus:border-emerald-500 rounded px-1 py-0.5 font-mono text-[9.5px] text-slate-800 focus:ring-1 focus:ring-emerald-500" value="${task.date || ''}" title="Ngày ký / thực hiện văn bản" data-p-idx="${pIdx}" data-t-idx="${realTaskIdx}" data-task-id="${task.id}">
                                         </td>
                                         <td class="py-0.5 px-1 text-center">
                                             <div class="flex items-center justify-center space-x-0.5">
-                                                <input type="number" min="0" max="999" class="task-duration-input w-10 bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 hover:border-slate-300 focus:border-emerald-500 rounded px-0.5 py-0.5 text-center text-[10px] font-bold text-slate-800 focus:ring-1 focus:ring-emerald-500" value="${task.duration !== undefined ? task.duration : 1}" title="Thời gian thực hiện văn bản (ngày)" data-p-idx="${pIdx}" data-t-idx="${tIdx}">
-                                                <button type="button" class="btn-task-formula p-0.5 rounded hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 transition-colors" data-p-idx="${pIdx}" data-t-idx="${tIdx}" title="${formulaTooltip}">
-                                                    <i class="fa-solid fa-calculator text-[9px] ${isCustomFormula ? 'text-indigo-600 font-bold' : ''}"></i>
+                                                <input type="number" min="0" max="999" class="task-duration-input w-10 bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 hover:border-slate-300 focus:border-emerald-500 rounded px-0.5 py-0.5 text-center text-[10px] font-bold text-slate-800 focus:ring-1 focus:ring-emerald-500" value="${task.duration !== undefined ? task.duration : 1}" title="Thời gian thực hiện văn bản (ngày)" data-p-idx="${pIdx}" data-t-idx="${realTaskIdx}" data-task-id="${task.id}">
+                                                <button type="button" class="btn-task-formula p-0.5 rounded hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 transition-colors" data-p-idx="${pIdx}" data-t-idx="${realTaskIdx}" data-task-id="${task.id}" title="${formulaTooltip}">
+                                                    <i class="${formulaIconClass}"></i>
                                                 </button>
                                             </div>
                                         </td>
@@ -1124,7 +1282,7 @@
                                             <span class="inline-block px-1 py-0 rounded border font-bold text-[9px] ${badgeClass}">${task.status || "Chưa làm"}</span>
                                         </td>
                                         <td class="py-0.5 px-1 text-center">
-                                            <button type="button" class="btn-task-soan px-1.5 py-0 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-300 hover:border-emerald-300 rounded font-bold text-[9px] h-4.5" data-phase-idx="${pIdx}" data-task-idx="${tIdx}" title="Mở sang Tab 2 để soạn văn bản này">
+                                            <button type="button" class="btn-task-soan px-1.5 py-0 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-300 hover:border-emerald-300 rounded font-bold text-[9px] h-4.5" data-phase-idx="${pIdx}" data-task-idx="${realTaskIdx}" title="Mở sang Tab 2 để soạn văn bản này">
                                                 <i class="fa-solid fa-pen-to-square text-[8px]"></i> Soạn
                                             </button>
                                         </td>
@@ -1148,8 +1306,9 @@
             // Handle editable Document Number
             phaseWrapper.querySelectorAll(".task-docno-input").forEach(input => {
                 input.addEventListener("input", (e) => {
-                    const pI = parseInt(input.getAttribute("data-p-idx"), 10);
-                    const tI = parseInt(input.getAttribute("data-t-idx"), 10);
+                    const tr = e.target.closest("tr");
+                    const pI = parseInt(tr.getAttribute("data-phase-idx"), 10);
+                    const tI = parseInt(tr.getAttribute("data-task-idx"), 10);
                     phases[pI].tasks[tI].docNo = e.target.value.trim();
                 });
                 input.addEventListener("change", () => {
@@ -1159,45 +1318,65 @@
 
             // Handle editable Date with REAL-TIME AUTO CASCADE
             phaseWrapper.querySelectorAll(".task-date-input").forEach(input => {
-                input.addEventListener("change", (e) => {
-                    const pI = parseInt(input.getAttribute("data-p-idx"), 10);
-                    const tI = parseInt(input.getAttribute("data-t-idx"), 10);
-                    const val = e.target.value;
-                    const t = phases[pI].tasks[tI];
+                const handleDate = (el) => {
+                    const tr = el.closest("tr");
+                    const pI = parseInt(tr.getAttribute("data-phase-idx"), 10);
+                    const tI = parseInt(tr.getAttribute("data-task-idx"), 10);
+                    const taskId = tr.getAttribute("data-task-id");
+                    const t = taskMap[taskId] || phases[pI].tasks[tI];
+                    if (!t) return;
+
+                    const val = el.value;
                     t.date = val;
                     t.dayOfWeek = getDayOfWeekInVietnamese(val);
                     
                     // Manually setting a date marks it as a fixed milestone anchor
-                    if (!t.dateFormula) t.dateFormula = { type: "manual" };
-                    else t.dateFormula.type = "manual";
+                    t.dateFormula = { type: "manual" };
 
                     // TỰ ĐỘNG TÍNH TOÁN DÂY CHUYỀN NGAY LẬP TỨC (không cần bấm nút)
                     recalculateAllTaskDates(false, true);
+                };
+
+                input.addEventListener("input", (e) => {
+                    if (e.target.value && e.target.value.length === 10) {
+                        handleDate(e.target);
+                    }
+                });
+                input.addEventListener("change", (e) => {
+                    handleDate(e.target);
                 });
             });
 
             // Handle editable Duration with REAL-TIME AUTO CASCADE
             phaseWrapper.querySelectorAll(".task-duration-input").forEach(input => {
-                input.addEventListener("input", (e) => {
-                    const pI = parseInt(input.getAttribute("data-p-idx"), 10);
-                    const tI = parseInt(input.getAttribute("data-t-idx"), 10);
-                    const dur = parseInt(e.target.value, 10);
-                    phases[pI].tasks[tI].duration = isNaN(dur) ? 0 : dur;
+                const handleDur = (el) => {
+                    const tr = el.closest("tr");
+                    const pI = parseInt(tr.getAttribute("data-phase-idx"), 10);
+                    const tI = parseInt(tr.getAttribute("data-task-idx"), 10);
+                    const taskId = tr.getAttribute("data-task-id");
+                    const t = taskMap[taskId] || phases[pI].tasks[tI];
+                    if (!t) return;
+
+                    const val = parseInt(el.value, 10);
+                    t.duration = isNaN(val) ? 0 : val;
                     // TỰ ĐỘNG TÍNH TOÁN DÂY CHUYỀN NGAY KHI GÕ HOẶC BẤM TĂNG/GIẢM (không cần bấm nút)
                     recalculateAllTaskDates(false, true);
-                });
-                input.addEventListener("change", () => {
-                    recalculateAllTaskDates(false, true);
-                });
+                };
+
+                input.addEventListener("input", (e) => handleDur(e.target));
+                input.addEventListener("change", (e) => handleDur(e.target));
             });
 
-            // Handle Formula Button
-            phaseWrapper.querySelectorAll(".btn-task-formula").forEach(btn => {
+            // Handle Formula Badge and Formula Button
+            phaseWrapper.querySelectorAll(".btn-task-formula-badge, .btn-task-formula").forEach(btn => {
                 btn.addEventListener("click", (e) => {
                     e.stopPropagation();
-                    const pI = parseInt(btn.getAttribute("data-p-idx"), 10);
-                    const tI = parseInt(btn.getAttribute("data-t-idx"), 10);
-                    openTaskFormulaModal(phases[pI], pI, phases[pI].tasks[tI], tI);
+                    const tr = btn.closest("tr");
+                    const pI = parseInt(tr.getAttribute("data-phase-idx"), 10);
+                    const tI = parseInt(tr.getAttribute("data-task-idx"), 10);
+                    const taskId = tr.getAttribute("data-task-id");
+                    const t = taskMap[taskId] || phases[pI].tasks[tI];
+                    openTaskFormulaModal(phases[pI], pI, t, tI);
                 });
             });
 
@@ -1205,9 +1384,11 @@
             phaseWrapper.querySelectorAll(".btn-task-soan").forEach(btn => {
                 btn.addEventListener("click", (e) => {
                     e.stopPropagation();
-                    const pI = parseInt(btn.getAttribute("data-phase-idx"), 10);
-                    const tI = parseInt(btn.getAttribute("data-task-idx"), 10);
-                    const t = phases[pI].tasks[tI];
+                    const tr = btn.closest("tr");
+                    const pI = parseInt(tr.getAttribute("data-phase-idx"), 10);
+                    const tI = parseInt(tr.getAttribute("data-task-idx"), 10);
+                    const taskId = tr.getAttribute("data-task-id");
+                    const t = taskMap[taskId] || phases[pI].tasks[tI];
 
                     if (phases[pI].isPackage && currentPkg) {
                         appState.activePackageIndex = selPkgIdx >= 0 ? selPkgIdx : 0;
@@ -3555,15 +3736,9 @@
     }
 
     // -------------------------------------------------------------
-    // Task Formula Modal Controllers & Date Recalculation Button
     // -------------------------------------------------------------
-    const btnRecalculateDates = document.getElementById("btnRecalculateDates");
-    if (btnRecalculateDates) {
-        btnRecalculateDates.addEventListener("click", () => {
-            recalculateAllTaskDates(true);
-        });
-    }
-
+    // Task Formula Modal Controllers (Auto real-time calculation)
+    // -------------------------------------------------------------
     const formulaTypeRadios = document.querySelectorAll('input[name="formulaType"]');
     formulaTypeRadios.forEach(r => r.addEventListener("change", updateFormulaModalPreview));
 
@@ -3573,9 +3748,23 @@
     const formulaOffsetInput = document.getElementById("formulaOffsetDays");
     if (formulaOffsetInput) formulaOffsetInput.addEventListener("input", updateFormulaModalPreview);
 
-    const btnApplyFormulaSingle = document.getElementById("btnApplyFormulaSingle");
-    if (btnApplyFormulaSingle) {
-        btnApplyFormulaSingle.addEventListener("click", () => {
+    const btnCloseFormulaModal = document.getElementById("btnCloseFormulaModal");
+    if (btnCloseFormulaModal) {
+        btnCloseFormulaModal.addEventListener("click", () => {
+            document.getElementById("modalTaskFormulaConfig")?.classList.add("hidden");
+        });
+    }
+
+    const btnCancelFormulaModal = document.getElementById("btnCancelFormulaModal");
+    if (btnCancelFormulaModal) {
+        btnCancelFormulaModal.addEventListener("click", () => {
+            document.getElementById("modalTaskFormulaConfig")?.classList.add("hidden");
+        });
+    }
+
+    const btnApplyFormulaSave = document.getElementById("btnApplyFormulaSave");
+    if (btnApplyFormulaSave) {
+        btnApplyFormulaSave.addEventListener("click", () => {
             if (!currentFormulaContext) return;
             const { task } = currentFormulaContext;
             const selectedRadio = document.querySelector('input[name="formulaType"]:checked');
@@ -3599,31 +3788,9 @@
             }
 
             document.getElementById("modalTaskFormulaConfig")?.classList.add("hidden");
-            recalculateAllTaskDates(false, true);
-            showToast(`Đã áp dụng công thức tính ngày cho: ${task.name}!`, "success");
-        });
-    }
-
-    const btnApplyFormulaAndRecalcAll = document.getElementById("btnApplyFormulaAndRecalcAll");
-    if (btnApplyFormulaAndRecalcAll) {
-        btnApplyFormulaAndRecalcAll.addEventListener("click", () => {
-            if (!currentFormulaContext) return;
-            const { task } = currentFormulaContext;
-            const selectedRadio = document.querySelector('input[name="formulaType"]:checked');
-            const fType = selectedRadio ? selectedRadio.value : "default";
-
-            const refSelect = document.getElementById("formulaRefTaskSelect");
-            const offsetInput = document.getElementById("formulaOffsetDays");
-            const offset = parseInt(offsetInput ? offsetInput.value : 0, 10) || 0;
-
-            task.dateFormula = {
-                type: fType,
-                refTaskId: fType === "custom" ? (refSelect ? refSelect.value : "") : "",
-                offsetDays: offset
-            };
-
-            document.getElementById("modalTaskFormulaConfig")?.classList.add("hidden");
-            recalculateAllTaskDates(true);
+            // Tự động tính toán dây chuyền ngay lập tức và render lại đầy đủ
+            recalculateAllTaskDates(false, false);
+            showToast(`Đã áp dụng chế độ tính ngày cho: ${task.name}!`, "success");
         });
     }
 
