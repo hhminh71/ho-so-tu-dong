@@ -1,7 +1,12 @@
-// Tự Động Xuất Hồ Sơ Chỉ Định Thầu - Client Logic
+// Tự Động Quản Lý & Xuất Hồ Sơ Mua Sắm, Xây Lắp - Core App Logic v3.0
 (function () {
     // -------------------------------------------------------------
-    // Initial State & Sample Data (matches the video demo)
+    // Master Procurement Matrix (Embedded + Async Sync)
+    // -------------------------------------------------------------
+    const PROCUREMENT_MATRIX = {"system": "Hệ thống Quản lý & Tự động xuất Hồ sơ Mua sắm, Xây lắp", "version": "3.0", "legalBases": ["Luật Đấu thầu số 22/2023/QH15 ngày 23/06/2023", "Nghị định số 24/2024/NĐ-CP ngày 27/02/2024 của Chính phủ", "Nghị định số 30/2020/NĐ-CP ngày 05/03/2020 về công tác văn thư"], "procurementTypes": [{"id": "duoi_50_trieu", "code": "D50", "name": "1. Mua sắm siêu rút gọn (Dưới 50 triệu)", "badge": "< 50 triệu", "badgeColor": "emerald", "description": "Áp dụng mua sắm tài sản, thiết bị, sửa chữa thường xuyên dưới 50 triệu đồng theo dự toán nội bộ.", "threshold": 50000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "d50_1", "code": "01.TTr-MS", "name": "01. Tờ trình phê duyệt chủ trương và dự toán", "desc": "Tờ trình đơn vị đề xuất mua sắm hàng hóa / sửa chữa", "requiredVars": ["TEN_DON_VI", "SO_TO_TRINH", "NGAY_TO_TRINH", "TEN_HANG_MUC", "LY_DO_MUA_SAM", "TONG_MUC_DAU_TU", "NGUON_VON", "TRUONG_DON_VI"]}, {"id": "d50_2", "code": "02.BC-MS", "name": "02. Báo cáo thẩm định & phê duyệt mua sắm", "desc": "Báo cáo phê duyệt kết quả mua sắm dưới 50 triệu", "requiredVars": ["TEN_DON_VI", "SO_BAO_CAO", "NGAY_BAO_CAO", "TEN_HANG_MUC", "TEN_NHA_THAU", "MA_SO_THUE", "GIA_TRI_MUA_SAM", "NGUOI_PHE_DUYET"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Ký kết & Nghiệm thu", "documents": [{"id": "d50_3", "code": "03.HD-KT", "name": "03. Hợp đồng kinh tế / Đơn đặt hàng", "desc": "Hợp đồng mua bán hoặc sửa chữa", "requiredVars": ["TEN_DON_VI", "DAI_DIEN_BEN_A", "TEN_NHA_THAU", "DAI_DIEN_BEN_B", "GIA_TRI_HOP_DONG", "THOI_GIAN_THUC_HIEN"]}, {"id": "d50_4", "code": "04.BB-NT", "name": "04. Biên bản nghiệm thu bàn giao và thanh lý", "desc": "Biên bản bàn giao thiết bị / hoàn thành sửa chữa", "requiredVars": ["TEN_DON_VI", "TEN_NHA_THAU", "NGAY_NGHIEM_THU", "NOI_DUNG_CONG_VIEC", "GIA_TRI_QUYET_TOAN"]}]}]}, {"id": "duoi_100_trieu", "code": "D100", "name": "2. Mua sắm thường xuyên 50tr - 100tr (Khoản 4 Điều 23)", "badge": "50tr - 100tr", "badgeColor": "teal", "description": "Áp dụng chỉ định thầu siêu nhỏ không qua mạng theo Khoản 4 Điều 23 Luật Đấu thầu 2023.", "threshold": 100000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "d100_1", "code": "01.TTr-KHLCNT", "name": "01. Tờ trình phê duyệt Kế hoạch LCNT", "desc": "Tờ trình phê duyệt KHLCNT gói mua sắm thường xuyên", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_GOI_THAU", "GIA_GOI_THAU", "HINH_THUC_LCNT", "NGUOI_TRINH"]}, {"id": "d100_2", "code": "02.QD-KHLCNT", "name": "02. Quyết định phê duyệt Kế hoạch LCNT", "desc": "Quyết định phê duyệt của Người có thẩm quyền", "requiredVars": ["TEN_CHU_DAU_TU", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "TEN_GOI_THAU", "NGUOI_KY_CDT"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Ký kết & Thanh lý", "documents": [{"id": "d100_3", "code": "03.BB-TT", "name": "03. Biên bản thương thảo hoàn thiện đơn hàng", "desc": "Biên bản thống nhất giá và tiến độ giao hàng", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU", "GIA_THUONG_THAO", "THOI_GIAN_GIAO_HANG"]}, {"id": "d100_4", "code": "04.HD-KT", "name": "04. Hợp đồng kinh tế và biên bản giao nhận", "desc": "Hợp đồng kinh tế trọn gói", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG", "KHO_BAC_NHA_NUOC"]}]}]}, {"id": "chao_gia_han_che", "code": "CGHC", "name": "3. Chào giá cạnh tranh hạn chế (Nội bộ)", "badge": "Chào giá NB", "badgeColor": "cyan", "description": "Gửi thư mời chào giá đến ít nhất 3 nhà thầu có năng lực để so sánh giá cạnh tranh.", "threshold": 500000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "cghc_1", "code": "01.TTr-CT", "name": "01. Tờ trình phê duyệt chủ trương chào giá", "desc": "Tờ trình chủ trương mua sắm cạnh tranh", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_GOI_THAU", "GIA_GOI_THAU"]}, {"id": "cghc_2", "code": "02.BC-MS", "name": "02. Báo cáo đề xuất phương án chào giá hạn chế", "desc": "Đề xuất danh sách ít nhất 3 nhà thầu", "requiredVars": ["TEN_CHU_DAU_TU", "DANH_SACH_3_NHA_THAU"]}, {"id": "cghc_3", "code": "03.TB-CG", "name": "03. Thư mời chào giá kèm bảng yêu cầu kỹ thuật", "desc": "Gửi các nhà thầu nộp thư báo giá", "requiredVars": ["TEN_NHA_THAU", "HAN_NOP_BAO_GIA", "YEU_CAU_KY_THUAT"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Đánh giá & Trao thầu", "documents": [{"id": "cghc_4", "code": "04.BB-MT", "name": "04. Biên bản mở thư chào giá", "desc": "Biên bản mở niêm phong các báo giá", "requiredVars": ["THOI_GIAN_MO_THAU", "DANH_SACH_GIA_CHAO"]}, {"id": "cghc_5", "code": "05.BB-DG", "name": "05. Biên bản họp đánh giá so sánh báo giá", "desc": "So sánh kỹ thuật và đơn giá", "requiredVars": ["TO_CHUYEN_GIA", "DON_VI_GIA_THAP_NHAT"]}, {"id": "cghc_6", "code": "06.BB-TT", "name": "06. Biên bản thương thảo hợp đồng", "desc": "Thương thảo với đơn vị có giá tốt nhất", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_THUONG_THAO"]}, {"id": "cghc_7", "code": "07.BC-DG", "name": "07. Báo cáo đánh giá kết quả chào giá", "desc": "Báo cáo trình lãnh đạo phê duyệt", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_DE_NGHI"]}, {"id": "cghc_8", "code": "08.TB-KQ", "name": "08. Thông báo kết quả chào giá", "desc": "Thông báo gửi các đơn vị tham gia", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_TRUNG_THAU"]}, {"id": "cghc_9", "code": "09.HD-KT", "name": "09. Hợp đồng kinh tế", "desc": "Hợp đồng kinh tế ký kết", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU_TRUNG", "GIA_TRI_HOP_DONG"]}]}]}, {"id": "chi_dinh_thau_rut_gon", "code": "CDTRG", "name": "4. Chỉ định thầu rút gọn (Tư vấn < 500tr; XL/HH < 1 tỷ)", "badge": "CĐT Rút Gọn", "badgeColor": "emerald", "description": "Quy trình chuẩn theo Điều 78 Nghị định 24/2024/NĐ-CP (Tư vấn, Xây lắp, Hàng hóa).", "threshold": 1000000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "cdtrg_1", "code": "01.TTr-KHLCNT", "name": "01. Tờ trình phê duyệt Kế hoạch LCNT", "desc": "Trình cấp thẩm quyền phê duyệt KHLCNT", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_DU_AN", "TEN_GOI_THAU", "GIA_GOI_THAU_SO"]}, {"id": "cdtrg_2", "code": "02.QD-KHLCNT", "name": "02. Quyết định phê duyệt Kế hoạch LCNT", "desc": "Quyết định phê duyệt KHLCNT", "requiredVars": ["SO_QUYET_DINH_KHLCNT", "NGAY_QUYET_DINH", "NGUOI_KY_CDT"]}, {"id": "cdtrg_3", "code": "03.GM-TT", "name": "03. Giấy mời tham gia hoàn thiện hợp đồng", "desc": "Gửi nhà thầu được chỉ định", "requiredVars": ["TEN_BAN_QUAN_LY_DU_AN", "TEN_NHA_THAU", "THOI_GIAN_HOP", "DIA_DIEM_HOP"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Hoàn thiện & Phê duyệt", "documents": [{"id": "cdtrg_4", "code": "04.BB-HT", "name": "04. Biên bản hoàn thiện hợp đồng", "desc": "Biên bản hoàn thiện điều khoản hợp đồng", "requiredVars": ["SO_BIEN_BAN_HOAN_THIEN", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "DAI_DIEN_NHA_THAU"]}, {"id": "cdtrg_5", "code": "05.TTr-KQLCNT", "name": "05. Tờ trình phê duyệt kết quả chỉ định thầu", "desc": "Trình phê duyệt chỉ định thầu", "requiredVars": ["SO_TO_TRINH", "CO_QUAN_TRINH", "TRUONG_BAN_DHDA", "TEN_NHA_THAU"]}, {"id": "cdtrg_6", "code": "06.QD-KQLCNT", "name": "06. Quyết định phê duyệt kết quả chỉ định thầu", "desc": "Quyết định phê duyệt trúng thầu", "requiredVars": ["SO_QUYET_DINH", "NGUOI_KY_CDT", "GIA_TRI_HOP_DONG_SO", "THOI_GIAN_THUC_HIEN"]}, {"id": "cdtrg_7", "code": "07.HD-KT", "name": "07. Hợp đồng kinh tế", "desc": "Hợp đồng kinh tế chính thức", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO", "KHO_BAC_NHA_NUOC"]}]}]}, {"id": "chi_dinh_thau_thong_thuong", "code": "CDTTT", "name": "5. Chỉ định thầu quy trình thông thường (HSYC & HSĐX)", "badge": "CĐT Thông Thường", "badgeColor": "indigo", "description": "Áp dụng gói thầu cần lập Hồ sơ yêu cầu, đánh giá Hồ sơ đề xuất và thẩm định kết quả.", "threshold": 5000000000, "phases": [{"phaseId": "chuan_bi_hsyc", "phaseName": "Giai đoạn Chuẩn bị Hồ sơ yêu cầu", "documents": [{"id": "cdttt_1", "code": "01.QD-TCG", "name": "01. Quyết định thành lập Tổ chuyên gia & Tổ thẩm định", "desc": "Thành lập ban bệ tổ chức chỉ định thầu", "requiredVars": ["TO_TRUONG_CHUYEN_GIA", "TO_TRUONG_THAM_DINH"]}, {"id": "cdttt_2", "code": "02.TTr-HSYC", "name": "02. Tờ trình đề nghị phê duyệt Hồ sơ yêu cầu (E-HSYC)", "desc": "Trình duyệt E-HSYC", "requiredVars": ["TEN_GOI_THAU", "TIEU_CHUAN_DANH_GIA"]}, {"id": "cdttt_3", "code": "03.BC-TD-HSYC", "name": "03. Báo cáo thẩm định Hồ sơ yêu cầu", "desc": "Tổ thẩm định kiểm tra HSYC", "requiredVars": ["KET_QUA_THAM_DINH_HSYC"]}, {"id": "cdttt_4", "code": "04.QD-PD-HSYC", "name": "04. Quyết định phê duyệt Hồ sơ yêu cầu", "desc": "Ban hành HSYC chính thức", "requiredVars": ["SO_QD_HSYC", "NGAY_BAN_HANH"]}, {"id": "cdttt_5", "code": "05.TM-HSDX", "name": "05. Thư mời nộp Hồ sơ đề xuất", "desc": "Gửi đơn vị dự kiến chỉ định", "requiredVars": ["TEN_NHA_THAU", "HAN_NOP_HSDX"]}]}, {"phaseId": "danh_gia_trao_thau", "phaseName": "Giai đoạn Đánh giá & Phê duyệt kết quả", "documents": [{"id": "cdttt_6", "code": "06.BB-M-HSDX", "name": "06. Biên bản mở Hồ sơ đề xuất", "desc": "Mở hồ sơ đề xuất", "requiredVars": ["THOI_GIAN_MO_THAU"]}, {"id": "cdttt_7", "code": "07.BC-DG-HSDX", "name": "07. Báo cáo đánh giá Hồ sơ đề xuất", "desc": "Đánh giá năng lực, kinh nghiệm, tài chính", "requiredVars": ["KET_QUA_DANH_GIA"]}, {"id": "cdttt_8", "code": "08.BB-TT", "name": "08. Biên bản thương thảo hợp đồng", "desc": "Thương thảo hoàn thiện", "requiredVars": ["GIA_THUONG_THAO"]}, {"id": "cdttt_9", "code": "09.TTr-KQLCNT", "name": "09. Tờ trình đề nghị phê duyệt Kết quả chỉ định thầu", "desc": "Trình kết quả LCNT", "requiredVars": ["GIA_TRUNG_THAU_SO"]}, {"id": "cdttt_10", "code": "10.BC-TD-KQ", "name": "10. Báo cáo thẩm định Kết quả lựa chọn nhà thầu", "desc": "Thẩm định trước khi ký duyệt", "requiredVars": ["Y_KIEN_THAM_DINH"]}, {"id": "cdttt_11", "code": "11.QD-PD-KQ", "name": "11. Quyết định phê duyệt Kết quả chỉ định thầu", "desc": "Quyết định phê duyệt chính thức", "requiredVars": ["SO_QUYET_DINH"]}, {"id": "cdttt_12", "code": "12.HD-KT", "name": "12. Hợp đồng kinh tế", "desc": "Hợp đồng kinh tế", "requiredVars": ["GIA_TRI_HOP_DONG_SO"]}]}]}, {"id": "dau_thau_rong_rai_hh_xl", "code": "DTRR", "name": "6. Đấu thầu rộng rãi qua mạng (E-HSMT Xây lắp & Mua sắm)", "badge": "Đấu Thầu Rộng Rãi", "badgeColor": "rose", "description": "Đầy đủ 23 biểu mẫu theo chuẩn Hệ thống Mạng Đấu thầu Quốc gia qua 6 giai đoạn (từ chuẩn bị đến ký HĐ).", "threshold": 100000000000, "phases": [{"phaseId": "giai_doan_1_hsmt", "phaseName": "GĐ 1: Chuẩn bị Hồ sơ mời thầu (E-HSMT)", "documents": [{"id": "dtrr_1", "code": "01.QD-TL", "name": "01. Quyết định thành lập Tổ chuyên gia và Tổ thẩm định", "desc": "Thành lập tổ chấm thầu", "requiredVars": ["TO_TRUONG_CHUYEN_GIA", "TO_TRUONG_THAM_DINH"]}, {"id": "dtrr_2", "code": "02.BB-HOP-TCG", "name": "02. Biên bản họp Tổ chuyên gia thông qua dự thảo E-HSMT", "desc": "Họp rà soát tiêu chuẩn mời thầu", "requiredVars": ["NOI_DUNG_DU_THAO"]}, {"id": "dtrr_3", "code": "03.TTr-HSMT", "name": "03. Tờ trình đề nghị thẩm định, phê duyệt E-HSMT", "desc": "Trình thẩm định E-HSMT", "requiredVars": ["TEN_GOI_THAU", "GIA_GOI_THAU"]}, {"id": "dtrr_4", "code": "04.BB-HOP-TTD", "name": "04. Biên bản họp Tổ thẩm định E-HSMT", "desc": "Họp thẩm định E-HSMT", "requiredVars": ["KET_QUA_HOP_THAM_DINH"]}, {"id": "dtrr_5", "code": "05.BC-TD-HSMT", "name": "05. Báo cáo thẩm định E-HSMT", "desc": "Báo cáo thẩm định đạt yêu cầu", "requiredVars": ["KET_LUAN_THAM_DINH"]}, {"id": "dtrr_6", "code": "06.QD-PD-HSMT", "name": "06. Quyết định phê duyệt E-HSMT", "desc": "Phê duyệt để đăng tải mạng", "requiredVars": ["SO_QD_HSMT", "NGAY_KY"]}]}, {"phaseId": "giai_doan_2_to_chuc", "phaseName": "GĐ 2: Tổ chức Lựa chọn nhà thầu & Mở thầu", "documents": [{"id": "dtrr_7", "code": "07.TB-MT", "name": "07. Thông báo mời thầu (E-TBMT)", "desc": "Thông báo phát hành hồ sơ mời thầu", "requiredVars": ["SO_E_TBMT", "THOI_DIEM_DONG_THAU"]}, {"id": "dtrr_8", "code": "08.VB-LAM-RO", "name": "08. Văn bản làm rõ E-HSMT (nếu có)", "desc": "Giải đáp thắc mắc của nhà thầu", "requiredVars": ["NOI_DUNG_LAM_RO"]}, {"id": "dtrr_9", "code": "09.QD-SUA-DOI", "name": "09. Quyết định sửa đổi E-HSMT (nếu có)", "desc": "Điều chỉnh hồ sơ mời thầu", "requiredVars": ["NOI_DUNG_SUA_DOI"]}, {"id": "dtrr_10", "code": "10.BB-MO-THAU", "name": "10. Biên bản mở thầu điện tử", "desc": "Trích xuất danh sách nhà thầu dự thầu", "requiredVars": ["DANH_SACH_NHA_THAU_DU_THAU"]}]}, {"phaseId": "giai_doan_3_danh_gia", "phaseName": "GĐ 3: Đánh giá Hồ sơ dự thầu (E-HSDT)", "documents": [{"id": "dtrr_11", "code": "11.BB-HOP-PC", "name": "11. Biên bản họp Tổ chuyên gia phân công nhiệm vụ", "desc": "Phân công tổ viên chấm điểm", "requiredVars": ["PHAN_CONG_CHAM_THAU"]}, {"id": "dtrr_12", "code": "12.VB-LR-HSDT", "name": "12. Văn bản yêu cầu làm rõ E-HSDT (nếu có)", "desc": "Làm rõ hồ sơ dự thầu", "requiredVars": ["YEU_CAU_LAM_RO_HSDT"]}, {"id": "dtrr_13", "code": "13.BB-HOP-KQ", "name": "13. Biên bản họp Tổ chuyên gia thông qua kết quả chấm thầu", "desc": "Thống nhất xếp hạng nhà thầu", "requiredVars": ["XEP_HANG_NHA_THAU"]}, {"id": "dtrr_14", "code": "14.BC-DG-HSDT", "name": "14. Báo cáo đánh giá Hồ sơ dự thầu (E-HSDT)", "desc": "Báo cáo chấm thầu chính thức", "requiredVars": ["NHA_THAU_XEP_HANG_1"]}]}, {"phaseId": "giai_doan_4_thuong_thao", "phaseName": "GĐ 4: Thương thảo và Hoàn thiện hợp đồng", "documents": [{"id": "dtrr_15", "code": "15.GM-TT", "name": "15. Văn bản mời nhà thầu xếp hạng nhất vào thương thảo", "desc": "Mời thương thảo", "requiredVars": ["TEN_NHA_THAU_HANG_1", "LICH_THUONG_THAO"]}, {"id": "dtrr_16", "code": "16.BB-TT", "name": "16. Biên bản thương thảo hợp đồng", "desc": "Thương thảo các điều khoản", "requiredVars": ["GIA_THUONG_THAO_CUOI_CUNG"]}, {"id": "dtrr_17", "code": "17.BB-HT", "name": "17. Biên bản hoàn thiện hợp đồng", "desc": "Rà soát điều kiện hợp đồng", "requiredVars": ["GIA_TRI_HOP_DONG_THONG_NHAT"]}]}, {"phaseId": "giai_doan_5_phe_duyet", "phaseName": "GĐ 5: Thẩm định và Phê duyệt Kết quả LCNT", "documents": [{"id": "dtrr_18", "code": "18.TTr-KQLCNT", "name": "18. Tờ trình đề nghị thẩm định, phê duyệt Kết quả LCNT", "desc": "Trình phê duyệt trúng thầu", "requiredVars": ["TEN_DON_VI_TRUNG_THAU", "GIA_TRUNG_THAU"]}, {"id": "dtrr_19", "code": "19.BB-HOP-TTD", "name": "19. Biên bản họp Tổ thẩm định Kết quả LCNT", "desc": "Họp thẩm định kết quả", "requiredVars": ["Y_KIEN_TO_THAM_DINH"]}, {"id": "dtrr_20", "code": "20.BC-TD-KQ", "name": "20. Báo cáo thẩm định Kết quả LCNT", "desc": "Báo cáo thẩm định", "requiredVars": ["KET_LUAN_THAM_DINH_KQLCNT"]}, {"id": "dtrr_21", "code": "21.QD-PD-KQ", "name": "21. Quyết định phê duyệt Kết quả lựa chọn nhà thầu", "desc": "Quyết định phê duyệt trúng thầu chính thức", "requiredVars": ["SO_QUYET_DINH", "GIA_TRUNG_THAU_SO"]}]}, {"phaseId": "giai_doan_6_hop_dong", "phaseName": "GĐ 6: Công khai Kết quả & Ký kết Hợp đồng", "documents": [{"id": "dtrr_22", "code": "22.TB-KQ", "name": "22. Thông báo Kết quả lựa chọn nhà thầu", "desc": "Đăng tải kết quả trên mạng đấu thầu", "requiredVars": ["TEN_NHA_THAU_TRUNG_THAU"]}, {"id": "dtrr_23", "code": "23.HD-KT", "name": "23. Hợp đồng kinh tế chính thức (kèm phụ lục)", "desc": "Hợp đồng kinh tế xây lắp/mua sắm", "requiredVars": ["GIA_TRI_HOP_DONG", "BAO_DAM_THUC_HIEN_HD"]}]}]}]};
+
+    // -------------------------------------------------------------
+    // Initial State & Sample Data (Matches Video Demo & Standards)
     // -------------------------------------------------------------
     const defaultGeneralInfo = {
         TEN_CHU_DAU_TU: "UBND phường Hoàn Kiếm",
@@ -135,7 +140,6 @@
         }
     ];
 
-    // Field mapping to general vs package
     const generalFieldsList = [
         "TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CO_QUAN_TRINH",
         "DIA_DANH", "TINH_THANH_PHO", "DIA_CHI_TRU_SO", "CAP_QUYET_DINH_DAU_TU",
@@ -149,34 +153,44 @@
         generalInfo: JSON.parse(JSON.stringify(defaultGeneralInfo)),
         packages: JSON.parse(JSON.stringify(defaultPackages)),
         activePackageIndex: 0,
-        activeDocType: 1
+        selectedProcurementTypeId: "chi_dinh_thau_rut_gon",
+        activeDocId: "cdtrg_3"
     };
 
     // Load from localStorage if present
     try {
-        const saved = localStorage.getItem("ho_so_tu_dong_state_v2");
+        const saved = localStorage.getItem("ho_so_tu_dong_state_v3");
         if (saved) {
             const parsed = JSON.parse(saved);
             if (parsed.packages && parsed.packages.length > 0) {
-                appState = parsed;
+                appState = Object.assign(appState, parsed);
+            }
+        } else {
+            const oldSaved = localStorage.getItem("ho_so_tu_dong_state_v2");
+            if (oldSaved) {
+                const oldParsed = JSON.parse(oldSaved);
+                if (oldParsed.packages && oldParsed.packages.length > 0) {
+                    appState.generalInfo = oldParsed.generalInfo || appState.generalInfo;
+                    appState.packages = oldParsed.packages || appState.packages;
+                }
             }
         }
     } catch (e) {
         console.warn("Could not load from localStorage:", e);
     }
 
-    // Save to localStorage
     function saveState() {
         try {
-            localStorage.setItem("ho_so_tu_dong_state_v2", JSON.stringify(appState));
+            localStorage.setItem("ho_so_tu_dong_state_v3", JSON.stringify(appState));
         } catch (e) {
             console.warn("Could not save state:", e);
         }
     }
 
     // -------------------------------------------------------------
-    // UI Helpers & DOM Elements
+    // DOM Elements
     // -------------------------------------------------------------
+    const procurementTypeSelect = document.getElementById("procurementTypeSelect");
     const packageSelect = document.getElementById("packageSelect");
     const btnAddPackage = document.getElementById("btnAddPackage");
     const btnRenamePackage = document.getElementById("btnRenamePackage");
@@ -198,9 +212,11 @@
     const btnCloseExportModal = document.getElementById("btnCloseExportModal");
     const btnCancelExport = document.getElementById("btnCancelExport");
     const batchPackagesList = document.getElementById("batchPackagesList");
+    const batchDocumentsList = document.getElementById("batchDocumentsList");
     const batchSummaryText = document.getElementById("batchSummaryText");
     const btnConfirmExportZip = document.getElementById("btnConfirmExportZip");
     const btnExportZipText = document.getElementById("btnExportZipText");
+    const modalProcurementSubtitle = document.getElementById("modalProcurementSubtitle");
 
     // Toast element
     const toast = document.getElementById("toastNotification");
@@ -223,9 +239,114 @@
     }
 
     // -------------------------------------------------------------
-    // Render Package Dropdown
+    // Procurement Matrix Helpers
     // -------------------------------------------------------------
-    
+    function getCurrentProcurementType() {
+        const pt = PROCUREMENT_MATRIX.procurementTypes.find(t => t.id === appState.selectedProcurementTypeId);
+        return pt || PROCUREMENT_MATRIX.procurementTypes[3];
+    }
+
+    function getAllDocsForCurrentType() {
+        const pt = getCurrentProcurementType();
+        const docs = [];
+        pt.phases.forEach(ph => {
+            ph.documents.forEach(doc => {
+                docs.push({
+                    ...doc,
+                    phaseName: ph.phaseName
+                });
+            });
+        });
+        return docs;
+    }
+
+    function getCurrentActiveDoc() {
+        const docs = getAllDocsForCurrentType();
+        let doc = docs.find(d => d.id === appState.activeDocId);
+        if (!doc && docs.length > 0) {
+            doc = docs[0];
+            appState.activeDocId = doc.id;
+        }
+        return doc;
+    }
+
+    const prebuiltDocxMap = {
+        "cdtrg_1": "templates/01_To_trinh_KHLCNT.docx",
+        "d100_1": "templates/01_To_trinh_KHLCNT.docx",
+        "cdtrg_2": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "d100_2": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "cdtrg_3": "templates/1_Giay_moi_tham_gia.docx",
+        "cdtrg_4": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "cdtrg_5": "templates/3_To_trinh_chi_dinh_thau.docx",
+        "cdtrg_6": "templates/4_Quyet_dinh_chi_dinh_thau.docx",
+        "cdtrg_7": "templates/07_Hop_dong_kinh_te.docx",
+        "d50_3": "templates/07_Hop_dong_kinh_te.docx",
+        "d100_4": "templates/07_Hop_dong_kinh_te.docx",
+        "cghc_9": "templates/07_Hop_dong_kinh_te.docx",
+        "cdttt_12": "templates/07_Hop_dong_kinh_te.docx",
+        "dtrr_23": "templates/07_Hop_dong_kinh_te.docx"
+    };
+
+    // -------------------------------------------------------------
+    // Populate Procurement Type Dropdown & Doc Tabs
+    // -------------------------------------------------------------
+    function initProcurementTypeSelector() {
+        if (!procurementTypeSelect) return;
+        procurementTypeSelect.innerHTML = "";
+
+        PROCUREMENT_MATRIX.procurementTypes.forEach(pt => {
+            const opt = document.createElement("option");
+            opt.value = pt.id;
+            opt.textContent = `${pt.name}`;
+            if (pt.id === appState.selectedProcurementTypeId) {
+                opt.selected = true;
+            }
+            procurementTypeSelect.appendChild(opt);
+        });
+
+        procurementTypeSelect.addEventListener("change", (e) => {
+            appState.selectedProcurementTypeId = e.target.value;
+            const docs = getAllDocsForCurrentType();
+            if (docs.length > 0) {
+                appState.activeDocId = docs[0].id;
+            }
+            saveState();
+            renderDocTabs();
+            renderDocumentPreview();
+            showToast(`Đã chuyển quy trình: ${getCurrentProcurementType().name}`);
+        });
+    }
+
+    function renderDocTabs() {
+        if (!docTypeTabs) return;
+        docTypeTabs.innerHTML = "";
+        const docs = getAllDocsForCurrentType();
+
+        if (!docs.some(d => d.id === appState.activeDocId)) {
+            if (docs.length > 0) appState.activeDocId = docs[0].id;
+        }
+
+        docs.forEach(doc => {
+            const btn = document.createElement("button");
+            const isActive = doc.id === appState.activeDocId;
+            btn.type = "button";
+            btn.setAttribute("data-doc-id", doc.id);
+            btn.className = `tab-btn px-2 py-0.5 text-[11px] rounded transition-all whitespace-nowrap ${isActive ? 'active shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-300/50'}`;
+            btn.title = `${doc.name} (${doc.desc || ''})`;
+            btn.innerHTML = `<span class="font-bold">${doc.code}</span>`;
+
+            btn.addEventListener("click", () => {
+                document.querySelectorAll("#docTypeTabs .tab-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                appState.activeDocId = doc.id;
+                saveState();
+                renderDocumentPreview();
+            });
+
+            docTypeTabs.appendChild(btn);
+        });
+    }
+
     // -------------------------------------------------------------
     // Render Custom Variables from Template Studio
     // -------------------------------------------------------------
@@ -261,10 +382,10 @@
                 div.className = "space-y-0.5";
                 div.innerHTML = `
                     <div class="flex items-center justify-between">
-                        <label class="block text-[11px] font-semibold text-indigo-900">${v.label} <span class="text-indigo-500 font-mono text-[10px]">({{${v.key}}})</span></label>
+                        <label class="field-label">${v.label} <span class="text-indigo-500 font-mono text-[9px]">({{${v.key}}})</span></label>
                         <span class="text-[9px] bg-indigo-50 text-indigo-700 px-1 py-0.2 rounded">${v.targetSheet || "Từng gói thầu"}</span>
                     </div>
-                    <input type="text" data-field="${v.key}" placeholder="VD: ${v.value || ''}" class="w-full text-xs px-2 py-1 h-7 border rounded border-indigo-200 focus:ring-1 focus:ring-indigo-500 bg-white text-slate-800">
+                    <input type="text" data-field="${v.key}" placeholder="VD: ${v.value || ''}" class="w-full text-xs px-2 py-0.5 h-6 border rounded border-indigo-200 focus:ring-1 focus:ring-emerald-500 bg-white text-slate-800">
                 `;
                 customContainer.appendChild(div);
             });
@@ -318,7 +439,6 @@
             const currentPkg = appState.packages[appState.activePackageIndex];
             if (currentPkg) {
                 currentPkg.fields[field] = val;
-                // If package name field changed, update dropdown
                 if (field === "TEN_GOI_THAU" && val.trim()) {
                     currentPkg.name = val.split(" ").slice(0, 4).join(" ");
                     renderPackageDropdown();
@@ -335,7 +455,6 @@
     // Calculate Progress Bar & Badges
     // -------------------------------------------------------------
     function updateProgress() {
-        const currentPkg = appState.packages[appState.activePackageIndex] || { fields: {} };
         const inputs = document.querySelectorAll("[data-field]");
         let totalCount = inputs.length;
         let filledCount = 0;
@@ -346,13 +465,11 @@
             }
         });
 
-        // Update progress bar
         const percent = totalCount > 0 ? Math.round((filledCount / totalCount) * 100) : 0;
         progressText.textContent = `Đã điền: ${filledCount}/${totalCount}`;
         progressBar.style.width = `${percent}%`;
         progressPercent.textContent = `${percent}%`;
 
-        // Update section badges
         const sections = document.querySelectorAll(".accordion-item");
         sections.forEach(sec => {
             const badge = sec.querySelector(".sec-badge");
@@ -364,9 +481,9 @@
             });
             badge.textContent = `${sFilled}/${secInputs.length}`;
             if (sFilled === secInputs.length && secInputs.length > 0) {
-                badge.className = "sec-badge text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold";
+                badge.className = "sec-badge text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full font-bold";
             } else {
-                badge.className = "sec-badge text-xs bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-medium";
+                badge.className = "sec-badge text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full font-medium";
             }
         });
     }
@@ -401,7 +518,7 @@
         document.querySelectorAll(".accordion-header .fa-chevron-down").forEach(ch => {
             ch.style.transform = allOpen ? "rotate(0deg)" : "rotate(-90deg)";
         });
-        btnToggleAll.querySelector("span").textContent = allOpen ? "Thu gọn tất cả" : "Mở tất cả";
+        btnToggleAll.querySelector("span").textContent = allOpen ? "Mở tất cả" : "Thu gọn tất cả";
     });
 
     // -------------------------------------------------------------
@@ -420,7 +537,7 @@
             name: `Gói thầu ${count}`,
             sheet_name: `Gói thầu ${count}`,
             fields: {
-                TEN_GOI_THAU: `Gói thầu tư vấn số ${count}`,
+                TEN_GOI_THAU: `Gói thầu số ${count}`,
                 HINH_THUC_LCNT: "Chỉ định thầu rút gọn",
                 LOAI_HOP_DONG: "Trọn gói",
                 THOI_GIAN_THUC_HIEN: "30 ngày",
@@ -471,8 +588,7 @@
 
     btnClearAll.addEventListener("click", () => {
         if (confirm("Bạn có chắc chắn muốn xóa toàn bộ dữ liệu đang điền để nhập lại từ đầu?")) {
-            localStorage.removeItem("ho_so_tu_dong_state_v2");
-            // Clear inputs
+            localStorage.removeItem("ho_so_tu_dong_state_v3");
             for (let k in appState.generalInfo) appState.generalInfo[k] = "";
             appState.packages.forEach(p => {
                 for (let fk in p.fields) p.fields[fk] = "";
@@ -484,18 +600,8 @@
     });
 
     // -------------------------------------------------------------
-    // Live Document Preview Render
+    // Live Document Preview Render (Administrative Standard Format)
     // -------------------------------------------------------------
-    // Tab switching
-    docTypeTabs.addEventListener("click", (e) => {
-        const btn = e.target.closest(".tab-btn");
-        if (!btn) return;
-        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        appState.activeDocType = parseInt(btn.getAttribute("data-doc"), 10);
-        renderDocumentPreview();
-    });
-
     function getMergedData() {
         const currentPkg = appState.packages[appState.activePackageIndex] || { fields: {} };
         return {
@@ -504,9 +610,9 @@
         };
     }
 
-    function valOrPlaceholder(key, data, isRed = true) {
+    function valOrPlaceholder(key, data) {
         const val = data[key];
-        if (val && val.trim() !== "") {
+        if (val && String(val).trim() !== "") {
             return `<span class="filled-val">${val}</span>`;
         }
         return `<span class="placeholder-tag">{${key}}</span>`;
@@ -514,34 +620,53 @@
 
     function renderDocumentPreview() {
         const data = getMergedData();
+        const activeDoc = getCurrentActiveDoc();
+        if (!activeDoc) return;
+
+        const docId = activeDoc.id;
         let html = "";
 
-        if (appState.activeDocType === 1) {
-            // Giấy mời tham gia
+        const headerHtml = `
+            <div class="grid grid-cols-2 text-center text-xs pb-3 border-b border-transparent">
+                <div>
+                    <div class="font-bold text-[11.5pt] uppercase">${valOrPlaceholder("TEN_CHU_DAU_TU_VIET_HOA", data)}</div>
+                    <div class="font-bold text-[10.5pt] uppercase">${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</div>
+                    <div class="mt-1 text-[10.5pt]">Số: ${valOrPlaceholder("SO_TO_TRINH", data) || "....../VB"}</div>
+                </div>
+                <div>
+                    <div class="font-bold text-[11pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                    <div class="font-bold text-[11.5pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
+                    <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_TO_TRINH", data) || "..... tháng ..... năm 202..."}</div>
+                </div>
+            </div>
+        `;
+
+        if (docId === "cdtrg_3") {
+            // Giấy mời tham gia hoàn thiện hợp đồng
             html = `
                 <div class="grid grid-cols-2 text-center text-xs pb-3 border-b border-transparent">
                     <div>
-                        <div class="font-bold text-[12pt] uppercase">${valOrPlaceholder("TEN_CHU_DAU_TU_VIET_HOA", data)}</div>
-                        <div class="font-bold text-[11pt] uppercase">${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</div>
-                        <div class="mt-1 text-[11pt]">Số: GM-BQLDA</div>
+                        <div class="font-bold text-[11.5pt] uppercase">${valOrPlaceholder("TEN_CHU_DAU_TU_VIET_HOA", data)}</div>
+                        <div class="font-bold text-[10.5pt] uppercase">${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</div>
+                        <div class="mt-1 text-[10.5pt]">Số: GM-BQLDA</div>
                     </div>
                     <div>
-                        <div class="font-bold text-[11.5pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
-                        <div class="font-bold text-[12pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
-                        <div class="italic text-[11.5pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_GIAY_MOI", data)}</div>
+                        <div class="font-bold text-[11pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                        <div class="font-bold text-[11.5pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
+                        <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_GIAY_MOI", data)}</div>
                     </div>
                 </div>
 
-                <div class="text-center my-6">
-                    <h2 class="font-bold text-[15pt] uppercase tracking-wide">GIẤY MỜI</h2>
-                    <p class="font-bold text-[13pt] text-slate-700">Tham gia hoàn thiện hợp đồng chỉ định thầu</p>
+                <div class="text-center my-5">
+                    <h2 class="font-bold text-[14pt] uppercase tracking-wide">GIẤY MỜI</h2>
+                    <p class="font-bold text-[12pt] text-slate-700">Tham gia hoàn thiện hợp đồng chỉ định thầu</p>
                 </div>
 
-                <div class="text-center mb-5 font-bold text-[13pt]">
+                <div class="text-center mb-4 font-bold text-[12pt]">
                     Kính gửi: ${valOrPlaceholder("TEN_NHA_THAU", data)}
                 </div>
 
-                <div class="space-y-2 leading-relaxed text-[13pt]">
+                <div class="space-y-2 leading-relaxed text-[12pt]">
                     <p class="indent-8">
                         Căn cứ Quyết định phê duyệt Kế hoạch lựa chọn nhà thầu dự án ${valOrPlaceholder("TEN_DU_AN", data)};
                     </p>
@@ -549,139 +674,113 @@
                         Hiện nay, ${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)} đang chuẩn bị tổ chức công tác chỉ định thầu cho gói thầu: <b>${valOrPlaceholder("TEN_GOI_THAU", data)}</b> thuộc dự án: <b>${valOrPlaceholder("TEN_DU_AN", data)}</b>.
                     </p>
                     <p class="indent-8">
-                        Sau khi xem xét hồ sơ năng lực và kinh nghiệm của Quý đơn vị, ${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)} trân trọng kính mời Quý Công ty tham gia hoàn thiện và ký kết hợp đồng cho gói thầu nêu trên với các nội dung chi tiết như sau:
+                        Qua xem xét điều kiện năng lực và kinh nghiệm, Ban Quản lý dự án trân trọng kính mời đại diện có thẩm quyền của <b>${valOrPlaceholder("TEN_NHA_THAU", data)}</b> đến văn phòng để tham gia hoàn thiện các nội dung hợp đồng chỉ định thầu:
                     </p>
-                    <div class="pl-8 space-y-1 my-3">
-                        <p><b>1. Tên gói thầu:</b> ${valOrPlaceholder("TEN_GOI_THAU", data)}.</p>
-                        <p><b>2. Tên dự án:</b> ${valOrPlaceholder("TEN_DU_AN", data)}.</p>
-                        <p><b>3. Địa điểm thực hiện:</b> ${valOrPlaceholder("DIA_CHI_TRU_SO", data)}.</p>
-                        <p><b>4. Hình thức lựa chọn nhà thầu:</b> ${valOrPlaceholder("HINH_THUC_LCNT", data)}.</p>
-                        <p><b>5. Loại hợp đồng:</b> ${valOrPlaceholder("LOAI_HOP_DONG", data)}.</p>
-                        <p><b>6. Thời gian thực hiện hợp đồng:</b> ${valOrPlaceholder("THOI_GIAN_THUC_HIEN", data)}.</p>
-                        <p><b>7. Thời gian và địa điểm làm việc:</b> Vào hồi ${valOrPlaceholder("THOI_GIAN_HOP", data)}, tại ${valOrPlaceholder("DIA_DIEM_HOP", data)}.</p>
+                    <div class="pl-8 space-y-1 my-3 text-[11pt]">
+                        <p>• <b>Thời gian họp:</b> ${valOrPlaceholder("THOI_GIAN_HOP", data)}</p>
+                        <p>• <b>Địa điểm:</b> ${valOrPlaceholder("DIA_DIEM_HOP", data)}</p>
+                        <p>• <b>Nội dung:</b> Thống nhất các điều khoản hợp đồng gói thầu: ${valOrPlaceholder("TEN_GOI_THAU", data)}</p>
+                        <p>• <b>Thành phần tham gia:</b> Đại diện hợp pháp và cán bộ kỹ thuật phụ trách của đơn vị.</p>
                     </div>
                     <p class="indent-8">
-                        Kính đề nghị người đại diện hợp pháp hoặc người được ủy quyền của Quý Công ty có mặt đúng thời gian và địa điểm nêu trên để hai bên tiến hành các thủ tục theo quy định của pháp luật về đấu thầu.
-                    </p>
-                    <p class="indent-8">
-                        Trân trọng thông báo./.
+                        Rất mong sự có mặt đúng giờ của Quý đơn vị để buổi làm việc đạt kết quả tốt đẹp./.
                     </p>
                 </div>
 
-                <div class="grid grid-cols-2 pt-8 text-[12pt]">
+                <div class="grid grid-cols-2 pt-6 text-[11.5pt]">
                     <div class="text-left text-xs leading-normal">
                         <p class="font-bold italic">Nơi nhận:</p>
                         <p>- Như trên;</p>
-                        <p>- Lãnh đạo Ban;</p>
+                        <p>- Giám đốc (để b/c);</p>
                         <p>- Lưu: VT, ĐHDA.</p>
                     </div>
                     <div class="text-center">
-                        <p class="font-bold uppercase text-[12.5pt]">GIÁM ĐỐC</p>
-                        <div class="h-16"></div>
-                        <p class="font-bold text-[13pt]">${valOrPlaceholder("NGUOI_KY_CDT", data)}</p>
+                        <p class="font-bold uppercase text-[12pt]">${valOrPlaceholder("CHUC_VU_NGUOI_KY", data)}</p>
+                        <p class="text-xs italic">(Ký, họ tên và đóng dấu)</p>
+                        <div class="h-14"></div>
+                        <p class="font-bold text-[12.5pt]">${valOrPlaceholder("NGUOI_KY_CDT", data)}</p>
                     </div>
                 </div>
             `;
-        } else if (appState.activeDocType === 2) {
-            // Biên bản hoàn thiện HĐ
+        } else if (docId === "cdtrg_4") {
+            // Biên bản hoàn thiện hợp đồng
             html = `
-                <div class="grid grid-cols-2 text-center text-xs pb-3 border-b border-transparent">
-                    <div>
-                        <div class="font-bold text-[12pt] uppercase">${valOrPlaceholder("TEN_CHU_DAU_TU_VIET_HOA", data)}</div>
-                        <div class="font-bold text-[11pt] uppercase">${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</div>
-                        <div class="mt-1 text-[11pt]">Số: ${valOrPlaceholder("SO_BIEN_BAN_HOAN_THIEN", data)}</div>
-                    </div>
-                    <div>
-                        <div class="font-bold text-[11.5pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
-                        <div class="font-bold text-[12pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
-                        <div class="italic text-[11.5pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_BIEN_BAN", data)}</div>
-                    </div>
+                <div class="text-center pb-2">
+                    <div class="font-bold text-[11pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                    <div class="font-bold text-[11.5pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
+                    <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_BIEN_BAN", data)}</div>
                 </div>
 
-                <div class="text-center my-6">
-                    <h2 class="font-bold text-[15pt] uppercase tracking-wide">BIÊN BẢN</h2>
-                    <p class="font-bold text-[13pt] text-slate-700">Hoàn thiện hợp đồng chỉ định thầu</p>
-                    <p class="font-bold text-[12pt] mt-1 text-emerald-800">Gói thầu: ${valOrPlaceholder("TEN_GOI_THAU", data)}</p>
-                    <p class="italic text-xs text-slate-600">Thuộc dự án: ${valOrPlaceholder("TEN_DU_AN", data)}</p>
+                <div class="text-center my-4">
+                    <h2 class="font-bold text-[14pt] uppercase tracking-wide">BIÊN BẢN HOÀN THIỆN HỢP ĐỒNG</h2>
+                    <p class="font-bold text-[12pt] text-emerald-800">Gói thầu: ${valOrPlaceholder("TEN_GOI_THAU", data)}</p>
+                    <p class="italic text-xs text-slate-600">Dự án: ${valOrPlaceholder("TEN_DU_AN", data)}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Số: ${valOrPlaceholder("SO_BIEN_BAN_HOAN_THIEN", data)}</p>
                 </div>
 
-                <div class="space-y-3 leading-relaxed text-[13pt]">
-                    <p class="indent-8">
-                        Hôm nay, vào hồi ${valOrPlaceholder("THOI_GIAN_HOP", data)}, tại ${valOrPlaceholder("DIA_DIEM_HOP", data)}, hai bên chúng tôi gồm có:
+                <div class="space-y-2 leading-relaxed text-[11.5pt]">
+                    <p class="indent-8 text-xs italic">
+                        Căn cứ Luật Đấu thầu số 22/2023/QH15 ngày 23/06/2023;<br>
+                        Căn cứ Nghị định số 24/2024/NĐ-CP ngày 27/02/2024 của Chính phủ;<br>
+                        ${valOrPlaceholder("CAN_CU_PHAP_LY_CHUNG", data)}<br>
+                        Căn cứ Giấy mời số GM-BQLDA ngày ${valOrPlaceholder("NGAY_GIAY_MOI", data)} của ${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)};
                     </p>
-                    <div>
-                        <p class="font-bold uppercase text-emerald-900">I. ĐẠI DIỆN CHỦ ĐẦU TƯ (BÊN A): ${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</p>
-                        <div class="pl-4 space-y-0.5 text-xs">
-                            <p>- Ông/Bà: <b>${valOrPlaceholder("NGUOI_KY_CDT", data)}</b> — Chức vụ: ${valOrPlaceholder("CHUC_VU_NGUOI_KY", data)}.</p>
-                            <p>- Ông/Bà: <b>${valOrPlaceholder("TRUONG_BAN_DHDA", data)}</b> — Chức vụ: ${valOrPlaceholder("CHUC_VU_TRUONG_BAN", data)}.</p>
-                            <p>- Ông/Bà: <b>${valOrPlaceholder("KE_TOAN_TRUONG", data)}</b> — Chức vụ: ${valOrPlaceholder("CHUC_VU_KE_TOAN", data)}.</p>
-                            <p>- Địa chỉ trụ sở: ${valOrPlaceholder("DIA_CHI_TRU_SO", data)}.</p>
-                        </div>
+                    <p>Hôm nay, vào hồi ${valOrPlaceholder("THOI_GIAN_HOP", data)}, tại ${valOrPlaceholder("DIA_DIEM_HOP", data)}, chúng tôi gồm có:</p>
+                    
+                    <div class="bg-slate-50 p-2 rounded border border-slate-200 text-xs space-y-1">
+                        <p class="font-bold text-slate-900 uppercase">I. ĐẠI DIỆN BÊN GIAO THẦU (BÊN A): ${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</p>
+                        <p>- Ông/Bà: <b>${valOrPlaceholder("NGUOI_KY_CDT", data)}</b> — Chức vụ: ${valOrPlaceholder("CHUC_VU_NGUOI_KY", data)}</p>
+                        <p>- Ông/Bà: <b>${valOrPlaceholder("TRUONG_BAN_DHDA", data)}</b> — Chức vụ: ${valOrPlaceholder("CHUC_VU_TRUONG_BAN", data)}</p>
+                        <p>- Ông/Bà: <b>${valOrPlaceholder("KE_TOAN_TRUONG", data)}</b> — Chức vụ: ${valOrPlaceholder("CHUC_VU_KE_TOAN", data)}</p>
+                        
+                        <p class="font-bold text-slate-900 uppercase mt-2">II. ĐẠI DIỆN BÊN NHẬN THẦU (BÊN B): ${valOrPlaceholder("TEN_NHA_THAU", data)}</p>
+                        <p>- Ông/Bà: <b>${valOrPlaceholder("DAI_DIEN_NHA_THAU", data)}</b> — Chức vụ: ${valOrPlaceholder("CHUC_VU_DAI_DIEN", data)}</p>
+                        <p>- Địa chỉ: ${valOrPlaceholder("DIA_CHI_NHA_THAU", data)}</p>
+                        <p>- Mã số thuế: ${valOrPlaceholder("MA_SO_THUE", data)}</p>
                     </div>
-                    <div>
-                        <p class="font-bold uppercase text-emerald-900">II. ĐẠI DIỆN NHÀ THẦU ĐƯỢC CHỈ ĐỊNH (BÊN B): ${valOrPlaceholder("TEN_NHA_THAU_VIET_HOA", data)}</p>
-                        <div class="pl-4 space-y-0.5 text-xs">
-                            <p>- Ông/Bà: <b>${valOrPlaceholder("DAI_DIEN_NHA_THAU", data)}</b> — Chức vụ: ${valOrPlaceholder("CHUC_VU_DAI_DIEN", data)}.</p>
-                            <p>- Địa chỉ trụ sở: ${valOrPlaceholder("DIA_CHI_NHA_THAU", data)}.</p>
-                            <p>- Mã số thuế: ${valOrPlaceholder("MA_SO_THUE", data)}.</p>
-                            <p>- Theo Giấy mời tham gia hoàn thiện hợp đồng ngày ${valOrPlaceholder("NGAY_GIAY_MOI", data)}.</p>
-                        </div>
-                    </div>
-                    <div>
-                        <p class="font-bold uppercase text-emerald-900">III. NỘI DUNG HOÀN THIỆN HỢP ĐỒNG:</p>
-                        <div class="pl-4 space-y-1 text-xs">
-                            <p>Hai bên đã tiến hành rà soát, thảo luận và thống nhất các điều khoản:</p>
-                            <p><b>1. Nội dung công việc:</b> Thực hiện trọn vẹn công việc ${valOrPlaceholder("TEN_GOI_THAU", data)} theo đúng hồ sơ nhiệm vụ và tiêu chuẩn hiện hành.</p>
-                            <p><b>2. Thời gian thực hiện:</b> ${valOrPlaceholder("THOI_GIAN_THUC_HIEN", data)} kể từ ngày hợp đồng có hiệu lực.</p>
-                            <p><b>3. Loại hợp đồng:</b> ${valOrPlaceholder("LOAI_HOP_DONG", data)}.</p>
-                            <p><b>4. Giá trị hợp đồng thống nhất:</b> <b>${valOrPlaceholder("GIA_TRI_HOP_DONG_SO", data)} VNĐ</b> (Bằng chữ: <i>${valOrPlaceholder("GIA_TRI_HOP_DONG_CHU", data)}</i>).</p>
-                            <p><b>5. Thanh toán:</b> Qua Kho bạc Nhà nước ${valOrPlaceholder("KHO_BAC_NHA_NUOC", data)}.</p>
-                        </div>
+
+                    <p>Hai bên đã tiến hành rà soát và thống nhất các nội dung hoàn thiện hợp đồng như sau:</p>
+                    <div class="pl-6 space-y-1 text-xs">
+                        <p><b>1. Giá gói thầu phê duyệt:</b> ${valOrPlaceholder("GIA_GOI_THAU_SO", data)} đồng (<i>${valOrPlaceholder("GIA_GOI_THAU_CHU", data)}</i>).</p>
+                        <p><b>2. Giá trị hợp đồng hoàn thiện:</b> <b class="text-emerald-700">${valOrPlaceholder("GIA_TRI_HOP_DONG_SO", data)} đồng</b> (<i>${valOrPlaceholder("GIA_TRI_HOP_DONG_CHU", data)}</i>).</p>
+                        <p class="text-emerald-600"><i>(Giá trị tiết kiệm thông qua đàm phán, hoàn thiện: ${valOrPlaceholder("GIA_TRI_GIAM_GIA", data)} đồng)</i></p>
+                        <p><b>3. Loại hợp đồng:</b> ${valOrPlaceholder("LOAI_HOP_DONG", data)}.</p>
+                        <p><b>4. Thời gian thực hiện:</b> ${valOrPlaceholder("THOI_GIAN_THUC_HIEN", data)}.</p>
+                        <p><b>5. Phương thức thanh toán:</b> Chuyển khoản qua Kho bạc Nhà nước ${valOrPlaceholder("KHO_BAC_NHA_NUOC", data)}.</p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-2 pt-8 text-[12pt]">
+                <div class="grid grid-cols-2 pt-6 text-[11.5pt]">
                     <div class="text-center">
-                        <p class="font-bold uppercase text-[12.5pt]">ĐẠI DIỆN BÊN B</p>
+                        <p class="font-bold uppercase text-[12pt]">ĐẠI DIỆN BÊN B</p>
                         <p class="text-xs italic">(Ký, họ tên và đóng dấu)</p>
-                        <div class="h-16"></div>
-                        <p class="font-bold text-[13pt]">${valOrPlaceholder("DAI_DIEN_NHA_THAU", data)}</p>
+                        <div class="h-14"></div>
+                        <p class="font-bold text-[12.5pt]">${valOrPlaceholder("DAI_DIEN_NHA_THAU", data)}</p>
                     </div>
                     <div class="text-center">
-                        <p class="font-bold uppercase text-[12.5pt]">ĐẠI DIỆN BÊN A</p>
+                        <p class="font-bold uppercase text-[12pt]">ĐẠI DIỆN BÊN A</p>
                         <p class="text-xs italic">(Ký, họ tên và đóng dấu)</p>
-                        <div class="h-16"></div>
-                        <p class="font-bold text-[13pt]">${valOrPlaceholder("NGUOI_KY_CDT", data)}</p>
+                        <div class="h-14"></div>
+                        <p class="font-bold text-[12.5pt]">${valOrPlaceholder("NGUOI_KY_CDT", data)}</p>
                     </div>
                 </div>
             `;
-        } else if (appState.activeDocType === 3) {
-            // Tờ trình chỉ định thầu
+        } else if (docId === "cdtrg_5" || docId === "d50_1" || docId === "cghc_1" || docId === "cdttt_9") {
+            // Tờ trình kết quả chỉ định thầu
             html = `
-                <div class="grid grid-cols-2 text-center text-xs pb-3 border-b border-transparent">
-                    <div>
-                        <div class="font-bold text-[12pt] uppercase">${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</div>
-                        <div class="font-bold text-[11pt] uppercase">${valOrPlaceholder("CO_QUAN_TRINH", data)}</div>
-                        <div class="mt-1 text-[11pt]">Số: ${valOrPlaceholder("SO_TO_TRINH", data)}</div>
-                    </div>
-                    <div>
-                        <div class="font-bold text-[11.5pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
-                        <div class="font-bold text-[12pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
-                        <div class="italic text-[11.5pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_TO_TRINH", data)}</div>
-                    </div>
+                ${headerHtml}
+
+                <div class="text-center my-5">
+                    <h2 class="font-bold text-[14pt] uppercase tracking-wide">TỜ TRÌNH</h2>
+                    <p class="font-bold text-[12pt] text-slate-700">Về việc phê duyệt kết quả lựa chọn nhà thầu (chỉ định thầu)</p>
+                    <p class="font-bold text-[11.5pt] mt-1 text-emerald-800">Gói thầu: ${valOrPlaceholder("TEN_GOI_THAU", data)}</p>
                 </div>
 
-                <div class="text-center my-6">
-                    <h2 class="font-bold text-[15pt] uppercase tracking-wide">TỜ TRÌNH</h2>
-                    <p class="font-bold text-[13pt] text-slate-700">Về việc phê duyệt kết quả lựa chọn nhà thầu (chỉ định thầu)</p>
-                    <p class="font-bold text-[12pt] mt-1 text-emerald-800">Gói thầu: ${valOrPlaceholder("TEN_GOI_THAU", data)}</p>
-                </div>
-
-                <div class="text-center mb-5 font-bold text-[13pt]">
+                <div class="text-center mb-4 font-bold text-[12pt]">
                     Kính gửi: Giám đốc ${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}
                 </div>
 
-                <div class="space-y-2 leading-relaxed text-[13pt]">
+                <div class="space-y-2 leading-relaxed text-[11.5pt]">
                     <p class="indent-8 text-xs italic">
                         Căn cứ Luật Đấu thầu số 22/2023/QH15;<br>
                         Căn cứ Nghị định số 24/2024/NĐ-CP của Chính phủ về lựa chọn nhà thầu;<br>
@@ -705,89 +804,248 @@
                     </p>
                 </div>
 
-                <div class="grid grid-cols-2 pt-8 text-[12pt]">
+                <div class="grid grid-cols-2 pt-6 text-[11.5pt]">
                     <div class="text-left text-xs leading-normal">
                         <p class="font-bold italic">Nơi nhận:</p>
                         <p>- Như trên;</p>
                         <p>- Lưu: VT, ĐHDA.</p>
                     </div>
                     <div class="text-center">
-                        <p class="font-bold uppercase text-[12.5pt]">NGƯỜI TRÌNH</p>
+                        <p class="font-bold uppercase text-[12pt]">NGƯỜI TRÌNH</p>
                         <p class="text-xs italic">${valOrPlaceholder("CHUC_VU_TRUONG_BAN", data)}</p>
-                        <div class="h-16"></div>
-                        <p class="font-bold text-[13pt]">${valOrPlaceholder("TRUONG_BAN_DHDA", data)}</p>
+                        <div class="h-14"></div>
+                        <p class="font-bold text-[12.5pt]">${valOrPlaceholder("TRUONG_BAN_DHDA", data)}</p>
                     </div>
                 </div>
             `;
-        } else if (appState.activeDocType === 4) {
+        } else if (docId === "cdtrg_6" || docId === "cdttt_11" || docId === "dtrr_21") {
             // Quyết định chỉ định thầu
             html = `
                 <div class="grid grid-cols-2 text-center text-xs pb-3 border-b border-transparent">
                     <div>
-                        <div class="font-bold text-[12pt] uppercase">${valOrPlaceholder("TEN_CHU_DAU_TU_VIET_HOA", data)}</div>
-                        <div class="font-bold text-[11pt] uppercase">${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</div>
-                        <div class="mt-1 text-[11pt]">Số: ${valOrPlaceholder("SO_QUYET_DINH", data)}</div>
+                        <div class="font-bold text-[11.5pt] uppercase">${valOrPlaceholder("TEN_CHU_DAU_TU_VIET_HOA", data)}</div>
+                        <div class="font-bold text-[10.5pt] uppercase">${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</div>
+                        <div class="mt-1 text-[10.5pt]">Số: ${valOrPlaceholder("SO_QUYET_DINH", data)}</div>
                     </div>
                     <div>
-                        <div class="font-bold text-[11.5pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
-                        <div class="font-bold text-[12pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
-                        <div class="italic text-[11.5pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_QUYET_DINH", data)}</div>
+                        <div class="font-bold text-[11pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                        <div class="font-bold text-[11.5pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
+                        <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_QUYET_DINH", data)}</div>
                     </div>
                 </div>
 
-                <div class="text-center my-6">
-                    <h2 class="font-bold text-[15pt] uppercase tracking-wide">QUYẾT ĐỊNH</h2>
-                    <p class="font-bold text-[13pt] text-slate-700">Về việc phê duyệt kết quả lựa chọn nhà thầu gói thầu: ${valOrPlaceholder("TEN_GOI_THAU", data)}</p>
+                <div class="text-center my-5">
+                    <h2 class="font-bold text-[14pt] uppercase tracking-wide">QUYẾT ĐỊNH</h2>
+                    <p class="font-bold text-[12pt] text-slate-700">Về việc phê duyệt kết quả lựa chọn nhà thầu gói thầu: ${valOrPlaceholder("TEN_GOI_THAU", data)}</p>
                     <p class="italic text-xs text-slate-600">Thuộc dự án: ${valOrPlaceholder("TEN_DU_AN", data)}</p>
                 </div>
 
-                <div class="text-center mb-5 font-bold text-[13.5pt] uppercase text-emerald-950">
+                <div class="text-center mb-4 font-bold text-[12.5pt] uppercase text-emerald-950">
                     GIÁM ĐỐC ${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}
                 </div>
 
-                <div class="space-y-2 leading-relaxed text-[13pt]">
+                <div class="space-y-2 leading-relaxed text-[11.5pt]">
                     <p class="indent-8 text-xs italic">
                         Căn cứ Luật Đấu thầu số 22/2023/QH15 ngày 23/06/2023;<br>
-                        Căn cứ Luật Xây dựng và các nghị định hướng dẫn thi hành;<br>
                         Căn cứ Nghị định số 24/2024/NĐ-CP ngày 27/02/2024 của Chính phủ;<br>
                         ${valOrPlaceholder("CAN_CU_PHAP_LY_CHUNG", data)}<br>
-                        Căn cứ Biên bản hoàn thiện hợp đồng số ${valOrPlaceholder("SO_BIEN_BAN_HOAN_THIEN", data)} ngày ${valOrPlaceholder("NGAY_BIEN_BAN", data)};<br>
-                        Xét đề nghị của ${valOrPlaceholder("CO_QUAN_TRINH", data)} tại Tờ trình số ${valOrPlaceholder("SO_TO_TRINH", data)} ngày ${valOrPlaceholder("NGAY_TO_TRINH", data)},
+                        Xét Tờ trình số ${valOrPlaceholder("SO_TO_TRINH", data)} ngày ${valOrPlaceholder("NGAY_TO_TRINH", data)} của ${valOrPlaceholder("CO_QUAN_TRINH", data)};
                     </p>
-                    <p class="text-center font-bold text-[14pt] my-2">QUYẾT ĐỊNH:</p>
+
+                    <p class="text-center font-bold text-xs uppercase my-2">QUYẾT ĐỊNH:</p>
                     <p class="indent-8">
-                        <b>Điều 1.</b> Phê duyệt kết quả lựa chọn nhà thầu (chỉ định thầu rút gọn) gói thầu: <b>${valOrPlaceholder("TEN_GOI_THAU", data)}</b> thuộc dự án <b>${valOrPlaceholder("TEN_DU_AN", data)}</b> với các nội dung sau:
+                        <b>Điều 1.</b> Phê duyệt kết quả lựa chọn nhà thầu gói thầu: <b>${valOrPlaceholder("TEN_GOI_THAU", data)}</b> thuộc dự án <b>${valOrPlaceholder("TEN_DU_AN", data)}</b> với các nội dung sau:
                     </p>
-                    <div class="pl-8 space-y-1 my-2 text-xs">
-                        <p>1. Đơn vị trúng thầu: <b>${valOrPlaceholder("TEN_NHA_THAU", data)}</b> (MST: ${valOrPlaceholder("MA_SO_THUE", data)}).</p>
-                        <p>- Địa chỉ trụ sở: ${valOrPlaceholder("DIA_CHI_NHA_THAU", data)}.</p>
-                        <p>- Người đại diện: Ông/Bà ${valOrPlaceholder("DAI_DIEN_NHA_THAU", data)} — Chức vụ: ${valOrPlaceholder("CHUC_VU_DAI_DIEN", data)}.</p>
-                        <p>2. Giá chỉ định thầu: <b>${valOrPlaceholder("GIA_TRI_HOP_DONG_SO", data)} VNĐ</b> (Bằng chữ: <i>${valOrPlaceholder("GIA_TRI_HOP_DONG_CHU", data)}</i>).</p>
+                    <div class="pl-8 space-y-1 text-xs">
+                        <p>1. Đơn vị trúng thầu: <b>${valOrPlaceholder("TEN_NHA_THAU_VIET_HOA", data)}</b>.</p>
+                        <p>2. Giá trúng thầu: <b>${valOrPlaceholder("GIA_TRI_HOP_DONG_SO", data)} đồng</b> (<i>${valOrPlaceholder("GIA_TRI_HOP_DONG_CHU", data)}</i>).</p>
                         <p>3. Loại hợp đồng: ${valOrPlaceholder("LOAI_HOP_DONG", data)}.</p>
-                        <p>4. Thời gian thực hiện: ${valOrPlaceholder("THOI_GIAN_THUC_HIEN", data)}.</p>
+                        <p>4. Thời gian thực hiện hợp đồng: ${valOrPlaceholder("THOI_GIAN_THUC_HIEN", data)}.</p>
                         <p>5. Nguồn vốn: ${valOrPlaceholder("NGUON_VON", data)}.</p>
                     </div>
+
                     <p class="indent-8">
-                        <b>Điều 2.</b> Giao cho ${valOrPlaceholder("CO_QUAN_TRINH", data)} chủ trì ký kết hợp đồng và giám sát việc triển khai thực hiện gói thầu theo đúng quy định.
+                        <b>Điều 2.</b> Giao ${valOrPlaceholder("CO_QUAN_TRINH", data)} chịu trách nhiệm phối hợp với nhà thầu hoàn thiện, ký kết và quản lý thực hiện hợp đồng theo đúng quy định hiện hành.
                     </p>
                     <p class="indent-8">
-                        <b>Điều 3.</b> Trưởng ban Điều hành dự án, Kế toán trưởng và người đại diện của ${valOrPlaceholder("TEN_NHA_THAU", data)} chịu trách nhiệm thi hành Quyết định này./.
+                        <b>Điều 3.</b> Quyết định này có hiệu lực kể từ ngày ký. Các bên liên quan chịu trách nhiệm thi hành Quyết định này./.
                     </p>
                 </div>
 
-                <div class="grid grid-cols-2 pt-8 text-[12pt]">
+                <div class="grid grid-cols-2 pt-6 text-[11.5pt]">
                     <div class="text-left text-xs leading-normal">
                         <p class="font-bold italic">Nơi nhận:</p>
                         <p>- Như Điều 3;</p>
-                        <p>- ${valOrPlaceholder("TEN_CHU_DAU_TU", data)};</p>
                         <p>- KBNN ${valOrPlaceholder("KHO_BAC_NHA_NUOC", data)};</p>
                         <p>- Lưu: VT, ĐHDA.</p>
                     </div>
                     <div class="text-center">
-                        <p class="font-bold uppercase text-[12.5pt]">GIÁM ĐỐC</p>
-                        <p class="text-xs italic">(Ký, ghi rõ họ tên và đóng dấu)</p>
-                        <div class="h-16"></div>
-                        <p class="font-bold text-[13pt]">${valOrPlaceholder("NGUOI_KY_CDT", data)}</p>
+                        <p class="font-bold uppercase text-[12pt]">${valOrPlaceholder("CHUC_VU_NGUOI_KY", data)}</p>
+                        <p class="text-xs italic">(Ký, họ tên và đóng dấu)</p>
+                        <div class="h-14"></div>
+                        <p class="font-bold text-[12.5pt]">${valOrPlaceholder("NGUOI_KY_CDT", data)}</p>
+                    </div>
+                </div>
+            `;
+        } else if (docId === "cdtrg_1" || docId === "d100_1") {
+            // Tờ trình KHLCNT
+            html = `
+                ${headerHtml}
+
+                <div class="text-center my-5">
+                    <h2 class="font-bold text-[14pt] uppercase tracking-wide">TỜ TRÌNH</h2>
+                    <p class="font-bold text-[12pt] text-slate-700">Về việc đề nghị phê duyệt Kế hoạch lựa chọn nhà thầu</p>
+                    <p class="font-bold text-[11.5pt] mt-1 text-emerald-800">Dự án: ${valOrPlaceholder("TEN_DU_AN", data)}</p>
+                </div>
+
+                <div class="text-center mb-4 font-bold text-[12pt]">
+                    Kính gửi: ${valOrPlaceholder("CAP_QUYET_DINH_DAU_TU", data)}
+                </div>
+
+                <div class="space-y-2 leading-relaxed text-[11.5pt]">
+                    <p class="indent-8 text-xs italic">
+                        Căn cứ Luật Đấu thầu số 22/2023/QH15 ngày 23/06/2023;<br>
+                        Căn cứ Nghị định số 24/2024/NĐ-CP ngày 27/02/2024 của Chính phủ;<br>
+                        ${valOrPlaceholder("CAN_CU_PHAP_LY_CHUNG", data)}
+                    </p>
+                    <p class="indent-8">
+                        ${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)} kính trình Cấp quyết định đầu tư xem xét, phê duyệt Kế hoạch lựa chọn nhà thầu cho dự án: <b>${valOrPlaceholder("TEN_DU_AN", data)}</b> với gói thầu:
+                    </p>
+                    <div class="pl-8 space-y-1 my-3 text-xs">
+                        <p>• <b>Tên gói thầu:</b> ${valOrPlaceholder("TEN_GOI_THAU", data)}</p>
+                        <p>• <b>Giá gói thầu:</b> ${valOrPlaceholder("GIA_GOI_THAU_SO", data)} đồng (<i>${valOrPlaceholder("GIA_GOI_THAU_CHU", data)}</i>)</p>
+                        <p>• <b>Nguồn vốn:</b> ${valOrPlaceholder("NGUON_VON", data)}</p>
+                        <p>• <b>Hình thức LCNT:</b> ${valOrPlaceholder("HINH_THUC_LCNT", data)}</p>
+                        <p>• <b>Loại hợp đồng:</b> ${valOrPlaceholder("LOAI_HOP_DONG", data)}</p>
+                        <p>• <b>Thời gian thực hiện:</b> ${valOrPlaceholder("THOI_GIAN_THUC_HIEN", data)}</p>
+                    </div>
+                    <p class="indent-8">
+                        Kính trình xem xét, quyết định phê duyệt làm cơ sở triển khai các bước tiếp theo./.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 pt-6 text-[11.5pt]">
+                    <div class="text-left text-xs leading-normal">
+                        <p class="font-bold italic">Nơi nhận:</p>
+                        <p>- Như kính gửi;</p>
+                        <p>- Lưu: VT, BQLDA.</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-bold uppercase text-[12pt]">${valOrPlaceholder("CHUC_VU_NGUOI_KY", data)}</p>
+                        <div class="h-14"></div>
+                        <p class="font-bold text-[12.5pt]">${valOrPlaceholder("NGUOI_KY_CDT", data)}</p>
+                    </div>
+                </div>
+            `;
+        } else if (docId === "cdtrg_7" || docId === "d50_3" || docId === "d100_4" || docId === "cghc_9" || docId === "cdttt_12" || docId === "dtrr_23") {
+            // Hợp đồng kinh tế
+            html = `
+                <div class="grid grid-cols-2 text-center text-xs pb-3 border-b border-transparent">
+                    <div>
+                        <div class="font-bold text-[11.5pt] uppercase">${valOrPlaceholder("TEN_CHU_DAU_TU_VIET_HOA", data)}</div>
+                        <div class="font-bold text-[10.5pt] uppercase">${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</div>
+                        <div class="mt-1 text-[10.5pt]">Số: ${valOrPlaceholder("SO_QUYET_DINH", data)}/HĐ</div>
+                    </div>
+                    <div>
+                        <div class="font-bold text-[11pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                        <div class="font-bold text-[11.5pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
+                        <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_QUYET_DINH", data)}</div>
+                    </div>
+                </div>
+
+                <div class="text-center my-4">
+                    <h2 class="font-bold text-[14pt] uppercase tracking-wide">HỢP ĐỒNG KINH TẾ</h2>
+                    <p class="font-bold text-[12pt] text-emerald-800">Gói thầu: ${valOrPlaceholder("TEN_GOI_THAU", data)}</p>
+                    <p class="italic text-xs text-slate-600">Dự án: ${valOrPlaceholder("TEN_DU_AN", data)}</p>
+                </div>
+
+                <div class="space-y-2 leading-relaxed text-[11.5pt]">
+                    <div class="bg-slate-50 p-2 rounded border border-slate-200 text-xs space-y-1">
+                        <p class="font-bold text-slate-900 uppercase">BÊN A (BÊN GIAO THẦU): ${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</p>
+                        <p>Đại diện: <b>${valOrPlaceholder("NGUOI_KY_CDT", data)}</b> — Chức vụ: ${valOrPlaceholder("CHUC_VU_NGUOI_KY", data)}</p>
+                        <p>Địa chỉ: ${valOrPlaceholder("DIA_CHI_TRU_SO", data)}</p>
+                        <p class="font-bold text-slate-900 uppercase mt-2">BÊN B (BÊN NHẬN THẦU): ${valOrPlaceholder("TEN_NHA_THAU", data)}</p>
+                        <p>Đại diện: <b>${valOrPlaceholder("DAI_DIEN_NHA_THAU", data)}</b> — Chức vụ: ${valOrPlaceholder("CHUC_VU_DAI_DIEN", data)}</p>
+                        <p>Địa chỉ: ${valOrPlaceholder("DIA_CHI_NHA_THAU", data)} | MST: ${valOrPlaceholder("MA_SO_THUE", data)}</p>
+                    </div>
+
+                    <p class="indent-8 text-xs">
+                        <b>Điều 1. Nội dung công việc:</b> Bên A giao và Bên B nhận thực hiện gói thầu: <b>${valOrPlaceholder("TEN_GOI_THAU", data)}</b>.
+                    </p>
+                    <p class="indent-8 text-xs">
+                        <b>Điều 2. Giá trị hợp đồng:</b> <b>${valOrPlaceholder("GIA_TRI_HOP_DONG_SO", data)} VNĐ</b> (<i>${valOrPlaceholder("GIA_TRI_HOP_DONG_CHU", data)}</i>). Hình thức: ${valOrPlaceholder("LOAI_HOP_DONG", data)}.
+                    </p>
+                    <p class="indent-8 text-xs">
+                        <b>Điều 3. Thời gian thực hiện:</b> ${valOrPlaceholder("THOI_GIAN_THUC_HIEN", data)}.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 pt-6 text-[11.5pt]">
+                    <div class="text-center">
+                        <p class="font-bold uppercase text-[12pt]">ĐẠI DIỆN BÊN B</p>
+                        <p class="text-xs italic">(Ký tên & đóng dấu)</p>
+                        <div class="h-14"></div>
+                        <p class="font-bold text-[12.5pt]">${valOrPlaceholder("DAI_DIEN_NHA_THAU", data)}</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-bold uppercase text-[12pt]">ĐẠI DIỆN BÊN A</p>
+                        <p class="text-xs italic">(Ký tên & đóng dấu)</p>
+                        <div class="h-14"></div>
+                        <p class="font-bold text-[12.5pt]">${valOrPlaceholder("NGUOI_KY_CDT", data)}</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            // General Blueprint for any other document in matrix
+            html = `
+                ${headerHtml}
+
+                <div class="text-center my-5">
+                    <h2 class="font-bold text-[14pt] uppercase tracking-wide">${activeDoc.name.replace(/^[0-9]+\.\s*/, '')}</h2>
+                    <p class="font-bold text-[11.5pt] text-slate-700">Mã hiệu: ${activeDoc.code} — ${activeDoc.desc || ''}</p>
+                    <p class="font-bold text-[11pt] mt-1 text-emerald-800">Gói thầu: ${valOrPlaceholder("TEN_GOI_THAU", data)}</p>
+                    <p class="italic text-xs text-slate-500">Dự án: ${valOrPlaceholder("TEN_DU_AN", data)}</p>
+                </div>
+
+                <div class="space-y-3 leading-relaxed text-[11.5pt]">
+                    <p class="indent-8 text-xs italic">
+                        Căn cứ Luật Đấu thầu số 22/2023/QH15 ngày 23/06/2023;<br>
+                        Căn cứ Nghị định số 24/2024/NĐ-CP ngày 27/02/2024 của Chính phủ;<br>
+                        ${valOrPlaceholder("CAN_CU_PHAP_LY_CHUNG", data)}
+                    </p>
+
+                    <div class="bg-slate-50 p-2.5 rounded border border-slate-200 text-xs space-y-1.5">
+                        <div class="font-bold text-slate-900 border-b pb-1">THÔNG TIN HỒ SƠ & DỮ LIỆU ĐÃ NHẬP:</div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>• Đơn vị chủ đầu tư: ${valOrPlaceholder("TEN_CHU_DAU_TU", data)}</div>
+                            <div>• Ban QLDA: ${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</div>
+                            <div>• Tên dự án: ${valOrPlaceholder("TEN_DU_AN", data)}</div>
+                            <div>• Tên gói thầu: ${valOrPlaceholder("TEN_GOI_THAU", data)}</div>
+                            <div>• Nhà thầu thực hiện: ${valOrPlaceholder("TEN_NHA_THAU", data)}</div>
+                            <div>• Giá trị gói thầu: ${valOrPlaceholder("GIA_GOI_THAU_SO", data)} VNĐ</div>
+                            <div>• Giá trị thực hiện: ${valOrPlaceholder("GIA_TRI_HOP_DONG_SO", data)} VNĐ</div>
+                            <div>• Loại hợp đồng: ${valOrPlaceholder("LOAI_HOP_DONG", data)} (${valOrPlaceholder("THOI_GIAN_THUC_HIEN", data)})</div>
+                        </div>
+                    </div>
+
+                    <div class="border-l-2 border-emerald-500 pl-3 py-1 bg-emerald-50/50 text-xs text-slate-700">
+                        <p class="font-bold text-emerald-950">Nội dung văn bản theo quy chuẩn quản lý hồ sơ:</p>
+                        <p class="mt-0.5">Văn bản này được tự động thiết lập và liên kết toàn diện với dữ liệu nhập từ form & file Excel mẫu. Khi xuất hàng loạt sang Word (.docx), hệ thống sẽ điền đầy đủ các thông số pháp lý và cấu trúc bảng biểu theo Nghị định 30/2020/NĐ-CP.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 pt-8 text-[11.5pt]">
+                    <div class="text-left text-xs leading-normal">
+                        <p class="font-bold italic">Nơi nhận:</p>
+                        <p>- Như trên;</p>
+                        <p>- Các bên liên quan;</p>
+                        <p>- Lưu: VT, BQLDA.</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-bold uppercase text-[12pt]">${valOrPlaceholder("CHUC_VU_NGUOI_KY", data)}</p>
+                        <p class="text-xs italic">(Ký, họ tên và đóng dấu)</p>
+                        <div class="h-14"></div>
+                        <p class="font-bold text-[12.5pt]">${valOrPlaceholder("NGUOI_KY_CDT", data)}</p>
                     </div>
                 </div>
             `;
@@ -797,17 +1055,10 @@
     }
 
     // -------------------------------------------------------------
-    // Excel Download & Import Logic
+    // Excel Sample Generation & Import (SheetJS)
     // -------------------------------------------------------------
     btnDownloadSample.addEventListener("click", () => {
-        // Direct link to the generated file
-        const a = document.createElement("a");
-        a.href = "MauNhapLieu_ChiDinhThau_SAMPLE_v2.xlsx";
-        a.download = "MauNhapLieu_ChiDinhThau_SAMPLE_v2.xlsx";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        showToast("Đang tải file Excel mẫu...");
+        window.location.href = "MauNhapLieu_ChiDinhThau_SAMPLE_v2.xlsx";
     });
 
     btnImportExcel.addEventListener("click", () => {
@@ -824,28 +1075,26 @@
                 const data = new Uint8Array(evt.target.result);
                 const workbook = XLSX.read(data, { type: "array" });
 
-                // Map field names from Vietnamese label to variable key
                 const fieldMapping = {
-                    "Tên chủ đầu tư (*)": "TEN_CHU_DAU_TU",
-                    "Tên chủ đầu tư": "TEN_CHU_DAU_TU",
-                    "Tên CĐT (IN HOA)": "TEN_CHU_DAU_TU_VIET_HOA",
+                    "Tên Chủ đầu tư (*)": "TEN_CHU_DAU_TU",
+                    "Tên Chủ đầu tư": "TEN_CHU_DAU_TU",
+                    "Tên Chủ đầu tư (IN HOA)": "TEN_CHU_DAU_TU_VIET_HOA",
                     "Tên Ban QLDA (*)": "TEN_BAN_QUAN_LY_DU_AN",
                     "Tên Ban QLDA": "TEN_BAN_QUAN_LY_DU_AN",
                     "Cơ quan trình quyết định": "CO_QUAN_TRINH",
-                    "Địa danh (nơi phát hành VB) (*)": "DIA_DANH",
-                    "Địa danh (nơi phát hành VB)": "DIA_DANH",
-                    "Tỉnh/Thành phố": "TINH_THANH_PHO",
-                    "Địa chỉ trụ sở": "DIA_CHI_TRU_SO",
-                    "Quyết định đầu tư": "CAP_QUYET_DINH_DAU_TU",
+                    "Địa danh phát hành văn bản (*)": "DIA_DANH",
+                    "Địa danh phát hành văn bản": "DIA_DANH",
+                    "Tỉnh / Thành phố": "TINH_THANH_PHO",
+                    "Địa chỉ trụ sở CĐT": "DIA_CHI_TRU_SO",
+                    "Cấp quyết định đầu tư": "CAP_QUYET_DINH_DAU_TU",
                     "Tên dự án (*)": "TEN_DU_AN",
                     "Tên dự án": "TEN_DU_AN",
                     "Tên công trình": "TEN_CONG_TRINH",
                     "Nguồn vốn": "NGUON_VON",
-                    "Người ký (CĐT) (*)": "NGUOI_KY_CDT",
-                    "Người ký (CĐT)": "NGUOI_KY_CDT",
-                    "Chức vụ người ký (CĐT) (*)": "CHUC_VU_NGUOI_KY",
-                    "Chức vụ người ký (CĐT)": "CHUC_VU_NGUOI_KY",
-                    "Trưởng ban ĐHDA": "TRUONG_BAN_DHDA",
+                    "Người ký quyết định CĐT (*)": "NGUOI_KY_CDT",
+                    "Người ký quyết định CĐT": "NGUOI_KY_CDT",
+                    "Chức vụ người ký CĐT": "CHUC_VU_NGUOI_KY",
+                    "Trưởng ban Điều hành dự án": "TRUONG_BAN_DHDA",
                     "Chức vụ Trưởng ban ĐHDA": "CHUC_VU_TRUONG_BAN",
                     "Kế toán trưởng": "KE_TOAN_TRUONG",
                     "Chức vụ Kế toán trưởng": "CHUC_VU_KE_TOAN",
@@ -892,7 +1141,6 @@
                     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
                     if (sIdx === 0 || sheetName.includes("chung")) {
-                        // Sheet thông tin chung
                         let canCuList = [];
                         rows.forEach(r => {
                             if (r && r[1] && r[2] !== undefined) {
@@ -909,7 +1157,6 @@
                             newGeneralInfo.CAN_CU_PHAP_LY_CHUNG = canCuList.join("\n");
                         }
                     } else {
-                        // Package sheet
                         let pkgFields = {};
                         rows.forEach(r => {
                             if (r && r[1] && r[2] !== undefined) {
@@ -951,17 +1198,20 @@
     });
 
     // -------------------------------------------------------------
-    // Word (.docx) Generation & ZIP Export
+    // Word (.docx) Generation & Replacement Helper
     // -------------------------------------------------------------
-    const docTemplatesMap = {
-        1: { name: "1. Giay moi tham gia.docx", template: "templates/1_Giay_moi_tham_gia.docx" },
-        2: { name: "2. Bien ban hoan thien hop dong.docx", template: "templates/2_Bien_ban_hoan_thien_hop_dong.docx" },
-        3: { name: "3. To trinh chi dinh thau.docx", template: "templates/3_To_trinh_chi_dinh_thau.docx" },
-        4: { name: "4. Quyet dinh chi dinh thau.docx", template: "templates/4_Quyet_dinh_chi_dinh_thau.docx" }
-    };
+    function escapeXml(unsafe) {
+        return String(unsafe || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&apos;")
+            .replace(/\n/g, "</w:t><w:br/><w:t>");
+    }
 
-    // Client-side Word replacement helper using JSZip
-    async function renderDocxBlob(templateUrl, replacements) {
+    async function renderDocxBlob(docId, replacements) {
+        let templateUrl = prebuiltDocxMap[docId] || "templates/3_To_trinh_chi_dinh_thau.docx";
         const response = await fetch(templateUrl);
         if (!response.ok) throw new Error("Could not load template " + templateUrl);
         const arrayBuffer = await response.arrayBuffer();
@@ -969,41 +1219,36 @@
         const zip = await JSZip.loadAsync(arrayBuffer);
         let docXml = await zip.file("word/document.xml").async("string");
 
-        // Escape XML chars for values
-        function escapeXml(unsafe) {
-            return String(unsafe || "")
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&apos;")
-                .replace(/\n/g, "</w:t><w:br/><w:t>");
-        }
-
         for (const [key, rawVal] of Object.entries(replacements)) {
-            const cleanVal = escapeXml(rawVal);
-            const searchKey = `{{${key}}}`;
-            docXml = docXml.split(searchKey).join(cleanVal);
+            const val = escapeXml(rawVal);
+            const tag1 = `{{${key}}}`;
+            const tag2 = `{${key}}`;
+
+            docXml = docXml.split(tag1).join(val);
+            docXml = docXml.split(tag2).join(val);
         }
 
         zip.file("word/document.xml", docXml);
         return await zip.generateAsync({ type: "blob" });
     }
 
-    // Single Doc Download
+    // Single Word Export Button
     btnExportSingleDoc.addEventListener("click", async () => {
+        const activeDoc = getCurrentActiveDoc();
+        if (!activeDoc) return;
+
+        const currentPkg = appState.packages[appState.activePackageIndex] || { name: "GoiThau" };
         try {
             btnExportSingleDoc.disabled = true;
             btnExportSingleDoc.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang xuất...</span>`;
 
-            const currentPkg = appState.packages[appState.activePackageIndex];
             const data = getMergedData();
-            const docInfo = docTemplatesMap[appState.activeDocType];
+            const blob = await renderDocxBlob(activeDoc.id, data);
+            const safeDocName = activeDoc.code.replace(/[^a-zA-Z0-9_-]/g, "_");
+            const safePkgName = currentPkg.name.replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9]/g, "_");
+            const fileName = `${safeDocName}_${safePkgName}.docx`;
 
-            const blob = await renderDocxBlob(docInfo.template, data);
-            const fileName = `${docInfo.name.replace(".docx", "")}_${currentPkg.name}.docx`;
             saveAs(blob, fileName);
-
             showToast(`Đã xuất ${fileName} thành công!`);
         } catch (err) {
             console.error("Export doc error:", err);
@@ -1018,6 +1263,11 @@
     // Batch Export Modal Logic
     // -------------------------------------------------------------
     function updateBatchModalUI() {
+        const pt = getCurrentProcurementType();
+        if (modalProcurementSubtitle) {
+            modalProcurementSubtitle.textContent = `Quy trình: ${pt.name}`;
+        }
+
         batchPackagesList.innerHTML = "";
         appState.packages.forEach((pkg, idx) => {
             const label = document.createElement("label");
@@ -1028,6 +1278,21 @@
             `;
             batchPackagesList.appendChild(label);
         });
+
+        batchDocumentsList.innerHTML = "";
+        const docs = getAllDocsForCurrentType();
+        docs.forEach(doc => {
+            const label = document.createElement("label");
+            label.className = "flex items-center space-x-1.5 cursor-pointer text-[11px] p-1 rounded hover:bg-slate-100 font-medium text-slate-800";
+            label.innerHTML = `
+                <input type="checkbox" checked value="${doc.id}" data-code="${doc.code}" data-name="${doc.name}" class="doc-checkbox rounded text-emerald-600 focus:ring-emerald-500">
+                <span class="truncate" title="${doc.name}">${doc.code} - ${doc.name.replace(/^[0-9]+\.\s*/, '')}</span>
+            `;
+            batchDocumentsList.appendChild(label);
+        });
+
+        batchPackagesList.querySelectorAll(".pkg-checkbox").forEach(cb => cb.addEventListener("change", recalcBatchSummary));
+        batchDocumentsList.querySelectorAll(".doc-checkbox").forEach(cb => cb.addEventListener("change", recalcBatchSummary));
 
         recalcBatchSummary();
     }
@@ -1041,9 +1306,6 @@
         btnExportZipText.textContent = `Xuất ZIP (${total} file)`;
     }
 
-    batchPackagesList.addEventListener("change", recalcBatchSummary);
-    document.querySelectorAll(".doc-checkbox").forEach(cb => cb.addEventListener("change", recalcBatchSummary));
-
     btnOpenExportModal.addEventListener("click", () => {
         updateBatchModalUI();
         batchExportModal.classList.remove("hidden");
@@ -1055,9 +1317,13 @@
     // Batch Export ZIP action
     btnConfirmExportZip.addEventListener("click", async () => {
         const checkedPkgIndexes = Array.from(document.querySelectorAll(".pkg-checkbox:checked")).map(cb => parseInt(cb.value, 10));
-        const checkedDocTypes = Array.from(document.querySelectorAll(".doc-checkbox:checked")).map(cb => parseInt(cb.value, 10));
+        const checkedDocs = Array.from(document.querySelectorAll(".doc-checkbox:checked")).map(cb => ({
+            id: cb.value,
+            code: cb.getAttribute("data-code"),
+            name: cb.getAttribute("data-name")
+        }));
 
-        if (checkedPkgIndexes.length === 0 || checkedDocTypes.length === 0) {
+        if (checkedPkgIndexes.length === 0 || checkedDocs.length === 0) {
             alert("Vui lòng chọn ít nhất 1 gói thầu và 1 loại văn bản!");
             return;
         }
@@ -1070,31 +1336,28 @@
 
             for (const pIdx of checkedPkgIndexes) {
                 const pkg = appState.packages[pIdx];
-                // Folder name for this package
                 const folderName = `GoiThau_${String(pIdx + 1).padStart(2, '0')}_${(pkg.name || "GoiThau").replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9]/g, "_")}`;
                 const pkgFolder = zip.folder(folderName);
 
-                // Merged data for this package
                 const merged = {
                     ...appState.generalInfo,
                     ...pkg.fields
                 };
 
-                for (const dType of checkedDocTypes) {
-                    const docInfo = docTemplatesMap[dType];
-                    const docBlob = await renderDocxBlob(docInfo.template, merged);
-                    pkgFolder.file(docInfo.name, docBlob);
+                for (const doc of checkedDocs) {
+                    const docBlob = await renderDocxBlob(doc.id, merged);
+                    const safeFileName = `${doc.code.replace(/[^a-zA-Z0-9_-]/g, "_")}_${(doc.name || "VanBan").replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9]/g, "_")}.docx`;
+                    pkgFolder.file(safeFileName, docBlob);
                 }
             }
 
             const zipBlob = await zip.generateAsync({ type: "blob" });
-            const projectName = (appState.generalInfo.TEN_DU_AN || "ChiDinhThau").replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9]/g, "_");
-            const zipFileName = `HoSo_CDT_${projectName}.zip`;
+            const projectName = (appState.generalInfo.TEN_DU_AN || "HoSo").replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9]/g, "_");
+            const zipFileName = `HoSo_${getCurrentProcurementType().code}_${projectName}.zip`;
 
             saveAs(zipBlob, zipFileName);
-
             batchExportModal.classList.add("hidden");
-            showToast(`Đã xuất thành công ${checkedPkgIndexes.length * checkedDocTypes.length} văn bản vào ${zipFileName}!`);
+            showToast(`Đã xuất thành công ${checkedPkgIndexes.length * checkedDocs.length} văn bản vào ${zipFileName}!`);
         } catch (err) {
             console.error("Batch export error:", err);
             showToast("Lỗi khi xuất file ZIP: " + err.message, "error");
@@ -1105,8 +1368,10 @@
     });
 
     // -------------------------------------------------------------
-    // Initial Boot
+    // Initial Boot Sequence
     // -------------------------------------------------------------
+    initProcurementTypeSelector();
+    renderDocTabs();
     renderCustomVariablesUI();
     renderPackageDropdown();
     populateFormInputs();
