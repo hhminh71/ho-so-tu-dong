@@ -2762,9 +2762,9 @@
     function valOrPlaceholder(key, data) {
         const val = data[key];
         if (val && String(val).trim() !== "") {
-            return `<span class="filled-val" data-var-key="${key}" title="Biến: {${key}} (Quét khối hoặc chuột phải để đổi/gộp biến)">${val}</span>`;
+            return `<span class="filled-val" data-var-key="${key}" title="Biến: {${key}} (Double-click để sửa trực tiếp, Quét khối/chuột phải để quản lý)">${val}</span>`;
         }
-        return `<span class="placeholder-tag" data-var-key="${key}" data-missing-key="${key}" title="Bấm để nhảy tới ô nhập liệu {${key}}"><i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${key}}</span>`;
+        return `<span class="placeholder-tag" data-var-key="${key}" data-missing-key="${key}" title="Biến: {${key}} (Double-click để gõ trực tiếp, Bấm để nhảy tới ô nhập liệu)"><i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${key}}</span>`;
     }
 
     function renderDocumentPreview() {
@@ -3488,12 +3488,27 @@
 
     // Bấm vào biến còn thiếu trên bản xem trước A4 sẽ nhảy ngay đến ô nhập liệu bên trái
     if (documentPreviewContent) {
+        let placeholderClickTimer = null;
         documentPreviewContent.addEventListener("click", (e) => {
             const tag = e.target.closest(".placeholder-tag");
             if (!tag) return;
             const key = tag.getAttribute("data-missing-key") || tag.textContent.replace(/[{}]/g, "").trim();
             if (key) {
-                jumpToField(key);
+                clearTimeout(placeholderClickTimer);
+                placeholderClickTimer = setTimeout(() => {
+                    jumpToField(key);
+                }, 250);
+            }
+        });
+
+        // Double-click to directly edit variable in preview
+        documentPreviewContent.addEventListener("dblclick", (e) => {
+            clearTimeout(placeholderClickTimer);
+            const varSpan = e.target.closest("[data-var-key]");
+            if (varSpan) {
+                e.preventDefault();
+                e.stopPropagation();
+                makeVariableInlineEditable(varSpan);
             }
         });
     }
@@ -4634,6 +4649,8 @@
     window.switchMainTab = switchMainTab;
     window.applyVariableToSelection = applyVariableToSelection;
     window.renderDocumentPreview = renderDocumentPreview;
+    window.makeVariableInlineEditable = makeVariableInlineEditable;
+    window.commitVariableEdit = commitVariableEdit;
     window.openProcurementMatrixModal = () => {
         const dd = document.getElementById("userAccountDropdown");
         if (dd) dd.classList.add("hidden");
@@ -4759,6 +4776,170 @@
             menu.classList.remove("hidden");
             document.getElementById("ctxLinkVarSubmenu")?.classList.add("hidden");
         });
+    }
+
+    // -------------------------------------------------------------
+    // Direct Inline Variable Editing via Double-Click
+    // -------------------------------------------------------------
+    let activeEditingVarSpan = null;
+
+    function makeVariableInlineEditable(span) {
+        if (!span) return;
+        const varKey = span.getAttribute("data-var-key");
+        if (!varKey) return;
+
+        // If another span is currently being edited, commit it first
+        if (activeEditingVarSpan && activeEditingVarSpan !== span) {
+            commitVariableEdit(activeEditingVarSpan, true);
+        }
+
+        activeEditingVarSpan = span;
+
+        // Determine original value
+        const isPlaceholder = span.classList.contains("placeholder-tag");
+        const originalVal = isPlaceholder ? "" : span.innerText.trim();
+        span.dataset.originalVal = originalVal;
+
+        if (isPlaceholder) {
+            span.textContent = "";
+        }
+
+        // Enable contenteditable on this specific span
+        span.contentEditable = "true";
+        span.classList.add("var-inline-editing");
+
+        // Focus & select all content in span
+        span.focus();
+        try {
+            const range = document.createRange();
+            range.selectNodeContents(span);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        } catch (err) {
+            // fallback
+        }
+
+        // Position Floating Badge
+        const badge = document.getElementById("varEditFloatingBadge");
+        const badgeKey = document.getElementById("varEditBadgeKey");
+        if (badge && badgeKey) {
+            badgeKey.textContent = `{${varKey}}`;
+            const rect = span.getBoundingClientRect();
+            let topPos = rect.top - 32;
+            if (topPos < 10) topPos = rect.bottom + 6;
+            let leftPos = rect.left;
+            if (leftPos + 320 > window.innerWidth) leftPos = window.innerWidth - 330;
+            badge.style.top = `${Math.max(5, topPos)}px`;
+            badge.style.left = `${Math.max(10, leftPos)}px`;
+            badge.classList.remove("hidden");
+        }
+
+        function handleKeydown(e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                cleanupListeners();
+                commitVariableEdit(span, true);
+            } else if (e.key === "Escape") {
+                e.preventDefault();
+                cleanupListeners();
+                commitVariableEdit(span, false);
+            }
+        }
+
+        function handleBlur() {
+            cleanupListeners();
+            commitVariableEdit(span, true);
+        }
+
+        function cleanupListeners() {
+            span.removeEventListener("keydown", handleKeydown);
+            span.removeEventListener("blur", handleBlur);
+        }
+
+        span.addEventListener("keydown", handleKeydown);
+        span.addEventListener("blur", handleBlur);
+    }
+
+    function commitVariableEdit(span, shouldSave) {
+        if (!span) return;
+        const varKey = span.getAttribute("data-var-key");
+        const badge = document.getElementById("varEditFloatingBadge");
+        if (badge) badge.classList.add("hidden");
+
+        span.removeAttribute("contenteditable");
+        span.classList.remove("var-inline-editing");
+        if (activeEditingVarSpan === span) {
+            activeEditingVarSpan = null;
+        }
+
+        const originalVal = span.dataset.originalVal !== undefined ? span.dataset.originalVal : "";
+
+        if (!shouldSave) {
+            // Revert back
+            if (originalVal === "") {
+                span.className = "placeholder-tag";
+                span.innerHTML = `<i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${varKey}}`;
+            } else {
+                span.className = "filled-val";
+                span.textContent = originalVal;
+            }
+            return;
+        }
+
+        const newVal = span.innerText.trim();
+
+        // 1. Update data in state
+        if (!appState.generalInfo) appState.generalInfo = {};
+        appState.generalInfo[varKey] = newVal;
+
+        const currentPkg = appState.packages[appState.activePackageIndex];
+        if (currentPkg) {
+            if (!currentPkg.fields) currentPkg.fields = {};
+            currentPkg.fields[varKey] = newVal;
+        }
+
+        if (window.customVariables && window.customVariables[varKey]) {
+            window.customVariables[varKey].value = newVal;
+        }
+
+        // 2. Update all occurrences of this variable in document preview
+        const allMatchingSpans = documentPreviewContent.querySelectorAll(`[data-var-key="${varKey}"]`);
+        allMatchingSpans.forEach(el => {
+            if (newVal !== "") {
+                el.className = "filled-val";
+                el.textContent = newVal;
+            } else {
+                el.className = "placeholder-tag";
+                el.innerHTML = `<i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${varKey}}`;
+            }
+            el.setAttribute("data-var-key", varKey);
+            el.title = `Biến: {${varKey}} (Double-click để sửa trực tiếp, Chuột phải để quản lý)`;
+        });
+
+        // 3. Update input field on left form accordion
+        const formInput = document.querySelector(`input[data-field="${varKey}"], textarea[data-field="${varKey}"]`);
+        if (formInput) {
+            formInput.value = newVal;
+            formInput.classList.add("bg-emerald-50");
+            setTimeout(() => formInput.classList.remove("bg-emerald-50"), 1200);
+        }
+
+        // 4. Two-way sync to Tab 1 if linked date or docNo
+        syncDocFieldChangeToTimeline(varKey, newVal);
+
+        // 5. Update customDocumentHtml if user has a customized template
+        const activeDoc = getCurrentActiveDoc();
+        if (activeDoc && appState.customDocumentHtml && appState.customDocumentHtml[activeDoc.id]) {
+            appState.customDocumentHtml[activeDoc.id] = documentPreviewContent.innerHTML;
+        }
+
+        saveState();
+        updateProgress();
+
+        if (newVal !== originalVal) {
+            showToast(`Đã lưu biến {${varKey}}: "${newVal.slice(0, 30)}${newVal.length > 30 ? '...' : ''}"`, "success");
+        }
     }
 
     // Dismiss context menu on click outside

@@ -1173,6 +1173,13 @@
     <!-- ============================================================= -->
     <!-- PREVIEW CONTEXT MENU & VARIABLE CUSTOMIZATION MODALS -->
     <!-- ============================================================= -->
+    <!-- Floating Badge for Double Click Variable Editing -->
+    <div id="varEditFloatingBadge" class="hidden fixed z-50 bg-slate-900/95 text-white text-[10px] px-2.5 py-1 rounded-md shadow-xl flex items-center gap-2 border border-slate-700 pointer-events-none transition-all">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+        <span id="varEditBadgeKey" class="text-emerald-400 font-mono font-bold shrink-0">{VAR_KEY}</span>
+        <span class="text-slate-300">Gõ nội dung • Nhấn <kbd class="bg-slate-700 text-slate-200 px-1 py-0.5 rounded text-[9px] font-mono">Enter</kbd> để lưu, <kbd class="bg-slate-700 text-slate-200 px-1 py-0.5 rounded text-[9px] font-mono">Esc</kbd> để hủy</span>
+    </div>
+
     <!-- Custom Context Menu for Document Preview -->
     <div id="previewContextMenu" class="hidden fixed z-50 bg-white rounded-lg shadow-2xl border border-slate-200 py-1 w-64 text-xs select-none">
         <div id="ctxSelectionPreview" class="px-3 py-1 bg-slate-50 border-b border-slate-100 text-[10px] text-slate-500 truncate font-mono">
