@@ -800,28 +800,32 @@
             });
         });
 
-        let lastCalculatedDate = null;
+        let lastTask = null;
 
         allTasks.forEach((item, idx) => {
             const { t } = item;
             const formula = t.dateFormula || { type: "default" };
 
             if (formula.type === "manual") {
-                if (t.date) lastCalculatedDate = t.date;
+                // Fixed date anchor
+                lastTask = t;
             } else if (formula.type === "custom" && formula.refTaskId) {
                 const refObj = allTasks.find(x => x.t.id === formula.refTaskId || x.t.name === formula.refTaskId);
                 if (refObj && refObj.t.date) {
-                    const offset = parseInt(formula.offsetDays !== undefined ? formula.offsetDays : t.duration, 10) || 0;
-                    t.date = addDaysToDate(refObj.t.date, offset);
-                    lastCalculatedDate = t.date;
+                    const refDur = parseInt(refObj.t.duration, 10) || 0;
+                    const offset = parseInt(formula.offsetDays, 10) || 0;
+                    t.date = addDaysToDate(refObj.t.date, refDur + offset);
+                    lastTask = t;
                 }
             } else {
                 if (idx === 0) {
-                    if (t.date) lastCalculatedDate = t.date;
-                } else if (lastCalculatedDate) {
-                    const dur = parseInt(t.duration, 10) || 0;
-                    t.date = addDaysToDate(lastCalculatedDate, dur);
-                    lastCalculatedDate = t.date;
+                    // First task: keeps its own date as starting anchor
+                    lastTask = t;
+                } else if (lastTask && lastTask.date) {
+                    // Ngày văn bản sau = Ngày văn bản trước + Số ngày thực hiện (ngang hàng với văn bản trước)
+                    const prevDur = parseInt(lastTask.duration, 10) || 0;
+                    t.date = addDaysToDate(lastTask.date, prevDur);
+                    lastTask = t;
                 }
             }
 
@@ -885,7 +889,7 @@
         }
 
         if (offsetInput) {
-            offsetInput.value = formula.offsetDays !== undefined ? formula.offsetDays : (task.duration || 0);
+            offsetInput.value = formula.offsetDays !== undefined ? formula.offsetDays : 0;
         }
 
         updateFormulaModalPreview();
@@ -920,12 +924,15 @@
             });
 
             if (refTask && refTask.date) {
-                calculatedDate = addDaysToDate(refTask.date, offset);
+                const refDur = parseInt(refTask.duration, 10) || 0;
+                calculatedDate = addDaysToDate(refTask.date, refDur + offset);
             }
         } else {
             const prevTask = getPreviousTaskInProject(pIdx, tIdx);
             if (prevTask && prevTask.date) {
-                calculatedDate = addDaysToDate(prevTask.date, parseInt(task.duration, 10) || 0);
+                // Ngày văn bản sau = Ngày văn bản trước + Số ngày thực hiện của văn bản trước
+                const prevDur = parseInt(prevTask.duration, 10) || 0;
+                calculatedDate = addDaysToDate(prevTask.date, prevDur);
             } else {
                 calculatedDate = task.date || "";
             }
