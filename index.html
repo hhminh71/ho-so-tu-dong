@@ -56,13 +56,35 @@
     <!-- Sub Toolbar (Height: 30px, Compact Single Row) -->
     <div class="bg-white border-b border-slate-200 shadow-xs px-2 py-1">
         <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-1.5">
-            <!-- Progress Counter -->
-            <div class="flex items-center space-x-2 shrink-0">
-                <span class="text-[11px] font-bold text-slate-700" id="progressText">Đã điền: 0/72</span>
-                <div class="w-20 bg-slate-200 rounded-full h-2 overflow-hidden">
-                    <div id="progressBar" class="bg-emerald-500 h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
+            <!-- Progress Counter & Jump to Missing -->
+            <div class="flex items-center space-x-2 shrink-0 relative">
+                <div id="progressClickArea" class="flex items-center space-x-1.5 cursor-pointer hover:opacity-85 transition-opacity" title="Bấm để xem danh sách các trường chưa điền">
+                    <span class="text-[11px] font-bold text-slate-700" id="progressText">Đã điền: 0/72</span>
+                    <div class="w-16 bg-slate-200 rounded-full h-2 overflow-hidden">
+                        <div id="progressBar" class="bg-emerald-500 h-2 rounded-full transition-all duration-200" style="width: 0%"></div>
+                    </div>
+                    <span id="progressPercent" class="text-[11px] font-bold text-emerald-600">0%</span>
                 </div>
-                <span id="progressPercent" class="text-[11px] font-bold text-emerald-600">0%</span>
+
+                <!-- Jump to Next Missing Field Button -->
+                <button id="btnJumpMissing" type="button" class="hidden px-2 py-0.5 text-[10.5px] font-bold rounded border transition-all flex items-center space-x-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300 shadow-2xs h-6 animate-pulse" title="Bấm để chuyển con trỏ trực tiếp đến ô chưa điền tiếp theo">
+                    <i class="fa-solid fa-arrow-down-short-wide text-amber-600 text-[10px]"></i>
+                    <span id="btnJumpMissingText">Đi tới ô trống (1)</span>
+                </button>
+
+                <!-- Missing Fields Popover Dropdown -->
+                <div id="missingFieldsDropdown" class="hidden absolute top-7 left-0 z-50 bg-white border border-amber-300 rounded shadow-lg p-2 w-80 text-xs">
+                    <div class="flex items-center justify-between pb-1 mb-1 border-b border-slate-100">
+                        <span class="font-bold text-slate-800 flex items-center gap-1 text-[11px]">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-500 text-[10px]"></i>
+                            <span>Danh sách ô chưa điền:</span>
+                        </span>
+                        <button id="btnCloseMissingDropdown" type="button" class="text-slate-400 hover:text-slate-600 text-xs px-1">&times;</button>
+                    </div>
+                    <div id="missingFieldsList" class="max-h-52 overflow-y-auto space-y-1 pr-1">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
             </div>
 
             <!-- Action Toolbar Buttons -->
@@ -121,14 +143,20 @@
                 <div class="bg-white rounded border border-slate-200 px-2.5 py-1 shadow-xs flex items-center justify-between gap-1 text-[11px] sticky top-9 z-20">
                     <div class="flex items-center space-x-1.5 min-w-0">
                         <i id="filterScopeIcon" class="fa-solid fa-filter text-emerald-600 text-[10px]"></i>
-                        <span id="filterScopeTitle" class="font-bold text-slate-800 whitespace-nowrap">Chế độ lọc:</span>
-                        <span id="filterScopeBadge" class="bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold px-1.5 py-0.2 rounded text-[10px] truncate max-w-[170px]" title="Theo file đang xem">Đang lọc theo file</span>
+                        <span id="filterScopeTitle" class="font-bold text-slate-800 whitespace-nowrap">Lọc:</span>
+                        <span id="filterScopeBadge" class="bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold px-1.5 py-0.2 rounded text-[10px] truncate max-w-[140px]" title="Theo file đang xem">Đang lọc theo file</span>
                     </div>
 
-                    <button id="btnToggleScope" type="button" class="shrink-0 px-2 py-0.5 text-[10.5px] font-bold rounded border transition-all flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300 shadow-2xs h-6">
-                        <i id="btnToggleScopeIcon" class="fa-solid fa-layer-group text-indigo-600 text-[10px]"></i>
-                        <span id="btnToggleScopeText">Hiện tất cả biến</span>
-                    </button>
+                    <div class="flex items-center space-x-1 shrink-0">
+                        <button id="btnFilterUnfilledOnly" type="button" class="px-2 py-0.5 text-[10.5px] font-bold rounded border transition-all flex items-center space-x-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300 shadow-2xs h-6" title="Bật/tắt: Chỉ hiển thị các trường còn trống chưa điền dữ liệu">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-600 text-[10px]"></i>
+                            <span id="btnFilterUnfilledText">Chỉ ô trống</span>
+                        </button>
+                        <button id="btnToggleScope" type="button" class="px-2 py-0.5 text-[10.5px] font-bold rounded border transition-all flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300 shadow-2xs h-6">
+                            <i id="btnToggleScopeIcon" class="fa-solid fa-layer-group text-indigo-600 text-[10px]"></i>
+                            <span id="btnToggleScopeText">Hiện tất cả biến</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="space-y-1.5" id="formAccordionContainer">

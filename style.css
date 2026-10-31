@@ -67,13 +67,47 @@ input[type="text"]:hover, select:hover, textarea:hover {
 }
 
 .placeholder-tag {
-    color: #b91c1c;
+    color: #9a3412;
     font-family: monospace;
     font-size: 0.85em;
-    background-color: #fee2e2;
-    padding: 0px 3px;
-    border-radius: 2px;
+    background-color: #ffedd5;
+    border: 1px dashed #f97316;
+    padding: 0.5px 4px;
+    border-radius: 3px;
     font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.placeholder-tag:hover {
+    background-color: #fed7aa;
+    border-color: #ea580c;
+    transform: scale(1.04);
+}
+
+.field-highlight-pulse {
+    animation: pulseRing 1.8s ease-in-out;
+}
+
+@keyframes pulseRing {
+    0% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+        border-color: #f59e0b;
+        background-color: #fef3c7;
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.4);
+        border-color: #d97706;
+        background-color: #fde68a;
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+        border-color: #cbd5e1;
+        background-color: #ffffff;
+    }
 }
 
 .filled-val {

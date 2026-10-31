@@ -155,7 +155,8 @@
         activePackageIndex: 0,
         selectedProcurementTypeId: "chi_dinh_thau_rut_gon",
         activeDocId: "cdtrg_3",
-        filterByDoc: true
+        filterByDoc: true,
+        onlyUnfilled: false
     };
 
     // Load from localStorage if present
@@ -330,6 +331,80 @@
         return new Set(commonGeneralKeys.concat(["TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO"]));
     }
 
+
+    // -------------------------------------------------------------
+    // Jump to Field & Missing Fields Tracking (Hỗ trợ định vị ô chưa điền)
+    // -------------------------------------------------------------
+    function jumpToField(fieldKey) {
+        if (!fieldKey) return;
+        const input = document.querySelector(`[data-field="${fieldKey}"]`) || document.querySelector(`[data-custom-field="${fieldKey}"]`);
+        if (!input) {
+            showToast(`Không tìm thấy trường: ${fieldKey}`, "error");
+            return;
+        }
+
+        // Nếu trường này đang bị ẩn do đang lọc theo file khác, tự động chuyển sang chế độ hiển thị toàn bộ
+        const wrapper = input.closest(".field-item");
+        if (wrapper && wrapper.style.display === "none") {
+            appState.filterByDoc = false;
+            applyVariableFilter();
+            showToast("Đã chuyển sang chế độ toàn bộ biến để điền trường này", "info");
+        }
+
+        // Mở Section chứa trường này nếu đang đóng
+        const accordionItem = input.closest(".accordion-item");
+        if (accordionItem) {
+            accordionItem.style.display = "";
+            const content = accordionItem.querySelector(".accordion-content");
+            const chevron = accordionItem.querySelector(".accordion-header .fa-chevron-down");
+            if (content && content.classList.contains("hidden")) {
+                content.classList.remove("hidden");
+                if (chevron) chevron.style.transform = "rotate(0deg)";
+            }
+        }
+
+        // Đóng dropdown danh sách nếu đang mở
+        const dropdown = document.getElementById("missingFieldsDropdown");
+        if (dropdown) dropdown.classList.add("hidden");
+
+        // Cuộn màn hình và focus mượt mà
+        input.scrollIntoView({ behavior: "smooth", block: "center" });
+        setTimeout(() => {
+            input.focus();
+            input.classList.add("field-highlight-pulse");
+            setTimeout(() => {
+                input.classList.remove("field-highlight-pulse");
+            }, 1800);
+        }, 180);
+    }
+
+    function getUnfilledList() {
+        const isFiltered = !!appState.filterByDoc;
+        const activeDoc = getCurrentActiveDoc();
+        const relevantVars = (isFiltered && activeDoc) ? getRelevantVarsForDoc(activeDoc.id) : null;
+
+        const list = [];
+        const allInputs = Array.from(document.querySelectorAll("[data-field]"));
+        allInputs.forEach(input => {
+            const key = input.getAttribute("data-field");
+            if (isFiltered && relevantVars && !relevantVars.has(key)) return;
+
+            if (input.value.trim() === "") {
+                const sec = input.closest(".accordion-item");
+                const secTitle = sec ? (sec.querySelector(".accordion-header span")?.textContent?.trim() || "") : "";
+                const labelEl = input.closest(".field-item")?.querySelector(".field-label");
+                const label = labelEl ? labelEl.textContent.replace("*", "").trim() : key;
+                list.push({
+                    key: key,
+                    label: label,
+                    section: secTitle,
+                    input: input
+                });
+            }
+        });
+        return list;
+    }
+
     function applyVariableFilter() {
         const activeDoc = getCurrentActiveDoc();
         const filterScopeBadge = document.getElementById("filterScopeBadge");
@@ -363,21 +438,39 @@
             btnToggleScope.title = isFiltered ? "Bấm để mở rộng hiển thị toàn bộ biến của dự án" : "Bấm để lọc gọn lại, chỉ hiển thị biến thuộc file đang chọn";
         }
 
+        // Cập nhật trạng thái nút Lọc chỉ ô trống
+        const btnFilterUnfilledOnly = document.getElementById("btnFilterUnfilledOnly");
+        const btnFilterUnfilledText = document.getElementById("btnFilterUnfilledText");
+        const isOnlyUnfilled = !!appState.onlyUnfilled;
+        if (btnFilterUnfilledOnly && btnFilterUnfilledText) {
+            if (isOnlyUnfilled) {
+                btnFilterUnfilledOnly.className = "px-2 py-0.5 text-[10.5px] font-bold rounded border transition-all flex items-center space-x-1 bg-amber-500 text-white border-amber-600 shadow-xs h-6";
+                btnFilterUnfilledText.textContent = "Hiện đủ các ô";
+                btnFilterUnfilledOnly.title = "Bấm để quay lại hiển thị cả các ô đã điền";
+            } else {
+                btnFilterUnfilledOnly.className = "px-2 py-0.5 text-[10.5px] font-bold rounded border transition-all flex items-center space-x-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300 shadow-2xs h-6";
+                btnFilterUnfilledText.textContent = "Chỉ ô trống";
+                btnFilterUnfilledOnly.title = "Bấm để chỉ hiển thị các trường còn trống chưa điền dữ liệu";
+            }
+        }
+
         // Ẩn / hiện từng trường nhập liệu .field-item
         const allFieldWrappers = document.querySelectorAll(".field-item");
         allFieldWrappers.forEach(wrapper => {
             const input = wrapper.querySelector("[data-field]");
             if (!input) return;
             const fieldKey = input.getAttribute("data-field");
-            if (!isFiltered || !relevantVars) {
-                wrapper.style.display = "";
-            } else {
-                if (relevantVars.has(fieldKey)) {
-                    wrapper.style.display = "";
-                } else {
-                    wrapper.style.display = "none";
-                }
+            const isFilled = input.value.trim() !== "";
+
+            let shouldShow = true;
+            if (isFiltered && relevantVars && !relevantVars.has(fieldKey)) {
+                shouldShow = false;
             }
+            if (isOnlyUnfilled && isFilled) {
+                shouldShow = false;
+            }
+
+            wrapper.style.display = shouldShow ? "" : "none";
         });
 
         // Tối ưu các hàng đôi .grid.grid-cols-2 (nếu 1 cột bị ẩn thì cột còn lại dàn đều 100%)
@@ -613,20 +706,37 @@
         const targetInputs = isFiltered
             ? allInputs.filter(inp => {
                 const item = inp.closest(".field-item");
-                return !item || item.style.display !== "none";
+                return !item || item.style.display !== "none" || (appState.onlyUnfilled && inp.value.trim() === "");
               })
             : allInputs;
 
         let totalCount = targetInputs.length;
         let filledCount = 0;
+        const unfilledList = [];
 
-        targetInputs.forEach(input => {
-            if (input.value.trim() !== "") {
-                filledCount++;
+        allInputs.forEach(input => {
+            const val = input.value.trim();
+            const key = input.getAttribute("data-field");
+            const labelEl = input.closest(".field-item")?.querySelector(".field-label");
+            const label = labelEl ? labelEl.textContent.replace("*", "").trim() : key;
+            const sec = input.closest(".accordion-item");
+            const secTitle = sec ? (sec.querySelector(".accordion-header span")?.textContent?.trim() || "") : "";
+
+            if (val !== "") {
+                if (targetInputs.includes(input)) filledCount++;
+                input.classList.remove("border-amber-400", "bg-amber-50/25");
+            } else {
+                // Viền cảnh báo vàng hổ phách nhạt cho ô trống
+                input.classList.add("border-amber-400", "bg-amber-50/25");
+                if (targetInputs.includes(input)) {
+                    unfilledList.push({ key, label, section: secTitle, input });
+                }
             }
         });
 
         const percent = totalCount > 0 ? Math.round((filledCount / totalCount) * 100) : 0;
+        const missingCount = totalCount - filledCount;
+
         if (isFiltered && activeDoc) {
             progressText.textContent = `Đã điền: ${filledCount}/${totalCount} (${activeDoc.code})`;
         } else {
@@ -635,6 +745,45 @@
         progressBar.style.width = `${percent}%`;
         progressPercent.textContent = `${percent}%`;
 
+        // Cập nhật Nút bấm "Đi tới ô trống (X)"
+        const btnJumpMissing = document.getElementById("btnJumpMissing");
+        const btnJumpMissingText = document.getElementById("btnJumpMissingText");
+        if (btnJumpMissing && btnJumpMissingText) {
+            if (missingCount > 0) {
+                btnJumpMissing.classList.remove("hidden");
+                btnJumpMissingText.textContent = `Đi tới ô trống (${missingCount})`;
+                btnJumpMissing.title = `Còn ${missingCount} ô chưa điền. Bấm để tự động di chuyển con trỏ tới ô tiếp theo`;
+            } else {
+                btnJumpMissing.classList.add("hidden");
+            }
+        }
+
+        // Cập nhật Danh sách sổ xuống các ô chưa điền
+        const missingListEl = document.getElementById("missingFieldsList");
+        if (missingListEl) {
+            if (unfilledList.length === 0) {
+                missingListEl.innerHTML = `<div class="p-2 text-center text-emerald-700 font-bold"><i class="fa-solid fa-circle-check"></i> Đã điền đầy đủ 100%!</div>`;
+            } else {
+                missingListEl.innerHTML = "";
+                unfilledList.forEach((item, idx) => {
+                    const row = document.createElement("div");
+                    row.className = "flex items-center justify-between p-1 bg-amber-50/50 hover:bg-amber-100 rounded border border-amber-200/60 cursor-pointer transition-colors";
+                    row.innerHTML = `
+                        <div class="min-w-0 pr-1">
+                            <div class="font-bold text-slate-800 text-[11px] truncate">${idx + 1}. ${item.label}</div>
+                            <div class="text-[9.5px] text-amber-800 truncate">${item.section || item.key}</div>
+                        </div>
+                        <button type="button" class="shrink-0 px-1.5 py-0.5 bg-amber-500 hover:bg-amber-600 text-white rounded text-[9.5px] font-bold">Điền</button>
+                    `;
+                    row.addEventListener("click", () => {
+                        jumpToField(item.key);
+                    });
+                    missingListEl.appendChild(row);
+                });
+            }
+        }
+
+        // Cập nhật Section Badges: Nếu còn thiếu thì hiển thị màu VÀNG HỔ PHÁCH CẢNH BÁO
         const sections = document.querySelectorAll(".accordion-item");
         sections.forEach(sec => {
             const badge = sec.querySelector(".sec-badge");
@@ -642,17 +791,26 @@
             const secInputs = Array.from(sec.querySelectorAll("[data-field]")).filter(inp => {
                 if (!isFiltered) return true;
                 const item = inp.closest(".field-item");
-                return !item || item.style.display !== "none";
+                return !item || item.style.display !== "none" || (appState.onlyUnfilled && inp.value.trim() === "");
             });
             let sFilled = 0;
             secInputs.forEach(inp => {
                 if (inp.value.trim() !== "") sFilled++;
             });
-            badge.textContent = `${sFilled}/${secInputs.length}`;
-            if (sFilled === secInputs.length && secInputs.length > 0) {
+
+            const sTotal = secInputs.length;
+            const sMissing = sTotal - sFilled;
+
+            if (sTotal === 0) {
+                badge.textContent = `0/0`;
+                badge.className = "sec-badge text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full font-medium";
+            } else if (sFilled === sTotal) {
+                badge.textContent = `${sFilled}/${sTotal}`;
                 badge.className = "sec-badge text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full font-bold";
             } else {
-                badge.className = "sec-badge text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full font-medium";
+                // Section còn thiếu: NỔI BẬT MÀU VÀNG HỔ PHÁCH KÈM ICON CẢNH BÁO
+                badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-[9px] mr-0.5 text-amber-600"></i> ${sFilled}/${sTotal} (Thiếu ${sMissing})`;
+                badge.className = "sec-badge text-[10px] bg-amber-100 text-amber-900 border border-amber-300 px-1.5 py-0.2 rounded-full font-bold animate-pulse";
             }
         });
     }
@@ -676,6 +834,53 @@
 
 
     // Button toggle giữa chế độ Lọc biến theo file vs Toàn bộ biến dự án
+
+    // Nút Đi tới ô trống tiếp theo
+    const btnJumpMissing = document.getElementById("btnJumpMissing");
+    if (btnJumpMissing) {
+        btnJumpMissing.addEventListener("click", () => {
+            const unfilled = getUnfilledList();
+            if (unfilled.length > 0) {
+                jumpToField(unfilled[0].key);
+            } else {
+                showToast("Tất cả các trường đã được điền đủ 100%!", "success");
+            }
+        });
+    }
+
+    // Toggle Dropdown danh sách ô chưa điền
+    const progressClickArea = document.getElementById("progressClickArea");
+    const missingFieldsDropdown = document.getElementById("missingFieldsDropdown");
+    const btnCloseMissingDropdown = document.getElementById("btnCloseMissingDropdown");
+
+    if (progressClickArea && missingFieldsDropdown) {
+        progressClickArea.addEventListener("click", (e) => {
+            e.stopPropagation();
+            missingFieldsDropdown.classList.toggle("hidden");
+        });
+    }
+    if (btnCloseMissingDropdown && missingFieldsDropdown) {
+        btnCloseMissingDropdown.addEventListener("click", (e) => {
+            e.stopPropagation();
+            missingFieldsDropdown.classList.add("hidden");
+        });
+    }
+    document.addEventListener("click", (e) => {
+        if (missingFieldsDropdown && !missingFieldsDropdown.contains(e.target) && !progressClickArea?.contains(e.target)) {
+            missingFieldsDropdown.classList.add("hidden");
+        }
+    });
+
+    // Nút Lọc chỉ ô trống
+    const btnFilterUnfilledOnly = document.getElementById("btnFilterUnfilledOnly");
+    if (btnFilterUnfilledOnly) {
+        btnFilterUnfilledOnly.addEventListener("click", () => {
+            appState.onlyUnfilled = !appState.onlyUnfilled;
+            applyVariableFilter();
+            showToast(appState.onlyUnfilled ? "Chế độ: Đang chỉ hiển thị các ô còn trống chưa điền" : "Đã hiển thị lại đầy đủ tất cả các ô");
+        });
+    }
+
     const btnToggleScope = document.getElementById("btnToggleScope");
     if (btnToggleScope) {
         btnToggleScope.addEventListener("click", () => {
@@ -796,7 +1001,7 @@
         if (val && String(val).trim() !== "") {
             return `<span class="filled-val">${val}</span>`;
         }
-        return `<span class="placeholder-tag">{${key}}</span>`;
+        return `<span class="placeholder-tag" data-missing-key="${key}" title="Bấm để nhảy tới ô nhập liệu ${key}"><i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${key}}</span>`;
     }
 
     function renderDocumentPreview() {
@@ -1484,7 +1689,20 @@
     }
 
     // Single Word Export Button
-    btnExportSingleDoc.addEventListener("click", async () => {
+
+    // Bấm vào biến còn thiếu trên bản xem trước A4 sẽ nhảy ngay đến ô nhập liệu bên trái
+    if (documentPreviewContent) {
+        documentPreviewContent.addEventListener("click", (e) => {
+            const tag = e.target.closest(".placeholder-tag");
+            if (!tag) return;
+            const key = tag.getAttribute("data-missing-key") || tag.textContent.replace(/[{}]/g, "").trim();
+            if (key) {
+                jumpToField(key);
+            }
+        });
+    }
+
+        btnExportSingleDoc.addEventListener("click", async () => {
         const activeDoc = getCurrentActiveDoc();
         if (!activeDoc) return;
 
