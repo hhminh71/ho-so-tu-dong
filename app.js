@@ -497,13 +497,25 @@
     // -------------------------------------------------------------
     // Roadmap & Timeline Controller Functions
     // -------------------------------------------------------------
-    function switchMainTab(tabName) {
+    function switchMainTab(tabName, updateHistory = true) {
         appState.activeMainTab = tabName;
         const viewRoadmap = document.getElementById("viewRoadmap");
         const viewDocs = document.getElementById("viewDocs");
         const btnNavRoadmap = document.getElementById("btnNavRoadmap");
         const btnNavDocs = document.getElementById("btnNavDocs");
         const headerProcurement = document.getElementById("headerProcurementTypeWrapper");
+
+        // Đồng bộ Browser History để nút Back / Forward trên trình duyệt hoạt động chuẩn xác
+        if (updateHistory && window.history && window.history.pushState) {
+            const targetHash = `#${tabName}`;
+            if (window.location.hash !== targetHash) {
+                window.history.pushState({ 
+                    tab: tabName, 
+                    activeDocId: appState.activeDocId, 
+                    pkgIdx: appState.activePackageIndex 
+                }, "", targetHash);
+            }
+        }
 
         if (tabName === "roadmap") {
             if (viewRoadmap) viewRoadmap.classList.remove("hidden");
@@ -2097,6 +2109,13 @@
                 document.querySelectorAll("#docTypeTabs .tab-btn").forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
                 appState.activeDocId = doc.id;
+                if (window.history && window.history.replaceState && appState.activeMainTab === "docs") {
+                    window.history.replaceState({
+                        tab: "docs",
+                        activeDocId: doc.id,
+                        pkgIdx: appState.activePackageIndex
+                    }, "", "#docs");
+                }
                 saveState();
                 renderDocumentPreview();
                 applyVariableFilter();
@@ -3373,9 +3392,42 @@
     const btnNavDocs = document.getElementById("btnNavDocs");
     const btnGoToDocs = document.getElementById("btnGoToDocs");
 
-    if (btnNavRoadmap) btnNavRoadmap.addEventListener("click", () => switchMainTab("roadmap"));
-    if (btnNavDocs) btnNavDocs.addEventListener("click", () => switchMainTab("docs"));
-    if (btnGoToDocs) btnGoToDocs.addEventListener("click", () => switchMainTab("docs"));
+    if (btnNavRoadmap) btnNavRoadmap.addEventListener("click", () => switchMainTab("roadmap", true));
+    if (btnNavDocs) btnNavDocs.addEventListener("click", () => switchMainTab("docs", true));
+    if (btnGoToDocs) btnGoToDocs.addEventListener("click", () => switchMainTab("docs", true));
+
+    const btnBackToRoadmap = document.getElementById("btnBackToRoadmap");
+    if (btnBackToRoadmap) {
+        btnBackToRoadmap.addEventListener("click", () => {
+            if (window.history && window.history.length > 1) {
+                window.history.back();
+            } else {
+                switchMainTab("roadmap", true);
+            }
+        });
+    }
+
+    // Lắng nghe sự kiện Back / Forward của trình duyệt (PopState)
+    window.addEventListener("popstate", (e) => {
+        let targetTab = "roadmap";
+        if (e.state && e.state.tab) {
+            targetTab = e.state.tab;
+            if (e.state.activeDocId) {
+                appState.activeDocId = e.state.activeDocId;
+            }
+            if (e.state.pkgIdx !== undefined) {
+                appState.activePackageIndex = e.state.pkgIdx;
+            }
+        } else {
+            const hash = window.location.hash;
+            if (hash === "#docs" || hash === "#tao-ho-so") {
+                targetTab = "docs";
+            } else {
+                targetTab = "roadmap";
+            }
+        }
+        switchMainTab(targetTab, false);
+    });
 
     // Sync input changes from Roadmap to state
     const rmProjectName = document.getElementById("rmProjectName");
@@ -4335,6 +4387,18 @@
     renderPackageDropdown();
     populateFormInputs();
     applyVariableFilter();
-    switchMainTab(appState.activeMainTab || "roadmap");
+    const initialTab = (window.location.hash === "#docs" || window.location.hash === "#tao-ho-so") 
+        ? "docs" 
+        : (appState.activeMainTab || "roadmap");
+
+    if (window.history && window.history.replaceState) {
+        window.history.replaceState({
+            tab: initialTab,
+            activeDocId: appState.activeDocId,
+            pkgIdx: appState.activePackageIndex
+        }, "", `#${initialTab}`);
+    }
+
+    switchMainTab(initialTab, false);
 
 })();

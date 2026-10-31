@@ -222,8 +222,12 @@
     <!-- Sub Toolbar (Height: 30px, Compact Single Row) -->
     <div class="bg-white border-b border-slate-200 shadow-xs px-2 py-1">
         <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-1.5">
-            <!-- Progress Counter & Jump to Missing -->
+            <!-- Back to Roadmap & Progress Counter -->
             <div class="flex items-center space-x-2 shrink-0 relative">
+                <button id="btnBackToRoadmap" type="button" class="px-2 py-0.5 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-300 hover:border-emerald-300 rounded font-bold text-[10.5px] flex items-center gap-1.5 h-6 transition-all shadow-2xs cursor-pointer" title="Quay lại Tab 1: Định hướng & Tiến độ dự án (hoặc bấm phím Back trên trình duyệt / chuột)">
+                    <i class="fa-solid fa-arrow-left text-[9.5px] text-emerald-600"></i>
+                    <span>Quay lại Tiến độ</span>
+                </button>
                 <div id="progressClickArea" class="flex items-center space-x-1.5 cursor-pointer hover:opacity-85 transition-opacity" title="Bấm để xem danh sách các trường chưa điền">
                     <span class="text-[11px] font-bold text-slate-700" id="progressText">Đã điền: 0/72</span>
                     <div class="w-16 bg-slate-200 rounded-full h-2 overflow-hidden">
