@@ -330,6 +330,17 @@
                 if (appState.filterByDoc === undefined) {
                     appState.filterByDoc = true;
                 }
+                // Tự động làm sạch các bản lưu HTML cũ nếu có lỗi lặp ngày hoặc thiếu data-date-role
+                if (appState.customDocumentHtml) {
+                    for (const docKey in appState.customDocumentHtml) {
+                        let h = appState.customDocumentHtml[docKey];
+                        if (h) {
+                            h = h.replace(/(,\s*)ngày\s+(<span[^>]*data-var-key="NGAY_[^>]*>)/gi, '$1$2');
+                            h = h.replace(/(,\s*)ngày\s+ngày\s+/gi, '$1ngày ');
+                            appState.customDocumentHtml[docKey] = h;
+                        }
+                    }
+                }
             }
         } else {
             const oldSaved = localStorage.getItem("ho_so_tu_dong_state_v2");
@@ -485,22 +496,41 @@
         "CAP_QUYET_DINH_DAU_TU", "DIA_DANH", "TINH_THANH_PHO", "DIA_CHI_TRU_SO", "TEN_DU_AN",
         "TEN_CONG_TRINH", "NGUON_VON", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU",
         "HINH_THUC_LCNT", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "THOI_GIAN_TO_CHUC_LCNT",
-        "SO_TO_TRINH", "NGAY_TO_TRINH", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "SO_GIAY_MOI", "NGAY_GIAY_MOI",
-        "SO_BIEN_BAN_HOAN_THIEN", "NGAY_BIEN_BAN", "SO_HOP_DONG", "NGAY_HOP_DONG",
+        "SO_TO_TRINH", "NGAY_TO_TRINH", "NGAY_TO_TRINH_FULL", "TEN_KEM_SO_NGAY_TO_TRINH",
+        "SO_QUYET_DINH", "NGAY_QUYET_DINH", "NGAY_QUYET_DINH_FULL", "TEN_KEM_SO_NGAY_QUYET_DINH",
+        "SO_GIAY_MOI", "NGAY_GIAY_MOI", "NGAY_GIAY_MOI_FULL", "TEN_KEM_SO_NGAY_GIAY_MOI",
+        "SO_BIEN_BAN_HOAN_THIEN", "NGAY_BIEN_BAN", "NGAY_BIEN_BAN_FULL", "TEN_KEM_SO_NGAY_BIEN_BAN",
+        "SO_HOP_DONG", "NGAY_HOP_DONG", "NGAY_HOP_DONG_FULL", "TEN_KEM_SO_NGAY_HOP_DONG",
+        "SO_CONG_VAN_THAM_GIA",
         "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "DAI_DIEN_NHA_THAU", "CHUC_VU_DAI_DIEN",
         "DIA_CHI_NHA_THAU", "MA_SO_THUE", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU"
     ];
 
     function getRelevantVarsForDoc(docId) {
+        let varSet;
         if (DOC_VAR_MAP[docId]) {
-            return new Set(DOC_VAR_MAP[docId]);
+            varSet = new Set(DOC_VAR_MAP[docId]);
+        } else {
+            const docs = getAllDocsForCurrentType();
+            const doc = docs.find(d => d.id === docId);
+            if (doc && Array.isArray(doc.requiredVars) && doc.requiredVars.length > 0) {
+                varSet = new Set(doc.requiredVars);
+            } else {
+                varSet = new Set(commonGeneralKeys.concat(["TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO"]));
+            }
         }
-        const docs = getAllDocsForCurrentType();
-        const doc = docs.find(d => d.id === docId);
-        if (doc && Array.isArray(doc.requiredVars) && doc.requiredVars.length > 0) {
-            return new Set(doc.requiredVars);
-        }
-        return new Set(commonGeneralKeys.concat(["TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO"]));
+        // Tự động mở rộng các biến dẫn xuất: _FULL và TEN_KEM_SO_NGAY_...
+        const suffixes = ["TO_TRINH", "QUYET_DINH", "GIAY_MOI", "BIEN_BAN", "HOP_DONG"];
+        suffixes.forEach(sfx => {
+            if (varSet.has(`NGAY_${sfx}`) || varSet.has(`SO_${sfx}`) || (sfx === "BIEN_BAN" && varSet.has("SO_BIEN_BAN_HOAN_THIEN"))) {
+                varSet.add(`NGAY_${sfx}`);
+                varSet.add(`NGAY_${sfx}_FULL`);
+                varSet.add(`TEN_KEM_SO_NGAY_${sfx}`);
+                if (sfx === "BIEN_BAN") varSet.add("SO_BIEN_BAN_HOAN_THIEN");
+                else varSet.add(`SO_${sfx}`);
+            }
+        });
+        return varSet;
     }
 
 
@@ -2287,10 +2317,13 @@
     function populateFormInputs() {
         const currentPkg = appState.packages[appState.activePackageIndex] || { fields: {} };
         const inputs = document.querySelectorAll("[data-field]");
+        const mergedData = getMergedData();
 
         inputs.forEach(input => {
             const field = input.getAttribute("data-field");
-            if (generalFieldsList.includes(field)) {
+            if (mergedData[field] !== undefined) {
+                input.value = mergedData[field] || "";
+            } else if (generalFieldsList.includes(field)) {
                 input.value = appState.generalInfo[field] || "";
             } else {
                 input.value = currentPkg.fields[field] || "";
@@ -2392,8 +2425,65 @@
             }
         }
 
+        // Nếu người dùng sửa ô Ngày tháng Full (_FULL), tự động parse về ngắn (dd/mm/yyyy) để lưu & sync
+        if (field.endsWith("_FULL")) {
+            const baseField = field.replace(/_FULL$/, "");
+            const parsedShort = parseDateToDDMMYYYY(val);
+            if (parsedShort) {
+                const currentPkg = appState.packages[appState.activePackageIndex];
+                if (currentPkg && currentPkg.fields) currentPkg.fields[baseField] = parsedShort;
+                syncDocFieldChangeToTimeline(baseField, parsedShort);
+            }
+        } else if (field.startsWith("TEN_KEM_SO_NGAY_")) {
+            // Nếu người dùng sửa trích dẫn Tên văn bản kèm số & ngày
+            const m = val.match(/^(?:Tờ trình|Quyết định|Giấy mời|Biên bản|Hợp đồng).*?\s+([^\s]+)\s+ngày\s+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})/i);
+            if (m) {
+                const extractedNo = m[1];
+                const extractedDate = m[2];
+                let noKey = "", dateKey = "";
+                if (field.includes("TO_TRINH")) { noKey = "SO_TO_TRINH"; dateKey = "NGAY_TO_TRINH"; }
+                else if (field.includes("QUYET_DINH")) { noKey = "SO_QUYET_DINH"; dateKey = "NGAY_QUYET_DINH"; }
+                else if (field.includes("GIAY_MOI")) { noKey = "SO_GIAY_MOI"; dateKey = "NGAY_GIAY_MOI"; }
+                else if (field.includes("BIEN_BAN")) { noKey = "SO_BIEN_BAN_HOAN_THIEN"; dateKey = "NGAY_BIEN_BAN"; }
+                else if (field.includes("HOP_DONG")) { noKey = "SO_HOP_DONG"; dateKey = "NGAY_HOP_DONG"; }
+
+                const currentPkg = appState.packages[appState.activePackageIndex];
+                if (noKey && currentPkg && currentPkg.fields) {
+                    currentPkg.fields[noKey] = extractedNo;
+                    syncDocFieldChangeToTimeline(noKey, extractedNo);
+                }
+                if (dateKey && currentPkg && currentPkg.fields) {
+                    const normD = parseDateToDDMMYYYY(extractedDate);
+                    currentPkg.fields[dateKey] = normD;
+                    syncDocFieldChangeToTimeline(dateKey, normD);
+                }
+            }
+        }
+
         // Đồng bộ ngược lại task ở Tab Tiến độ nếu người dùng đổi số/ngày tại form
         syncDocFieldChangeToTimeline(field, val);
+
+        // Tự động cập nhật các ô phái sinh khác trong Section 8
+        const mergedNow = getMergedData();
+        ["TO_TRINH", "QUYET_DINH", "GIAY_MOI", "BIEN_BAN", "HOP_DONG"].forEach(sfx => {
+            const fullInp = document.querySelector(`input[data-field="NGAY_${sfx}_FULL"]`);
+            if (fullInp && field !== `NGAY_${sfx}_FULL` && document.activeElement !== fullInp) {
+                fullInp.value = mergedNow[`NGAY_${sfx}_FULL`] || "";
+            }
+            const nameInp = document.querySelector(`input[data-field="TEN_KEM_SO_NGAY_${sfx}"]`);
+            if (nameInp && field !== `TEN_KEM_SO_NGAY_${sfx}` && document.activeElement !== nameInp) {
+                nameInp.value = mergedNow[`TEN_KEM_SO_NGAY_${sfx}`] || "";
+            }
+            const shortInp = document.querySelector(`input[data-field="NGAY_${sfx}"]`);
+            if (shortInp && field !== `NGAY_${sfx}` && document.activeElement !== shortInp) {
+                shortInp.value = mergedNow[`NGAY_${sfx}`] || "";
+            }
+            const noKey = sfx === "BIEN_BAN" ? "SO_BIEN_BAN_HOAN_THIEN" : `SO_${sfx}`;
+            const noInp = document.querySelector(`input[data-field="${noKey}"]`);
+            if (noInp && field !== noKey && document.activeElement !== noInp) {
+                noInp.value = mergedNow[noKey] || "";
+            }
+        });
 
         saveState();
         updateProgress();
@@ -2808,6 +2898,31 @@
                 if (merged.NGAY_QUYET_DINH_KQLCNT) merged.NGAY_QUYET_DINH = merged.NGAY_QUYET_DINH_KQLCNT;
             }
         }
+
+        // 3. Tự động sinh các biến Ngày tháng Full (ngày dd tháng mm năm yyyy) và Tên kèm Số & Ngày (VD: Tờ trình 11/ĐKNCC/TTr-KTHT ngày 10/02/2027)
+        const docConfigs = [
+            { sfx: "TO_TRINH", title: "Tờ trình", no: merged.SO_TO_TRINH, date: merged.NGAY_TO_TRINH },
+            { sfx: "QUYET_DINH", title: "Quyết định", no: merged.SO_QUYET_DINH, date: merged.NGAY_QUYET_DINH },
+            { sfx: "GIAY_MOI", title: "Giấy mời", no: merged.SO_GIAY_MOI || "GM-BQLDA", date: merged.NGAY_GIAY_MOI },
+            { sfx: "BIEN_BAN", title: "Biên bản hoàn thiện hợp đồng", no: merged.SO_BIEN_BAN_HOAN_THIEN || merged.SO_BIEN_BAN, date: merged.NGAY_BIEN_BAN },
+            { sfx: "HOP_DONG", title: "Hợp đồng kinh tế", no: merged.SO_HOP_DONG, date: merged.NGAY_HOP_DONG }
+        ];
+
+        docConfigs.forEach(cfg => {
+            // Ngày tháng đầy đủ cho phần Header: "ngày dd tháng mm năm yyyy"
+            merged[`NGAY_${cfg.sfx}_FULL`] = formatDateLongVN(cfg.date);
+
+            // Tên văn bản kèm Số và Ngày (Ví dụ: "Tờ trình 11/ĐKNCC/TTr-KTHT ngày 10/02/2027")
+            if (cfg.no && cfg.date) {
+                merged[`TEN_KEM_SO_NGAY_${cfg.sfx}`] = `${cfg.title} ${cfg.no} ngày ${cfg.date}`;
+            } else if (cfg.no) {
+                merged[`TEN_KEM_SO_NGAY_${cfg.sfx}`] = `${cfg.title} ${cfg.no}`;
+            } else if (cfg.date) {
+                merged[`TEN_KEM_SO_NGAY_${cfg.sfx}`] = `${cfg.title} ngày ${cfg.date}`;
+            } else {
+                merged[`TEN_KEM_SO_NGAY_${cfg.sfx}`] = "";
+            }
+        });
     }
 
     function formatDateLongVN(dateVal) {
@@ -2852,8 +2967,9 @@
     }
 
     function valOrPlaceholderDateHeader(key, data) {
-        const val = data[key];
-        if (val && String(val).trim() !== "") {
+        const fullKey = key.endsWith("_FULL") ? key : key + "_FULL";
+        const val = data[fullKey] || (data[key] ? formatDateLongVN(data[key]) : "");
+        if (val && String(val).trim() !== "" && !val.includes(".....")) {
             const formatted = formatDateLongVN(val);
             return `<span class="filled-val" data-var-key="${key}" data-date-role="header" title="Ngày ban hành văn bản: {${key}} (Double-click để sửa trực tiếp)">${formatted}</span>`;
         }
@@ -3404,7 +3520,24 @@
             tempDiv.querySelectorAll("[data-var-key]").forEach(el => {
                 const k = el.getAttribute("data-var-key");
                 const currentVal = data[k];
-                const isHeaderDate = el.getAttribute("data-date-role") === "header";
+
+                let isHeaderDate = el.getAttribute("data-date-role") === "header";
+                if (!isHeaderDate && k && k.startsWith("NGAY_")) {
+                    if (el.closest('.grid-cols-2') || el.parentElement?.textContent.includes("Độc lập") || el.parentElement?.innerHTML.includes("DIA_DANH")) {
+                        isHeaderDate = true;
+                        el.setAttribute("data-date-role", "header");
+                    }
+                }
+
+                if (isHeaderDate) {
+                    // Xóa chữ ", ngày " hoặc "ngày " bị thừa ở text node trước span
+                    if (el.previousSibling && el.previousSibling.nodeType === Node.TEXT_NODE) {
+                        el.previousSibling.textContent = el.previousSibling.textContent
+                            .replace(/,\s*ngày\s*$/i, ', ')
+                            .replace(/\bngày\s*$/i, '');
+                    }
+                }
+
                 if (currentVal && String(currentVal).trim() !== "") {
                     el.className = "filled-val";
                     el.textContent = isHeaderDate ? formatDateLongVN(currentVal) : currentVal;
@@ -3415,6 +3548,12 @@
                         : `<i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${k}}`;
                 }
             });
+
+            // Làm sạch triệt để mọi lỗi lặp "ngày ngày" trong tiêu đề
+            tempDiv.querySelectorAll(".grid-cols-2").forEach(grid => {
+                grid.innerHTML = grid.innerHTML.replace(/(,\s*)ngày\s+ngày\s+/gi, '$1ngày ');
+            });
+
             documentPreviewContent.innerHTML = tempDiv.innerHTML;
             if (btnResetPreviewDoc) btnResetPreviewDoc.classList.remove("hidden");
         } else {
@@ -5213,6 +5352,13 @@
 
         const newVal = span.innerText.trim();
 
+        // If editing a date variable, normalize to DD/MM/YYYY
+        let normalizedVal = newVal;
+        if (varKey.startsWith("NGAY_")) {
+            normalizedVal = parseDateToDDMMYYYY(newVal);
+        }
+        const newValToSave = normalizedVal;
+
         // 1. Update data in state
         if (!appState.generalInfo) appState.generalInfo = {};
         appState.generalInfo[varKey] = newValToSave || newVal;
@@ -5225,12 +5371,6 @@
 
         if (window.customVariables && window.customVariables[varKey]) {
             window.customVariables[varKey].value = newVal;
-        }
-
-        // If editing a date variable, normalize to DD/MM/YYYY
-        let normalizedVal = newVal;
-        if (varKey.startsWith("NGAY_")) {
-            normalizedVal = parseDateToDDMMYYYY(newVal);
         }
 
         // 2. Update all occurrences of this variable in document preview
@@ -5249,9 +5389,6 @@
             el.setAttribute("data-var-key", varKey);
             el.title = `Biến: {${varKey}} (Double-click để sửa trực tiếp, Chuột phải để quản lý)`;
         });
-
-        // Use normalized value for state & form inputs
-        const newValToSave = normalizedVal;
 
         // 3. Update input field on left form accordion
         const formInput = document.querySelector(`input[data-field="${varKey}"], textarea[data-field="${varKey}"]`);
@@ -5332,6 +5469,7 @@
             };
         }
     }
+    window.populateCtxVarsSubmenu = populateCtxVarsSubmenu;
 
     // Toggle Link Submenu
     const ctxMenuLinkVar = document.getElementById("ctxMenuLinkVar");
