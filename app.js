@@ -2810,6 +2810,78 @@
         }
     }
 
+    function formatDateLongVN(dateVal) {
+        if (!dateVal || String(dateVal).trim() === "") {
+            return "ngày ..... tháng ..... năm 202...";
+        }
+        let str = String(dateVal).trim();
+        let day = "", month = "", year = "";
+
+        if (str.includes("/")) {
+            const parts = str.split("/");
+            if (parts.length === 3) {
+                day = parts[0].trim();
+                month = parts[1].trim();
+                year = parts[2].trim();
+            }
+        } else if (str.includes("-")) {
+            const parts = str.split("-");
+            if (parts.length === 3) {
+                year = parts[0].trim();
+                month = parts[1].trim();
+                day = parts[2].trim();
+            }
+        }
+
+        if (day && month && year) {
+            const d = parseInt(day, 10);
+            const m = parseInt(month, 10);
+            const y = parseInt(year, 10);
+            if (!isNaN(d) && !isNaN(m) && !isNaN(y) && y > 1900) {
+                const dStr = String(d).padStart(2, '0');
+                const mStr = String(m).padStart(2, '0');
+                return `ngày ${dStr} tháng ${mStr} năm ${y}`;
+            }
+        }
+
+        if (str.toLowerCase().includes("tháng") || str.toLowerCase().includes("năm")) {
+            return str.startsWith("ngày") ? str : `ngày ${str}`;
+        }
+
+        return `ngày ${str}`;
+    }
+
+    function valOrPlaceholderDateHeader(key, data) {
+        const val = data[key];
+        if (val && String(val).trim() !== "") {
+            const formatted = formatDateLongVN(val);
+            return `<span class="filled-val" data-var-key="${key}" data-date-role="header" title="Ngày ban hành văn bản: {${key}} (Double-click để sửa trực tiếp)">${formatted}</span>`;
+        }
+        return `<span class="placeholder-tag" data-var-key="${key}" data-date-role="header" data-missing-key="${key}" title="Ngày ban hành văn bản: {${key}} (Double-click để nhập ngày)"><i class="fa-solid fa-calendar-days text-[9px] text-amber-700"></i> ngày ..... tháng ..... năm 202...</span>`;
+    }
+
+    function parseDateToDDMMYYYY(str) {
+        if (!str) return "";
+        str = String(str).trim();
+        const regexLong = /ngày\s*(\d{1,2})\s*tháng\s*(\d{1,2})\s*năm\s*(\d{4})/i;
+        const match = str.match(regexLong);
+        if (match) {
+            const d = match[1].padStart(2, '0');
+            const m = match[2].padStart(2, '0');
+            const y = match[3];
+            return `${d}/${m}/${y}`;
+        }
+        if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(str)) {
+            const parts = str.split("-");
+            return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
+        }
+        if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(str)) {
+            const parts = str.split("/");
+            return `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[2]}`;
+        }
+        return str;
+    }
+
     function valOrPlaceholder(key, data) {
         const val = data[key];
         if (val && String(val).trim() !== "") {
@@ -2836,7 +2908,7 @@
                 <div>
                     <div class="font-bold text-[11pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
                     <div class="font-bold text-[11.5pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
-                    <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_TO_TRINH", data) || "..... tháng ..... năm 202..."}</div>
+                    <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ${valOrPlaceholderDateHeader("NGAY_TO_TRINH", data)}</div>
                 </div>
             </div>
         `;
@@ -2853,7 +2925,7 @@
                     <div>
                         <div class="font-bold text-[11pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
                         <div class="font-bold text-[11.5pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
-                        <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_GIAY_MOI", data)}</div>
+                        <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ${valOrPlaceholderDateHeader("NGAY_GIAY_MOI", data)}</div>
                     </div>
                 </div>
 
@@ -2908,7 +2980,7 @@
                 <div class="text-center pb-2">
                     <div class="font-bold text-[11pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
                     <div class="font-bold text-[11.5pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
-                    <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_BIEN_BAN", data)}</div>
+                    <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ${valOrPlaceholderDateHeader("NGAY_BIEN_BAN", data)}</div>
                 </div>
 
                 <div class="text-center my-4">
@@ -3030,7 +3102,7 @@
                     <div>
                         <div class="font-bold text-[11pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
                         <div class="font-bold text-[11.5pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
-                        <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_QUYET_DINH", data)}</div>
+                        <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ${valOrPlaceholderDateHeader("NGAY_QUYET_DINH", data)}</div>
                     </div>
                 </div>
 
@@ -3099,7 +3171,7 @@
                     <div>
                         <div class="font-bold text-[11pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
                         <div class="font-bold text-[11.5pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
-                        <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_QUYET_DINH", data) || "..... tháng ..... năm 202..."}</div>
+                        <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ${valOrPlaceholderDateHeader("NGAY_QUYET_DINH", data)}</div>
                     </div>
                 </div>
 
@@ -3219,7 +3291,7 @@
                     <div>
                         <div class="font-bold text-[11pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
                         <div class="font-bold text-[11.5pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
-                        <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_QUYET_DINH", data)}</div>
+                        <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ${valOrPlaceholderDateHeader("NGAY_QUYET_DINH", data)}</div>
                     </div>
                 </div>
 
@@ -3332,12 +3404,15 @@
             tempDiv.querySelectorAll("[data-var-key]").forEach(el => {
                 const k = el.getAttribute("data-var-key");
                 const currentVal = data[k];
+                const isHeaderDate = el.getAttribute("data-date-role") === "header";
                 if (currentVal && String(currentVal).trim() !== "") {
                     el.className = "filled-val";
-                    el.textContent = currentVal;
+                    el.textContent = isHeaderDate ? formatDateLongVN(currentVal) : currentVal;
                 } else {
                     el.className = "placeholder-tag";
-                    el.innerHTML = `<i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${k}}`;
+                    el.innerHTML = isHeaderDate
+                        ? `<i class="fa-solid fa-calendar-days text-[9px] text-amber-700"></i> ngày ..... tháng ..... năm 202...`
+                        : `<i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${k}}`;
                 }
             });
             documentPreviewContent.innerHTML = tempDiv.innerHTML;
@@ -3566,7 +3641,22 @@
         const zip = await JSZip.loadAsync(arrayBuffer);
         let docXml = await zip.file("word/document.xml").async("string");
 
-        // Thay thế toàn bộ biến xạ {{KEY}} và {KEY}
+        // Bước 1: Thay thế ngày tháng ở Header văn bản thành: "ngày dd tháng mm năm yyyy"
+        const headerDateKeys = [
+            "NGAY_TO_TRINH", "NGAY_QUYET_DINH", "NGAY_GIAY_MOI", "NGAY_BIEN_BAN",
+            "NGAY_HOP_DONG", "NGAY_KY_HOP_DONG", "NGAY_BAO_CAO", "NGAY_NGHIEM_THU"
+        ];
+        for (const k of headerDateKeys) {
+            const rawVal = replacements[k];
+            if (rawVal) {
+                const longDate = formatDateLongVN(rawVal);
+                // Regex thay thế chuỗi ', ngày {{NGAY_...}}' hoặc ', ngày {NGAY_...}' trên dòng header
+                const regHeader = new RegExp(`,\\s*ngày\\s*\\{+${k}\\}+`, 'gi');
+                docXml = docXml.replace(regHeader, `, ${longDate}`);
+            }
+        }
+
+        // Bước 2: Thay thế toàn bộ biến xạ {{KEY}} và {KEY} (các căn cứ giữ chuẩn dd/mm/yyyy)
         for (const [key, rawVal] of Object.entries(replacements)) {
             const val = escapeXml(rawVal);
             const tag1 = `{{${key}}}`;
@@ -5125,42 +5215,54 @@
 
         // 1. Update data in state
         if (!appState.generalInfo) appState.generalInfo = {};
-        appState.generalInfo[varKey] = newVal;
+        appState.generalInfo[varKey] = newValToSave || newVal;
 
         const currentPkg = appState.packages[appState.activePackageIndex];
         if (currentPkg) {
             if (!currentPkg.fields) currentPkg.fields = {};
-            currentPkg.fields[varKey] = newVal;
+            currentPkg.fields[varKey] = newValToSave || newVal;
         }
 
         if (window.customVariables && window.customVariables[varKey]) {
             window.customVariables[varKey].value = newVal;
         }
 
+        // If editing a date variable, normalize to DD/MM/YYYY
+        let normalizedVal = newVal;
+        if (varKey.startsWith("NGAY_")) {
+            normalizedVal = parseDateToDDMMYYYY(newVal);
+        }
+
         // 2. Update all occurrences of this variable in document preview
         const allMatchingSpans = documentPreviewContent.querySelectorAll(`[data-var-key="${varKey}"]`);
         allMatchingSpans.forEach(el => {
-            if (newVal !== "") {
+            const isHeaderDate = el.getAttribute("data-date-role") === "header";
+            if (normalizedVal !== "") {
                 el.className = "filled-val";
-                el.textContent = newVal;
+                el.textContent = isHeaderDate ? formatDateLongVN(normalizedVal) : normalizedVal;
             } else {
                 el.className = "placeholder-tag";
-                el.innerHTML = `<i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${varKey}}`;
+                el.innerHTML = isHeaderDate
+                    ? `<i class="fa-solid fa-calendar-days text-[9px] text-amber-700"></i> ngày ..... tháng ..... năm 202...`
+                    : `<i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${varKey}}`;
             }
             el.setAttribute("data-var-key", varKey);
             el.title = `Biến: {${varKey}} (Double-click để sửa trực tiếp, Chuột phải để quản lý)`;
         });
 
+        // Use normalized value for state & form inputs
+        const newValToSave = normalizedVal;
+
         // 3. Update input field on left form accordion
         const formInput = document.querySelector(`input[data-field="${varKey}"], textarea[data-field="${varKey}"]`);
         if (formInput) {
-            formInput.value = newVal;
+            formInput.value = newValToSave || newVal;
             formInput.classList.add("bg-emerald-50");
             setTimeout(() => formInput.classList.remove("bg-emerald-50"), 1200);
         }
 
         // 4. Two-way sync to Tab 1 if linked date or docNo
-        syncDocFieldChangeToTimeline(varKey, newVal);
+        syncDocFieldChangeToTimeline(varKey, newValToSave || newVal);
 
         // 5. Update customDocumentHtml if user has a customized template
         const activeDoc = getCurrentActiveDoc();
