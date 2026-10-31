@@ -111,6 +111,23 @@
     // -------------------------------------------------------------
     // Upload Handling
     // -------------------------------------------------------------
+    const welcomeUploadBox = document.getElementById("welcomeUploadBox");
+    if (welcomeUploadBox) {
+        welcomeUploadBox.addEventListener("click", () => docxUploadInput.click());
+        welcomeUploadBox.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            welcomeUploadBox.classList.add("border-emerald-600", "bg-emerald-50/50");
+        });
+        welcomeUploadBox.addEventListener("dragleave", () => {
+            welcomeUploadBox.classList.remove("border-emerald-600", "bg-emerald-50/50");
+        });
+        welcomeUploadBox.addEventListener("drop", (e) => {
+            e.preventDefault();
+            welcomeUploadBox.classList.remove("border-emerald-600", "bg-emerald-50/50");
+            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+        });
+    }
+
     btnTriggerUpload.addEventListener("click", () => docxUploadInput.click());
     btnChooseAnotherFile.addEventListener("click", () => docxUploadInput.click());
 
@@ -151,6 +168,7 @@
             btnTriggerUpload.classList.add("hidden");
             fileInfoBar.classList.remove("hidden");
             workspaceArea.classList.remove("hidden");
+            if (welcomeUploadBox) welcomeUploadBox.classList.add("hidden");
 
             runDeepEntityDetector();
             renderMappingTable();
@@ -345,11 +363,11 @@
 
         discoveredSuggestions.forEach((sug, idx) => {
             const chip = document.createElement("div");
-            chip.className = "inline-flex items-center space-x-1 px-2 py-0.5 bg-white border border-amber-300 rounded-md text-[11px] shadow-xs hover:bg-amber-100 cursor-pointer";
+            chip.className = "inline-flex items-center space-x-1 px-1.5 py-0.2 bg-white border border-amber-300 rounded text-[10.5px] shadow-xs hover:bg-amber-100 cursor-pointer";
             chip.innerHTML = `
                 <span class="font-bold text-amber-900">${sug.label}:</span>
-                <span class="text-slate-600 truncate max-w-[120px]">${sug.value}</span>
-                <i class="fa-solid fa-plus text-emerald-600 ml-1"></i>
+                <span class="text-slate-600 truncate max-w-[120px] font-mono text-[10px]">${sug.value}</span>
+                <i class="fa-solid fa-plus text-emerald-600 ml-0.5 text-[9px]"></i>
             `;
             chip.addEventListener("click", () => {
                 // Add to mappings
@@ -410,7 +428,7 @@
 
         mappings.forEach((item, index) => {
             const row = document.createElement("div");
-            row.className = "p-2 bg-slate-50 border border-slate-200 rounded-lg space-y-1 hover:border-emerald-300 transition-colors text-xs";
+            row.className = "p-1.5 bg-slate-50 border border-slate-200 rounded space-y-1 hover:border-emerald-400 hover:bg-emerald-50/20 transition-all text-[11px]";
 
             // Standard variable selector options
             let optionsHtml = "";
@@ -434,26 +452,26 @@
             const newBadge = item.isNew ? `<span class="bg-indigo-100 text-indigo-700 font-bold px-1 py-0.2 rounded text-[9px] uppercase">Mới</span>` : "";
 
             row.innerHTML = `
-                <div class="flex items-center justify-between gap-1.5">
-                    <div class="flex items-center space-x-1 flex-1">
+                <div class="flex items-center justify-between gap-1">
+                    <div class="flex items-center space-x-1 flex-1 min-w-0">
                         ${newBadge}
-                        <select class="var-select text-xs font-bold text-emerald-800 bg-white border border-slate-300 rounded px-1.5 py-0.5 h-6 flex-1 focus:ring-emerald-500">
+                        <select class="var-select text-[11px] font-bold text-emerald-900 bg-white border border-slate-300 rounded px-1.5 py-0.5 h-6 flex-1 focus:ring-emerald-500">
                             ${optionsHtml}
                         </select>
                     </div>
-                    <div class="flex items-center space-x-1">
-                        <select class="sheet-select text-[11px] font-medium text-slate-700 bg-white border border-slate-300 rounded px-1.5 py-0.5 h-6 focus:ring-indigo-500">
+                    <div class="flex items-center space-x-1 shrink-0">
+                        <select class="sheet-select text-[10.5px] font-medium text-slate-700 bg-white border border-slate-300 rounded px-1 py-0.5 h-6 focus:ring-indigo-500 max-w-[130px]">
                             ${sheetsHtml}
                         </select>
-                        <span class="text-[10px] bg-amber-100 text-amber-800 px-1 py-0.5 rounded font-bold">${item.count} lần</span>
-                        <button class="btn-delete-row text-slate-400 hover:text-red-600 p-0.5 rounded text-xs" data-index="${index}">
+                        <span class="text-[9.5px] bg-amber-100 text-amber-900 px-1 py-0.2 rounded font-bold whitespace-nowrap">${item.count} lần</span>
+                        <button class="btn-delete-row text-slate-400 hover:text-red-600 p-0.5 rounded text-[11px]" data-index="${index}" title="Xóa biến này">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
                 </div>
                 <div class="flex items-center space-x-1.5">
-                    <span class="text-[10px] font-semibold text-slate-500 whitespace-nowrap">Từ trong file cũ:</span>
-                    <input type="text" value="${item.originalText || ""}" class="input-orig-text text-xs px-2 py-0.5 h-6 bg-white border border-slate-300 rounded flex-1 focus:ring-emerald-500 text-slate-800" data-index="${index}">
+                    <span class="text-[9.5px] font-bold text-slate-500 uppercase tracking-tight whitespace-nowrap shrink-0">Từ trong file cũ:</span>
+                    <input type="text" value="${item.originalText || ""}" class="input-orig-text text-[11px] px-1.5 py-0.5 h-6 bg-white border border-slate-300 rounded flex-1 focus:ring-emerald-500 text-slate-800 font-mono" data-index="${index}">
                 </div>
             `;
             mappingRowsContainer.appendChild(row);
@@ -612,7 +630,7 @@
                     }
                 });
             }
-            html += `<p class="mb-2.5 text-[12pt] leading-relaxed text-justify">${paragraphHtml}</p>`;
+            html += `<p class="mb-1 text-[11.5pt] leading-normal text-justify">${paragraphHtml}</p>`;
         });
 
         documentContentDisplay.innerHTML = html;

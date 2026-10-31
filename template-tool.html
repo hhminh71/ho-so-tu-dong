@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Công Cụ Chuẩn Hóa Template Word (.docx) & Đồng Bộ Excel — Tạo Hồ Sơ</title>
+    <title>Chuẩn Hóa Template Word (.docx) & Đồng Bộ Excel — Tạo Hồ Sơ</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
@@ -18,7 +18,7 @@
         .highlight-match {
             background-color: #fef08a;
             color: #854d0e;
-            padding: 1px 3px;
+            padding: 0px 2px;
             border-radius: 2px;
             font-weight: 600;
         }
@@ -26,204 +26,211 @@
             background-color: #dcfce7;
             color: #15803d;
             border: 1px solid #86efac;
-            padding: 1px 5px;
-            border-radius: 4px;
+            padding: 0px 4px;
+            border-radius: 3px;
             font-family: monospace;
             font-weight: 700;
             font-size: 0.85em;
         }
         .selection-popup {
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 20px -3px rgba(0, 0, 0, 0.25);
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col text-xs">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col text-[11.5px]">
 
-    <!-- Top Navigation Bar -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 h-12 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <a href="index.html" class="flex items-center space-x-2">
-                    <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white shadow-sm font-bold text-base">
+    <!-- Top Command Header (Height: 38px, High Density) -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+        <div class="max-w-[1600px] mx-auto px-2 h-9 flex items-center justify-between gap-2">
+            <!-- Brand & App Identity -->
+            <div class="flex items-center space-x-2 min-w-0">
+                <a href="index.html" class="flex items-center space-x-1.5 shrink-0">
+                    <div class="w-6 h-6 bg-emerald-600 rounded flex items-center justify-center text-white font-bold text-xs shadow-xs">
                         <i class="fa-solid fa-file-contract"></i>
                     </div>
-                    <span class="font-bold text-base text-slate-900 tracking-tight">Tạo Hồ Sơ</span>
+                    <span class="font-bold text-xs text-slate-900 tracking-tight whitespace-nowrap">Tạo Hồ Sơ</span>
                 </a>
-                <span class="text-[11px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">Template & Excel Studio</span>
-            </div>
-
-            <!-- Nav Links -->
-            <div class="flex items-center space-x-4 text-xs font-medium">
-                <a href="index.html" class="text-slate-600 hover:text-emerald-600 flex items-center space-x-1">
-                    <i class="fa-regular fa-clipboard"></i>
-                    <span>Hồ sơ chỉ định thầu</span>
-                </a>
-                <span class="text-slate-300">|</span>
-                <span class="text-emerald-700 font-bold flex items-center space-x-1">
-                    <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
-                    <span>Chuẩn hóa Template & Excel</span>
-                </span>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 py-3 flex-1 w-full flex flex-col">
-        <!-- Page Title & Header -->
-        <div class="text-center my-1.5">
-            <div class="inline-flex items-center space-x-2 text-xl font-bold text-slate-900">
-                <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
-                <h1>Chuẩn Hóa Template Word & Đồng Bộ Biến Xạ Vào Excel</h1>
-            </div>
-            <p class="text-[11px] text-slate-500 mt-0.5 max-w-2xl mx-auto">
-                Tải lên file Word cũ (.docx). Hệ thống tự phát hiện biến chuẩn & gợi ý thêm biến mới; cho phép tùy chọn đưa biến vào sheet cũ hoặc tạo sheet Excel mới!
-            </p>
-        </div>
-
-        <!-- Upload Box Area -->
-        <div class="bg-white rounded-xl border-2 border-dashed border-slate-300 hover:border-emerald-500 transition-colors p-4 my-2 text-center shadow-sm" id="dropZone">
-            <input type="file" id="docxUploadInput" accept=".docx" class="hidden">
-            <div class="flex flex-col items-center justify-center space-y-1.5 cursor-pointer" id="btnTriggerUpload">
-                <div class="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-xl mb-0.5 shadow-inner">
-                    <i class="fa-solid fa-file-word"></i>
-                </div>
-                <h3 class="font-bold text-slate-800 text-xs md:text-sm">Kéo thả file Word (.docx) dự án cũ vào đây hoặc bấm để chọn file</h3>
-                <p class="text-[11px] text-slate-400">Tự động phát hiện CĐT, Dự án, Gói thầu, Nhà thầu, Giá tiền, Số tài khoản, Bảo đảm, Thời hạn...</p>
-                <div class="pt-1">
-                    <span class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm inline-flex items-center space-x-1.5">
-                        <i class="fa-solid fa-upload"></i>
-                        <span>Chọn file Word từ máy tính</span>
+                <span class="text-slate-300 text-xs">/</span>
+                <div class="flex items-center space-x-1 text-xs">
+                    <span class="text-[11px] bg-indigo-50 text-indigo-800 font-bold px-1.5 py-0.2 rounded border border-indigo-200 flex items-center space-x-1">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-500 text-[10px]"></i>
+                        <span>Template Studio & Đồng Bộ Excel</span>
                     </span>
                 </div>
             </div>
 
-            <!-- Uploaded File Info Bar (Hidden by default) -->
-            <div id="fileInfoBar" class="hidden mt-2 pt-2 border-t border-slate-100 flex items-center justify-between bg-slate-50 p-2.5 rounded-lg">
-                <div class="flex items-center space-x-2.5 text-left">
-                    <i class="fa-solid fa-file-circle-check text-emerald-600 text-lg"></i>
-                    <div>
-                        <div class="font-bold text-xs text-slate-800" id="uploadedFileName">ten_file.docx</div>
-                        <div class="text-[10px] text-slate-500" id="uploadedFileSize">0 KB</div>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-1.5">
-                    <button id="btnAutoScanAgain" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-md flex items-center space-x-1">
-                        <i class="fa-solid fa-radar"></i>
-                        <span>Quét lại thông minh</span>
+            <!-- Navigation Links -->
+            <div class="flex items-center space-x-2 shrink-0 text-xs">
+                <a href="index.html" class="text-emerald-700 hover:text-emerald-800 font-bold flex items-center space-x-1 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded transition-colors text-[11px] border border-emerald-200">
+                    <i class="fa-solid fa-arrow-left text-[10px]"></i>
+                    <span>Về Hồ Sơ Chỉ Định Thầu</span>
+                </a>
+                <a href="https://github.com/hhminh71/ho-so-tu-dong" target="_blank" class="text-slate-500 hover:text-slate-800 flex items-center space-x-1 px-1.5 py-0.5 text-[11px]">
+                    <i class="fa-brands fa-github text-sm"></i>
+                    <span class="hidden md:inline">GitHub</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sub Toolbar & Compact Upload Ribbon (Height: 34px) -->
+    <div class="bg-white border-b border-slate-200 shadow-xs px-2 py-1">
+        <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-1.5">
+            <!-- Left Info -->
+            <div class="flex items-center space-x-2 min-w-0">
+                <span class="text-[11px] font-bold text-slate-800 flex items-center space-x-1">
+                    <i class="fa-solid fa-file-word text-blue-600"></i>
+                    <span>Chuẩn hóa Word cũ (.docx) sang Template</span>
+                </span>
+                <span class="text-[10px] text-slate-500 hidden lg:inline">• Quét thực thể, gợi ý biến mới và phân bổ vào sheet Excel</span>
+            </div>
+
+            <!-- Upload Zone & File Info Bar -->
+            <div class="flex items-center space-x-1.5 shrink-0" id="dropZone">
+                <input type="file" id="docxUploadInput" accept=".docx" class="hidden">
+                
+                <!-- Initial Trigger Upload Button -->
+                <button id="btnTriggerUpload" class="px-2.5 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded shadow-xs flex items-center space-x-1.5 h-6.5 transition-all">
+                    <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+                    <span>Chọn / Thả file Word (.docx)</span>
+                </button>
+
+                <!-- Uploaded File Info Bar (Hidden until uploaded) -->
+                <div id="fileInfoBar" class="hidden flex items-center space-x-2 bg-emerald-50 text-emerald-950 border border-emerald-300 px-2 py-0.5 rounded text-[11px] h-6.5">
+                    <i class="fa-solid fa-file-circle-check text-emerald-600"></i>
+                    <span class="font-bold text-[11px] max-w-[200px] truncate" id="uploadedFileName">ten_file.docx</span>
+                    <span class="text-[10px] text-emerald-700 font-mono" id="uploadedFileSize">0 KB</span>
+                    <button id="btnAutoScanAgain" title="Quét lại toàn bộ văn bản" class="ml-1 px-1.5 py-0.2 text-[10px] bg-white border border-emerald-300 hover:bg-emerald-100 rounded text-emerald-800 font-semibold h-5 flex items-center space-x-1">
+                        <i class="fa-solid fa-radar text-[9px]"></i>
+                        <span>Quét lại</span>
                     </button>
-                    <button id="btnChooseAnotherFile" class="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-md">
-                        <span>Đổi file khác</span>
+                    <button id="btnChooseAnotherFile" title="Tải file Word khác" class="px-1.5 py-0.2 text-[10px] bg-white border border-slate-300 hover:bg-slate-100 rounded text-slate-700 font-semibold h-5 flex items-center space-x-1">
+                        <i class="fa-solid fa-rotate text-[9px]"></i>
+                        <span>Đổi file</span>
                     </button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Tool Body (2 Columns): Mapping Table on Left (48%), Document Preview on Right (52%) -->
-        <div id="workspaceArea" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 items-start mt-1">
+    <!-- Main Workspace (Dense 2-Column Layout, max-w-[1600px], gap-2) -->
+    <main class="max-w-[1600px] mx-auto px-2 py-1.5 flex-1 w-full flex flex-col">
+
+        <!-- Initial Welcome / Drag-Drop Card (Visible only when no file is loaded yet) -->
+        <div id="welcomeUploadBox" class="my-6 max-w-xl mx-auto bg-white border-2 border-dashed border-emerald-400 rounded-xl p-6 text-center shadow-xs cursor-pointer hover:border-emerald-600 hover:bg-emerald-50/30 transition-all">
+            <div class="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-lg mx-auto mb-2">
+                <i class="fa-solid fa-file-word"></i>
+            </div>
+            <h3 class="font-bold text-xs text-slate-800">Kéo thả file Word (.docx) dự án cũ vào đây hoặc bấm để chọn file</h3>
+            <p class="text-[10px] text-slate-500 mt-1">Hệ thống sẽ tự động quét phát hiện các Biến Xạ và cấu trúc bảng để chuyển thành Template chuẩn</p>
+            <div class="mt-3">
+                <span class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded shadow-xs inline-flex items-center space-x-1.5">
+                    <i class="fa-solid fa-upload"></i>
+                    <span>Chọn file Word từ máy tính</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Tool Body (2 Columns): Mapping Table on Left (6 cols), Document Preview on Right (6 cols) -->
+        <div id="workspaceArea" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-2 flex-1 items-start">
             
-            <!-- Left Column: Variable Mapping & Excel Sync Table -->
-            <div class="lg:col-span-6 bg-white rounded-xl border border-slate-200 shadow-sm p-3.5 space-y-3">
-                <div class="flex items-center justify-between border-b pb-2 border-slate-100">
-                    <div>
-                        <h3 class="font-bold text-xs text-slate-900 flex items-center space-x-1.5">
-                            <i class="fa-solid fa-table-list text-emerald-600"></i>
-                            <span>Bảng Biến Xạ & Phân Bổ Vào Sheet Excel</span>
-                        </h3>
-                        <p class="text-[11px] text-slate-500 mt-0.5">Tùy biến từng biến xạ sẽ lưu vào Sheet nào của file Excel mẫu:</p>
+            <!-- Left Column: Variable Mapping & Excel Sync Table (6 of 12 cols) -->
+            <div class="lg:col-span-6 bg-white rounded border border-slate-200 shadow-xs p-2 space-y-1.5">
+                
+                <!-- Table Header & Controls Bar -->
+                <div class="flex items-center justify-between border-b pb-1.5 border-slate-200 h-7">
+                    <div class="flex items-center space-x-1.5">
+                        <i class="fa-solid fa-table-list text-emerald-600"></i>
+                        <span class="font-bold text-xs text-slate-900">Bảng Biến Xạ & Phân Bổ Sheet Excel</span>
+                        <span id="detectedCountBadge" class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded-full">0 biến</span>
                     </div>
-                    <span id="detectedCountBadge" class="text-[11px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">0 biến</span>
+
+                    <div class="flex items-center space-x-1">
+                        <button id="btnAddCustomVar" class="px-2 py-0.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded h-6 flex items-center space-x-1">
+                            <i class="fa-solid fa-plus text-[10px]"></i>
+                            <span>Thêm biến</span>
+                        </button>
+                        <button id="btnCreateNewSheet" class="px-2 py-0.5 text-[11px] font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-300 rounded h-6 flex items-center space-x-1">
+                            <i class="fa-solid fa-file-circle-plus text-[10px]"></i>
+                            <span>+ Sheet mới</span>
+                        </button>
+                        <button id="btnClearAllMapping" title="Xóa toàn bộ biến đã ánh xạ" class="text-slate-400 hover:text-red-600 px-1 py-0.5 rounded text-[11px]">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Suggestions for newly discovered variables banner -->
-                <div id="discoveredSuggestionsBox" class="hidden p-2.5 bg-amber-50 border border-amber-200 rounded-lg space-y-1.5">
-                    <div class="flex items-center justify-between">
-                        <span class="font-bold text-amber-900 flex items-center space-x-1 text-[11px]">
+                <div id="discoveredSuggestionsBox" class="hidden p-1.5 bg-amber-50 border border-amber-200 rounded space-y-1">
+                    <div class="flex items-center justify-between text-[11px]">
+                        <span class="font-bold text-amber-900 flex items-center space-x-1 text-[10.5px]">
                             <i class="fa-solid fa-lightbulb text-amber-500"></i>
-                            <span>Gợi ý biến mới tìm thấy trong văn bản:</span>
+                            <span>Biến mới phát hiện trong văn bản:</span>
                         </span>
-                        <button id="btnAcceptAllSuggestions" class="text-[10px] bg-amber-600 hover:bg-amber-700 text-white font-bold px-2 py-0.5 rounded shadow-xs">
+                        <button id="btnAcceptAllSuggestions" class="text-[10px] bg-amber-600 hover:bg-amber-700 text-white font-bold px-1.5 py-0.2 rounded shadow-xs">
                             + Thêm tất cả vào bảng
                         </button>
                     </div>
-                    <div id="suggestionsChipsContainer" class="flex flex-wrap gap-1.5">
+                    <div id="suggestionsChipsContainer" class="flex flex-wrap gap-1">
                         <!-- Chips injected by JS -->
                     </div>
                 </div>
 
-                <!-- Action buttons above table -->
-                <div class="flex items-center justify-between gap-2 pt-0.5">
-                    <div class="flex items-center space-x-1.5">
-                        <button id="btnAddCustomVar" class="px-2 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-md flex items-center space-x-1">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>Thêm biến mới</span>
-                        </button>
-                        <button id="btnCreateNewSheet" class="px-2 py-1 text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-md flex items-center space-x-1">
-                            <i class="fa-solid fa-file-circle-plus"></i>
-                            <span>+ Tạo Sheet Excel mới</span>
-                        </button>
-                    </div>
-                    <button id="btnClearAllMapping" class="text-[11px] text-slate-400 hover:text-red-600">
-                        <span>Xóa tất cả</span>
-                    </button>
-                </div>
-
-                <!-- Mapping Rows Container -->
-                <div class="space-y-2 max-h-[480px] overflow-y-auto pr-1" id="mappingRowsContainer">
+                <!-- Mapping Rows Container (High Density, Scrollable) -->
+                <div class="space-y-1 max-h-[calc(100vh-250px)] overflow-y-auto pr-1" id="mappingRowsContainer">
                     <!-- Populated dynamically by JS -->
                 </div>
 
-                <!-- Bottom Action Controls: 2 Groups (Word Template & Excel Sync) -->
-                <div class="pt-2.5 border-t border-slate-100 space-y-2">
-                    <!-- 1. Word Actions -->
+                <!-- Bottom Action Controls: 2 Compact Groups (Word Template & Excel Sync) -->
+                <div class="pt-1.5 border-t border-slate-200 space-y-1">
+                    <!-- 1. Word Actions Row -->
                     <div class="grid grid-cols-2 gap-1.5">
-                        <button id="btnApplyAllTags" class="py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm flex items-center justify-center space-x-1.5 transition-all">
-                            <i class="fa-solid fa-bolt"></i>
+                        <button id="btnApplyAllTags" class="h-7 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded shadow-xs flex items-center justify-center space-x-1.5 transition-all">
+                            <i class="fa-solid fa-bolt text-xs"></i>
                             <span>1. Gắn Thẻ Word XML</span>
                         </button>
-                        <button id="btnDownloadTemplate" class="py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg shadow-sm flex items-center justify-center space-x-1.5">
-                            <i class="fa-solid fa-download"></i>
+                        <button id="btnDownloadTemplate" class="h-7 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] rounded shadow-xs flex items-center justify-center space-x-1.5">
+                            <i class="fa-solid fa-download text-xs"></i>
                             <span>2. Tải Template (.docx)</span>
                         </button>
                     </div>
 
-                    <!-- 2. Excel Actions -->
-                    <div class="p-2.5 bg-emerald-50/70 border border-emerald-200 rounded-lg space-y-1.5">
-                        <div class="flex items-center justify-between text-[11px]">
-                            <span class="font-bold text-emerald-900 flex items-center space-x-1">
-                                <i class="fa-solid fa-file-excel text-emerald-600"></i>
-                                <span>Cập nhật cấu trúc Excel mẫu:</span>
-                            </span>
-                            <span class="text-slate-500 text-[10px]" id="excelUpdateSummary">Đã sẵn sàng đồng bộ</span>
+                    <!-- 2. Excel Actions Ribbon -->
+                    <div class="p-1.5 bg-emerald-50/70 border border-emerald-200 rounded flex flex-wrap items-center justify-between gap-1.5">
+                        <div class="flex items-center space-x-1 text-[11px]">
+                            <i class="fa-solid fa-file-excel text-emerald-600"></i>
+                            <span class="font-bold text-emerald-900">Đồng bộ Excel:</span>
+                            <span class="text-slate-500 text-[10px]" id="excelUpdateSummary">Sẵn sàng xuất mẫu</span>
                         </div>
-                        <div class="grid grid-cols-2 gap-1.5">
-                            <button id="btnDownloadUpdatedExcel" class="py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-md shadow-sm flex items-center justify-center space-x-1">
-                                <i class="fa-solid fa-file-arrow-down"></i>
-                                <span>Xuất File Excel Mới (.xlsx)</span>
+                        <div class="flex items-center space-x-1">
+                            <button id="btnDownloadUpdatedExcel" class="h-6 px-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-[11px] rounded shadow-xs flex items-center space-x-1">
+                                <i class="fa-solid fa-file-arrow-down text-[10px]"></i>
+                                <span>Xuất Excel Mới</span>
                             </button>
-                            <button id="btnSyncToMainApp" class="py-1.5 bg-white hover:bg-slate-50 text-emerald-800 font-bold text-xs rounded-md border border-emerald-300 flex items-center justify-center space-x-1">
-                                <i class="fa-solid fa-arrows-rotate"></i>
-                                <span>Đồng bộ vào App Tạo Hồ Sơ</span>
+                            <button id="btnSyncToMainApp" class="h-6 px-2.5 bg-white hover:bg-slate-50 text-emerald-800 font-bold text-[11px] rounded border border-emerald-300 flex items-center space-x-1">
+                                <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
+                                <span>Đồng bộ vào App</span>
                             </button>
                         </div>
                     </div>
 
                     <div class="text-center pt-0.5">
-                        <button id="btnTestFillTemplate" class="text-[11px] text-slate-600 hover:text-emerald-700 font-semibold underline">
+                        <button id="btnTestFillTemplate" class="text-[10.5px] text-slate-500 hover:text-emerald-700 font-semibold underline">
                             <i class="fa-solid fa-vial"></i> Thử nghiệm điền dữ liệu mẫu vào template vừa tạo
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column: Document Viewer & Highlight -->
-            <div class="lg:col-span-6 bg-white rounded-xl border border-slate-200 shadow-sm p-3.5 flex flex-col">
+            <!-- Right Column: Document Viewer & Highlight (6 of 12 cols, Sticky) -->
+            <div class="lg:col-span-6 bg-white rounded border border-slate-200 shadow-xs p-2 flex flex-col sticky top-12">
                 <!-- Preview Toolbar -->
-                <div class="flex items-center justify-between border-b pb-2 mb-2 border-slate-100">
+                <div class="flex items-center justify-between border-b pb-1.5 mb-1.5 border-slate-200 h-7">
                     <div class="flex items-center space-x-2">
                         <span class="text-xs font-bold text-slate-700"><i class="fa-regular fa-file-lines text-emerald-600"></i> Văn bản gốc:</span>
-                        <div class="inline-flex rounded-md bg-slate-100 p-0.5 text-[11px]">
-                            <button id="viewModeOriginal" class="px-2 py-0.5 rounded font-semibold bg-white text-slate-800 shadow-xs">Gốc</button>
-                            <button id="viewModeTagged" class="px-2 py-0.5 rounded text-slate-600 hover:text-slate-900">Sau gắn thẻ</button>
+                        <div class="inline-flex rounded bg-slate-200 p-0.5 text-[10.5px]">
+                            <button id="viewModeOriginal" class="px-2 py-0.2 rounded font-bold bg-white text-slate-800 shadow-xs">Gốc</button>
+                            <button id="viewModeTagged" class="px-2 py-0.2 rounded text-slate-600 hover:text-slate-900">Sau gắn thẻ</button>
                         </div>
                     </div>
                     <div class="text-[10px] text-slate-500 italic">
@@ -231,21 +238,21 @@
                     </div>
                 </div>
 
-                <!-- Document Display Viewport (A4 style) -->
-                <div class="bg-slate-200 p-3 rounded-lg max-h-[600px] overflow-y-auto relative select-text" id="docViewerWrapper">
-                    <div class="a4-preview-page !shadow-sm !min-h-[650px] !p-6" id="documentContentDisplay">
+                <!-- Document Display Viewport (Compact A4 style) -->
+                <div class="bg-slate-200 p-2 rounded max-h-[calc(100vh-100px)] overflow-y-auto relative select-text" id="docViewerWrapper">
+                    <div class="a4-preview-page !shadow-xs !min-h-[700px] !p-5 !text-[11.5pt] !leading-normal" id="documentContentDisplay">
                         <!-- Populated by JS -->
                     </div>
 
                     <!-- Floating Selection Menu (Appears on text highlight) -->
-                    <div id="selectionMenu" class="hidden absolute z-50 bg-slate-900 text-white rounded-lg py-1 px-1.5 selection-popup flex items-center space-x-1 text-[11px]">
-                        <span class="text-slate-400 text-[10px] mr-0.5">Gán:</span>
-                        <button class="quick-tag-btn px-1.5 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white" data-var="TEN_DU_AN">Dự án</button>
-                        <button class="quick-tag-btn px-1.5 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white" data-var="TEN_GOI_THAU">Gói thầu</button>
-                        <button class="quick-tag-btn px-1.5 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white" data-var="TEN_NHA_THAU">Nhà thầu</button>
-                        <button class="quick-tag-btn px-1.5 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white" data-var="GIA_TRI_HOP_DONG_SO">Giá tiền</button>
-                        <button class="quick-tag-btn px-1.5 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white" data-var="NGUOI_KY_CDT">Người ký</button>
-                        <button id="btnQuickCustomTag" class="px-1.5 py-0.5 bg-indigo-700 hover:bg-indigo-600 rounded text-white font-bold">+ Mới</button>
+                    <div id="selectionMenu" class="hidden absolute z-50 bg-slate-900 text-white rounded py-0.5 px-1 selection-popup flex items-center space-x-1 text-[10.5px]">
+                        <span class="text-slate-400 text-[9.5px] mr-0.5">Gán:</span>
+                        <button class="quick-tag-btn px-1.5 py-0.2 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white" data-var="TEN_DU_AN">Dự án</button>
+                        <button class="quick-tag-btn px-1.5 py-0.2 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white" data-var="TEN_GOI_THAU">Gói thầu</button>
+                        <button class="quick-tag-btn px-1.5 py-0.2 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white" data-var="TEN_NHA_THAU">Nhà thầu</button>
+                        <button class="quick-tag-btn px-1.5 py-0.2 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white" data-var="GIA_TRI_HOP_DONG_SO">Giá tiền</button>
+                        <button class="quick-tag-btn px-1.5 py-0.2 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white" data-var="NGUOI_KY_CDT">Người ký</button>
+                        <button id="btnQuickCustomTag" class="px-1.5 py-0.2 bg-indigo-700 hover:bg-indigo-600 rounded text-white font-bold">+ Mới</button>
                     </div>
                 </div>
             </div>
@@ -254,7 +261,7 @@
     </main>
 
     <!-- Notification Toast -->
-    <div id="toastNotification" class="fixed bottom-4 right-4 bg-slate-900 text-white text-xs px-3.5 py-2.5 rounded-lg shadow-xl flex items-center space-x-2 z-50 transform translate-y-20 opacity-0 transition-all duration-300">
+    <div id="toastNotification" class="fixed bottom-3 right-3 bg-slate-900 text-white text-xs px-3 py-2 rounded shadow-xl flex items-center space-x-2 z-50 transform translate-y-20 opacity-0 transition-all duration-200">
         <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
         <span id="toastMsg">Thông báo</span>
     </div>
