@@ -6,12 +6,19 @@ Hệ thống tự động hóa lập bộ hồ sơ chỉ định thầu rút g�
 
 ## 🌟 Tính Năng Nổi Bật
 
-1. **Nhập liệu 1 lần qua Excel**:
+1. **Công Cụ Chuẩn Hóa Template Word Thông Minh (Mới)**:
+   - Truy cập trang `template-tool.html` để tải lên bất kỳ file Word cũ nào của bạn.
+   - **Tự động quét và nhận diện thông minh**: Quét tên CĐT, dự án, gói thầu, nhà thầu, số tiền, ngày tháng, người ký.
+   - **Bôi đen để gán thẻ (Click-to-Tag)**: Chọn văn bản bất kỳ để gán thành biến `{{TEN_BIEN}}`.
+   - **Tự động chuyển đổi file .docx**: Thay thế toàn bộ từ khóa trong Word XML, giữ nguyên 100% định dạng, căn lề, bảng biểu và phông chữ của văn bản gốc.
+   - **Thử nghiệm điền dữ liệu**: Test thử dữ liệu vào template vừa tạo trực tiếp trên trình duyệt.
+
+2. **Nhập liệu 1 lần qua Excel**:
    - Sử dụng file mẫu `MauNhapLieu_ChiDinhThau_SAMPLE_v2.xlsx`.
    - Sheet `Thông tin chung`: Thông tin Chủ đầu tư, Dự án, Căn cứ pháp lý, Nhân sự ký (điền 1 lần cho cả dự án).
    - Các sheet gói thầu: Điền thông tin riêng cho từng gói thầu (tự động nhận diện không giới hạn số lượng gói thầu).
 
-2. **Xem trước (Live Preview)**:
+3. **Xem trước (Live Preview)**:
    - Hiển thị trực tiếp nội dung văn bản theo tỷ lệ trang A4 chuẩn.
    - Định dạng chuẩn thể thức: Quốc hiệu, Tiêu ngữ, Tên cơ quan, Số hiệu, Căn cứ pháp lý, Bảng biểu, Chữ ký.
    - Chuyển đổi nhanh 4 loại văn bản:
