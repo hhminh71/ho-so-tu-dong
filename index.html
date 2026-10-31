@@ -114,7 +114,24 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-2 items-start">
             
             <!-- Left Column: Compact Accordion Form (5 of 12 cols) -->
-            <div class="lg:col-span-5 space-y-1.5" id="formAccordionContainer">
+            <!-- Left Column: Compact Accordion Form (5 of 12 cols) -->
+            <div class="lg:col-span-5 space-y-1.5">
+                
+                <!-- Variable Scope Filter Bar (Chỉ hiện biến theo file vs Toàn bộ biến dự án) -->
+                <div class="bg-white rounded border border-slate-200 px-2.5 py-1 shadow-xs flex items-center justify-between gap-1 text-[11px] sticky top-9 z-20">
+                    <div class="flex items-center space-x-1.5 min-w-0">
+                        <i id="filterScopeIcon" class="fa-solid fa-filter text-emerald-600 text-[10px]"></i>
+                        <span id="filterScopeTitle" class="font-bold text-slate-800 whitespace-nowrap">Chế độ lọc:</span>
+                        <span id="filterScopeBadge" class="bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold px-1.5 py-0.2 rounded text-[10px] truncate max-w-[170px]" title="Theo file đang xem">Đang lọc theo file</span>
+                    </div>
+
+                    <button id="btnToggleScope" type="button" class="shrink-0 px-2 py-0.5 text-[10.5px] font-bold rounded border transition-all flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300 shadow-2xs h-6">
+                        <i id="btnToggleScopeIcon" class="fa-solid fa-layer-group text-indigo-600 text-[10px]"></i>
+                        <span id="btnToggleScopeText">Hiện tất cả biến</span>
+                    </button>
+                </div>
+
+                <div class="space-y-1.5" id="formAccordionContainer">
                 
                 <!-- Section 1: Thông tin chủ đầu tư -->
                 <div class="accordion-item bg-white rounded border border-slate-200 overflow-hidden shadow-xs">
@@ -129,39 +146,39 @@
                         </div>
                     </button>
                     <div class="accordion-content p-2 space-y-1">
-                        <div>
+                        <div class="field-item">
                             <label class="field-label">Tên chủ đầu tư <span class="text-red-500">*</span></label>
                             <input type="text" data-field="TEN_CHU_DAU_TU" placeholder="VD: UBND phường Hoàn Kiếm" class="w-full h-6 border rounded border-slate-300 text-xs">
                         </div>
-                        <div>
+                        <div class="field-item">
                             <label class="field-label">Tên CĐT (IN HOA)</label>
                             <input type="text" data-field="TEN_CHU_DAU_TU_VIET_HOA" placeholder="VD: UBND PHƯỜNG HOÀN KIẾM" class="w-full h-6 border rounded border-slate-300 text-xs">
                         </div>
-                        <div>
+                        <div class="field-item">
                             <label class="field-label">Tên Ban QLDA <span class="text-red-500">*</span></label>
                             <input type="text" data-field="TEN_BAN_QUAN_LY_DU_AN" placeholder="VD: BAN QUẢN LÝ ĐẦU TƯ VÀ XÂY DỰNG HOÀN KIẾM" class="w-full h-6 border rounded border-slate-300 text-xs">
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Cơ quan trình quyết định</label>
                                 <input type="text" data-field="CO_QUAN_TRINH" placeholder="VD: Trưởng ban Điều hành dự án" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Cấp quyết định đầu tư</label>
                                 <input type="text" data-field="CAP_QUYET_DINH_DAU_TU" placeholder="VD: UBND THÀNH PHỐ HÀ NỘI" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Địa danh phát hành VB <span class="text-red-500">*</span></label>
                                 <input type="text" data-field="DIA_DANH" placeholder="VD: Phường Hoàn Kiếm" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Tỉnh / Thành phố</label>
                                 <input type="text" data-field="TINH_THANH_PHO" placeholder="VD: TP. Hà Nội" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
                         </div>
-                        <div>
+                        <div class="field-item">
                             <label class="field-label">Địa chỉ trụ sở CĐT</label>
                             <input type="text" data-field="DIA_CHI_TRU_SO" placeholder="VD: 18 Lê Lai, Hoàn Kiếm, Hà Nội" class="w-full h-6 border rounded border-slate-300 text-xs">
                         </div>
@@ -181,40 +198,40 @@
                         </div>
                     </button>
                     <div class="accordion-content p-2 space-y-1">
-                        <div>
+                        <div class="field-item">
                             <label class="field-label">Tên dự án <span class="text-red-500">*</span></label>
                             <input type="text" data-field="TEN_DU_AN" placeholder="VD: Sửa chữa, cải tạo trụ sở UBND phường Hoàn Kiếm" class="w-full h-6 border rounded border-slate-300 text-xs">
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Tên công trình</label>
                                 <input type="text" data-field="TEN_CONG_TRINH" placeholder="VD: Trụ sở UBND phường" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Nguồn vốn</label>
                                 <input type="text" data-field="NGUON_VON" placeholder="VD: Ngân sách quận" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
                         </div>
-                        <div>
+                        <div class="field-item">
                             <label class="field-label">Tên gói thầu <span class="text-red-500">*</span></label>
                             <input type="text" data-field="TEN_GOI_THAU" placeholder="VD: Tư vấn giám sát thi công..." class="w-full h-6 border rounded border-slate-300 text-xs">
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Hình thức LCNT</label>
                                 <input type="text" data-field="HINH_THUC_LCNT" placeholder="Chỉ định thầu rút gọn" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Loại hợp đồng</label>
                                 <input type="text" data-field="LOAI_HOP_DONG" placeholder="Trọn gói" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Thời gian thực hiện</label>
                                 <input type="text" data-field="THOI_GIAN_THUC_HIEN" placeholder="VD: 90 ngày" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Thời gian tổ chức LCNT</label>
                                 <input type="text" data-field="THOI_GIAN_TO_CHUC" placeholder="VD: Quý IV/2025" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
@@ -236,36 +253,36 @@
                     </button>
                     <div class="accordion-content p-2 space-y-1">
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Giá gói thầu (số) <span class="text-red-500">*</span></label>
                                 <input type="text" data-field="GIA_GOI_THAU_SO" placeholder="120.000.000" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Giá gói thầu (chữ) <span class="text-red-500">*</span></label>
                                 <input type="text" data-field="GIA_GOI_THAU_CHU" placeholder="Một trăm hai mươi triệu đồng" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Giá trị hợp đồng (số)</label>
                                 <input type="text" data-field="GIA_TRI_HOP_DONG_SO" placeholder="115.000.000" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Giá trị hợp đồng (chữ)</label>
                                 <input type="text" data-field="GIA_TRI_HOP_DONG_CHU" placeholder="Một trăm mười lăm triệu đồng chẵn" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Giá trị giảm giá</label>
                                 <input type="text" data-field="GIA_TRI_GIAM_GIA" placeholder="5.000.000" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Chi phí tư vấn</label>
                                 <input type="text" data-field="CHI_PHI_TU_VAN" placeholder="35.000.000" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
                         </div>
-                        <div>
+                        <div class="field-item">
                             <label class="field-label">Kho bạc Nhà nước nơi giao dịch</label>
                             <input type="text" data-field="KHO_BAC_NHA_NUOC" placeholder="Quận Hoàn Kiếm, TP. Hà Nội" class="w-full h-6 border rounded border-slate-300 text-xs">
                         </div>
@@ -285,35 +302,35 @@
                         </div>
                     </button>
                     <div class="accordion-content p-2 space-y-1">
-                        <div>
+                        <div class="field-item">
                             <label class="field-label">Tên nhà thầu <span class="text-red-500">*</span></label>
                             <input type="text" data-field="TEN_NHA_THAU" placeholder="VD: Công ty TNHH Giám sát Xây dựng Hà Thành" class="w-full h-6 border rounded border-slate-300 text-xs">
                         </div>
-                        <div>
+                        <div class="field-item">
                             <label class="field-label">Tên nhà thầu (IN HOA)</label>
                             <input type="text" data-field="TEN_NHA_THAU_VIET_HOA" placeholder="VD: CÔNG TY TNHH GIÁM SÁT XÂY DỰNG HÀ THÀNH" class="w-full h-6 border rounded border-slate-300 text-xs">
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Tên viết tắt</label>
                                 <input type="text" data-field="TEN_NHA_THAU_VIET_TAT" placeholder="VD: Hà Thành" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Mã số thuế</label>
                                 <input type="text" data-field="MA_SO_THUE" placeholder="VD: 0109876543" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Người đại diện</label>
                                 <input type="text" data-field="DAI_DIEN_NHA_THAU" placeholder="VD: Đỗ Mạnh Cường" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Chức vụ đại diện</label>
                                 <input type="text" data-field="CHUC_VU_DAI_DIEN" placeholder="VD: Giám đốc" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
                         </div>
-                        <div>
+                        <div class="field-item">
                             <label class="field-label">Địa chỉ trụ sở nhà thầu</label>
                             <input type="text" data-field="DIA_CHI_NHA_THAU" placeholder="VD: 125 Nguyễn Du, Hai Bà Trưng, Hà Nội" class="w-full h-6 border rounded border-slate-300 text-xs">
                         </div>
@@ -334,31 +351,31 @@
                     </button>
                     <div class="accordion-content p-2 space-y-1">
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Người ký (CĐT) <span class="text-red-500">*</span></label>
                                 <input type="text" data-field="NGUOI_KY_CDT" placeholder="VD: Nguyễn Văn An" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Chức vụ người ký <span class="text-red-500">*</span></label>
                                 <input type="text" data-field="CHUC_VU_NGUOI_KY" placeholder="VD: Giám đốc Ban QLDA" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Trưởng ban ĐHDA</label>
                                 <input type="text" data-field="TRUONG_BAN_DHDA" placeholder="VD: Lê Thị Bích" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Chức vụ Trưởng ban</label>
                                 <input type="text" data-field="CHUC_VU_TRUONG_BAN" placeholder="VD: Trưởng ban Điều hành dự án" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Kế toán trưởng</label>
                                 <input type="text" data-field="KE_TOAN_TRUONG" placeholder="VD: Phạm Thị Hoa" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Chức vụ Kế toán</label>
                                 <input type="text" data-field="CHUC_VU_KE_TOAN" placeholder="VD: Kế toán trưởng" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
@@ -380,21 +397,21 @@
                     </button>
                     <div class="accordion-content p-2 space-y-1">
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Số công văn tham gia</label>
                                 <input type="text" data-field="SO_CONG_VAN_THAM_GIA" placeholder="VD: 315/CV-HT" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Số biên bản hoàn thiện</label>
                                 <input type="text" data-field="SO_BIEN_BAN_HOAN_THIEN" placeholder="VD: 145/BB-BQLDA" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Số tờ trình chỉ định thầu</label>
                                 <input type="text" data-field="SO_TO_TRINH" placeholder="VD: 146/TTr-ĐHDA" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Số quyết định chỉ định thầu</label>
                                 <input type="text" data-field="SO_QUYET_DINH" placeholder="VD: 147/QĐ-BQLDA" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
@@ -415,11 +432,11 @@
                         </div>
                     </button>
                     <div class="accordion-content p-2 space-y-1">
-                        <div>
+                        <div class="field-item">
                             <label class="field-label">Thời gian họp hoàn thiện HĐ</label>
                             <input type="text" data-field="THOI_GIAN_HOP" placeholder="VD: 08 giờ 30 phút, ngày 15/07/2025" class="w-full h-6 border rounded border-slate-300 text-xs">
                         </div>
-                        <div>
+                        <div class="field-item">
                             <label class="field-label">Địa điểm họp</label>
                             <input type="text" data-field="DIA_DIEM_HOP" placeholder="VD: Văn phòng Ban Quản lý dự án" class="w-full h-6 border rounded border-slate-300 text-xs">
                         </div>
@@ -440,21 +457,21 @@
                     </button>
                     <div class="accordion-content p-2 space-y-1">
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Ngày Giấy mời</label>
                                 <input type="text" data-field="NGAY_GIAY_MOI" placeholder="10/07/2025" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Ngày Biên bản hoàn thiện</label>
                                 <input type="text" data-field="NGAY_BIEN_BAN" placeholder="15/07/2025" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-1.5">
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Ngày Tờ trình</label>
                                 <input type="text" data-field="NGAY_TO_TRINH" placeholder="16/07/2025" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
-                            <div>
+                            <div class="field-item">
                                 <label class="field-label">Ngày Quyết định</label>
                                 <input type="text" data-field="NGAY_QUYET_DINH" placeholder="18/07/2025" class="w-full h-6 border rounded border-slate-300 text-xs">
                             </div>
@@ -475,7 +492,7 @@
                         </div>
                     </button>
                     <div class="accordion-content p-2 space-y-1">
-                        <div>
+                        <div class="field-item">
                             <label class="field-label">Căn cứ pháp lý chung của dự án</label>
                             <textarea data-field="CAN_CU_PHAP_LY_CHUNG" rows="2" placeholder="Căn cứ QĐ chủ trương đầu tư, phê duyệt dự toán, kế hoạch LCNT..." class="w-full border rounded border-slate-300 text-xs p-1"></textarea>
                         </div>
@@ -499,6 +516,7 @@
                     </div>
                 </div>
 
+                </div>
             </div>
 
             <!-- Right Column: Live Document Preview (7 of 12 cols, Sticky) -->

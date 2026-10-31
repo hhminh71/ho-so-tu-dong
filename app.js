@@ -154,7 +154,8 @@
         packages: JSON.parse(JSON.stringify(defaultPackages)),
         activePackageIndex: 0,
         selectedProcurementTypeId: "chi_dinh_thau_rut_gon",
-        activeDocId: "cdtrg_3"
+        activeDocId: "cdtrg_3",
+        filterByDoc: true
     };
 
     // Load from localStorage if present
@@ -164,6 +165,9 @@
             const parsed = JSON.parse(saved);
             if (parsed.packages && parsed.packages.length > 0) {
                 appState = Object.assign(appState, parsed);
+                if (appState.filterByDoc === undefined) {
+                    appState.filterByDoc = true;
+                }
             }
         } else {
             const oldSaved = localStorage.getItem("ho_so_tu_dong_state_v2");
@@ -287,6 +291,149 @@
         "dtrr_23": "templates/07_Hop_dong_kinh_te.docx"
     };
 
+
+    // -------------------------------------------------------------
+    // Document Variable Mappings (Mapping biến xạ theo từng loại văn bản)
+    // -------------------------------------------------------------
+    const DOC_VAR_MAP = {
+        // 1. Mua sắm < 50tr
+        "d50_1": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CO_QUAN_TRINH", "SO_TO_TRINH", "NGAY_TO_TRINH", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_CONG_TRINH", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "NGUON_VON", "CHUC_VU_TRUONG_BAN", "TRUONG_BAN_DHDA", "CAN_CU_PHAP_LY_CHUNG"],
+        "d50_2": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_CONG_TRINH", "TEN_GOI_THAU", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "MA_SO_THUE", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY", "CAN_CU_PHAP_LY_CHUNG"],
+        "d50_3": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "DIA_CHI_TRU_SO", "TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "DAI_DIEN_NHA_THAU", "CHUC_VU_DAI_DIEN", "DIA_CHI_NHA_THAU", "MA_SO_THUE", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY", "NGAY_QUYET_DINH"],
+        "d50_4": ["TEN_CHU_DAU_TU", "TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "NGAY_BIEN_BAN", "TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "DAI_DIEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY"],
+
+        // 2. Mua sắm 50tr - 100tr
+        "d100_1": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CO_QUAN_TRINH", "CAP_QUYET_DINH_DAU_TU", "DIA_DANH", "TINH_THANH_PHO", "SO_TO_TRINH", "NGAY_TO_TRINH", "TEN_DU_AN", "TEN_CONG_TRINH", "NGUON_VON", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "HINH_THUC_LCNT", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "THOI_GIAN_TO_CHUC", "CHUC_VU_NGUOI_KY", "NGUOI_KY_CDT", "CAN_CU_PHAP_LY_CHUNG"],
+        "d100_2": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CAP_QUYET_DINH_DAU_TU", "DIA_DANH", "TINH_THANH_PHO", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "SO_TO_TRINH", "NGAY_TO_TRINH", "TEN_DU_AN", "TEN_CONG_TRINH", "NGUON_VON", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "HINH_THUC_LCNT", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "CHUC_VU_NGUOI_KY", "NGUOI_KY_CDT", "CAN_CU_PHAP_LY_CHUNG"],
+        "d100_3": ["TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "NGAY_BIEN_BAN", "TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "DAI_DIEN_NHA_THAU", "CHUC_VU_DAI_DIEN", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "THOI_GIAN_THUC_HIEN", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY"],
+        "d100_4": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "DIA_CHI_TRU_SO", "TEN_DU_AN", "TEN_GOI_THAU", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "DAI_DIEN_NHA_THAU", "CHUC_VU_DAI_DIEN", "DIA_CHI_NHA_THAU", "MA_SO_THUE", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "KHO_BAC_NHA_NUOC", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY"],
+
+        // 4. Chỉ định thầu rút gọn (Chuẩn)
+        "cdtrg_1": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CO_QUAN_TRINH", "CAP_QUYET_DINH_DAU_TU", "DIA_DANH", "TINH_THANH_PHO", "SO_TO_TRINH", "NGAY_TO_TRINH", "TEN_DU_AN", "TEN_CONG_TRINH", "NGUON_VON", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "HINH_THUC_LCNT", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "THOI_GIAN_TO_CHUC", "CHUC_VU_NGUOI_KY", "NGUOI_KY_CDT", "CAN_CU_PHAP_LY_CHUNG"],
+        "cdtrg_2": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CAP_QUYET_DINH_DAU_TU", "DIA_DANH", "TINH_THANH_PHO", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "SO_TO_TRINH", "NGAY_TO_TRINH", "TEN_DU_AN", "TEN_CONG_TRINH", "NGUON_VON", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "HINH_THUC_LCNT", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "CHUC_VU_NGUOI_KY", "NGUOI_KY_CDT", "CAN_CU_PHAP_LY_CHUNG"],
+        "cdtrg_3": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "NGAY_GIAY_MOI", "TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "THOI_GIAN_HOP", "DIA_DIEM_HOP", "CHUC_VU_NGUOI_KY", "NGUOI_KY_CDT"],
+        "cdtrg_4": ["TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "SO_BIEN_BAN_HOAN_THIEN", "NGAY_BIEN_BAN", "NGAY_GIAY_MOI", "TEN_DU_AN", "TEN_GOI_THAU", "CAN_CU_PHAP_LY_CHUNG", "THOI_GIAN_HOP", "DIA_DIEM_HOP", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY", "TRUONG_BAN_DHDA", "CHUC_VU_TRUONG_BAN", "KE_TOAN_TRUONG", "CHUC_VU_KE_TOAN", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "TEN_NHA_THAU_VIET_TAT", "DAI_DIEN_NHA_THAU", "CHUC_VU_DAI_DIEN", "DIA_CHI_NHA_THAU", "MA_SO_THUE", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "GIA_TRI_GIAM_GIA", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "KHO_BAC_NHA_NUOC"],
+        "cdtrg_5": ["TEN_CHU_DAU_TU", "TEN_BAN_QUAN_LY_DU_AN", "CO_QUAN_TRINH", "SO_TO_TRINH", "NGAY_TO_TRINH", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_GOI_THAU", "CAN_CU_PHAP_LY_CHUNG", "SO_BIEN_BAN_HOAN_THIEN", "NGAY_BIEN_BAN", "TEN_NHA_THAU", "MA_SO_THUE", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "GIA_TRI_GIAM_GIA", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "NGUON_VON", "CHUC_VU_TRUONG_BAN", "TRUONG_BAN_DHDA"],
+        "cdtrg_6": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_GOI_THAU", "CAN_CU_PHAP_LY_CHUNG", "SO_TO_TRINH", "NGAY_TO_TRINH", "CO_QUAN_TRINH", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "NGUON_VON", "KHO_BAC_NHA_NUOC", "CHUC_VU_NGUOI_KY", "NGUOI_KY_CDT"],
+        "cdtrg_7": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_GOI_THAU", "SO_BIEN_BAN_HOAN_THIEN", "NGAY_BIEN_BAN", "DIA_DIEM_HOP", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY", "DIA_CHI_TRU_SO", "KHO_BAC_NHA_NUOC", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "TEN_NHA_THAU_VIET_TAT", "DAI_DIEN_NHA_THAU", "CHUC_VU_DAI_DIEN", "DIA_CHI_NHA_THAU", "MA_SO_THUE", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN"]
+    };
+
+    function getRelevantVarsForDoc(docId) {
+        if (DOC_VAR_MAP[docId]) {
+            return new Set(DOC_VAR_MAP[docId]);
+        }
+        const docs = getAllDocsForCurrentType();
+        const doc = docs.find(d => d.id === docId);
+        if (doc && Array.isArray(doc.requiredVars) && doc.requiredVars.length > 0) {
+            return new Set(doc.requiredVars);
+        }
+        return new Set(commonGeneralKeys.concat(["TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO"]));
+    }
+
+    function applyVariableFilter() {
+        const activeDoc = getCurrentActiveDoc();
+        const filterScopeBadge = document.getElementById("filterScopeBadge");
+        const btnToggleScope = document.getElementById("btnToggleScope");
+        const btnToggleScopeText = document.getElementById("btnToggleScopeText");
+        const btnToggleScopeIcon = document.getElementById("btnToggleScopeIcon");
+
+        const isFiltered = !!appState.filterByDoc;
+        const relevantVars = (isFiltered && activeDoc) ? getRelevantVarsForDoc(activeDoc.id) : null;
+
+        // Cập nhật nhãn trạng thái lọc trên thanh công cụ
+        if (filterScopeBadge) {
+            if (isFiltered && activeDoc) {
+                filterScopeBadge.textContent = `File: ${activeDoc.code}`;
+                filterScopeBadge.title = `Chỉ hiển thị các biến phục vụ file: ${activeDoc.name}`;
+                filterScopeBadge.className = "bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold px-1.5 py-0.2 rounded text-[10px] truncate max-w-[170px]";
+            } else {
+                filterScopeBadge.textContent = "Toàn bộ dự án";
+                filterScopeBadge.title = "Đang hiển thị tất cả các biến xạ của dự án";
+                filterScopeBadge.className = "bg-indigo-50 text-indigo-800 border border-indigo-200 font-bold px-1.5 py-0.2 rounded text-[10px] truncate max-w-[170px]";
+            }
+        }
+
+        if (btnToggleScopeText) {
+            btnToggleScopeText.textContent = isFiltered ? "Hiện tất cả biến" : "Chỉ biến theo file";
+        }
+        if (btnToggleScopeIcon) {
+            btnToggleScopeIcon.className = isFiltered ? "fa-solid fa-layer-group text-indigo-600 text-[10px]" : "fa-solid fa-filter text-emerald-600 text-[10px]";
+        }
+        if (btnToggleScope) {
+            btnToggleScope.title = isFiltered ? "Bấm để mở rộng hiển thị toàn bộ biến của dự án" : "Bấm để lọc gọn lại, chỉ hiển thị biến thuộc file đang chọn";
+        }
+
+        // Ẩn / hiện từng trường nhập liệu .field-item
+        const allFieldWrappers = document.querySelectorAll(".field-item");
+        allFieldWrappers.forEach(wrapper => {
+            const input = wrapper.querySelector("[data-field]");
+            if (!input) return;
+            const fieldKey = input.getAttribute("data-field");
+            if (!isFiltered || !relevantVars) {
+                wrapper.style.display = "";
+            } else {
+                if (relevantVars.has(fieldKey)) {
+                    wrapper.style.display = "";
+                } else {
+                    wrapper.style.display = "none";
+                }
+            }
+        });
+
+        // Tối ưu các hàng đôi .grid.grid-cols-2 (nếu 1 cột bị ẩn thì cột còn lại dàn đều 100%)
+        document.querySelectorAll(".accordion-content .grid.grid-cols-2").forEach(grid => {
+            const items = Array.from(grid.children).filter(el => el.classList.contains("field-item"));
+            if (items.length === 2) {
+                const [item1, item2] = items;
+                const vis1 = item1.style.display !== "none";
+                const vis2 = item2.style.display !== "none";
+
+                if (!vis1 && !vis2) {
+                    grid.style.display = "none";
+                } else {
+                    grid.style.display = "";
+                    if (vis1 && !vis2) {
+                        item1.classList.add("col-span-2");
+                    } else if (!vis1 && vis2) {
+                        item2.classList.add("col-span-2");
+                    } else {
+                        item1.classList.remove("col-span-2");
+                        item2.classList.remove("col-span-2");
+                    }
+                }
+            }
+        });
+
+        // Ẩn các Accordion Section không có trường nào thuộc văn bản đang chọn
+        const sections = document.querySelectorAll(".accordion-item");
+        sections.forEach(sec => {
+            if (sec.id === "secCustomVariables") return;
+
+            const secInputs = Array.from(sec.querySelectorAll("[data-field]")).filter(inp => {
+                const item = inp.closest(".field-item");
+                return !item || item.style.display !== "none";
+            });
+
+            if (isFiltered && secInputs.length === 0) {
+                sec.style.display = "none";
+            } else {
+                sec.style.display = "";
+                // Tự động mở rộng các Section đang có trường hiển thị để tiện nhập liệu
+                if (isFiltered) {
+                    const content = sec.querySelector(".accordion-content");
+                    const chevron = sec.querySelector(".accordion-header .fa-chevron-down");
+                    if (content && content.classList.contains("hidden")) {
+                        content.classList.remove("hidden");
+                        if (chevron) chevron.style.transform = "rotate(0deg)";
+                    }
+                }
+            }
+        });
+
+        // Cập nhật lại thanh tiến độ và các badge
+        updateProgress();
+    }
+
     // -------------------------------------------------------------
     // Populate Procurement Type Dropdown & Doc Tabs
     // -------------------------------------------------------------
@@ -313,6 +460,7 @@
             saveState();
             renderDocTabs();
             renderDocumentPreview();
+            applyVariableFilter();
             showToast(`Đã chuyển quy trình: ${getCurrentProcurementType().name}`);
         });
     }
@@ -341,6 +489,7 @@
                 appState.activeDocId = doc.id;
                 saveState();
                 renderDocumentPreview();
+                applyVariableFilter();
             });
 
             docTypeTabs.appendChild(btn);
@@ -423,6 +572,7 @@
 
         updateProgress();
         renderDocumentPreview();
+        applyVariableFilter();
     }
 
     // Handle input change
@@ -449,24 +599,39 @@
         saveState();
         updateProgress();
         renderDocumentPreview();
+        applyVariableFilter();
     });
 
     // -------------------------------------------------------------
     // Calculate Progress Bar & Badges
     // -------------------------------------------------------------
     function updateProgress() {
-        const inputs = document.querySelectorAll("[data-field]");
-        let totalCount = inputs.length;
+        const isFiltered = !!appState.filterByDoc;
+        const activeDoc = getCurrentActiveDoc();
+
+        const allInputs = Array.from(document.querySelectorAll("[data-field]"));
+        const targetInputs = isFiltered
+            ? allInputs.filter(inp => {
+                const item = inp.closest(".field-item");
+                return !item || item.style.display !== "none";
+              })
+            : allInputs;
+
+        let totalCount = targetInputs.length;
         let filledCount = 0;
 
-        inputs.forEach(input => {
+        targetInputs.forEach(input => {
             if (input.value.trim() !== "") {
                 filledCount++;
             }
         });
 
         const percent = totalCount > 0 ? Math.round((filledCount / totalCount) * 100) : 0;
-        progressText.textContent = `Đã điền: ${filledCount}/${totalCount}`;
+        if (isFiltered && activeDoc) {
+            progressText.textContent = `Đã điền: ${filledCount}/${totalCount} (${activeDoc.code})`;
+        } else {
+            progressText.textContent = `Đã điền: ${filledCount}/${totalCount} (Cả dự án)`;
+        }
         progressBar.style.width = `${percent}%`;
         progressPercent.textContent = `${percent}%`;
 
@@ -474,7 +639,11 @@
         sections.forEach(sec => {
             const badge = sec.querySelector(".sec-badge");
             if (!badge) return;
-            const secInputs = sec.querySelectorAll("[data-field]");
+            const secInputs = Array.from(sec.querySelectorAll("[data-field]")).filter(inp => {
+                if (!isFiltered) return true;
+                const item = inp.closest(".field-item");
+                return !item || item.style.display !== "none";
+            });
             let sFilled = 0;
             secInputs.forEach(inp => {
                 if (inp.value.trim() !== "") sFilled++;
@@ -504,6 +673,18 @@
             }
         });
     });
+
+
+    // Button toggle giữa chế độ Lọc biến theo file vs Toàn bộ biến dự án
+    const btnToggleScope = document.getElementById("btnToggleScope");
+    if (btnToggleScope) {
+        btnToggleScope.addEventListener("click", () => {
+            appState.filterByDoc = !appState.filterByDoc;
+            saveState();
+            applyVariableFilter();
+            showToast(appState.filterByDoc ? "Đã lọc hiển thị biến theo văn bản đang xem" : "Đã hiển thị toàn bộ biến của dự án");
+        });
+    }
 
     let allOpen = true;
     btnToggleAll.addEventListener("click", () => {
@@ -878,6 +1059,76 @@
                         <p>- Như Điều 3;</p>
                         <p>- KBNN ${valOrPlaceholder("KHO_BAC_NHA_NUOC", data)};</p>
                         <p>- Lưu: VT, ĐHDA.</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="font-bold uppercase text-[12pt]">${valOrPlaceholder("CHUC_VU_NGUOI_KY", data)}</p>
+                        <p class="text-xs italic">(Ký, họ tên và đóng dấu)</p>
+                        <div class="h-14"></div>
+                        <p class="font-bold text-[12.5pt]">${valOrPlaceholder("NGUOI_KY_CDT", data)}</p>
+                    </div>
+                </div>
+            `;
+                } else if (docId === "cdtrg_2" || docId === "d100_2") {
+            // Quyết định phê duyệt Kế hoạch lựa chọn nhà thầu (02.QD-KHLCNT)
+            html = `
+                <div class="grid grid-cols-2 text-center text-xs pb-3 border-b border-transparent">
+                    <div>
+                        <div class="font-bold text-[11.5pt] uppercase">${valOrPlaceholder("TEN_CHU_DAU_TU_VIET_HOA", data)}</div>
+                        <div class="font-bold text-[10.5pt] uppercase">${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</div>
+                        <div class="mt-1 text-[10.5pt]">Số: ${valOrPlaceholder("SO_QUYET_DINH", data) || "....../QĐ-UBND"}</div>
+                    </div>
+                    <div>
+                        <div class="font-bold text-[11pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                        <div class="font-bold text-[11.5pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
+                        <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ngày ${valOrPlaceholder("NGAY_QUYET_DINH", data) || "..... tháng ..... năm 202..."}</div>
+                    </div>
+                </div>
+
+                <div class="text-center my-5">
+                    <h2 class="font-bold text-[14pt] uppercase tracking-wide">QUYẾT ĐỊNH</h2>
+                    <p class="font-bold text-[12pt] text-slate-700">Về việc phê duyệt Kế hoạch lựa chọn nhà thầu</p>
+                    <p class="font-bold text-[11.5pt] mt-1 text-emerald-800">Dự án: ${valOrPlaceholder("TEN_DU_AN", data)}</p>
+                </div>
+
+                <div class="text-center mb-4 font-bold text-[12.5pt] uppercase text-emerald-950">
+                    ${valOrPlaceholder("CAP_QUYET_DINH_DAU_TU", data)}
+                </div>
+
+                <div class="space-y-2 leading-relaxed text-[11.5pt]">
+                    <p class="indent-8 text-xs italic">
+                        Căn cứ Luật Đấu thầu số 22/2023/QH15 ngày 23/06/2023;<br>
+                        Căn cứ Nghị định số 24/2024/NĐ-CP ngày 27/02/2024 của Chính phủ;<br>
+                        ${valOrPlaceholder("CAN_CU_PHAP_LY_CHUNG", data)}<br>
+                        Xét Tờ trình số ${valOrPlaceholder("SO_TO_TRINH", data)} ngày ${valOrPlaceholder("NGAY_TO_TRINH", data)} của ${valOrPlaceholder("CO_QUAN_TRINH", data) || valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)};
+                    </p>
+
+                    <p class="text-center font-bold text-xs uppercase my-2">QUYẾT ĐỊNH:</p>
+                    <p class="indent-8">
+                        <b>Điều 1.</b> Phê duyệt Kế hoạch lựa chọn nhà thầu cho dự án: <b>${valOrPlaceholder("TEN_DU_AN", data)}</b> với các nội dung chi tiết sau:
+                    </p>
+                    <div class="pl-8 space-y-1 text-xs">
+                        <p>1. <b>Tên gói thầu:</b> ${valOrPlaceholder("TEN_GOI_THAU", data)}.</p>
+                        <p>2. <b>Giá gói thầu:</b> <b>${valOrPlaceholder("GIA_GOI_THAU_SO", data)} đồng</b> (<i>${valOrPlaceholder("GIA_GOI_THAU_CHU", data)}</i>).</p>
+                        <p>3. <b>Nguồn vốn:</b> ${valOrPlaceholder("NGUON_VON", data)}.</p>
+                        <p>4. <b>Hình thức lựa chọn nhà thầu:</b> ${valOrPlaceholder("HINH_THUC_LCNT", data)}.</p>
+                        <p>5. <b>Loại hợp đồng:</b> ${valOrPlaceholder("LOAI_HOP_DONG", data)}.</p>
+                        <p>6. <b>Thời gian bắt đầu tổ chức LCNT:</b> ${valOrPlaceholder("THOI_GIAN_TO_CHUC", data)}.</p>
+                        <p>7. <b>Thời gian thực hiện gói thầu:</b> ${valOrPlaceholder("THOI_GIAN_THUC_HIEN", data)}.</p>
+                    </div>
+
+                    <p class="indent-8">
+                        <b>Điều 2.</b> Giao cho ${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)} căn cứ Kế hoạch lựa chọn nhà thầu được duyệt tổ chức triển khai thực hiện các bước tiếp theo tuân thủ đúng quy định hiện hành của Nhà nước về đấu thầu.
+                    </p>
+                    <p class="indent-8">
+                        <b>Điều 3.</b> Quyết định này có hiệu lực kể từ ngày ký. Chánh Văn phòng, Giám đốc ${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)} và Thủ trưởng các đơn vị liên quan chịu trách nhiệm thi hành Quyết định này./.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-2 pt-6 text-[11.5pt]">
+                    <div class="text-left text-xs leading-normal">
+                        <p class="font-bold italic">Nơi nhận:</p>
+                        <p>- Như Điều 3;</p>
+                        <p>- Lưu: VT, BQLDA.</p>
                     </div>
                     <div class="text-center">
                         <p class="font-bold uppercase text-[12pt]">${valOrPlaceholder("CHUC_VU_NGUOI_KY", data)}</p>
@@ -1375,5 +1626,6 @@
     renderCustomVariablesUI();
     renderPackageDropdown();
     populateFormInputs();
+    applyVariableFilter();
 
 })();
