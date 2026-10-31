@@ -711,10 +711,243 @@
         pillsContainer.appendChild(btnAll);
     }
 
+    
+    // -------------------------------------------------------------
+    // Date & Day-of-Week & Formula Calculation Engine
+    // -------------------------------------------------------------
+    function parseDateString(dateStr) {
+        if (!dateStr || !dateStr.trim()) return null;
+        const clean = dateStr.trim();
+        const parts = clean.split(/[-/]/);
+        if (parts.length !== 3) return null;
+        let y, m, d;
+        if (parts[0].length === 4) {
+            y = parseInt(parts[0], 10);
+            m = parseInt(parts[1], 10) - 1;
+            d = parseInt(parts[2], 10);
+        } else {
+            d = parseInt(parts[0], 10);
+            m = parseInt(parts[1], 10) - 1;
+            y = parseInt(parts[2], 10);
+        }
+        const dt = new Date(y, m, d);
+        return isNaN(dt.getTime()) ? null : dt;
+    }
+
+    function formatDateToIso(dateObj) {
+        if (!dateObj || isNaN(dateObj.getTime())) return "";
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())}`;
+    }
+
+    function getDayOfWeekInVietnamese(dateStr) {
+        if (!dateStr) return "---";
+        const dt = parseDateString(dateStr);
+        if (!dt) return "---";
+        const days = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+        return days[dt.getDay()];
+    }
+
+    function addDaysToDate(dateStr, days) {
+        const dt = parseDateString(dateStr);
+        if (!dt) return "";
+        dt.setDate(dt.getDate() + (parseInt(days, 10) || 0));
+        return formatDateToIso(dt);
+    }
+
+    function ensureTaskDefaults() {
+        if (!appState.projectRoadmap || !appState.projectRoadmap.timelinePhases) return;
+        appState.projectRoadmap.timelinePhases.forEach((ph, pIdx) => {
+            (ph.tasks || []).forEach((t, tIdx) => {
+                if (!t.id) {
+                    t.id = `task_${pIdx}_${tIdx}_${Date.now()}`;
+                }
+                if (!t.dayOfWeek && t.date) {
+                    t.dayOfWeek = getDayOfWeekInVietnamese(t.date);
+                }
+                if (t.duration === undefined || t.duration === null || t.duration === "") {
+                    t.duration = 1;
+                }
+                if (!t.dateFormula) {
+                    t.dateFormula = { type: "default" };
+                }
+            });
+        });
+    }
+
+    function getPreviousTaskInProject(pIdx, tIdx) {
+        const phases = appState.projectRoadmap.timelinePhases || [];
+        if (phases[pIdx] && tIdx > 0 && phases[pIdx].tasks[tIdx - 1]) {
+            return phases[pIdx].tasks[tIdx - 1];
+        }
+        for (let pi = pIdx - 1; pi >= 0; pi--) {
+            const p = phases[pi];
+            if (p && p.tasks && p.tasks.length > 0) {
+                return p.tasks[p.tasks.length - 1];
+            }
+        }
+        return null;
+    }
+
+    function recalculateAllTaskDates(showToastNotification = false) {
+        if (!appState.projectRoadmap || !appState.projectRoadmap.timelinePhases) return;
+        const phases = appState.projectRoadmap.timelinePhases;
+
+        const allTasks = [];
+        phases.forEach((p, pi) => {
+            (p.tasks || []).forEach((t, ti) => {
+                allTasks.push({ p, pi, t, ti });
+            });
+        });
+
+        let lastCalculatedDate = null;
+
+        allTasks.forEach((item, idx) => {
+            const { t } = item;
+            const formula = t.dateFormula || { type: "default" };
+
+            if (formula.type === "manual") {
+                if (t.date) lastCalculatedDate = t.date;
+            } else if (formula.type === "custom" && formula.refTaskId) {
+                const refObj = allTasks.find(x => x.t.id === formula.refTaskId || x.t.name === formula.refTaskId);
+                if (refObj && refObj.t.date) {
+                    const offset = parseInt(formula.offsetDays !== undefined ? formula.offsetDays : t.duration, 10) || 0;
+                    t.date = addDaysToDate(refObj.t.date, offset);
+                    lastCalculatedDate = t.date;
+                }
+            } else {
+                if (idx === 0) {
+                    if (t.date) lastCalculatedDate = t.date;
+                } else if (lastCalculatedDate) {
+                    const dur = parseInt(t.duration, 10) || 0;
+                    t.date = addDaysToDate(lastCalculatedDate, dur);
+                    lastCalculatedDate = t.date;
+                }
+            }
+
+            t.dayOfWeek = getDayOfWeekInVietnamese(t.date);
+        });
+
+        renderTimelineTable(window.currentTimelineFilter || "all");
+        saveState();
+        if (showToastNotification) {
+            showToast("Đã tự động tính toán lại ngày và thứ cho toàn bộ văn bản!", "success");
+        }
+    }
+
+    let currentFormulaContext = null;
+
+    function openTaskFormulaModal(phase, pIdx, task, tIdx) {
+        currentFormulaContext = { phase, pIdx, task, tIdx };
+        const modal = document.getElementById("modalTaskFormulaConfig");
+        if (!modal) return;
+
+        const nameEl = document.getElementById("formulaTaskNameDisplay");
+        const docNoEl = document.getElementById("formulaTaskDocNoDisplay");
+        const dateEl = document.getElementById("formulaTaskDateDisplay");
+        const dayEl = document.getElementById("formulaTaskDayDisplay");
+
+        if (nameEl) nameEl.textContent = `[${phase.title}] #${task.stt || (tIdx + 1)}: ${task.name}`;
+        if (docNoEl) docNoEl.textContent = task.docNo || "Chưa có số";
+        if (dateEl) dateEl.textContent = task.date || "Chưa có ngày";
+        if (dayEl) dayEl.textContent = getDayOfWeekInVietnamese(task.date);
+
+        const formula = task.dateFormula || { type: "default" };
+        const radios = document.querySelectorAll('input[name="formulaType"]');
+        radios.forEach(r => {
+            r.checked = (r.value === (formula.type || "default"));
+        });
+
+        const customControls = document.getElementById("customFormulaControls");
+        const refSelect = document.getElementById("formulaRefTaskSelect");
+        const offsetInput = document.getElementById("formulaOffsetDays");
+
+        if (customControls) {
+            customControls.classList.toggle("hidden", formula.type !== "custom");
+        }
+
+        if (refSelect) {
+            refSelect.innerHTML = "";
+            const allPhases = appState.projectRoadmap.timelinePhases || [];
+            allPhases.forEach((p, pi) => {
+                (p.tasks || []).forEach((t, ti) => {
+                    if (t === task) return;
+                    const opt = document.createElement("option");
+                    opt.value = t.id || t.name;
+                    const dStr = t.date ? ` (${t.date})` : "";
+                    opt.textContent = `[${p.code || (pi + 1)}] #${t.stt || (ti + 1)}: ${t.name}${dStr}`;
+                    if (formula.refTaskId && (t.id === formula.refTaskId || t.name === formula.refTaskId)) {
+                        opt.selected = true;
+                    }
+                    refSelect.appendChild(opt);
+                });
+            });
+        }
+
+        if (offsetInput) {
+            offsetInput.value = formula.offsetDays !== undefined ? formula.offsetDays : (task.duration || 0);
+        }
+
+        updateFormulaModalPreview();
+        modal.classList.remove("hidden");
+    }
+
+    function updateFormulaModalPreview() {
+        if (!currentFormulaContext) return;
+        const { task, pIdx, tIdx } = currentFormulaContext;
+        const selectedRadio = document.querySelector('input[name="formulaType"]:checked');
+        const fType = selectedRadio ? selectedRadio.value : "default";
+
+        const customControls = document.getElementById("customFormulaControls");
+        if (customControls) {
+            customControls.classList.toggle("hidden", fType !== "custom");
+        }
+
+        let calculatedDate = "";
+        if (fType === "manual") {
+            calculatedDate = task.date || "";
+        } else if (fType === "custom") {
+            const refSelect = document.getElementById("formulaRefTaskSelect");
+            const offsetInput = document.getElementById("formulaOffsetDays");
+            const refId = refSelect ? refSelect.value : "";
+            const offset = parseInt(offsetInput ? offsetInput.value : 0, 10) || 0;
+
+            let refTask = null;
+            (appState.projectRoadmap.timelinePhases || []).forEach(p => {
+                (p.tasks || []).forEach(t => {
+                    if (t.id === refId || t.name === refId) refTask = t;
+                });
+            });
+
+            if (refTask && refTask.date) {
+                calculatedDate = addDaysToDate(refTask.date, offset);
+            }
+        } else {
+            const prevTask = getPreviousTaskInProject(pIdx, tIdx);
+            if (prevTask && prevTask.date) {
+                calculatedDate = addDaysToDate(prevTask.date, parseInt(task.duration, 10) || 0);
+            } else {
+                calculatedDate = task.date || "";
+            }
+        }
+
+        const previewDiv = document.getElementById("formulaCalcPreview");
+        const previewDay = document.getElementById("formulaCalcDayOfWeek");
+        if (previewDiv) {
+            previewDiv.textContent = calculatedDate || "(Chưa đủ mốc để tính)";
+        }
+        if (previewDay) {
+            previewDay.textContent = calculatedDate ? getDayOfWeekInVietnamese(calculatedDate) : "---";
+        }
+    }
+
     function renderTimelineTable(filterMode = "all") {
+        window.currentTimelineFilter = filterMode;
         const rmTimelineContainer = document.getElementById("rmTimelineContainer");
         const rmTimelineStats = document.getElementById("rmTimelineStats");
         if (!rmTimelineContainer || !appState.projectRoadmap) return;
+
+        ensureTaskDefaults();
 
         const phases = appState.projectRoadmap.timelinePhases || [];
         rmTimelineContainer.innerHTML = "";
@@ -730,10 +963,6 @@
         phases.forEach((phase, pIdx) => {
             const isInitPhase = phase.code === "I" || phase.title.toLowerCase().includes("triển khai") || !phase.isPackage;
             
-            // Logic lọc Phase:
-            // 1. Nếu selPkgIdx === "trien_khai": chỉ hiện phase Triển khai
-            // 2. Nếu selPkgIdx === -1: hiện tất cả
-            // 3. Nếu selPkgIdx >= 0: LUÔN HIỆN Phase Triển khai + CHỈ HIỆN Phase của Gói đang chọn!
             let shouldShowPhase = false;
             if (selPkgIdx === -1) {
                 shouldShowPhase = true;
@@ -741,9 +970,8 @@
                 shouldShowPhase = isInitPhase;
             } else if (selPkgIdx >= 0 && currentPkg) {
                 if (isInitPhase) {
-                    shouldShowPhase = true; // LUÔN HIỆN MỤC TRIỂN KHAI
+                    shouldShowPhase = true;
                 } else {
-                    // Kiểm tra xem phase này có thuộc gói đang chọn không
                     const pTitle = phase.title.toLowerCase();
                     const pkgName = currentPkg.name.toLowerCase();
                     const pkgNum = `gói thầu số ${selPkgIdx + 1}`.toLowerCase();
@@ -752,7 +980,6 @@
                     if (pTitle.includes(pkgNum) || pTitle.includes(pkgNumShort) || pTitle.includes(pkgName) || pkgName.includes(pTitle)) {
                         shouldShowPhase = true;
                     }
-                    // Nếu là giai đoạn thiết kế dự toán gắn liền với gói 1
                     if (selPkgIdx === 0 && pTitle.includes("thiết kế & dự toán")) {
                         shouldShowPhase = true;
                     }
@@ -800,10 +1027,12 @@
                                 <th class="py-0.5 px-1.5 w-8 text-center">STT</th>
                                 <th class="py-0.5 px-1.5">Tên công việc / Thủ tục</th>
                                 <th class="py-0.5 px-1.5 w-36">Số văn bản</th>
-                                <th class="py-0.5 px-1.5 w-24">Đơn vị ký</th>
-                                <th class="py-0.5 px-1.5 w-20">Ngày ký</th>
-                                <th class="py-0.5 px-1.5 w-20 text-center">Tiến độ</th>
-                                <th class="py-0.5 px-1.5 w-16 text-center">Soạn</th>
+                                <th class="py-0.5 px-1.5 w-20">Đơn vị ký</th>
+                                <th class="py-0.5 px-1.5 w-16 text-center">Thứ</th>
+                                <th class="py-0.5 px-1.5 w-24 text-center">Ngày ký</th>
+                                <th class="py-0.5 px-1.5 w-20 text-center">Thời gian</th>
+                                <th class="py-0.5 px-1.5 w-16 text-center">Tiến độ</th>
+                                <th class="py-0.5 px-1.5 w-12 text-center">Soạn</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -813,17 +1042,42 @@
                                     ? "bg-emerald-100 text-emerald-800 border-emerald-200" 
                                     : (task.status === "Đang làm" ? "bg-amber-100 text-amber-900 border-amber-300" : "bg-slate-100 text-slate-700 border-slate-200");
                                 
+                                const dayName = getDayOfWeekInVietnamese(task.date);
+                                const isWeekend = dayName.includes("Chủ Nhật") || dayName.includes("Thứ Bảy");
+                                const formula = task.dateFormula || { type: "default" };
+                                const isCustomFormula = formula.type === "custom";
+                                const formulaTooltip = isCustomFormula 
+                                    ? "Công thức: Phụ thuộc vào công việc mốc khác (Bấm để sửa)" 
+                                    : (formula.type === "manual" ? "Ngày mốc cố định thủ công (Bấm để cài công thức)" : "Công thức mặc định: Tiếp nối ngày việc trước + thời gian (Bấm để sửa)");
+
                                 return `
-                                    <tr class="hover:bg-slate-50 transition-colors h-5.5">
-                                        <td class="py-0.5 px-1.5 text-center text-slate-400 font-bold text-[10px]">${task.stt || (tIdx + 1)}</td>
-                                        <td class="py-0.5 px-1.5 font-bold text-slate-800 text-[10.5px]">${task.name}</td>
-                                        <td class="py-0.5 px-1.5 font-mono text-[10px] text-slate-700">${task.docNo || '<span class="text-slate-300 italic">Chưa có số</span>'}</td>
-                                        <td class="py-0.5 px-1.5 text-slate-600 text-[10px]">${task.signer || "---"}</td>
-                                        <td class="py-0.5 px-1.5 text-slate-600 text-[10px]">${task.date || "---"}</td>
-                                        <td class="py-0.5 px-1.5 text-center">
+                                    <tr class="hover:bg-slate-50 transition-colors h-6" data-phase-idx="${pIdx}" data-task-idx="${tIdx}">
+                                        <td class="py-0.5 px-1 text-center text-slate-400 font-bold text-[10px]">${task.stt || (tIdx + 1)}</td>
+                                        <td class="py-0.5 px-1.5 font-bold text-slate-800 text-[10.5px]">
+                                            <div class="truncate max-w-[340px]" title="${task.name}">${task.name}</div>
+                                        </td>
+                                        <td class="py-0.5 px-1">
+                                            <input type="text" class="task-docno-input w-full bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 hover:border-slate-300 focus:border-emerald-500 rounded px-1.5 py-0.5 font-mono text-[10px] text-slate-800 placeholder-slate-300 focus:ring-1 focus:ring-emerald-500 transition-all" value="${task.docNo || ''}" placeholder="Nhập số VB..." title="Chỉnh sửa số văn bản trực tiếp" data-p-idx="${pIdx}" data-t-idx="${tIdx}">
+                                        </td>
+                                        <td class="py-0.5 px-1 text-slate-600 text-[10px] truncate" title="${task.signer || ''}">${task.signer || "---"}</td>
+                                        <td class="py-0.5 px-1 text-center">
+                                            <span class="task-day-badge text-[9.5px] font-bold ${isWeekend ? 'text-amber-700 bg-amber-50 px-1 py-0.2 rounded border border-amber-200' : 'text-slate-700'}">${dayName}</span>
+                                        </td>
+                                        <td class="py-0.5 px-1 text-center">
+                                            <input type="date" class="task-date-input w-full bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 hover:border-slate-300 focus:border-emerald-500 rounded px-1 py-0.5 font-mono text-[9.5px] text-slate-800 focus:ring-1 focus:ring-emerald-500" value="${task.date || ''}" title="Ngày ký / thực hiện văn bản" data-p-idx="${pIdx}" data-t-idx="${tIdx}">
+                                        </td>
+                                        <td class="py-0.5 px-1 text-center">
+                                            <div class="flex items-center justify-center space-x-0.5">
+                                                <input type="number" min="0" max="999" class="task-duration-input w-10 bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 hover:border-slate-300 focus:border-emerald-500 rounded px-0.5 py-0.5 text-center text-[10px] font-bold text-slate-800 focus:ring-1 focus:ring-emerald-500" value="${task.duration !== undefined ? task.duration : 1}" title="Thời gian thực hiện văn bản (ngày)" data-p-idx="${pIdx}" data-t-idx="${tIdx}">
+                                                <button type="button" class="btn-task-formula p-0.5 rounded hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 transition-colors" data-p-idx="${pIdx}" data-t-idx="${tIdx}" title="${formulaTooltip}">
+                                                    <i class="fa-solid fa-calculator text-[9px] ${isCustomFormula ? 'text-indigo-600 font-bold' : ''}"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td class="py-0.5 px-1 text-center">
                                             <span class="inline-block px-1 py-0 rounded border font-bold text-[9px] ${badgeClass}">${task.status || "Chưa làm"}</span>
                                         </td>
-                                        <td class="py-0.5 px-1.5 text-center">
+                                        <td class="py-0.5 px-1 text-center">
                                             <button type="button" class="btn-task-soan px-1.5 py-0 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-300 hover:border-emerald-300 rounded font-bold text-[9px] h-4.5" data-phase-idx="${pIdx}" data-task-idx="${tIdx}" title="Mở sang Tab 2 để soạn văn bản này">
                                                 <i class="fa-solid fa-pen-to-square text-[8px]"></i> Soạn
                                             </button>
@@ -845,6 +1099,68 @@
                 chevron.style.transform = content.classList.contains("hidden") ? "rotate(-90deg)" : "rotate(0deg)";
             });
 
+            // Handle editable Document Number
+            phaseWrapper.querySelectorAll(".task-docno-input").forEach(input => {
+                input.addEventListener("input", (e) => {
+                    const pI = parseInt(input.getAttribute("data-p-idx"), 10);
+                    const tI = parseInt(input.getAttribute("data-t-idx"), 10);
+                    phases[pI].tasks[tI].docNo = e.target.value.trim();
+                });
+                input.addEventListener("change", () => {
+                    saveState();
+                });
+            });
+
+            // Handle editable Date
+            phaseWrapper.querySelectorAll(".task-date-input").forEach(input => {
+                input.addEventListener("change", (e) => {
+                    const pI = parseInt(input.getAttribute("data-p-idx"), 10);
+                    const tI = parseInt(input.getAttribute("data-t-idx"), 10);
+                    const val = e.target.value;
+                    const t = phases[pI].tasks[tI];
+                    t.date = val;
+                    t.dayOfWeek = getDayOfWeekInVietnamese(val);
+                    
+                    const tr = input.closest("tr");
+                    if (tr) {
+                        const badge = tr.querySelector(".task-day-badge");
+                        if (badge) {
+                            badge.textContent = t.dayOfWeek;
+                            const isWeekend = t.dayOfWeek.includes("Chủ Nhật") || t.dayOfWeek.includes("Thứ Bảy");
+                            badge.className = `task-day-badge text-[9.5px] font-bold ${isWeekend ? 'text-amber-700 bg-amber-50 px-1 py-0.2 rounded border border-amber-200' : 'text-slate-700'}`;
+                        }
+                    }
+
+                    if (!t.dateFormula || t.dateFormula.type === "default") {
+                        t.dateFormula = { type: "manual" };
+                    }
+                    saveState();
+                });
+            });
+
+            // Handle editable Duration
+            phaseWrapper.querySelectorAll(".task-duration-input").forEach(input => {
+                input.addEventListener("input", (e) => {
+                    const pI = parseInt(input.getAttribute("data-p-idx"), 10);
+                    const tI = parseInt(input.getAttribute("data-t-idx"), 10);
+                    const dur = parseInt(e.target.value, 10);
+                    phases[pI].tasks[tI].duration = isNaN(dur) ? 0 : dur;
+                });
+                input.addEventListener("change", () => {
+                    saveState();
+                });
+            });
+
+            // Handle Formula Button
+            phaseWrapper.querySelectorAll(".btn-task-formula").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const pI = parseInt(btn.getAttribute("data-p-idx"), 10);
+                    const tI = parseInt(btn.getAttribute("data-t-idx"), 10);
+                    openTaskFormulaModal(phases[pI], pI, phases[pI].tasks[tI], tI);
+                });
+            });
+
             // Handle "Soạn VB" button
             phaseWrapper.querySelectorAll(".btn-task-soan").forEach(btn => {
                 btn.addEventListener("click", (e) => {
@@ -853,7 +1169,6 @@
                     const tI = parseInt(btn.getAttribute("data-task-idx"), 10);
                     const t = phases[pI].tasks[tI];
 
-                    // Match package
                     if (phases[pI].isPackage && currentPkg) {
                         appState.activePackageIndex = selPkgIdx >= 0 ? selPkgIdx : 0;
                     }
@@ -874,7 +1189,7 @@
         }
     }
 
-    // Parse CSV Timeline from User text
+        // Parse CSV Timeline from User text
     function parseCsvTimelineText(csvText) {
         if (!csvText || !csvText.trim()) return null;
 
@@ -2703,6 +3018,10 @@
             const m = document.getElementById("importCsvModal");
             if (m) m.classList.add("hidden");
         }
+        if (e.target.closest("#btnCloseFormulaModal") || e.target.closest("#btnCancelFormulaModal")) {
+            const m = document.getElementById("modalTaskFormulaConfig");
+            if (m) m.classList.add("hidden");
+        }
     });
 
     const formEditPackage = document.getElementById("formEditPackage");
@@ -3195,9 +3514,85 @@
         });
     }
 
-    // Expose helpers globally for testing or inline onclicks
+    // -------------------------------------------------------------
+    // Task Formula Modal Controllers & Date Recalculation Button
+    // -------------------------------------------------------------
+    const btnRecalculateDates = document.getElementById("btnRecalculateDates");
+    if (btnRecalculateDates) {
+        btnRecalculateDates.addEventListener("click", () => {
+            recalculateAllTaskDates(true);
+        });
+    }
+
+    const formulaTypeRadios = document.querySelectorAll('input[name="formulaType"]');
+    formulaTypeRadios.forEach(r => r.addEventListener("change", updateFormulaModalPreview));
+
+    const formulaRefSelect = document.getElementById("formulaRefTaskSelect");
+    if (formulaRefSelect) formulaRefSelect.addEventListener("change", updateFormulaModalPreview);
+
+    const formulaOffsetInput = document.getElementById("formulaOffsetDays");
+    if (formulaOffsetInput) formulaOffsetInput.addEventListener("input", updateFormulaModalPreview);
+
+    const btnApplyFormulaSingle = document.getElementById("btnApplyFormulaSingle");
+    if (btnApplyFormulaSingle) {
+        btnApplyFormulaSingle.addEventListener("click", () => {
+            if (!currentFormulaContext) return;
+            const { task } = currentFormulaContext;
+            const selectedRadio = document.querySelector('input[name="formulaType"]:checked');
+            const fType = selectedRadio ? selectedRadio.value : "default";
+
+            const refSelect = document.getElementById("formulaRefTaskSelect");
+            const offsetInput = document.getElementById("formulaOffsetDays");
+            const offset = parseInt(offsetInput ? offsetInput.value : 0, 10) || 0;
+
+            task.dateFormula = {
+                type: fType,
+                refTaskId: fType === "custom" ? (refSelect ? refSelect.value : "") : "",
+                offsetDays: offset
+            };
+
+            const previewDiv = document.getElementById("formulaCalcPreview");
+            const calculatedDate = previewDiv ? previewDiv.textContent.trim() : "";
+            if (calculatedDate && calculatedDate.length === 10) {
+                task.date = calculatedDate;
+                task.dayOfWeek = getDayOfWeekInVietnamese(calculatedDate);
+            }
+
+            document.getElementById("modalTaskFormulaConfig")?.classList.add("hidden");
+            renderTimelineTable(window.currentTimelineFilter || "all");
+            saveState();
+            showToast(`Đã áp dụng công thức tính ngày cho: ${task.name}!`, "success");
+        });
+    }
+
+    const btnApplyFormulaAndRecalcAll = document.getElementById("btnApplyFormulaAndRecalcAll");
+    if (btnApplyFormulaAndRecalcAll) {
+        btnApplyFormulaAndRecalcAll.addEventListener("click", () => {
+            if (!currentFormulaContext) return;
+            const { task } = currentFormulaContext;
+            const selectedRadio = document.querySelector('input[name="formulaType"]:checked');
+            const fType = selectedRadio ? selectedRadio.value : "default";
+
+            const refSelect = document.getElementById("formulaRefTaskSelect");
+            const offsetInput = document.getElementById("formulaOffsetDays");
+            const offset = parseInt(offsetInput ? offsetInput.value : 0, 10) || 0;
+
+            task.dateFormula = {
+                type: fType,
+                refTaskId: fType === "custom" ? (refSelect ? refSelect.value : "") : "",
+                offsetDays: offset
+            };
+
+            document.getElementById("modalTaskFormulaConfig")?.classList.add("hidden");
+            recalculateAllTaskDates(true);
+        });
+    }
+
+        // Expose helpers globally for testing or inline onclicks
     window.appState = appState;
     window.PROCUREMENT_MATRIX = PROCUREMENT_MATRIX;
+    window.recalculateAllTaskDates = recalculateAllTaskDates;
+    window.openTaskFormulaModal = openTaskFormulaModal;
     window.openEditPackageModal = openEditPackageModal;
     window.renderAdminMatrixModal = renderAdminMatrixModal;
     window.openProcurementMatrixModal = () => {
