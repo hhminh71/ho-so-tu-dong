@@ -225,6 +225,54 @@
     // -------------------------------------------------------------
     // Render Package Dropdown
     // -------------------------------------------------------------
+    
+    // -------------------------------------------------------------
+    // Render Custom Variables from Template Studio
+    // -------------------------------------------------------------
+    function renderCustomVariablesUI() {
+        const customVarsJson = localStorage.getItem("ho_so_custom_variables");
+        const customSection = document.getElementById("customVariablesSection");
+        const customContainer = document.getElementById("customVariablesContainer");
+        const customBadge = document.getElementById("customVarsBadge");
+        if (!customSection || !customContainer) return;
+
+        if (!customVarsJson) {
+            customSection.classList.add("hidden");
+            return;
+        }
+
+        try {
+            const customVars = JSON.parse(customVarsJson);
+            if (!Array.isArray(customVars) || customVars.length === 0) {
+                customSection.classList.add("hidden");
+                return;
+            }
+
+            customSection.classList.remove("hidden");
+            if (customBadge) customBadge.textContent = `${customVars.length} biến`;
+            customContainer.innerHTML = "";
+
+            customVars.forEach(v => {
+                if (v.targetSheet === "Thông tin chung" && !generalFieldsList.includes(v.key)) {
+                    generalFieldsList.push(v.key);
+                }
+
+                const div = document.createElement("div");
+                div.className = "space-y-0.5";
+                div.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <label class="block text-[11px] font-semibold text-indigo-900">${v.label} <span class="text-indigo-500 font-mono text-[10px]">({{${v.key}}})</span></label>
+                        <span class="text-[9px] bg-indigo-50 text-indigo-700 px-1 py-0.2 rounded">${v.targetSheet || "Từng gói thầu"}</span>
+                    </div>
+                    <input type="text" data-field="${v.key}" placeholder="VD: ${v.value || ''}" class="w-full text-xs px-2 py-1 h-7 border rounded border-indigo-200 focus:ring-1 focus:ring-indigo-500 bg-white text-slate-800">
+                `;
+                customContainer.appendChild(div);
+            });
+        } catch (e) {
+            console.warn("Could not render custom variables:", e);
+        }
+    }
+
     function renderPackageDropdown() {
         packageSelect.innerHTML = "";
         appState.packages.forEach((pkg, idx) => {
@@ -1059,6 +1107,7 @@
     // -------------------------------------------------------------
     // Initial Boot
     // -------------------------------------------------------------
+    renderCustomVariablesUI();
     renderPackageDropdown();
     populateFormInputs();
 
