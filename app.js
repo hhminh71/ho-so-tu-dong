@@ -610,7 +610,7 @@
 
                 // Click card selects package and reveals its timeline procedures
                 card.addEventListener("click", (e) => {
-                    if (e.target.closest(".pkg-procurement-select") || e.target.closest(".btn-create-docs")) {
+                    if (e.target.closest(".pkg-procurement-select") || e.target.closest(".btn-create-docs") || e.target.closest(".btn-edit-pkg")) {
                         return;
                     }
                     appState.selectedRoadmapPackageIndex = idx;
@@ -629,6 +629,7 @@
                 const btnEdit = card.querySelector(".btn-edit-pkg");
                 if (btnEdit) {
                     btnEdit.addEventListener("click", (e) => {
+                        e.preventDefault();
                         e.stopPropagation();
                         openEditPackageModal(idx);
                     });
@@ -2637,68 +2638,93 @@
     // -------------------------------------------------------------
     // Package Edit Controller (Chỉnh sửa thông tin gói thầu)
     // -------------------------------------------------------------
-    const modalEditPackage = document.getElementById("modalEditPackage");
-    const btnCloseEditPkgModal = document.getElementById("btnCloseEditPkgModal");
-    const btnCancelEditPkg = document.getElementById("btnCancelEditPkg");
-    const formEditPackage = document.getElementById("formEditPackage");
-    const btnDeletePkgInModal = document.getElementById("btnDeletePkgInModal");
-
-    const editPkgIndex = document.getElementById("editPkgIndex");
-    const editPkgName = document.getElementById("editPkgName");
-    const editPkgCategory = document.getElementById("editPkgCategory");
-    const editPkgPrice = document.getElementById("editPkgPrice");
-    const editPkgProcurementType = document.getElementById("editPkgProcurementType");
-    const editPkgContractType = document.getElementById("editPkgContractType");
-    const editPkgDuration = document.getElementById("editPkgDuration");
-    const editPkgStatus = document.getElementById("editPkgStatus");
-
     function openEditPackageModal(idx) {
         if (!appState.projectRoadmap || !appState.projectRoadmap.packages) return;
         const pkg = appState.projectRoadmap.packages[idx];
         if (!pkg) return;
 
+        const modal = document.getElementById("modalEditPackage");
+        const editPkgIndex = document.getElementById("editPkgIndex");
+        const editPkgName = document.getElementById("editPkgName");
+        const editPkgCategory = document.getElementById("editPkgCategory");
+        const editPkgPrice = document.getElementById("editPkgPrice");
+        const editPkgProcurementType = document.getElementById("editPkgProcurementType");
+        const editPkgContractType = document.getElementById("editPkgContractType");
+        const editPkgDuration = document.getElementById("editPkgDuration");
+        const editPkgStatus = document.getElementById("editPkgStatus");
+
+        if (!modal || !editPkgIndex) return;
+
         editPkgIndex.value = idx;
-        editPkgName.value = pkg.name || "";
-        editPkgCategory.value = pkg.category || "tu_van";
-        editPkgPrice.value = pkg.estimatedPrice || "";
-        editPkgContractType.value = pkg.contractType || "Trọn gói";
-        editPkgDuration.value = pkg.duration || "30 ngày";
-        editPkgStatus.value = pkg.status || "Đang thực hiện";
+        if (editPkgName) editPkgName.value = pkg.name || "";
+        if (editPkgCategory) editPkgCategory.value = pkg.category || "tu_van";
+        if (editPkgPrice) editPkgPrice.value = pkg.estimatedPrice || "";
+        if (editPkgContractType) editPkgContractType.value = pkg.contractType || "Trọn gói";
+        if (editPkgDuration) editPkgDuration.value = pkg.duration || "30 ngày";
+        if (editPkgStatus) editPkgStatus.value = pkg.status || "Đang thực hiện";
 
         // Populate procurement types
-        editPkgProcurementType.innerHTML = "";
-        PROCUREMENT_MATRIX.procurementTypes.forEach(pt => {
-            const opt = document.createElement("option");
-            opt.value = pt.id;
-            opt.textContent = pt.name;
-            if (pt.id === (pkg.procurementTypeId || "chi_dinh_thau_rut_gon")) {
-                opt.selected = true;
-            }
-            editPkgProcurementType.appendChild(opt);
-        });
+        if (editPkgProcurementType) {
+            editPkgProcurementType.innerHTML = "";
+            PROCUREMENT_MATRIX.procurementTypes.forEach(pt => {
+                const opt = document.createElement("option");
+                opt.value = pt.id;
+                opt.textContent = pt.name;
+                if (pt.id === (pkg.procurementTypeId || "chi_dinh_thau_rut_gon")) {
+                    opt.selected = true;
+                }
+                editPkgProcurementType.appendChild(opt);
+            });
+        }
 
-        modalEditPackage.classList.remove("hidden");
+        modal.classList.remove("hidden");
     }
 
-    if (btnCloseEditPkgModal) btnCloseEditPkgModal.addEventListener("click", () => modalEditPackage.classList.add("hidden"));
-    if (btnCancelEditPkg) btnCancelEditPkg.addEventListener("click", () => modalEditPackage.classList.add("hidden"));
+    // Modal Close event delegation for rock-solid reliability
+    document.addEventListener("click", (e) => {
+        if (e.target.closest("#btnCloseEditPkgModal") || e.target.closest("#btnCancelEditPkg")) {
+            const m = document.getElementById("modalEditPackage");
+            if (m) m.classList.add("hidden");
+        }
+        if (e.target.closest("#btnCloseMatrixModal") || e.target.closest("#btnCancelMatrixModal")) {
+            const m = document.getElementById("modalProcurementMatrixManager");
+            if (m) m.classList.add("hidden");
+        }
+        if (e.target.closest("#btnCloseCsvModal") || e.target.closest("#btnCancelCsvModal")) {
+            const m = document.getElementById("importCsvModal");
+            if (m) m.classList.add("hidden");
+        }
+    });
 
+    const formEditPackage = document.getElementById("formEditPackage");
     if (formEditPackage) {
         formEditPackage.addEventListener("submit", (e) => {
             e.preventDefault();
-            const idx = parseInt(editPkgIndex.value, 10);
-            if (isNaN(idx) || idx < 0 || idx >= appState.projectRoadmap.packages.length) return;
+            const editPkgIndex = document.getElementById("editPkgIndex");
+            const editPkgName = document.getElementById("editPkgName");
+            const editPkgCategory = document.getElementById("editPkgCategory");
+            const editPkgPrice = document.getElementById("editPkgPrice");
+            const editPkgProcurementType = document.getElementById("editPkgProcurementType");
+            const editPkgContractType = document.getElementById("editPkgContractType");
+            const editPkgDuration = document.getElementById("editPkgDuration");
+            const editPkgStatus = document.getElementById("editPkgStatus");
+            const modal = document.getElementById("modalEditPackage");
+
+            const idx = parseInt(editPkgIndex ? editPkgIndex.value : -1, 10);
+            if (isNaN(idx) || idx < 0 || !appState.projectRoadmap.packages[idx]) return;
 
             const pkg = appState.projectRoadmap.packages[idx];
-            pkg.name = editPkgName.value.trim();
-            pkg.category = editPkgCategory.value;
-            const catLabels = { "tu_van": "Tư vấn", "xay_lap": "Xây lắp", "mua_sam": "Mua sắm", "phi_tu_van": "Phi tư vấn" };
-            pkg.categoryLabel = catLabels[pkg.category] || "Tư vấn";
-            pkg.estimatedPrice = editPkgPrice.value.trim();
-            pkg.procurementTypeId = editPkgProcurementType.value;
-            pkg.contractType = editPkgContractType.value;
-            pkg.duration = editPkgDuration.value.trim();
-            pkg.status = editPkgStatus.value;
+            if (editPkgName) pkg.name = editPkgName.value.trim();
+            if (editPkgCategory) {
+                pkg.category = editPkgCategory.value;
+                const catLabels = { "tu_van": "Tư vấn", "xay_lap": "Xây lắp", "mua_sam": "Mua sắm", "phi_tu_van": "Phi tư vấn" };
+                pkg.categoryLabel = catLabels[pkg.category] || "Tư vấn";
+            }
+            if (editPkgPrice) pkg.estimatedPrice = editPkgPrice.value.trim();
+            if (editPkgProcurementType) pkg.procurementTypeId = editPkgProcurementType.value;
+            if (editPkgContractType) pkg.contractType = editPkgContractType.value;
+            if (editPkgDuration) pkg.duration = editPkgDuration.value.trim();
+            if (editPkgStatus) pkg.status = editPkgStatus.value;
 
             // Sync with package fields
             if (!pkg.fields) pkg.fields = {};
@@ -2711,22 +2737,25 @@
             syncRoadmapToDocs();
             renderRoadmapUI();
             saveState();
-            modalEditPackage.classList.add("hidden");
+            if (modal) modal.classList.add("hidden");
             showToast(`Đã lưu thay đổi cho gói thầu #${idx + 1}!`, "success");
         });
     }
 
+    const btnDeletePkgInModal = document.getElementById("btnDeletePkgInModal");
     if (btnDeletePkgInModal) {
         btnDeletePkgInModal.addEventListener("click", () => {
-            const idx = parseInt(editPkgIndex.value, 10);
-            if (isNaN(idx) || idx < 0 || idx >= appState.projectRoadmap.packages.length) return;
+            const editPkgIndex = document.getElementById("editPkgIndex");
+            const modal = document.getElementById("modalEditPackage");
+            const idx = parseInt(editPkgIndex ? editPkgIndex.value : -1, 10);
+            if (isNaN(idx) || idx < 0 || !appState.projectRoadmap.packages[idx]) return;
 
             if (appState.projectRoadmap.packages.length <= 1) {
                 alert("Dự án cần có ít nhất 1 gói thầu, không thể xóa hết!");
                 return;
             }
 
-            if (confirm(`Bạn có chắc chắn muốn xóa gói thầu: ${appState.projectRoadmap.packages[idx].name}?`)) {
+            if (confirm(`Bạn có chắc chắn muốn xóa gói thầu: "${appState.projectRoadmap.packages[idx].name}"?`)) {
                 appState.projectRoadmap.packages.splice(idx, 1);
                 if (appState.selectedRoadmapPackageIndex >= appState.projectRoadmap.packages.length) {
                     appState.selectedRoadmapPackageIndex = 0;
@@ -2734,7 +2763,7 @@
                 syncRoadmapToDocs();
                 renderRoadmapUI();
                 saveState();
-                modalEditPackage.classList.add("hidden");
+                if (modal) modal.classList.add("hidden");
                 showToast("Đã xóa gói thầu thành công!", "info");
             }
         });
@@ -2759,40 +2788,14 @@
         });
     }
 
-    // Modal Matrix Manager Elements
-    const modalProcurementMatrixManager = document.getElementById("modalProcurementMatrixManager");
-    const btnCloseMatrixModal = document.getElementById("btnCloseMatrixModal");
-    const btnCancelMatrixModal = document.getElementById("btnCancelMatrixModal");
-    const btnSaveMatrixSettings = document.getElementById("btnSaveMatrixSettings");
-    const btnResetMatrixDefault = document.getElementById("btnResetMatrixDefault");
-
-    const matrixTypesList = document.getElementById("matrixTypesList");
-    const matrixTypeNameInput = document.getElementById("matrixTypeNameInput");
-    const matrixTypeCodeInput = document.getElementById("matrixTypeCodeInput");
-    const matrixTypeLegalInput = document.getElementById("matrixTypeLegalInput");
-    const matrixDocsTableBody = document.getElementById("matrixDocsTableBody");
-    const btnAddNewProcurementType = document.getElementById("btnAddNewProcurementType");
-    const btnAddNewDocToType = document.getElementById("btnAddNewDocToType");
-
     let activeAdminTypeId = "chi_dinh_thau_rut_gon";
-
-    if (btnOpenMatrixSettings) {
-        btnOpenMatrixSettings.addEventListener("click", () => {
-            userAccountDropdown.classList.add("hidden");
-            activeAdminTypeId = appState.selectedProcurementTypeId || PROCUREMENT_MATRIX.procurementTypes[0].id;
-            renderAdminMatrixModal();
-            modalProcurementMatrixManager.classList.remove("hidden");
-        });
-    }
-
-    if (btnCloseMatrixModal) btnCloseMatrixModal.addEventListener("click", () => modalProcurementMatrixManager.classList.add("hidden"));
-    if (btnCancelMatrixModal) btnCancelMatrixModal.addEventListener("click", () => modalProcurementMatrixManager.classList.add("hidden"));
 
     function getActiveAdminType() {
         return PROCUREMENT_MATRIX.procurementTypes.find(t => t.id === activeAdminTypeId) || PROCUREMENT_MATRIX.procurementTypes[0];
     }
 
     function renderAdminMatrixModal() {
+        const matrixTypesList = document.getElementById("matrixTypesList");
         if (!matrixTypesList) return;
         matrixTypesList.innerHTML = "";
 
@@ -2825,34 +2828,41 @@
             matrixTypesList.appendChild(btn);
         });
 
-        // 2. Render Right Column: Form Inputs & Reorderable Documents Table
+        // 2. Render Right Column: Selected Type Info & Doc Templates Table
         const currentPt = getActiveAdminType();
-        if (!currentPt) return;
+        const matrixTypeNameInput = document.getElementById("matrixTypeNameInput");
+        const matrixTypeCodeInput = document.getElementById("matrixTypeCodeInput");
+        const matrixTypeLegalInput = document.getElementById("matrixTypeLegalInput");
 
-        matrixTypeNameInput.value = currentPt.name || "";
-        matrixTypeCodeInput.value = currentPt.code || "";
-        matrixTypeLegalInput.value = currentPt.legalBasis || "";
+        if (matrixTypeNameInput) matrixTypeNameInput.value = currentPt.name || "";
+        if (matrixTypeCodeInput) matrixTypeCodeInput.value = currentPt.code || "";
+        if (matrixTypeLegalInput) matrixTypeLegalInput.value = currentPt.legalBasis || "";
 
-        // Flatten all documents of this procurement type for easy reordering
         renderAdminDocsTable(currentPt);
     }
 
     function renderAdminDocsTable(pt) {
+        const matrixDocsTableBody = document.getElementById("matrixDocsTableBody");
         if (!matrixDocsTableBody) return;
         matrixDocsTableBody.innerHTML = "";
 
-        // Ensure phase exists
         if (!pt.phases || pt.phases.length === 0) {
             pt.phases = [{ phaseId: "phase_1", phaseName: "Thủ tục thực hiện", documents: [] }];
         }
 
-        // Collect all docs from all phases
         const allDocs = [];
         pt.phases.forEach((ph, pIdx) => {
             (ph.documents || []).forEach((doc, dIdx) => {
                 allDocs.push({ ...doc, _phaseIdx: pIdx, _docIdx: dIdx });
             });
         });
+
+        if (allDocs.length === 0) {
+            const emptyTr = document.createElement("tr");
+            emptyTr.innerHTML = `<td colspan="4" class="p-3 text-center text-slate-400 italic text-[11px]">Chưa có mẫu văn bản nào. Bấm "+ Thêm mẫu văn bản" để bổ sung.</td>`;
+            matrixDocsTableBody.appendChild(emptyTr);
+            return;
+        }
 
         allDocs.forEach((doc, idx) => {
             const tr = document.createElement("tr");
@@ -2882,57 +2892,63 @@
                 </td>
             `;
 
-            // Event Listeners for inputs
+            // Input handlers
             const codeInput = tr.querySelector(".doc-code-input");
             const nameInput = tr.querySelector(".doc-name-input");
-            codeInput.addEventListener("input", (e) => {
-                pt.phases[doc._phaseIdx].documents[doc._docIdx].code = e.target.value.trim();
-            });
-            nameInput.addEventListener("input", (e) => {
-                pt.phases[doc._phaseIdx].documents[doc._docIdx].name = e.target.value.trim();
-            });
+            if (codeInput) {
+                codeInput.addEventListener("input", (e) => {
+                    pt.phases[doc._phaseIdx].documents[doc._docIdx].code = e.target.value.trim();
+                });
+            }
+            if (nameInput) {
+                nameInput.addEventListener("input", (e) => {
+                    pt.phases[doc._phaseIdx].documents[doc._docIdx].name = e.target.value.trim();
+                });
+            }
 
             // Move Up
             const btnUp = tr.querySelector(".btn-move-up");
-            btnUp.addEventListener("click", () => {
-                if (idx > 0) {
-                    swapDocsInType(pt, idx, idx - 1);
-                    renderAdminDocsTable(pt);
-                }
-            });
+            if (btnUp) {
+                btnUp.addEventListener("click", () => {
+                    if (idx > 0) {
+                        swapDocsInType(pt, idx, idx - 1);
+                        renderAdminDocsTable(pt);
+                    }
+                });
+            }
 
             // Move Down
             const btnDown = tr.querySelector(".btn-move-down");
-            btnDown.addEventListener("click", () => {
-                if (idx < allDocs.length - 1) {
-                    swapDocsInType(pt, idx, idx + 1);
-                    renderAdminDocsTable(pt);
-                }
-            });
+            if (btnDown) {
+                btnDown.addEventListener("click", () => {
+                    if (idx < allDocs.length - 1) {
+                        swapDocsInType(pt, idx, idx + 1);
+                        renderAdminDocsTable(pt);
+                    }
+                });
+            }
 
             // Delete doc
             const btnDel = tr.querySelector(".btn-del-doc");
-            btnDel.addEventListener("click", () => {
-                if (confirm(`Bạn có chắc muốn xóa văn bản: "${doc.name}" khỏi hình thức này?`)) {
-                    removeDocFromType(pt, idx);
-                    renderAdminDocsTable(pt);
-                }
-            });
+            if (btnDel) {
+                btnDel.addEventListener("click", () => {
+                    if (confirm(`Bạn có chắc muốn xóa văn bản: "${doc.name}" khỏi hình thức này?`)) {
+                        removeDocFromType(pt, idx);
+                        renderAdminDocsTable(pt);
+                    }
+                });
+            }
 
             matrixDocsTableBody.appendChild(tr);
         });
     }
 
     function swapDocsInType(pt, fromIdx, toIdx) {
-        // Flatten docs
         const flat = [];
         pt.phases.forEach(ph => (ph.documents || []).forEach(d => flat.push(d)));
-
         const temp = flat[fromIdx];
         flat[fromIdx] = flat[toIdx];
         flat[toIdx] = temp;
-
-        // Put back into phase 1 (simplified single list)
         pt.phases = [{
             phaseId: "phase_main",
             phaseName: "Quy trình thủ tục",
@@ -2954,12 +2970,29 @@
     function saveCurrentAdminInputs() {
         const currentPt = getActiveAdminType();
         if (!currentPt) return;
-        currentPt.name = matrixTypeNameInput.value.trim() || currentPt.name;
-        currentPt.code = matrixTypeCodeInput.value.trim();
-        currentPt.legalBasis = matrixTypeLegalInput.value.trim();
+        const matrixTypeNameInput = document.getElementById("matrixTypeNameInput");
+        const matrixTypeCodeInput = document.getElementById("matrixTypeCodeInput");
+        const matrixTypeLegalInput = document.getElementById("matrixTypeLegalInput");
+
+        if (matrixTypeNameInput) currentPt.name = matrixTypeNameInput.value.trim() || currentPt.name;
+        if (matrixTypeCodeInput) currentPt.code = matrixTypeCodeInput.value.trim();
+        if (matrixTypeLegalInput) currentPt.legalBasis = matrixTypeLegalInput.value.trim();
     }
 
-    // Add new Document button
+    if (btnOpenMatrixSettings) {
+        btnOpenMatrixSettings.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const dd = document.getElementById("userAccountDropdown");
+            if (dd) dd.classList.add("hidden");
+            activeAdminTypeId = appState.selectedProcurementTypeId || PROCUREMENT_MATRIX.procurementTypes[0].id;
+            renderAdminMatrixModal();
+            const modal = document.getElementById("modalProcurementMatrixManager");
+            if (modal) modal.classList.remove("hidden");
+        });
+    }
+
+    const btnAddNewDocToType = document.getElementById("btnAddNewDocToType");
     if (btnAddNewDocToType) {
         btnAddNewDocToType.addEventListener("click", () => {
             const currentPt = getActiveAdminType();
@@ -2986,7 +3019,7 @@
         });
     }
 
-    // Add new Procurement Type button
+    const btnAddNewProcurementType = document.getElementById("btnAddNewProcurementType");
     if (btnAddNewProcurementType) {
         btnAddNewProcurementType.addEventListener("click", () => {
             const newName = prompt("Nhập tên Hình thức LCNT mới (ví dụ: 7. Đặt hàng dịch vụ công ích):", "");
@@ -3017,12 +3050,11 @@
         });
     }
 
-    // Save Matrix Settings
+    const btnSaveMatrixSettings = document.getElementById("btnSaveMatrixSettings");
     if (btnSaveMatrixSettings) {
         btnSaveMatrixSettings.addEventListener("click", () => {
             saveCurrentAdminInputs();
 
-            // Save to localStorage
             try {
                 localStorage.setItem("ho_so_tu_dong_matrix_custom", JSON.stringify(PROCUREMENT_MATRIX));
             } catch (err) {
@@ -3035,12 +3067,13 @@
             renderDocTabs();
             renderDocumentPreview();
 
-            modalProcurementMatrixManager.classList.add("hidden");
+            const modal = document.getElementById("modalProcurementMatrixManager");
+            if (modal) modal.classList.add("hidden");
             showToast("Đã lưu và áp dụng toàn diện cấu hình Hình thức LCNT & thứ tự mẫu văn bản!", "success");
         });
     }
 
-    // Reset Matrix Default
+    const btnResetMatrixDefault = document.getElementById("btnResetMatrixDefault");
     if (btnResetMatrixDefault) {
         btnResetMatrixDefault.addEventListener("click", () => {
             if (confirm("Bạn có chắc chắn muốn khôi phục toàn bộ Ma trận Hình thức LCNT & Thứ tự mẫu văn bản về mặc định ban đầu?")) {
@@ -3059,6 +3092,20 @@
             }
         });
     }
+
+    // Expose helpers globally for testing or inline onclicks
+    window.appState = appState;
+    window.PROCUREMENT_MATRIX = PROCUREMENT_MATRIX;
+    window.openEditPackageModal = openEditPackageModal;
+    window.renderAdminMatrixModal = renderAdminMatrixModal;
+    window.openProcurementMatrixModal = () => {
+        const dd = document.getElementById("userAccountDropdown");
+        if (dd) dd.classList.add("hidden");
+        activeAdminTypeId = appState.selectedProcurementTypeId || PROCUREMENT_MATRIX.procurementTypes[0].id;
+        renderAdminMatrixModal();
+        const m = document.getElementById("modalProcurementMatrixManager");
+        if (m) m.classList.remove("hidden");
+    };
 
         initProcurementTypeSelector();
     renderDocTabs();
