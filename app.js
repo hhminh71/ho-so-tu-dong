@@ -789,7 +789,42 @@
         return null;
     }
 
-    function recalculateAllTaskDates(showToastNotification = false) {
+    function updateTimelineDomInPlace() {
+        if (!appState.projectRoadmap || !appState.projectRoadmap.timelinePhases) return;
+        const phases = appState.projectRoadmap.timelinePhases;
+        const rows = document.querySelectorAll("#rmTimelineContainer tr[data-phase-idx]");
+        rows.forEach(tr => {
+            const pI = parseInt(tr.getAttribute("data-phase-idx"), 10);
+            const tI = parseInt(tr.getAttribute("data-task-idx"), 10);
+            const t = phases[pI]?.tasks[tI];
+            if (!t) return;
+
+            const dateInput = tr.querySelector(".task-date-input");
+            if (dateInput && document.activeElement !== dateInput) {
+                dateInput.value = t.date || "";
+            }
+
+            const dayBadge = tr.querySelector(".task-day-badge");
+            if (dayBadge) {
+                const dayName = t.dayOfWeek || getDayOfWeekInVietnamese(t.date);
+                dayBadge.textContent = dayName;
+                const isWeekend = dayName.includes("Chủ Nhật") || dayName.includes("Thứ Bảy");
+                dayBadge.className = `task-day-badge text-[9.5px] font-bold ${isWeekend ? 'text-amber-700 bg-amber-50 px-1 py-0.2 rounded border border-amber-200' : 'text-slate-700'}`;
+            }
+
+            const formulaBtn = tr.querySelector(".btn-task-formula");
+            if (formulaBtn) {
+                const formula = t.dateFormula || { type: "default" };
+                const isCustom = formula.type === "custom";
+                const icon = formulaBtn.querySelector("i");
+                if (icon) {
+                    icon.className = `fa-solid fa-calculator text-[9px] ${isCustom ? 'text-indigo-600 font-bold' : ''}`;
+                }
+            }
+        });
+    }
+
+    function recalculateAllTaskDates(showToastNotification = false, updateInPlaceOnly = true) {
         if (!appState.projectRoadmap || !appState.projectRoadmap.timelinePhases) return;
         const phases = appState.projectRoadmap.timelinePhases;
 
@@ -832,7 +867,11 @@
             t.dayOfWeek = getDayOfWeekInVietnamese(t.date);
         });
 
-        renderTimelineTable(window.currentTimelineFilter || "all");
+        if (updateInPlaceOnly) {
+            updateTimelineDomInPlace();
+        } else {
+            renderTimelineTable(window.currentTimelineFilter || "all");
+        }
         saveState();
         if (showToastNotification) {
             showToast("Đã tự động tính toán lại ngày và thứ cho toàn bộ văn bản!", "success");
@@ -1118,7 +1157,7 @@
                 });
             });
 
-            // Handle editable Date
+            // Handle editable Date with REAL-TIME AUTO CASCADE
             phaseWrapper.querySelectorAll(".task-date-input").forEach(input => {
                 input.addEventListener("change", (e) => {
                     const pI = parseInt(input.getAttribute("data-p-idx"), 10);
@@ -1128,33 +1167,27 @@
                     t.date = val;
                     t.dayOfWeek = getDayOfWeekInVietnamese(val);
                     
-                    const tr = input.closest("tr");
-                    if (tr) {
-                        const badge = tr.querySelector(".task-day-badge");
-                        if (badge) {
-                            badge.textContent = t.dayOfWeek;
-                            const isWeekend = t.dayOfWeek.includes("Chủ Nhật") || t.dayOfWeek.includes("Thứ Bảy");
-                            badge.className = `task-day-badge text-[9.5px] font-bold ${isWeekend ? 'text-amber-700 bg-amber-50 px-1 py-0.2 rounded border border-amber-200' : 'text-slate-700'}`;
-                        }
-                    }
+                    // Manually setting a date marks it as a fixed milestone anchor
+                    if (!t.dateFormula) t.dateFormula = { type: "manual" };
+                    else t.dateFormula.type = "manual";
 
-                    if (!t.dateFormula || t.dateFormula.type === "default") {
-                        t.dateFormula = { type: "manual" };
-                    }
-                    saveState();
+                    // TỰ ĐỘNG TÍNH TOÁN DÂY CHUYỀN NGAY LẬP TỨC (không cần bấm nút)
+                    recalculateAllTaskDates(false, true);
                 });
             });
 
-            // Handle editable Duration
+            // Handle editable Duration with REAL-TIME AUTO CASCADE
             phaseWrapper.querySelectorAll(".task-duration-input").forEach(input => {
                 input.addEventListener("input", (e) => {
                     const pI = parseInt(input.getAttribute("data-p-idx"), 10);
                     const tI = parseInt(input.getAttribute("data-t-idx"), 10);
                     const dur = parseInt(e.target.value, 10);
                     phases[pI].tasks[tI].duration = isNaN(dur) ? 0 : dur;
+                    // TỰ ĐỘNG TÍNH TOÁN DÂY CHUYỀN NGAY KHI GÕ HOẶC BẤM TĂNG/GIẢM (không cần bấm nút)
+                    recalculateAllTaskDates(false, true);
                 });
                 input.addEventListener("change", () => {
-                    saveState();
+                    recalculateAllTaskDates(false, true);
                 });
             });
 
@@ -3566,8 +3599,7 @@
             }
 
             document.getElementById("modalTaskFormulaConfig")?.classList.add("hidden");
-            renderTimelineTable(window.currentTimelineFilter || "all");
-            saveState();
+            recalculateAllTaskDates(false, true);
             showToast(`Đã áp dụng công thức tính ngày cho: ${task.name}!`, "success");
         });
     }
