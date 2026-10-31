@@ -6,6 +6,79 @@
     let PROCUREMENT_MATRIX = {"system": "Hệ thống Quản lý & Tự động xuất Hồ sơ Mua sắm, Xây lắp", "version": "3.0", "legalBases": ["Luật Đấu thầu số 22/2023/QH15 ngày 23/06/2023", "Nghị định số 24/2024/NĐ-CP ngày 27/02/2024 của Chính phủ", "Nghị định số 30/2020/NĐ-CP ngày 05/03/2020 về công tác văn thư"], "procurementTypes": [{"id": "duoi_50_trieu", "code": "D50", "name": "1. Mua sắm siêu rút gọn (Dưới 50 triệu)", "badge": "< 50 triệu", "badgeColor": "emerald", "description": "Áp dụng mua sắm tài sản, thiết bị, sửa chữa thường xuyên dưới 50 triệu đồng theo dự toán nội bộ.", "threshold": 50000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "d50_1", "code": "01.TTr-MS", "name": "01. Tờ trình phê duyệt chủ trương và dự toán", "desc": "Tờ trình đơn vị đề xuất mua sắm hàng hóa / sửa chữa", "requiredVars": ["TEN_DON_VI", "SO_TO_TRINH", "NGAY_TO_TRINH", "TEN_HANG_MUC", "LY_DO_MUA_SAM", "TONG_MUC_DAU_TU", "NGUON_VON", "TRUONG_DON_VI"]}, {"id": "d50_2", "code": "02.BC-MS", "name": "02. Báo cáo thẩm định & phê duyệt mua sắm", "desc": "Báo cáo phê duyệt kết quả mua sắm dưới 50 triệu", "requiredVars": ["TEN_DON_VI", "SO_BAO_CAO", "NGAY_BAO_CAO", "TEN_HANG_MUC", "TEN_NHA_THAU", "MA_SO_THUE", "GIA_TRI_MUA_SAM", "NGUOI_PHE_DUYET"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Ký kết & Nghiệm thu", "documents": [{"id": "d50_3", "code": "03.HD-KT", "name": "03. Hợp đồng kinh tế / Đơn đặt hàng", "desc": "Hợp đồng mua bán hoặc sửa chữa", "requiredVars": ["TEN_DON_VI", "DAI_DIEN_BEN_A", "TEN_NHA_THAU", "DAI_DIEN_BEN_B", "GIA_TRI_HOP_DONG", "THOI_GIAN_THUC_HIEN"]}, {"id": "d50_4", "code": "04.BB-NT", "name": "04. Biên bản nghiệm thu bàn giao và thanh lý", "desc": "Biên bản bàn giao thiết bị / hoàn thành sửa chữa", "requiredVars": ["TEN_DON_VI", "TEN_NHA_THAU", "NGAY_NGHIEM_THU", "NOI_DUNG_CONG_VIEC", "GIA_TRI_QUYET_TOAN"]}]}]}, {"id": "duoi_100_trieu", "code": "D100", "name": "2. Mua sắm thường xuyên 50tr - 100tr (Khoản 4 Điều 23)", "badge": "50tr - 100tr", "badgeColor": "teal", "description": "Áp dụng chỉ định thầu siêu nhỏ không qua mạng theo Khoản 4 Điều 23 Luật Đấu thầu 2023.", "threshold": 100000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "d100_1", "code": "01.TTr-KHLCNT", "name": "01. Tờ trình phê duyệt Kế hoạch LCNT", "desc": "Tờ trình phê duyệt KHLCNT gói mua sắm thường xuyên", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_GOI_THAU", "GIA_GOI_THAU", "HINH_THUC_LCNT", "NGUOI_TRINH"]}, {"id": "d100_2", "code": "02.QD-KHLCNT", "name": "02. Quyết định phê duyệt Kế hoạch LCNT", "desc": "Quyết định phê duyệt của Người có thẩm quyền", "requiredVars": ["TEN_CHU_DAU_TU", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "TEN_GOI_THAU", "NGUOI_KY_CDT"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Ký kết & Thanh lý", "documents": [{"id": "d100_3", "code": "03.BB-TT", "name": "03. Biên bản thương thảo hoàn thiện đơn hàng", "desc": "Biên bản thống nhất giá và tiến độ giao hàng", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU", "GIA_THUONG_THAO", "THOI_GIAN_GIAO_HANG"]}, {"id": "d100_4", "code": "04.HD-KT", "name": "04. Hợp đồng kinh tế và biên bản giao nhận", "desc": "Hợp đồng kinh tế trọn gói", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG", "KHO_BAC_NHA_NUOC"]}]}]}, {"id": "chao_gia_han_che", "code": "CGHC", "name": "3. Chào giá cạnh tranh hạn chế (Nội bộ)", "badge": "Chào giá NB", "badgeColor": "cyan", "description": "Gửi thư mời chào giá đến ít nhất 3 nhà thầu có năng lực để so sánh giá cạnh tranh.", "threshold": 500000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "cghc_1", "code": "01.TTr-CT", "name": "01. Tờ trình phê duyệt chủ trương chào giá", "desc": "Tờ trình chủ trương mua sắm cạnh tranh", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_GOI_THAU", "GIA_GOI_THAU"]}, {"id": "cghc_2", "code": "02.BC-MS", "name": "02. Báo cáo đề xuất phương án chào giá hạn chế", "desc": "Đề xuất danh sách ít nhất 3 nhà thầu", "requiredVars": ["TEN_CHU_DAU_TU", "DANH_SACH_3_NHA_THAU"]}, {"id": "cghc_3", "code": "03.TB-CG", "name": "03. Thư mời chào giá kèm bảng yêu cầu kỹ thuật", "desc": "Gửi các nhà thầu nộp thư báo giá", "requiredVars": ["TEN_NHA_THAU", "HAN_NOP_BAO_GIA", "YEU_CAU_KY_THUAT"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Đánh giá & Trao thầu", "documents": [{"id": "cghc_4", "code": "04.BB-MT", "name": "04. Biên bản mở thư chào giá", "desc": "Biên bản mở niêm phong các báo giá", "requiredVars": ["THOI_GIAN_MO_THAU", "DANH_SACH_GIA_CHAO"]}, {"id": "cghc_5", "code": "05.BB-DG", "name": "05. Biên bản họp đánh giá so sánh báo giá", "desc": "So sánh kỹ thuật và đơn giá", "requiredVars": ["TO_CHUYEN_GIA", "DON_VI_GIA_THAP_NHAT"]}, {"id": "cghc_6", "code": "06.BB-TT", "name": "06. Biên bản thương thảo hợp đồng", "desc": "Thương thảo với đơn vị có giá tốt nhất", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_THUONG_THAO"]}, {"id": "cghc_7", "code": "07.BC-DG", "name": "07. Báo cáo đánh giá kết quả chào giá", "desc": "Báo cáo trình lãnh đạo phê duyệt", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_DE_NGHI"]}, {"id": "cghc_8", "code": "08.TB-KQ", "name": "08. Thông báo kết quả chào giá", "desc": "Thông báo gửi các đơn vị tham gia", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_TRUNG_THAU"]}, {"id": "cghc_9", "code": "09.HD-KT", "name": "09. Hợp đồng kinh tế", "desc": "Hợp đồng kinh tế ký kết", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU_TRUNG", "GIA_TRI_HOP_DONG"]}]}]}, {"id": "chi_dinh_thau_rut_gon", "code": "CDTRG", "name": "4. Chỉ định thầu rút gọn (Tư vấn < 500tr; XL/HH < 1 tỷ)", "badge": "CĐT Rút Gọn", "badgeColor": "emerald", "description": "Quy trình chuẩn theo Điều 78 Nghị định 24/2024/NĐ-CP (Tư vấn, Xây lắp, Hàng hóa).", "threshold": 1000000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "cdtrg_1", "code": "01.TTr-KHLCNT", "name": "01. Tờ trình phê duyệt Kế hoạch LCNT", "desc": "Trình cấp thẩm quyền phê duyệt KHLCNT", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_DU_AN", "TEN_GOI_THAU", "GIA_GOI_THAU_SO"]}, {"id": "cdtrg_2", "code": "02.QD-KHLCNT", "name": "02. Quyết định phê duyệt Kế hoạch LCNT", "desc": "Quyết định phê duyệt KHLCNT", "requiredVars": ["SO_QUYET_DINH_KHLCNT", "NGAY_QUYET_DINH", "NGUOI_KY_CDT"]}, {"id": "cdtrg_3", "code": "03.GM-TT", "name": "03. Giấy mời tham gia hoàn thiện hợp đồng", "desc": "Gửi nhà thầu được chỉ định", "requiredVars": ["TEN_BAN_QUAN_LY_DU_AN", "TEN_NHA_THAU", "THOI_GIAN_HOP", "DIA_DIEM_HOP"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Hoàn thiện & Phê duyệt", "documents": [{"id": "cdtrg_4", "code": "04.BB-HT", "name": "04. Biên bản hoàn thiện hợp đồng", "desc": "Biên bản hoàn thiện điều khoản hợp đồng", "requiredVars": ["SO_BIEN_BAN_HOAN_THIEN", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "DAI_DIEN_NHA_THAU"]}, {"id": "cdtrg_5", "code": "05.TTr-KQLCNT", "name": "05. Tờ trình phê duyệt kết quả chỉ định thầu", "desc": "Trình phê duyệt chỉ định thầu", "requiredVars": ["SO_TO_TRINH", "CO_QUAN_TRINH", "TRUONG_BAN_DHDA", "TEN_NHA_THAU"]}, {"id": "cdtrg_6", "code": "06.QD-KQLCNT", "name": "06. Quyết định phê duyệt kết quả chỉ định thầu", "desc": "Quyết định phê duyệt trúng thầu", "requiredVars": ["SO_QUYET_DINH", "NGUOI_KY_CDT", "GIA_TRI_HOP_DONG_SO", "THOI_GIAN_THUC_HIEN"]}, {"id": "cdtrg_7", "code": "07.HD-KT", "name": "07. Hợp đồng kinh tế", "desc": "Hợp đồng kinh tế chính thức", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO", "KHO_BAC_NHA_NUOC"]}]}]}, {"id": "chi_dinh_thau_thong_thuong", "code": "CDTTT", "name": "5. Chỉ định thầu quy trình thông thường (HSYC & HSĐX)", "badge": "CĐT Thông Thường", "badgeColor": "indigo", "description": "Áp dụng gói thầu cần lập Hồ sơ yêu cầu, đánh giá Hồ sơ đề xuất và thẩm định kết quả.", "threshold": 5000000000, "phases": [{"phaseId": "chuan_bi_hsyc", "phaseName": "Giai đoạn Chuẩn bị Hồ sơ yêu cầu", "documents": [{"id": "cdttt_1", "code": "01.QD-TCG", "name": "01. Quyết định thành lập Tổ chuyên gia & Tổ thẩm định", "desc": "Thành lập ban bệ tổ chức chỉ định thầu", "requiredVars": ["TO_TRUONG_CHUYEN_GIA", "TO_TRUONG_THAM_DINH"]}, {"id": "cdttt_2", "code": "02.TTr-HSYC", "name": "02. Tờ trình đề nghị phê duyệt Hồ sơ yêu cầu (E-HSYC)", "desc": "Trình duyệt E-HSYC", "requiredVars": ["TEN_GOI_THAU", "TIEU_CHUAN_DANH_GIA"]}, {"id": "cdttt_3", "code": "03.BC-TD-HSYC", "name": "03. Báo cáo thẩm định Hồ sơ yêu cầu", "desc": "Tổ thẩm định kiểm tra HSYC", "requiredVars": ["KET_QUA_THAM_DINH_HSYC"]}, {"id": "cdttt_4", "code": "04.QD-PD-HSYC", "name": "04. Quyết định phê duyệt Hồ sơ yêu cầu", "desc": "Ban hành HSYC chính thức", "requiredVars": ["SO_QD_HSYC", "NGAY_BAN_HANH"]}, {"id": "cdttt_5", "code": "05.TM-HSDX", "name": "05. Thư mời nộp Hồ sơ đề xuất", "desc": "Gửi đơn vị dự kiến chỉ định", "requiredVars": ["TEN_NHA_THAU", "HAN_NOP_HSDX"]}]}, {"phaseId": "danh_gia_trao_thau", "phaseName": "Giai đoạn Đánh giá & Phê duyệt kết quả", "documents": [{"id": "cdttt_6", "code": "06.BB-M-HSDX", "name": "06. Biên bản mở Hồ sơ đề xuất", "desc": "Mở hồ sơ đề xuất", "requiredVars": ["THOI_GIAN_MO_THAU"]}, {"id": "cdttt_7", "code": "07.BC-DG-HSDX", "name": "07. Báo cáo đánh giá Hồ sơ đề xuất", "desc": "Đánh giá năng lực, kinh nghiệm, tài chính", "requiredVars": ["KET_QUA_DANH_GIA"]}, {"id": "cdttt_8", "code": "08.BB-TT", "name": "08. Biên bản thương thảo hợp đồng", "desc": "Thương thảo hoàn thiện", "requiredVars": ["GIA_THUONG_THAO"]}, {"id": "cdttt_9", "code": "09.TTr-KQLCNT", "name": "09. Tờ trình đề nghị phê duyệt Kết quả chỉ định thầu", "desc": "Trình kết quả LCNT", "requiredVars": ["GIA_TRUNG_THAU_SO"]}, {"id": "cdttt_10", "code": "10.BC-TD-KQ", "name": "10. Báo cáo thẩm định Kết quả lựa chọn nhà thầu", "desc": "Thẩm định trước khi ký duyệt", "requiredVars": ["Y_KIEN_THAM_DINH"]}, {"id": "cdttt_11", "code": "11.QD-PD-KQ", "name": "11. Quyết định phê duyệt Kết quả chỉ định thầu", "desc": "Quyết định phê duyệt chính thức", "requiredVars": ["SO_QUYET_DINH"]}, {"id": "cdttt_12", "code": "12.HD-KT", "name": "12. Hợp đồng kinh tế", "desc": "Hợp đồng kinh tế", "requiredVars": ["GIA_TRI_HOP_DONG_SO"]}]}]}, {"id": "dau_thau_rong_rai_hh_xl", "code": "DTRR", "name": "6. Đấu thầu rộng rãi qua mạng (E-HSMT Xây lắp & Mua sắm)", "badge": "Đấu Thầu Rộng Rãi", "badgeColor": "rose", "description": "Đầy đủ 23 biểu mẫu theo chuẩn Hệ thống Mạng Đấu thầu Quốc gia qua 6 giai đoạn (từ chuẩn bị đến ký HĐ).", "threshold": 100000000000, "phases": [{"phaseId": "giai_doan_1_hsmt", "phaseName": "GĐ 1: Chuẩn bị Hồ sơ mời thầu (E-HSMT)", "documents": [{"id": "dtrr_1", "code": "01.QD-TL", "name": "01. Quyết định thành lập Tổ chuyên gia và Tổ thẩm định", "desc": "Thành lập tổ chấm thầu", "requiredVars": ["TO_TRUONG_CHUYEN_GIA", "TO_TRUONG_THAM_DINH"]}, {"id": "dtrr_2", "code": "02.BB-HOP-TCG", "name": "02. Biên bản họp Tổ chuyên gia thông qua dự thảo E-HSMT", "desc": "Họp rà soát tiêu chuẩn mời thầu", "requiredVars": ["NOI_DUNG_DU_THAO"]}, {"id": "dtrr_3", "code": "03.TTr-HSMT", "name": "03. Tờ trình đề nghị thẩm định, phê duyệt E-HSMT", "desc": "Trình thẩm định E-HSMT", "requiredVars": ["TEN_GOI_THAU", "GIA_GOI_THAU"]}, {"id": "dtrr_4", "code": "04.BB-HOP-TTD", "name": "04. Biên bản họp Tổ thẩm định E-HSMT", "desc": "Họp thẩm định E-HSMT", "requiredVars": ["KET_QUA_HOP_THAM_DINH"]}, {"id": "dtrr_5", "code": "05.BC-TD-HSMT", "name": "05. Báo cáo thẩm định E-HSMT", "desc": "Báo cáo thẩm định đạt yêu cầu", "requiredVars": ["KET_LUAN_THAM_DINH"]}, {"id": "dtrr_6", "code": "06.QD-PD-HSMT", "name": "06. Quyết định phê duyệt E-HSMT", "desc": "Phê duyệt để đăng tải mạng", "requiredVars": ["SO_QD_HSMT", "NGAY_KY"]}]}, {"phaseId": "giai_doan_2_to_chuc", "phaseName": "GĐ 2: Tổ chức Lựa chọn nhà thầu & Mở thầu", "documents": [{"id": "dtrr_7", "code": "07.TB-MT", "name": "07. Thông báo mời thầu (E-TBMT)", "desc": "Thông báo phát hành hồ sơ mời thầu", "requiredVars": ["SO_E_TBMT", "THOI_DIEM_DONG_THAU"]}, {"id": "dtrr_8", "code": "08.VB-LAM-RO", "name": "08. Văn bản làm rõ E-HSMT (nếu có)", "desc": "Giải đáp thắc mắc của nhà thầu", "requiredVars": ["NOI_DUNG_LAM_RO"]}, {"id": "dtrr_9", "code": "09.QD-SUA-DOI", "name": "09. Quyết định sửa đổi E-HSMT (nếu có)", "desc": "Điều chỉnh hồ sơ mời thầu", "requiredVars": ["NOI_DUNG_SUA_DOI"]}, {"id": "dtrr_10", "code": "10.BB-MO-THAU", "name": "10. Biên bản mở thầu điện tử", "desc": "Trích xuất danh sách nhà thầu dự thầu", "requiredVars": ["DANH_SACH_NHA_THAU_DU_THAU"]}]}, {"phaseId": "giai_doan_3_danh_gia", "phaseName": "GĐ 3: Đánh giá Hồ sơ dự thầu (E-HSDT)", "documents": [{"id": "dtrr_11", "code": "11.BB-HOP-PC", "name": "11. Biên bản họp Tổ chuyên gia phân công nhiệm vụ", "desc": "Phân công tổ viên chấm điểm", "requiredVars": ["PHAN_CONG_CHAM_THAU"]}, {"id": "dtrr_12", "code": "12.VB-LR-HSDT", "name": "12. Văn bản yêu cầu làm rõ E-HSDT (nếu có)", "desc": "Làm rõ hồ sơ dự thầu", "requiredVars": ["YEU_CAU_LAM_RO_HSDT"]}, {"id": "dtrr_13", "code": "13.BB-HOP-KQ", "name": "13. Biên bản họp Tổ chuyên gia thông qua kết quả chấm thầu", "desc": "Thống nhất xếp hạng nhà thầu", "requiredVars": ["XEP_HANG_NHA_THAU"]}, {"id": "dtrr_14", "code": "14.BC-DG-HSDT", "name": "14. Báo cáo đánh giá Hồ sơ dự thầu (E-HSDT)", "desc": "Báo cáo chấm thầu chính thức", "requiredVars": ["NHA_THAU_XEP_HANG_1"]}]}, {"phaseId": "giai_doan_4_thuong_thao", "phaseName": "GĐ 4: Thương thảo và Hoàn thiện hợp đồng", "documents": [{"id": "dtrr_15", "code": "15.GM-TT", "name": "15. Văn bản mời nhà thầu xếp hạng nhất vào thương thảo", "desc": "Mời thương thảo", "requiredVars": ["TEN_NHA_THAU_HANG_1", "LICH_THUONG_THAO"]}, {"id": "dtrr_16", "code": "16.BB-TT", "name": "16. Biên bản thương thảo hợp đồng", "desc": "Thương thảo các điều khoản", "requiredVars": ["GIA_THUONG_THAO_CUOI_CUNG"]}, {"id": "dtrr_17", "code": "17.BB-HT", "name": "17. Biên bản hoàn thiện hợp đồng", "desc": "Rà soát điều kiện hợp đồng", "requiredVars": ["GIA_TRI_HOP_DONG_THONG_NHAT"]}]}, {"phaseId": "giai_doan_5_phe_duyet", "phaseName": "GĐ 5: Thẩm định và Phê duyệt Kết quả LCNT", "documents": [{"id": "dtrr_18", "code": "18.TTr-KQLCNT", "name": "18. Tờ trình đề nghị thẩm định, phê duyệt Kết quả LCNT", "desc": "Trình phê duyệt trúng thầu", "requiredVars": ["TEN_DON_VI_TRUNG_THAU", "GIA_TRUNG_THAU"]}, {"id": "dtrr_19", "code": "19.BB-HOP-TTD", "name": "19. Biên bản họp Tổ thẩm định Kết quả LCNT", "desc": "Họp thẩm định kết quả", "requiredVars": ["Y_KIEN_TO_THAM_DINH"]}, {"id": "dtrr_20", "code": "20.BC-TD-KQ", "name": "20. Báo cáo thẩm định Kết quả LCNT", "desc": "Báo cáo thẩm định", "requiredVars": ["KET_LUAN_THAM_DINH_KQLCNT"]}, {"id": "dtrr_21", "code": "21.QD-PD-KQ", "name": "21. Quyết định phê duyệt Kết quả lựa chọn nhà thầu", "desc": "Quyết định phê duyệt trúng thầu chính thức", "requiredVars": ["SO_QUYET_DINH", "GIA_TRUNG_THAU_SO"]}]}, {"phaseId": "giai_doan_6_hop_dong", "phaseName": "GĐ 6: Công khai Kết quả & Ký kết Hợp đồng", "documents": [{"id": "dtrr_22", "code": "22.TB-KQ", "name": "22. Thông báo Kết quả lựa chọn nhà thầu", "desc": "Đăng tải kết quả trên mạng đấu thầu", "requiredVars": ["TEN_NHA_THAU_TRUNG_THAU"]}, {"id": "dtrr_23", "code": "23.HD-KT", "name": "23. Hợp đồng kinh tế chính thức (kèm phụ lục)", "desc": "Hợp đồng kinh tế xây lắp/mua sắm", "requiredVars": ["GIA_TRI_HOP_DONG", "BAO_DAM_THUC_HIEN_HD"]}]}]}]};
     const DEFAULT_PROCUREMENT_MATRIX = JSON.parse(JSON.stringify({"system": "Hệ thống Quản lý & Tự động xuất Hồ sơ Mua sắm, Xây lắp", "version": "3.0", "legalBases": ["Luật Đấu thầu số 22/2023/QH15 ngày 23/06/2023", "Nghị định số 24/2024/NĐ-CP ngày 27/02/2024 của Chính phủ", "Nghị định số 30/2020/NĐ-CP ngày 05/03/2020 về công tác văn thư"], "procurementTypes": [{"id": "duoi_50_trieu", "code": "D50", "name": "1. Mua sắm siêu rút gọn (Dưới 50 triệu)", "badge": "< 50 triệu", "badgeColor": "emerald", "description": "Áp dụng mua sắm tài sản, thiết bị, sửa chữa thường xuyên dưới 50 triệu đồng theo dự toán nội bộ.", "threshold": 50000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "d50_1", "code": "01.TTr-MS", "name": "01. Tờ trình phê duyệt chủ trương và dự toán", "desc": "Tờ trình đơn vị đề xuất mua sắm hàng hóa / sửa chữa", "requiredVars": ["TEN_DON_VI", "SO_TO_TRINH", "NGAY_TO_TRINH", "TEN_HANG_MUC", "LY_DO_MUA_SAM", "TONG_MUC_DAU_TU", "NGUON_VON", "TRUONG_DON_VI"]}, {"id": "d50_2", "code": "02.BC-MS", "name": "02. Báo cáo thẩm định & phê duyệt mua sắm", "desc": "Báo cáo phê duyệt kết quả mua sắm dưới 50 triệu", "requiredVars": ["TEN_DON_VI", "SO_BAO_CAO", "NGAY_BAO_CAO", "TEN_HANG_MUC", "TEN_NHA_THAU", "MA_SO_THUE", "GIA_TRI_MUA_SAM", "NGUOI_PHE_DUYET"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Ký kết & Nghiệm thu", "documents": [{"id": "d50_3", "code": "03.HD-KT", "name": "03. Hợp đồng kinh tế / Đơn đặt hàng", "desc": "Hợp đồng mua bán hoặc sửa chữa", "requiredVars": ["TEN_DON_VI", "DAI_DIEN_BEN_A", "TEN_NHA_THAU", "DAI_DIEN_BEN_B", "GIA_TRI_HOP_DONG", "THOI_GIAN_THUC_HIEN"]}, {"id": "d50_4", "code": "04.BB-NT", "name": "04. Biên bản nghiệm thu bàn giao và thanh lý", "desc": "Biên bản bàn giao thiết bị / hoàn thành sửa chữa", "requiredVars": ["TEN_DON_VI", "TEN_NHA_THAU", "NGAY_NGHIEM_THU", "NOI_DUNG_CONG_VIEC", "GIA_TRI_QUYET_TOAN"]}]}]}, {"id": "duoi_100_trieu", "code": "D100", "name": "2. Mua sắm thường xuyên 50tr - 100tr (Khoản 4 Điều 23)", "badge": "50tr - 100tr", "badgeColor": "teal", "description": "Áp dụng chỉ định thầu siêu nhỏ không qua mạng theo Khoản 4 Điều 23 Luật Đấu thầu 2023.", "threshold": 100000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "d100_1", "code": "01.TTr-KHLCNT", "name": "01. Tờ trình phê duyệt Kế hoạch LCNT", "desc": "Tờ trình phê duyệt KHLCNT gói mua sắm thường xuyên", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_GOI_THAU", "GIA_GOI_THAU", "HINH_THUC_LCNT", "NGUOI_TRINH"]}, {"id": "d100_2", "code": "02.QD-KHLCNT", "name": "02. Quyết định phê duyệt Kế hoạch LCNT", "desc": "Quyết định phê duyệt của Người có thẩm quyền", "requiredVars": ["TEN_CHU_DAU_TU", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "TEN_GOI_THAU", "NGUOI_KY_CDT"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Ký kết & Thanh lý", "documents": [{"id": "d100_3", "code": "03.BB-TT", "name": "03. Biên bản thương thảo hoàn thiện đơn hàng", "desc": "Biên bản thống nhất giá và tiến độ giao hàng", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU", "GIA_THUONG_THAO", "THOI_GIAN_GIAO_HANG"]}, {"id": "d100_4", "code": "04.HD-KT", "name": "04. Hợp đồng kinh tế và biên bản giao nhận", "desc": "Hợp đồng kinh tế trọn gói", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG", "KHO_BAC_NHA_NUOC"]}]}]}, {"id": "chao_gia_han_che", "code": "CGHC", "name": "3. Chào giá cạnh tranh hạn chế (Nội bộ)", "badge": "Chào giá NB", "badgeColor": "cyan", "description": "Gửi thư mời chào giá đến ít nhất 3 nhà thầu có năng lực để so sánh giá cạnh tranh.", "threshold": 500000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "cghc_1", "code": "01.TTr-CT", "name": "01. Tờ trình phê duyệt chủ trương chào giá", "desc": "Tờ trình chủ trương mua sắm cạnh tranh", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_GOI_THAU", "GIA_GOI_THAU"]}, {"id": "cghc_2", "code": "02.BC-MS", "name": "02. Báo cáo đề xuất phương án chào giá hạn chế", "desc": "Đề xuất danh sách ít nhất 3 nhà thầu", "requiredVars": ["TEN_CHU_DAU_TU", "DANH_SACH_3_NHA_THAU"]}, {"id": "cghc_3", "code": "03.TB-CG", "name": "03. Thư mời chào giá kèm bảng yêu cầu kỹ thuật", "desc": "Gửi các nhà thầu nộp thư báo giá", "requiredVars": ["TEN_NHA_THAU", "HAN_NOP_BAO_GIA", "YEU_CAU_KY_THUAT"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Đánh giá & Trao thầu", "documents": [{"id": "cghc_4", "code": "04.BB-MT", "name": "04. Biên bản mở thư chào giá", "desc": "Biên bản mở niêm phong các báo giá", "requiredVars": ["THOI_GIAN_MO_THAU", "DANH_SACH_GIA_CHAO"]}, {"id": "cghc_5", "code": "05.BB-DG", "name": "05. Biên bản họp đánh giá so sánh báo giá", "desc": "So sánh kỹ thuật và đơn giá", "requiredVars": ["TO_CHUYEN_GIA", "DON_VI_GIA_THAP_NHAT"]}, {"id": "cghc_6", "code": "06.BB-TT", "name": "06. Biên bản thương thảo hợp đồng", "desc": "Thương thảo với đơn vị có giá tốt nhất", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_THUONG_THAO"]}, {"id": "cghc_7", "code": "07.BC-DG", "name": "07. Báo cáo đánh giá kết quả chào giá", "desc": "Báo cáo trình lãnh đạo phê duyệt", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_DE_NGHI"]}, {"id": "cghc_8", "code": "08.TB-KQ", "name": "08. Thông báo kết quả chào giá", "desc": "Thông báo gửi các đơn vị tham gia", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_TRUNG_THAU"]}, {"id": "cghc_9", "code": "09.HD-KT", "name": "09. Hợp đồng kinh tế", "desc": "Hợp đồng kinh tế ký kết", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU_TRUNG", "GIA_TRI_HOP_DONG"]}]}]}, {"id": "chi_dinh_thau_rut_gon", "code": "CDTRG", "name": "4. Chỉ định thầu rút gọn (Tư vấn < 500tr; XL/HH < 1 tỷ)", "badge": "CĐT Rút Gọn", "badgeColor": "emerald", "description": "Quy trình chuẩn theo Điều 78 Nghị định 24/2024/NĐ-CP (Tư vấn, Xây lắp, Hàng hóa).", "threshold": 1000000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "cdtrg_1", "code": "01.TTr-KHLCNT", "name": "01. Tờ trình phê duyệt Kế hoạch LCNT", "desc": "Trình cấp thẩm quyền phê duyệt KHLCNT", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_DU_AN", "TEN_GOI_THAU", "GIA_GOI_THAU_SO"]}, {"id": "cdtrg_2", "code": "02.QD-KHLCNT", "name": "02. Quyết định phê duyệt Kế hoạch LCNT", "desc": "Quyết định phê duyệt KHLCNT", "requiredVars": ["SO_QUYET_DINH_KHLCNT", "NGAY_QUYET_DINH", "NGUOI_KY_CDT"]}, {"id": "cdtrg_3", "code": "03.GM-TT", "name": "03. Giấy mời tham gia hoàn thiện hợp đồng", "desc": "Gửi nhà thầu được chỉ định", "requiredVars": ["TEN_BAN_QUAN_LY_DU_AN", "TEN_NHA_THAU", "THOI_GIAN_HOP", "DIA_DIEM_HOP"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Hoàn thiện & Phê duyệt", "documents": [{"id": "cdtrg_4", "code": "04.BB-HT", "name": "04. Biên bản hoàn thiện hợp đồng", "desc": "Biên bản hoàn thiện điều khoản hợp đồng", "requiredVars": ["SO_BIEN_BAN_HOAN_THIEN", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "DAI_DIEN_NHA_THAU"]}, {"id": "cdtrg_5", "code": "05.TTr-KQLCNT", "name": "05. Tờ trình phê duyệt kết quả chỉ định thầu", "desc": "Trình phê duyệt chỉ định thầu", "requiredVars": ["SO_TO_TRINH", "CO_QUAN_TRINH", "TRUONG_BAN_DHDA", "TEN_NHA_THAU"]}, {"id": "cdtrg_6", "code": "06.QD-KQLCNT", "name": "06. Quyết định phê duyệt kết quả chỉ định thầu", "desc": "Quyết định phê duyệt trúng thầu", "requiredVars": ["SO_QUYET_DINH", "NGUOI_KY_CDT", "GIA_TRI_HOP_DONG_SO", "THOI_GIAN_THUC_HIEN"]}, {"id": "cdtrg_7", "code": "07.HD-KT", "name": "07. Hợp đồng kinh tế", "desc": "Hợp đồng kinh tế chính thức", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO", "KHO_BAC_NHA_NUOC"]}]}]}, {"id": "chi_dinh_thau_thong_thuong", "code": "CDTTT", "name": "5. Chỉ định thầu quy trình thông thường (HSYC & HSĐX)", "badge": "CĐT Thông Thường", "badgeColor": "indigo", "description": "Áp dụng gói thầu cần lập Hồ sơ yêu cầu, đánh giá Hồ sơ đề xuất và thẩm định kết quả.", "threshold": 5000000000, "phases": [{"phaseId": "chuan_bi_hsyc", "phaseName": "Giai đoạn Chuẩn bị Hồ sơ yêu cầu", "documents": [{"id": "cdttt_1", "code": "01.QD-TCG", "name": "01. Quyết định thành lập Tổ chuyên gia & Tổ thẩm định", "desc": "Thành lập ban bệ tổ chức chỉ định thầu", "requiredVars": ["TO_TRUONG_CHUYEN_GIA", "TO_TRUONG_THAM_DINH"]}, {"id": "cdttt_2", "code": "02.TTr-HSYC", "name": "02. Tờ trình đề nghị phê duyệt Hồ sơ yêu cầu (E-HSYC)", "desc": "Trình duyệt E-HSYC", "requiredVars": ["TEN_GOI_THAU", "TIEU_CHUAN_DANH_GIA"]}, {"id": "cdttt_3", "code": "03.BC-TD-HSYC", "name": "03. Báo cáo thẩm định Hồ sơ yêu cầu", "desc": "Tổ thẩm định kiểm tra HSYC", "requiredVars": ["KET_QUA_THAM_DINH_HSYC"]}, {"id": "cdttt_4", "code": "04.QD-PD-HSYC", "name": "04. Quyết định phê duyệt Hồ sơ yêu cầu", "desc": "Ban hành HSYC chính thức", "requiredVars": ["SO_QD_HSYC", "NGAY_BAN_HANH"]}, {"id": "cdttt_5", "code": "05.TM-HSDX", "name": "05. Thư mời nộp Hồ sơ đề xuất", "desc": "Gửi đơn vị dự kiến chỉ định", "requiredVars": ["TEN_NHA_THAU", "HAN_NOP_HSDX"]}]}, {"phaseId": "danh_gia_trao_thau", "phaseName": "Giai đoạn Đánh giá & Phê duyệt kết quả", "documents": [{"id": "cdttt_6", "code": "06.BB-M-HSDX", "name": "06. Biên bản mở Hồ sơ đề xuất", "desc": "Mở hồ sơ đề xuất", "requiredVars": ["THOI_GIAN_MO_THAU"]}, {"id": "cdttt_7", "code": "07.BC-DG-HSDX", "name": "07. Báo cáo đánh giá Hồ sơ đề xuất", "desc": "Đánh giá năng lực, kinh nghiệm, tài chính", "requiredVars": ["KET_QUA_DANH_GIA"]}, {"id": "cdttt_8", "code": "08.BB-TT", "name": "08. Biên bản thương thảo hợp đồng", "desc": "Thương thảo hoàn thiện", "requiredVars": ["GIA_THUONG_THAO"]}, {"id": "cdttt_9", "code": "09.TTr-KQLCNT", "name": "09. Tờ trình đề nghị phê duyệt Kết quả chỉ định thầu", "desc": "Trình kết quả LCNT", "requiredVars": ["GIA_TRUNG_THAU_SO"]}, {"id": "cdttt_10", "code": "10.BC-TD-KQ", "name": "10. Báo cáo thẩm định Kết quả lựa chọn nhà thầu", "desc": "Thẩm định trước khi ký duyệt", "requiredVars": ["Y_KIEN_THAM_DINH"]}, {"id": "cdttt_11", "code": "11.QD-PD-KQ", "name": "11. Quyết định phê duyệt Kết quả chỉ định thầu", "desc": "Quyết định phê duyệt chính thức", "requiredVars": ["SO_QUYET_DINH"]}, {"id": "cdttt_12", "code": "12.HD-KT", "name": "12. Hợp đồng kinh tế", "desc": "Hợp đồng kinh tế", "requiredVars": ["GIA_TRI_HOP_DONG_SO"]}]}]}, {"id": "dau_thau_rong_rai_hh_xl", "code": "DTRR", "name": "6. Đấu thầu rộng rãi qua mạng (E-HSMT Xây lắp & Mua sắm)", "badge": "Đấu Thầu Rộng Rãi", "badgeColor": "rose", "description": "Đầy đủ 23 biểu mẫu theo chuẩn Hệ thống Mạng Đấu thầu Quốc gia qua 6 giai đoạn (từ chuẩn bị đến ký HĐ).", "threshold": 100000000000, "phases": [{"phaseId": "giai_doan_1_hsmt", "phaseName": "GĐ 1: Chuẩn bị Hồ sơ mời thầu (E-HSMT)", "documents": [{"id": "dtrr_1", "code": "01.QD-TL", "name": "01. Quyết định thành lập Tổ chuyên gia và Tổ thẩm định", "desc": "Thành lập tổ chấm thầu", "requiredVars": ["TO_TRUONG_CHUYEN_GIA", "TO_TRUONG_THAM_DINH"]}, {"id": "dtrr_2", "code": "02.BB-HOP-TCG", "name": "02. Biên bản họp Tổ chuyên gia thông qua dự thảo E-HSMT", "desc": "Họp rà soát tiêu chuẩn mời thầu", "requiredVars": ["NOI_DUNG_DU_THAO"]}, {"id": "dtrr_3", "code": "03.TTr-HSMT", "name": "03. Tờ trình đề nghị thẩm định, phê duyệt E-HSMT", "desc": "Trình thẩm định E-HSMT", "requiredVars": ["TEN_GOI_THAU", "GIA_GOI_THAU"]}, {"id": "dtrr_4", "code": "04.BB-HOP-TTD", "name": "04. Biên bản họp Tổ thẩm định E-HSMT", "desc": "Họp thẩm định E-HSMT", "requiredVars": ["KET_QUA_HOP_THAM_DINH"]}, {"id": "dtrr_5", "code": "05.BC-TD-HSMT", "name": "05. Báo cáo thẩm định E-HSMT", "desc": "Báo cáo thẩm định đạt yêu cầu", "requiredVars": ["KET_LUAN_THAM_DINH"]}, {"id": "dtrr_6", "code": "06.QD-PD-HSMT", "name": "06. Quyết định phê duyệt E-HSMT", "desc": "Phê duyệt để đăng tải mạng", "requiredVars": ["SO_QD_HSMT", "NGAY_KY"]}]}, {"phaseId": "giai_doan_2_to_chuc", "phaseName": "GĐ 2: Tổ chức Lựa chọn nhà thầu & Mở thầu", "documents": [{"id": "dtrr_7", "code": "07.TB-MT", "name": "07. Thông báo mời thầu (E-TBMT)", "desc": "Thông báo phát hành hồ sơ mời thầu", "requiredVars": ["SO_E_TBMT", "THOI_DIEM_DONG_THAU"]}, {"id": "dtrr_8", "code": "08.VB-LAM-RO", "name": "08. Văn bản làm rõ E-HSMT (nếu có)", "desc": "Giải đáp thắc mắc của nhà thầu", "requiredVars": ["NOI_DUNG_LAM_RO"]}, {"id": "dtrr_9", "code": "09.QD-SUA-DOI", "name": "09. Quyết định sửa đổi E-HSMT (nếu có)", "desc": "Điều chỉnh hồ sơ mời thầu", "requiredVars": ["NOI_DUNG_SUA_DOI"]}, {"id": "dtrr_10", "code": "10.BB-MO-THAU", "name": "10. Biên bản mở thầu điện tử", "desc": "Trích xuất danh sách nhà thầu dự thầu", "requiredVars": ["DANH_SACH_NHA_THAU_DU_THAU"]}]}, {"phaseId": "giai_doan_3_danh_gia", "phaseName": "GĐ 3: Đánh giá Hồ sơ dự thầu (E-HSDT)", "documents": [{"id": "dtrr_11", "code": "11.BB-HOP-PC", "name": "11. Biên bản họp Tổ chuyên gia phân công nhiệm vụ", "desc": "Phân công tổ viên chấm điểm", "requiredVars": ["PHAN_CONG_CHAM_THAU"]}, {"id": "dtrr_12", "code": "12.VB-LR-HSDT", "name": "12. Văn bản yêu cầu làm rõ E-HSDT (nếu có)", "desc": "Làm rõ hồ sơ dự thầu", "requiredVars": ["YEU_CAU_LAM_RO_HSDT"]}, {"id": "dtrr_13", "code": "13.BB-HOP-KQ", "name": "13. Biên bản họp Tổ chuyên gia thông qua kết quả chấm thầu", "desc": "Thống nhất xếp hạng nhà thầu", "requiredVars": ["XEP_HANG_NHA_THAU"]}, {"id": "dtrr_14", "code": "14.BC-DG-HSDT", "name": "14. Báo cáo đánh giá Hồ sơ dự thầu (E-HSDT)", "desc": "Báo cáo chấm thầu chính thức", "requiredVars": ["NHA_THAU_XEP_HANG_1"]}]}, {"phaseId": "giai_doan_4_thuong_thao", "phaseName": "GĐ 4: Thương thảo và Hoàn thiện hợp đồng", "documents": [{"id": "dtrr_15", "code": "15.GM-TT", "name": "15. Văn bản mời nhà thầu xếp hạng nhất vào thương thảo", "desc": "Mời thương thảo", "requiredVars": ["TEN_NHA_THAU_HANG_1", "LICH_THUONG_THAO"]}, {"id": "dtrr_16", "code": "16.BB-TT", "name": "16. Biên bản thương thảo hợp đồng", "desc": "Thương thảo các điều khoản", "requiredVars": ["GIA_THUONG_THAO_CUOI_CUNG"]}, {"id": "dtrr_17", "code": "17.BB-HT", "name": "17. Biên bản hoàn thiện hợp đồng", "desc": "Rà soát điều kiện hợp đồng", "requiredVars": ["GIA_TRI_HOP_DONG_THONG_NHAT"]}]}, {"phaseId": "giai_doan_5_phe_duyet", "phaseName": "GĐ 5: Thẩm định và Phê duyệt Kết quả LCNT", "documents": [{"id": "dtrr_18", "code": "18.TTr-KQLCNT", "name": "18. Tờ trình đề nghị thẩm định, phê duyệt Kết quả LCNT", "desc": "Trình phê duyệt trúng thầu", "requiredVars": ["TEN_DON_VI_TRUNG_THAU", "GIA_TRUNG_THAU"]}, {"id": "dtrr_19", "code": "19.BB-HOP-TTD", "name": "19. Biên bản họp Tổ thẩm định Kết quả LCNT", "desc": "Họp thẩm định kết quả", "requiredVars": ["Y_KIEN_TO_THAM_DINH"]}, {"id": "dtrr_20", "code": "20.BC-TD-KQ", "name": "20. Báo cáo thẩm định Kết quả LCNT", "desc": "Báo cáo thẩm định", "requiredVars": ["KET_LUAN_THAM_DINH_KQLCNT"]}, {"id": "dtrr_21", "code": "21.QD-PD-KQ", "name": "21. Quyết định phê duyệt Kết quả lựa chọn nhà thầu", "desc": "Quyết định phê duyệt trúng thầu chính thức", "requiredVars": ["SO_QUYET_DINH", "GIA_TRUNG_THAU_SO"]}]}, {"phaseId": "giai_doan_6_hop_dong", "phaseName": "GĐ 6: Công khai Kết quả & Ký kết Hợp đồng", "documents": [{"id": "dtrr_22", "code": "22.TB-KQ", "name": "22. Thông báo Kết quả lựa chọn nhà thầu", "desc": "Đăng tải kết quả trên mạng đấu thầu", "requiredVars": ["TEN_NHA_THAU_TRUNG_THAU"]}, {"id": "dtrr_23", "code": "23.HD-KT", "name": "23. Hợp đồng kinh tế chính thức (kèm phụ lục)", "desc": "Hợp đồng kinh tế xây lắp/mua sắm", "requiredVars": ["GIA_TRI_HOP_DONG", "BAO_DAM_THUC_HIEN_HD"]}]}]}]}));
 
+    // -------------------------------------------------------------
+    // Implementation Matrix (Quy trình Triển khai dự án)
+    // -------------------------------------------------------------
+    const DEFAULT_IMPLEMENTATION_MATRIX = {
+        "version": "1.0",
+        "implementationTypes": [
+            {
+                "id": "trien_khai_sua_chua",
+                "name": "1. Triển khai hồ sơ sửa chữa",
+                "code": "TK-SC",
+                "description": "Áp dụng cho các dự án sửa chữa, bảo trì, khắc phục hư hỏng",
+                "documents": [
+                    { "id": "tk_sc_1", "code": "110.QĐ", "name": "QĐ giao kế hoạch", "signer": "TCT", "duration": 2, "dateFormula": { "type": "manual" }, "defaultDate": "2026-01-12", "docNo": "110/QĐ-TCTCHKVN", "templateFile": "" },
+                    { "id": "tk_sc_2", "code": "BB-KT", "name": "Biên bản kiểm tra đột xuất", "signer": "Các phòng VCA", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-04-04", "docNo": "", "templateFile": "" },
+                    { "id": "tk_sc_3", "code": "01.TTr", "name": "[TRIỂN KHAI] Tờ trình", "signer": "PKTHT", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-07-21", "docNo": "01/ĐKNCC/TTr-KTHT", "templateFile": "templates/01_To_trinh_KHLCNT.docx" },
+                    { "id": "tk_sc_4", "code": "02.TTr", "name": "[TL TỔ THẨM ĐỊNH] Tờ Trình", "signer": "PKTHT", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "2026-07-22", "docNo": "02/ĐKNCC/TTr-KTHT", "templateFile": "" },
+                    { "id": "tk_sc_5", "code": "930a.QĐ", "name": "[TL TỔ THẨM ĐỊNH] Quyết định", "signer": "GĐ", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-07-28", "docNo": "930a/QĐ-CHKQTCT", "templateFile": "templates/02_Quyet_dinh_KHLCNT.docx" },
+                    { "id": "tk_sc_6", "code": "03.BC", "name": "BÁO CÁO BẢO TRÌ", "signer": "PKTHT", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "2026-07-29", "docNo": "03/BCTHBT-KTHT", "templateFile": "" },
+                    { "id": "tk_sc_7", "code": "QĐ-DT", "name": "Phê duyệt dự toán G1", "signer": "GĐ", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "", "docNo": "", "templateFile": "" },
+                    { "id": "tk_sc_8", "code": "04.TTr", "name": "[KH LCNT] Tờ trình", "signer": "PKTHT", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-07-29", "docNo": "04/ĐKNCC/TTr-KTHT", "templateFile": "templates/01_To_trinh_KHLCNT.docx" },
+                    { "id": "tk_sc_9", "code": "BB-TĐ", "name": "[KH LCNT] BB Thẩm định", "signer": "Tổ thẩm định", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-07-30", "docNo": "", "templateFile": "templates/2_Bien_ban_hoan_thien_hop_dong.docx" },
+                    { "id": "tk_sc_10", "code": "05.BC", "name": "[KH LCNT] BC Thẩm định", "signer": "Tổ thẩm định", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-07-30", "docNo": "05/BC-HĐTĐ-KQTĐ", "templateFile": "" },
+                    { "id": "tk_sc_11", "code": "968.QĐ", "name": "[KH LCNT] QĐ Phê Duyệt", "signer": "GĐ", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "2026-07-31", "docNo": "968/QĐ-CHKQTCT", "templateFile": "templates/02_Quyet_dinh_KHLCNT.docx" }
+                ]
+            },
+            {
+                "id": "trien_khai_mua_sam",
+                "name": "2. Triển khai hồ sơ mua sắm",
+                "code": "TK-MS",
+                "description": "Áp dụng cho mua sắm hàng hóa, tài sản, trang thiết bị thường xuyên",
+                "documents": [
+                    { "id": "tk_ms_1", "code": "01.DX-NS", "name": "Báo cáo đề xuất nhu cầu mua sắm", "signer": "Đơn vị sử dụng", "duration": 2, "dateFormula": { "type": "manual" }, "defaultDate": "2026-01-12", "docNo": "01/BC-DXMS", "templateFile": "" },
+                    { "id": "tk_ms_2", "code": "02.BB-HOP", "name": "Biên bản họp thống nhất danh mục mua sắm", "signer": "Hội đồng mua sắm", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "02/BB-HOP", "templateFile": "templates/2_Bien_ban_hoan_thien_hop_dong.docx" },
+                    { "id": "tk_ms_3", "code": "03.TM-BG", "name": "Thư mời báo giá / Biên bản thu thập 03 báo giá", "signer": "Tổ mua sắm", "duration": 3, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "03/TM-BG", "templateFile": "templates/1_Giay_moi_tham_gia.docx" },
+                    { "id": "tk_ms_4", "code": "04.TTr-CTMS", "name": "Tờ trình phê duyệt chủ trương và dự toán mua sắm", "signer": "Phòng Kế hoạch", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "04/TTr-CTMS", "templateFile": "templates/01_To_trinh_KHLCNT.docx" },
+                    { "id": "tk_ms_5", "code": "05.QĐ-CTMS", "name": "Quyết định phê duyệt chủ trương mua sắm", "signer": "Lãnh đạo đơn vị", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "05/QĐ-CTMS", "templateFile": "templates/02_Quyet_dinh_KHLCNT.docx" },
+                    { "id": "tk_ms_6", "code": "06.TTr-KHLCNT", "name": "Tờ trình đề nghị phê duyệt Kế hoạch LCNT", "signer": "Tổ mua sắm", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "06/TTr-KHLCNT", "templateFile": "templates/01_To_trinh_KHLCNT.docx" },
+                    { "id": "tk_ms_7", "code": "07.QĐ-KHLCNT", "name": "Quyết định phê duyệt Kế hoạch LCNT mua sắm", "signer": "Cấp thẩm quyền", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "07/QĐ-KHLCNT", "templateFile": "templates/02_Quyet_dinh_KHLCNT.docx" }
+                ]
+            },
+            {
+                "id": "trien_khai_dau_tu",
+                "name": "3. Triển khai hồ sơ đầu tư",
+                "code": "TK-ĐT",
+                "description": "Áp dụng cho dự án đầu tư xây dựng, cải tạo nâng cấp quy mô lớn",
+                "documents": [
+                    { "id": "tk_dt_1", "code": "01.TTr-CTDT", "name": "Tờ trình đề xuất chủ trương đầu tư", "signer": "Ban QLDA", "duration": 3, "dateFormula": { "type": "manual" }, "defaultDate": "2026-01-12", "docNo": "01/TTr-CTDT", "templateFile": "templates/01_To_trinh_KHLCNT.docx" },
+                    { "id": "tk_dt_2", "code": "02.QĐ-CTDT", "name": "Quyết định phê duyệt chủ trương đầu tư", "signer": "Cấp quyết định ĐT", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "02/QĐ-CTDT", "templateFile": "templates/02_Quyet_dinh_KHLCNT.docx" },
+                    { "id": "tk_dt_3", "code": "03.NV-KS", "name": "Đề cương nhiệm vụ khảo sát, lập Báo cáo KT-KT", "signer": "Đơn vị tư vấn", "duration": 5, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "03/NV-KS", "templateFile": "" },
+                    { "id": "tk_dt_4", "code": "04.TTr-BCKTKT", "name": "Tờ trình thẩm định Báo cáo KT-KT", "signer": "Ban QLDA", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "04/TTr-BCKTKT", "templateFile": "" },
+                    { "id": "tk_dt_5", "code": "05.BC-TT", "name": "Báo cáo kết quả thẩm tra Báo cáo KT-KT", "signer": "Đơn vị thẩm tra", "duration": 5, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "05/BC-TT", "templateFile": "" },
+                    { "id": "tk_dt_6", "code": "06.QĐ-PD-DA", "name": "Quyết định phê duyệt dự án đầu tư xây dựng", "signer": "Người có thẩm quyền", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "06/QĐ-PDDA", "templateFile": "templates/02_Quyet_dinh_KHLCNT.docx" },
+                    { "id": "tk_dt_7", "code": "07.TTr-KHLCNT", "name": "Tờ trình phê duyệt Kế hoạch LCNT tổng thể", "signer": "Chủ đầu tư", "duration": 3, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "07/TTr-KHLCNT", "templateFile": "templates/01_To_trinh_KHLCNT.docx" },
+                    { "id": "tk_dt_8", "code": "08.QĐ-KHLCNT", "name": "Quyết định phê duyệt Kế hoạch LCNT tổng thể", "signer": "Cấp quyết định ĐT", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "08/QĐ-KHLCNT", "templateFile": "templates/02_Quyet_dinh_KHLCNT.docx" }
+                ]
+            }
+        ]
+    };
+
+    let IMPLEMENTATION_MATRIX = JSON.parse(JSON.stringify(DEFAULT_IMPLEMENTATION_MATRIX));
+
+    try {
+        const savedCustomImpl = localStorage.getItem("ho_so_tu_dong_implementation_matrix");
+        if (savedCustomImpl) {
+            const parsedImpl = JSON.parse(savedCustomImpl);
+            if (parsedImpl.implementationTypes && parsedImpl.implementationTypes.length > 0) {
+                IMPLEMENTATION_MATRIX = parsedImpl;
+            }
+        }
+    } catch (e) {
+        console.warn("Could not load custom implementation matrix:", e);
+    }
+
     // Load custom matrix config from localStorage if edited by Admin
     try {
         const savedCustomMatrix = localStorage.getItem("ho_so_tu_dong_matrix_custom");
@@ -37,6 +110,7 @@
         fundingSource: "Quỹ đầu tư phát triển TCT",
         decisionPlanNo: "110/QĐ-TCTCHKVN",
         decisionPlanDate: "2026-01-12",
+        implementationTypeId: "trien_khai_sua_chua",
         packages: [
             {
                 id: "pkg_1",
@@ -511,6 +585,88 @@
         return pt ? pt.name : "Chỉ định thầu rút gọn";
     }
 
+
+    function applyImplementationTypeToRoadmap(implTypeId, forceReset = false) {
+        if (!appState.projectRoadmap) return;
+        const rm = appState.projectRoadmap;
+        if (!implTypeId) implTypeId = rm.implementationTypeId || "trien_khai_sua_chua";
+        rm.implementationTypeId = implTypeId;
+
+        const implType = IMPLEMENTATION_MATRIX.implementationTypes.find(t => t.id === implTypeId) 
+            || IMPLEMENTATION_MATRIX.implementationTypes[0];
+        if (!implType) return;
+
+        if (!rm.timelinePhases) rm.timelinePhases = [];
+        let phase1 = rm.timelinePhases.find(p => p.id === "phase_1" || p.code === "I" || (p.title && p.title.toLowerCase().includes("triển khai")));
+
+        if (!phase1) {
+            phase1 = {
+                id: "phase_1",
+                code: "I",
+                title: `Triển khai: ${implType.name}`,
+                isPackage: false,
+                packageName: "",
+                tasks: []
+            };
+            rm.timelinePhases.unshift(phase1);
+        } else {
+            phase1.title = `Triển khai: ${implType.name}`;
+        }
+
+        const existingTasks = phase1.tasks || [];
+        if (forceReset || existingTasks.length === 0) {
+            phase1.tasks = (implType.documents || []).map((doc, idx) => ({
+                id: `task_0_${idx}`,
+                stt: `${idx + 1}`,
+                name: doc.name,
+                docNo: doc.docNo || "",
+                signer: doc.signer || "",
+                date: doc.defaultDate || "",
+                duration: doc.duration !== undefined ? doc.duration : 1,
+                note: "",
+                status: idx === 0 && doc.defaultDate ? "Đã xong" : "Đang làm",
+                dateFormula: doc.dateFormula ? JSON.parse(JSON.stringify(doc.dateFormula)) : { type: idx === 0 ? "manual" : "default" },
+                docCode: doc.code || "",
+                templateFile: doc.templateFile || "",
+                docId: doc.id
+            }));
+        } else {
+            // Sync tasks while keeping user inputs
+            const newTasks = (implType.documents || []).map((doc, idx) => {
+                const existing = existingTasks.find(et => et.docId === doc.id || et.docCode === doc.code || et.name === doc.name) || existingTasks[idx];
+                if (existing) {
+                    return {
+                        ...existing,
+                        id: existing.id || `task_0_${idx}`,
+                        stt: `${idx + 1}`,
+                        name: doc.name || existing.name,
+                        docCode: doc.code || existing.docCode || "",
+                        templateFile: doc.templateFile !== undefined ? doc.templateFile : existing.templateFile,
+                        docId: doc.id,
+                        signer: existing.signer || doc.signer || ""
+                    };
+                } else {
+                    return {
+                        id: `task_0_${idx}`,
+                        stt: `${idx + 1}`,
+                        name: doc.name,
+                        docNo: doc.docNo || "",
+                        signer: doc.signer || "",
+                        date: doc.defaultDate || "",
+                        duration: doc.duration !== undefined ? doc.duration : 1,
+                        note: "",
+                        status: "Đang làm",
+                        dateFormula: doc.dateFormula ? JSON.parse(JSON.stringify(doc.dateFormula)) : { type: "default" },
+                        docCode: doc.code || "",
+                        templateFile: doc.templateFile || "",
+                        docId: doc.id
+                    };
+                }
+            });
+            phase1.tasks = newTasks;
+        }
+    }
+
     function renderRoadmapUI() {
         if (!appState.projectRoadmap) {
             appState.projectRoadmap = JSON.parse(JSON.stringify(defaultRoadmap));
@@ -532,6 +688,39 @@
         if (rmApprover) rmApprover.value = rm.approver || "";
         if (rmFundingSource) rmFundingSource.value = rm.fundingSource || "";
         if (rmPackageCountBadge) rmPackageCountBadge.textContent = rm.packages ? rm.packages.length : 0;
+
+        if (!rm.implementationTypeId) {
+            rm.implementationTypeId = "trien_khai_sua_chua";
+        }
+
+        const rmImplSelect = document.getElementById("rmImplementationTypeSelect");
+        if (rmImplSelect) {
+            rmImplSelect.innerHTML = IMPLEMENTATION_MATRIX.implementationTypes.map(it => 
+                `<option value="${it.id}" ${it.id === rm.implementationTypeId ? "selected" : ""}>${it.name}</option>`
+            ).join("");
+
+            rmImplSelect.onchange = (e) => {
+                const newTypeId = e.target.value;
+                rm.implementationTypeId = newTypeId;
+                applyImplementationTypeToRoadmap(newTypeId, true);
+                recalculateAllTaskDates(false, true);
+                renderRoadmapUI();
+                saveState();
+                showToast(`Đã chuyển quy trình Triển khai sang: ${rmImplSelect.options[rmImplSelect.selectedIndex].text}`);
+            };
+        }
+
+        const btnConfigImplModalTop = document.getElementById("btnConfigImplModalTop");
+        if (btnConfigImplModalTop) {
+            btnConfigImplModalTop.onclick = (e) => {
+                e.preventDefault();
+                activeAdminCategory = "implementation";
+                activeAdminImplTypeId = rm.implementationTypeId || IMPLEMENTATION_MATRIX.implementationTypes[0].id;
+                renderAdminMatrixModal();
+                const m = document.getElementById("modalProcurementMatrixManager");
+                if (m) m.classList.remove("hidden");
+            };
+        }
 
         // Render Package Cards (Ultra-compact styling)
         const rmPackagesList = document.getElementById("rmPackagesList");
@@ -1203,12 +1392,24 @@
                 ? "bg-slate-800 text-white" 
                 : "bg-emerald-700 text-white";
 
+            const implOptionsHtml = IMPLEMENTATION_MATRIX.implementationTypes.map(it => 
+                `<option value="${it.id}" ${it.id === (appState.projectRoadmap.implementationTypeId || "trien_khai_sua_chua") ? "selected" : ""}>${it.name}</option>`
+            ).join("");
+
             phaseWrapper.innerHTML = `
                 <div class="bg-slate-50 hover:bg-slate-100/70 px-2 py-1 border-b border-slate-200 flex items-center justify-between cursor-pointer phase-header h-6.5 select-none transition-colors">
                     <div class="flex items-center space-x-1.5 min-w-0">
                         <span class="w-4 h-4 rounded text-[9.5px] font-bold flex items-center justify-center ${badgePhaseColor}">${phase.code || (pIdx + 1)}</span>
                         <span class="font-bold text-[11px] text-slate-800 truncate">${phase.title}</span>
-                        ${isInitPhase ? '<span class="text-[9px] bg-slate-200 text-slate-700 px-1 py-0 rounded font-medium">Toàn dự án</span>' : `<span class="text-[9px] bg-emerald-100 text-emerald-800 px-1 py-0 rounded font-medium">Gói ${selPkgIdx !== undefined && selPkgIdx >= 0 ? selPkgIdx + 1 : ''}</span>`}
+                        ${isInitPhase ? `
+                            <span class="text-[9px] bg-slate-200 text-slate-700 px-1 py-0 rounded font-medium">Toàn dự án</span>
+                            <select class="sel-phase-impl-type bg-white border border-slate-300 rounded px-1 py-0 h-5 text-[9.5px] font-bold text-slate-700 ml-1 cursor-pointer" title="Đổi quy trình triển khai cho toàn dự án" onclick="event.stopPropagation()">
+                                ${implOptionsHtml}
+                            </select>
+                            <button type="button" class="btn-config-impl-phase p-0.5 text-slate-400 hover:text-emerald-700 text-[10px]" title="Cấu hình danh mục văn bản triển khai" onclick="event.stopPropagation()">
+                                <i class="fa-solid fa-gear"></i>
+                            </button>
+                        ` : `<span class="text-[9px] bg-emerald-100 text-emerald-800 px-1 py-0 rounded font-medium">Gói ${selPkgIdx !== undefined && selPkgIdx >= 0 ? selPkgIdx + 1 : ''}</span>`}
                     </div>
                     <div class="flex items-center space-x-1.5 shrink-0">
                         <span class="text-[9.5px] font-bold px-1.5 py-0 rounded-full ${isPhaseDone ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'}">${phaseTasksDone}/${phaseTotal} việc</span>
@@ -1251,11 +1452,61 @@
                                     ? "Công thức: Phụ thuộc vào công việc mốc khác (Bấm để sửa)" 
                                     : (isManual ? "Ngày mốc cố định thủ công (Bấm để cài công thức)" : "Công thức mặc định: Tiếp nối ngày việc trước + thời gian (Bấm để sửa)");
 
+                                // Detect linked document for this task
+                                let linkedDocCode = task.docCode || "";
+                                let linkedDocName = "";
+                                let linkedDocId = task.docId || "";
+
+                                if (isInitPhase) {
+                                    const curImpl = IMPLEMENTATION_MATRIX.implementationTypes.find(t => t.id === appState.projectRoadmap.implementationTypeId) || IMPLEMENTATION_MATRIX.implementationTypes[0];
+                                    if (curImpl) {
+                                        const mDoc = (curImpl.documents || []).find(d => d.id === task.docId || d.code === task.docCode || d.name === task.name);
+                                        if (mDoc) {
+                                            linkedDocCode = mDoc.code;
+                                            linkedDocName = mDoc.name;
+                                            linkedDocId = mDoc.id;
+                                        }
+                                    }
+                                } else {
+                                    let pkgForPhase = currentPkg;
+                                    if (!pkgForPhase && selPkgIdx === -1) {
+                                        pkgForPhase = pkgs.find(p => phase.title.includes(p.name) || (phase.packageName && p.name.includes(phase.packageName))) || pkgs[0];
+                                    }
+                                    if (pkgForPhase) {
+                                        const pt = PROCUREMENT_MATRIX.procurementTypes.find(t => t.id === pkgForPhase.procurementTypeId) || PROCUREMENT_MATRIX.procurementTypes[3];
+                                        if (pt) {
+                                            const allTypeDocs = [];
+                                            (pt.phases || []).forEach(ph => (ph.documents || []).forEach(d => allTypeDocs.push(d)));
+                                            let mDoc = allTypeDocs.find(d => d.id === task.docId || (d.code && task.docCode && d.code.toLowerCase() === task.docCode.toLowerCase()));
+                                            if (!mDoc) {
+                                                mDoc = allTypeDocs.find(d => {
+                                                    const dNameClean = d.name.toLowerCase().replace(/^[0-9\.\s]+/, "");
+                                                    const tNameClean = task.name.toLowerCase().replace(/^\[.*?\]\s*/, "").replace(/^[0-9\.\s]+/, "");
+                                                    return dNameClean.includes(tNameClean) || tNameClean.includes(dNameClean) || (d.code && task.name.toLowerCase().includes(d.code.toLowerCase()));
+                                                });
+                                            }
+                                            if (mDoc) {
+                                                linkedDocCode = mDoc.code;
+                                                linkedDocName = mDoc.name;
+                                                linkedDocId = mDoc.id;
+                                            }
+                                        }
+                                    }
+                                }
+
                                 return `
                                     <tr class="hover:bg-slate-50 transition-colors h-6" data-phase-idx="${pIdx}" data-task-idx="${realTaskIdx}" data-task-id="${task.id}">
                                         <td class="py-0.5 px-1 text-center text-slate-400 font-bold text-[10px]">${task.stt || (realTaskIdx + 1)}</td>
                                         <td class="py-0.5 px-1.5 font-bold text-slate-800 text-[10.5px]">
-                                            <div class="truncate max-w-[320px]" title="${task.name}">${task.name}</div>
+                                            <div class="flex items-center gap-1.5 flex-wrap">
+                                                <span class="truncate max-w-[280px]" title="${task.name}">${task.name}</span>
+                                                ${linkedDocCode ? `
+                                                    <button type="button" class="btn-link-doc-pill px-1.5 py-0.2 bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-900 border border-blue-200 rounded font-mono text-[9px] flex items-center gap-1 cursor-pointer transition-colors shadow-2xs shrink-0" data-phase-idx="${pIdx}" data-task-idx="${realTaskIdx}" data-task-id="${task.id}" data-doc-id="${linkedDocId}" title="Văn bản liên kết: ${linkedDocName || task.name} (Bấm để sang Tab 2 soạn)">
+                                                        <i class="fa-solid fa-file-word text-blue-600 text-[8.5px]"></i>
+                                                        <span>${linkedDocCode}</span>
+                                                    </button>
+                                                ` : ''}
+                                            </div>
                                         </td>
                                         <td class="py-0.5 px-1">
                                             <input type="text" class="task-docno-input w-full bg-slate-50/50 hover:bg-white focus:bg-white border border-slate-200 hover:border-slate-300 focus:border-emerald-500 rounded px-1.5 py-0.5 font-mono text-[10px] text-slate-800 placeholder-slate-300 focus:ring-1 focus:ring-emerald-500 transition-all" value="${task.docNo || ''}" placeholder="Nhập số VB..." title="Chỉnh sửa số văn bản trực tiếp" data-p-idx="${pIdx}" data-t-idx="${realTaskIdx}" data-task-id="${task.id}">
@@ -1380,7 +1631,59 @@
                 });
             });
 
-            // Handle "Soạn VB" button
+            // Handle Navigation to Tab 2 for Document
+            const handleNavigateToDoc = (pI, tI, taskId, docId) => {
+                const p = phases[pI];
+                if (!p) return;
+                const t = taskMap[taskId] || (p.tasks || [])[tI];
+                if (!t) return;
+
+                if (p.isPackage || (!p.code || p.code !== "I" && !p.title.toLowerCase().includes("triển khai"))) {
+                    let targetPkgIdx = selPkgIdx >= 0 ? selPkgIdx : 0;
+                    const pTitle = p.title.toLowerCase();
+                    pkgs.forEach((pkg, pki) => {
+                        if (pTitle.includes(pkg.name.toLowerCase()) || pTitle.includes(`gói thầu số ${pki + 1}`) || pTitle.includes(`gói ${pki + 1}`)) {
+                            targetPkgIdx = pki;
+                        }
+                    });
+                    appState.activePackageIndex = targetPkgIdx;
+                    const curPkg = pkgs[targetPkgIdx];
+                    if (curPkg) {
+                        appState.selectedProcurementTypeId = curPkg.procurementTypeId || "chi_dinh_thau_rut_gon";
+                        const pt = PROCUREMENT_MATRIX.procurementTypes.find(tp => tp.id === appState.selectedProcurementTypeId);
+                        if (pt) {
+                            const allDocs = [];
+                            (pt.phases || []).forEach(ph => (ph.documents || []).forEach(d => allDocs.push(d)));
+                            const matched = allDocs.find(d => d.id === docId || d.id === t.docId || (d.code && t.docCode && d.code === t.docCode) || d.name === t.name);
+                            if (matched) {
+                                appState.activeDocId = matched.id;
+                            }
+                        }
+                    }
+                } else {
+                    if (docId || t.docId) {
+                        appState.activeDocId = docId || t.docId;
+                    }
+                }
+
+                switchMainTab("docs");
+                showToast(`Đã chuyển sang soạn thảo: ${t.name}`);
+            };
+
+            // Wire .btn-link-doc-pill
+            phaseWrapper.querySelectorAll(".btn-link-doc-pill").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const tr = btn.closest("tr");
+                    const pI = parseInt(tr.getAttribute("data-phase-idx"), 10);
+                    const tI = parseInt(tr.getAttribute("data-task-idx"), 10);
+                    const taskId = tr.getAttribute("data-task-id");
+                    const docId = btn.getAttribute("data-doc-id");
+                    handleNavigateToDoc(pI, tI, taskId, docId);
+                });
+            });
+
+            // Wire .btn-task-soan
             phaseWrapper.querySelectorAll(".btn-task-soan").forEach(btn => {
                 btn.addEventListener("click", (e) => {
                     e.stopPropagation();
@@ -1388,16 +1691,35 @@
                     const pI = parseInt(tr.getAttribute("data-phase-idx"), 10);
                     const tI = parseInt(tr.getAttribute("data-task-idx"), 10);
                     const taskId = tr.getAttribute("data-task-id");
-                    const t = taskMap[taskId] || phases[pI].tasks[tI];
-
-                    if (phases[pI].isPackage && currentPkg) {
-                        appState.activePackageIndex = selPkgIdx >= 0 ? selPkgIdx : 0;
-                    }
-
-                    switchMainTab("docs");
-                    showToast(`Chuyển sang soạn thảo: ${t.name}`);
+                    handleNavigateToDoc(pI, tI, taskId);
                 });
             });
+
+            // Wire Phase I Header implementation type selector and config gear
+            const selImpl = phaseWrapper.querySelector(".sel-phase-impl-type");
+            if (selImpl) {
+                selImpl.addEventListener("change", (e) => {
+                    e.stopPropagation();
+                    const newTypeId = e.target.value;
+                    appState.projectRoadmap.implementationTypeId = newTypeId;
+                    applyImplementationTypeToRoadmap(newTypeId, true);
+                    recalculateAllTaskDates(false, true);
+                    renderRoadmapUI();
+                    saveState();
+                    showToast(`Đã áp dụng quy trình: ${selImpl.options[selImpl.selectedIndex].text}`);
+                });
+            }
+            const btnCfgImpl = phaseWrapper.querySelector(".btn-config-impl-phase");
+            if (btnCfgImpl) {
+                btnCfgImpl.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    activeAdminCategory = "implementation";
+                    activeAdminImplTypeId = appState.projectRoadmap.implementationTypeId || IMPLEMENTATION_MATRIX.implementationTypes[0].id;
+                    renderAdminMatrixModal();
+                    const m = document.getElementById("modalProcurementMatrixManager");
+                    if (m) m.classList.remove("hidden");
+                });
+            }
 
             rmTimelineContainer.appendChild(phaseWrapper);
         });
@@ -3337,86 +3659,177 @@
         });
     }
 
+    let activeAdminCategory = "procurement"; // "procurement" | "implementation"
     let activeAdminTypeId = "chi_dinh_thau_rut_gon";
+    let activeAdminImplTypeId = "trien_khai_sua_chua";
 
     function getActiveAdminType() {
-        return PROCUREMENT_MATRIX.procurementTypes.find(t => t.id === activeAdminTypeId) || PROCUREMENT_MATRIX.procurementTypes[0];
+        if (activeAdminCategory === "implementation") {
+            return IMPLEMENTATION_MATRIX.implementationTypes.find(t => t.id === activeAdminImplTypeId) 
+                || IMPLEMENTATION_MATRIX.implementationTypes[0];
+        }
+        return PROCUREMENT_MATRIX.procurementTypes.find(t => t.id === activeAdminTypeId) 
+            || PROCUREMENT_MATRIX.procurementTypes[0];
     }
 
     function renderAdminMatrixModal() {
         const matrixTypesList = document.getElementById("matrixTypesList");
+        const adminTabProcurement = document.getElementById("adminTabProcurement");
+        const adminTabImplementation = document.getElementById("adminTabImplementation");
+        const adminCategoryBadge = document.getElementById("adminCategoryBadge");
+        const modalAdminMatrixTitle = document.getElementById("modalAdminMatrixTitle");
+        const modalAdminMatrixSubtitle = document.getElementById("modalAdminMatrixSubtitle");
+
+        const adminCol1ListTitle = document.getElementById("adminCol1ListTitle");
+        const adminCol2InfoTitle = document.getElementById("adminCol2InfoTitle");
+        const adminNameLabel = document.getElementById("adminNameLabel");
+        const adminLegalLabel = document.getElementById("adminLegalLabel");
+        const adminDocsListTitle = document.getElementById("adminDocsListTitle");
+
+        if (activeAdminCategory === "procurement") {
+            if (adminCol1ListTitle) adminCol1ListTitle.textContent = "Danh sách hình thức LCNT";
+            if (adminCol2InfoTitle) adminCol2InfoTitle.textContent = "Thông tin Hình thức LCNT đang chọn";
+            if (adminNameLabel) adminNameLabel.textContent = "Tên hiển thị hình thức LCNT *";
+            if (adminLegalLabel) adminLegalLabel.textContent = "Căn cứ pháp lý áp dụng";
+            if (adminDocsListTitle) adminDocsListTitle.textContent = "Thứ tự & Danh mục mẫu văn bản của hình thức này:";
+        } else {
+            if (adminCol1ListTitle) adminCol1ListTitle.textContent = "Danh sách quy trình triển khai";
+            if (adminCol2InfoTitle) adminCol2InfoTitle.textContent = "Thông tin Quy trình Triển khai đang chọn";
+            if (adminNameLabel) adminNameLabel.textContent = "Tên quy trình triển khai *";
+            if (adminLegalLabel) adminLegalLabel.textContent = "Mô tả phạm vi áp dụng";
+            if (adminDocsListTitle) adminDocsListTitle.textContent = "Thứ tự & Danh mục mẫu văn bản của quy trình này:";
+        }
+
+        if (adminTabProcurement && adminTabImplementation) {
+            if (activeAdminCategory === "procurement") {
+                adminTabProcurement.className = "px-3 py-1 rounded text-xs font-bold transition-all bg-emerald-600 text-white shadow-2xs";
+                adminTabImplementation.className = "px-3 py-1 rounded text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-200 border border-slate-300";
+                if (adminCategoryBadge) adminCategoryBadge.textContent = "Đang cấu hình: Hình thức LCNT & Gói thầu";
+                if (modalAdminMatrixTitle) modalAdminMatrixTitle.textContent = "Quản Trị Hình Thức Lựa Chọn Nhà Thầu & Mẫu Văn Bản";
+                if (modalAdminMatrixSubtitle) modalAdminMatrixSubtitle.textContent = "Chế độ Admin: Điều chỉnh tên hình thức LCNT và gán sắp xếp thứ tự mẫu văn bản quy trình";
+            } else {
+                adminTabProcurement.className = "px-3 py-1 rounded text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-200 border border-slate-300";
+                adminTabImplementation.className = "px-3 py-1 rounded text-xs font-bold transition-all bg-emerald-600 text-white shadow-2xs";
+                if (adminCategoryBadge) adminCategoryBadge.textContent = "Đang cấu hình: Quy trình Triển khai dự án";
+                if (modalAdminMatrixTitle) modalAdminMatrixTitle.textContent = "Quản Trị Quy Trình Triển Khai Dự Án & Mẫu Văn Bản";
+                if (modalAdminMatrixSubtitle) modalAdminMatrixSubtitle.textContent = "Chế độ Admin: Điều chỉnh quy trình Triển khai (sửa chữa, mua sắm, đầu tư...) và gán mẫu văn bản";
+            }
+        }
+
         if (!matrixTypesList) return;
         matrixTypesList.innerHTML = "";
 
-        // 1. Render Left Column: Procurement Types List
-        PROCUREMENT_MATRIX.procurementTypes.forEach((pt, idx) => {
-            const btn = document.createElement("button");
-            btn.type = "button";
-            const isActive = pt.id === activeAdminTypeId;
+        // 1. Render Left Column List
+        if (activeAdminCategory === "procurement") {
+            PROCUREMENT_MATRIX.procurementTypes.forEach((pt) => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                const isActive = pt.id === activeAdminTypeId;
 
-            btn.className = isActive 
-                ? "w-full text-left p-2 rounded bg-emerald-100/70 border border-emerald-400 font-bold text-emerald-950 text-[11px] shadow-2xs transition-all flex items-start justify-between"
-                : "w-full text-left p-2 rounded bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-[11px] transition-all flex items-start justify-between";
+                btn.className = isActive 
+                    ? "w-full text-left p-2 rounded bg-emerald-100/70 border border-emerald-400 font-bold text-emerald-950 text-[11px] shadow-2xs transition-all flex items-start justify-between"
+                    : "w-full text-left p-2 rounded bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-[11px] transition-all flex items-start justify-between";
 
-            const allTypeDocs = [];
-            pt.phases.forEach(ph => (ph.documents || []).forEach(d => allTypeDocs.push(d)));
-            const docsCount = allTypeDocs.length;
-            const tplsCount = allTypeDocs.filter(d => {
-                const t = d.templateFile !== undefined ? d.templateFile : (prebuiltDocxMap[d.id] || "");
-                return Boolean(t && t.trim() !== "");
-            }).length;
+                const allTypeDocs = [];
+                (pt.phases || []).forEach(ph => (ph.documents || []).forEach(d => allTypeDocs.push(d)));
+                const docsCount = allTypeDocs.length;
+                const tplsCount = allTypeDocs.filter(d => {
+                    const t = d.templateFile !== undefined ? d.templateFile : (prebuiltDocxMap[d.id] || "");
+                    return Boolean(t && t.trim() !== "");
+                }).length;
 
-            btn.innerHTML = `
-                <div class="min-w-0 pr-1">
-                    <div class="truncate">${pt.name}</div>
-                    <div class="text-[9.5px] text-slate-500 font-normal flex items-center gap-1.5 mt-0.5">
-                        <span>${docsCount} mẫu văn bản</span>
-                        <span>•</span>
-                        <span class="${tplsCount === docsCount ? 'text-emerald-700 font-bold' : (tplsCount > 0 ? 'text-teal-700' : 'text-amber-700 font-bold')}">
-                            ${tplsCount}/${docsCount} có mẫu
-                        </span>
+                btn.innerHTML = `
+                    <div class="min-w-0 pr-1">
+                        <div class="truncate">${pt.name}</div>
+                        <div class="text-[9.5px] text-slate-500 font-normal flex items-center gap-1.5 mt-0.5">
+                            <span>${docsCount} mẫu văn bản</span>
+                            <span>•</span>
+                            <span class="${tplsCount === docsCount ? 'text-emerald-700 font-bold' : (tplsCount > 0 ? 'text-teal-700' : 'text-amber-700 font-bold')}">
+                                ${tplsCount}/${docsCount} có mẫu
+                            </span>
+                        </div>
                     </div>
-                </div>
-                ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[10px] mt-1 shrink-0"></i>' : ''}
-            `;
+                    ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[10px] mt-1 shrink-0"></i>' : ''}
+                `;
 
-            btn.addEventListener("click", () => {
-                saveCurrentAdminInputs();
-                activeAdminTypeId = pt.id;
-                renderAdminMatrixModal();
+                btn.addEventListener("click", () => {
+                    saveCurrentAdminInputs();
+                    activeAdminTypeId = pt.id;
+                    renderAdminMatrixModal();
+                });
+
+                matrixTypesList.appendChild(btn);
             });
+        } else {
+            // Implementation Types
+            IMPLEMENTATION_MATRIX.implementationTypes.forEach((it) => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                const isActive = it.id === activeAdminImplTypeId;
 
-            matrixTypesList.appendChild(btn);
-        });
+                btn.className = isActive 
+                    ? "w-full text-left p-2 rounded bg-emerald-100/70 border border-emerald-400 font-bold text-emerald-950 text-[11px] shadow-2xs transition-all flex items-start justify-between"
+                    : "w-full text-left p-2 rounded bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-[11px] transition-all flex items-start justify-between";
+
+                const docsCount = (it.documents || []).length;
+                const tplsCount = (it.documents || []).filter(d => Boolean(d.templateFile && d.templateFile.trim() !== "")).length;
+
+                btn.innerHTML = `
+                    <div class="min-w-0 pr-1">
+                        <div class="truncate">${it.name}</div>
+                        <div class="text-[9.5px] text-slate-500 font-normal flex items-center gap-1.5 mt-0.5">
+                            <span>${docsCount} mẫu văn bản</span>
+                            <span>•</span>
+                            <span class="${tplsCount === docsCount ? 'text-emerald-700 font-bold' : (tplsCount > 0 ? 'text-teal-700' : 'text-amber-700 font-bold')}">
+                                ${tplsCount}/${docsCount} có mẫu
+                            </span>
+                        </div>
+                    </div>
+                    ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[10px] mt-1 shrink-0"></i>' : ''}
+                `;
+
+                btn.addEventListener("click", () => {
+                    saveCurrentAdminInputs();
+                    activeAdminImplTypeId = it.id;
+                    renderAdminMatrixModal();
+                });
+
+                matrixTypesList.appendChild(btn);
+            });
+        }
 
         // 2. Render Right Column: Selected Type Info & Doc Templates Table
-        const currentPt = getActiveAdminType();
+        const currentItem = getActiveAdminType();
         const matrixTypeNameInput = document.getElementById("matrixTypeNameInput");
         const matrixTypeCodeInput = document.getElementById("matrixTypeCodeInput");
         const matrixTypeLegalInput = document.getElementById("matrixTypeLegalInput");
 
-        if (matrixTypeNameInput) matrixTypeNameInput.value = currentPt.name || "";
-        if (matrixTypeCodeInput) matrixTypeCodeInput.value = currentPt.code || "";
-        if (matrixTypeLegalInput) matrixTypeLegalInput.value = currentPt.legalBasis || "";
+        if (matrixTypeNameInput) matrixTypeNameInput.value = currentItem.name || "";
+        if (matrixTypeCodeInput) matrixTypeCodeInput.value = currentItem.code || "";
+        if (matrixTypeLegalInput) matrixTypeLegalInput.value = (activeAdminCategory === "procurement" ? currentItem.legalBasis : currentItem.description) || "";
 
-        renderAdminDocsTable(currentPt);
+        renderAdminDocsTable(currentItem);
     }
 
-    function renderAdminDocsTable(pt) {
+    function renderAdminDocsTable(item) {
         const matrixDocsTableBody = document.getElementById("matrixDocsTableBody");
         if (!matrixDocsTableBody) return;
         matrixDocsTableBody.innerHTML = "";
 
-        if (!pt.phases || pt.phases.length === 0) {
-            pt.phases = [{ phaseId: "phase_1", phaseName: "Thủ tục thực hiện", documents: [] }];
-        }
-
-        const allDocs = [];
-        pt.phases.forEach((ph, pIdx) => {
-            (ph.documents || []).forEach((doc, dIdx) => {
-                allDocs.push({ ...doc, _phaseIdx: pIdx, _docIdx: dIdx });
+        let allDocs = [];
+        if (activeAdminCategory === "implementation") {
+            if (!item.documents) item.documents = [];
+            allDocs = item.documents.map((d, dIdx) => ({ ...d, _phaseIdx: 0, _docIdx: dIdx }));
+        } else {
+            if (!item.phases || item.phases.length === 0) {
+                item.phases = [{ phaseId: "phase_1", phaseName: "Thủ tục thực hiện", documents: [] }];
+            }
+            item.phases.forEach((ph, pIdx) => {
+                (ph.documents || []).forEach((doc, dIdx) => {
+                    allDocs.push({ ...doc, _phaseIdx: pIdx, _docIdx: dIdx });
+                });
             });
-        });
+        }
 
         if (allDocs.length === 0) {
             const emptyTr = document.createElement("tr");
@@ -3440,11 +3853,9 @@
             const tr = document.createElement("tr");
             tr.className = "hover:bg-slate-50 h-7 transition-colors";
 
-            // Determine template assignment
             const currentTpl = doc.templateFile !== undefined ? doc.templateFile : (prebuiltDocxMap[doc.id] || "");
             const hasTpl = Boolean(currentTpl && currentTpl.trim() !== "");
 
-            // Build options for select
             let optionsHtml = '';
             let matched = false;
             SYSTEM_TEMPLATES.forEach(t => {
@@ -3493,33 +3904,42 @@
                     </div>
                 </td>
                 <td class="py-1 px-1.5 text-center">
-                    <button type="button" class="btn-del-doc text-slate-400 hover:text-rose-600 text-[11px] p-1" title="Xóa mẫu này khỏi hình thức LCNT">
+                    <button type="button" class="btn-del-doc text-slate-400 hover:text-rose-600 text-[11px] p-1" title="Xóa mẫu này">
                         <i class="fa-regular fa-trash-can"></i>
                     </button>
                 </td>
             `;
 
-            // Input handlers
+            const getTargetDoc = () => {
+                if (activeAdminCategory === "implementation") {
+                    return item.documents[idx];
+                } else {
+                    return item.phases[doc._phaseIdx].documents[doc._docIdx];
+                }
+            };
+
             const codeInput = tr.querySelector(".doc-code-input");
             const nameInput = tr.querySelector(".doc-name-input");
             if (codeInput) {
                 codeInput.addEventListener("input", (e) => {
-                    pt.phases[doc._phaseIdx].documents[doc._docIdx].code = e.target.value.trim();
+                    const target = getTargetDoc();
+                    if (target) target.code = e.target.value.trim();
                 });
             }
             if (nameInput) {
                 nameInput.addEventListener("input", (e) => {
-                    pt.phases[doc._phaseIdx].documents[doc._docIdx].name = e.target.value.trim();
+                    const target = getTargetDoc();
+                    if (target) target.name = e.target.value.trim();
                 });
             }
 
-            // Template Select handler
             const tplSelect = tr.querySelector(".doc-tpl-select");
             const tplIndicator = tr.querySelector(".doc-tpl-indicator");
             if (tplSelect) {
                 tplSelect.addEventListener("change", (e) => {
                     const chosen = e.target.value;
-                    pt.phases[doc._phaseIdx].documents[doc._docIdx].templateFile = chosen;
+                    const target = getTargetDoc();
+                    if (target) target.templateFile = chosen;
                     if (chosen) {
                         tplSelect.className = "doc-tpl-select flex-1 rounded px-1.5 py-0.5 h-6 text-[10px] transition-colors bg-emerald-50/70 border border-emerald-300 text-emerald-950 font-medium";
                         if (tplIndicator) tplIndicator.innerHTML = '<i class="fa-solid fa-file-word text-blue-600 text-[11px]" title="Đã gán file mẫu Word"></i>';
@@ -3530,7 +3950,6 @@
                 });
             }
 
-            // Template Upload handler
             const tplUpload = tr.querySelector(".doc-tpl-upload");
             if (tplUpload) {
                 tplUpload.addEventListener("change", (e) => {
@@ -3540,43 +3959,41 @@
                     reader.onload = (re) => {
                         if (!window.customUploadedDocx) window.customUploadedDocx = {};
                         window.customUploadedDocx[file.name] = re.target.result;
-                        pt.phases[doc._phaseIdx].documents[doc._docIdx].templateFile = file.name;
-                        renderAdminDocsTable(pt);
+                        const target = getTargetDoc();
+                        if (target) target.templateFile = file.name;
+                        renderAdminDocsTable(item);
                         showToast(`Đã gán file mẫu "${file.name}" cho văn bản!`, "success");
                     };
                     reader.readAsArrayBuffer(file);
                 });
             }
 
-            // Move Up
             const btnUp = tr.querySelector(".btn-move-up");
             if (btnUp) {
                 btnUp.addEventListener("click", () => {
                     if (idx > 0) {
-                        swapDocsInType(pt, idx, idx - 1);
-                        renderAdminDocsTable(pt);
+                        swapDocsInType(item, idx, idx - 1);
+                        renderAdminDocsTable(item);
                     }
                 });
             }
 
-            // Move Down
             const btnDown = tr.querySelector(".btn-move-down");
             if (btnDown) {
                 btnDown.addEventListener("click", () => {
                     if (idx < allDocs.length - 1) {
-                        swapDocsInType(pt, idx, idx + 1);
-                        renderAdminDocsTable(pt);
+                        swapDocsInType(item, idx, idx + 1);
+                        renderAdminDocsTable(item);
                     }
                 });
             }
 
-            // Delete doc
             const btnDel = tr.querySelector(".btn-del-doc");
             if (btnDel) {
                 btnDel.addEventListener("click", () => {
-                    if (confirm(`Bạn có chắc muốn xóa văn bản: "${doc.name}" khỏi hình thức này?`)) {
-                        removeDocFromType(pt, idx);
-                        renderAdminDocsTable(pt);
+                    if (confirm(`Bạn có chắc muốn xóa văn bản: "${doc.name}"?`)) {
+                        removeDocFromType(item, idx);
+                        renderAdminDocsTable(item);
                     }
                 });
             }
@@ -3585,40 +4002,75 @@
         });
     }
 
-    function swapDocsInType(pt, fromIdx, toIdx) {
-        const flat = [];
-        pt.phases.forEach(ph => (ph.documents || []).forEach(d => flat.push(d)));
-        const temp = flat[fromIdx];
-        flat[fromIdx] = flat[toIdx];
-        flat[toIdx] = temp;
-        pt.phases = [{
-            phaseId: "phase_main",
-            phaseName: "Quy trình thủ tục",
-            documents: flat
-        }];
+    function swapDocsInType(item, fromIdx, toIdx) {
+        if (activeAdminCategory === "implementation") {
+            const temp = item.documents[fromIdx];
+            item.documents[fromIdx] = item.documents[toIdx];
+            item.documents[toIdx] = temp;
+        } else {
+            const flat = [];
+            item.phases.forEach(ph => (ph.documents || []).forEach(d => flat.push(d)));
+            const temp = flat[fromIdx];
+            flat[fromIdx] = flat[toIdx];
+            flat[toIdx] = temp;
+            item.phases = [{
+                phaseId: "phase_main",
+                phaseName: "Quy trình thủ tục",
+                documents: flat
+            }];
+        }
     }
 
-    function removeDocFromType(pt, idx) {
-        const flat = [];
-        pt.phases.forEach(ph => (ph.documents || []).forEach(d => flat.push(d)));
-        flat.splice(idx, 1);
-        pt.phases = [{
-            phaseId: "phase_main",
-            phaseName: "Quy trình thủ tục",
-            documents: flat
-        }];
+    function removeDocFromType(item, idx) {
+        if (activeAdminCategory === "implementation") {
+            item.documents.splice(idx, 1);
+        } else {
+            const flat = [];
+            item.phases.forEach(ph => (ph.documents || []).forEach(d => flat.push(d)));
+            flat.splice(idx, 1);
+            item.phases = [{
+                phaseId: "phase_main",
+                phaseName: "Quy trình thủ tục",
+                documents: flat
+            }];
+        }
     }
 
     function saveCurrentAdminInputs() {
-        const currentPt = getActiveAdminType();
-        if (!currentPt) return;
+        const currentItem = getActiveAdminType();
+        if (!currentItem) return;
         const matrixTypeNameInput = document.getElementById("matrixTypeNameInput");
         const matrixTypeCodeInput = document.getElementById("matrixTypeCodeInput");
         const matrixTypeLegalInput = document.getElementById("matrixTypeLegalInput");
 
-        if (matrixTypeNameInput) currentPt.name = matrixTypeNameInput.value.trim() || currentPt.name;
-        if (matrixTypeCodeInput) currentPt.code = matrixTypeCodeInput.value.trim();
-        if (matrixTypeLegalInput) currentPt.legalBasis = matrixTypeLegalInput.value.trim();
+        if (matrixTypeNameInput) currentItem.name = matrixTypeNameInput.value.trim() || currentItem.name;
+        if (matrixTypeCodeInput) currentItem.code = matrixTypeCodeInput.value.trim();
+        if (matrixTypeLegalInput) {
+            if (activeAdminCategory === "procurement") {
+                currentItem.legalBasis = matrixTypeLegalInput.value.trim();
+            } else {
+                currentItem.description = matrixTypeLegalInput.value.trim();
+            }
+        }
+    }
+
+    // Modal Category Switcher Buttons
+    const adminTabProcurement = document.getElementById("adminTabProcurement");
+    const adminTabImplementation = document.getElementById("adminTabImplementation");
+
+    if (adminTabProcurement) {
+        adminTabProcurement.addEventListener("click", () => {
+            saveCurrentAdminInputs();
+            activeAdminCategory = "procurement";
+            renderAdminMatrixModal();
+        });
+    }
+    if (adminTabImplementation) {
+        adminTabImplementation.addEventListener("click", () => {
+            saveCurrentAdminInputs();
+            activeAdminCategory = "implementation";
+            renderAdminMatrixModal();
+        });
     }
 
     if (btnOpenMatrixSettings) {
@@ -3627,7 +4079,23 @@
             e.stopPropagation();
             const dd = document.getElementById("userAccountDropdown");
             if (dd) dd.classList.add("hidden");
+            activeAdminCategory = "procurement";
             activeAdminTypeId = appState.selectedProcurementTypeId || PROCUREMENT_MATRIX.procurementTypes[0].id;
+            renderAdminMatrixModal();
+            const modal = document.getElementById("modalProcurementMatrixManager");
+            if (modal) modal.classList.remove("hidden");
+        });
+    }
+
+    const btnOpenImplementationSettings = document.getElementById("btnOpenImplementationSettings");
+    if (btnOpenImplementationSettings) {
+        btnOpenImplementationSettings.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const dd = document.getElementById("userAccountDropdown");
+            if (dd) dd.classList.add("hidden");
+            activeAdminCategory = "implementation";
+            activeAdminImplTypeId = appState.projectRoadmap?.implementationTypeId || IMPLEMENTATION_MATRIX.implementationTypes[0].id;
             renderAdminMatrixModal();
             const modal = document.getElementById("modalProcurementMatrixManager");
             if (modal) modal.classList.remove("hidden");
@@ -3637,58 +4105,93 @@
     const btnAddNewDocToType = document.getElementById("btnAddNewDocToType");
     if (btnAddNewDocToType) {
         btnAddNewDocToType.addEventListener("click", () => {
-            const currentPt = getActiveAdminType();
-            if (!currentPt) return;
+            const currentItem = getActiveAdminType();
+            if (!currentItem) return;
 
-            const newCode = prompt("Nhập mã hiệu văn bản mới (ví dụ: 08.QD-PD):", "08.QD-MOI");
+            const newCode = prompt("Nhập mã hiệu văn bản mới (ví dụ: 08.QD-PD hoặc 12.BB-TK):", "08.QD-MOI");
             if (!newCode) return;
             const newName = prompt("Nhập tên mẫu văn bản (ví dụ: Quyết định phê duyệt bổ sung):", "Quyết định phê duyệt bổ sung");
             if (!newName) return;
 
-            if (!currentPt.phases || currentPt.phases.length === 0) {
-                currentPt.phases = [{ phaseId: "phase_main", phaseName: "Quy trình", documents: [] }];
+            if (activeAdminCategory === "implementation") {
+                if (!currentItem.documents) currentItem.documents = [];
+                currentItem.documents.push({
+                    id: `custom_tk_doc_${Date.now()}`,
+                    code: newCode.trim(),
+                    name: newName.trim(),
+                    signer: "Đơn vị thực hiện",
+                    duration: 1,
+                    dateFormula: { type: "default" },
+                    defaultDate: "",
+                    docNo: "",
+                    templateFile: ""
+                });
+            } else {
+                if (!currentItem.phases || currentItem.phases.length === 0) {
+                    currentItem.phases = [{ phaseId: "phase_main", phaseName: "Quy trình", documents: [] }];
+                }
+                currentItem.phases[0].documents.push({
+                    id: `custom_doc_${Date.now()}`,
+                    code: newCode.trim(),
+                    name: newName.trim(),
+                    desc: "Văn bản mẫu bổ sung theo quy trình quản trị"
+                });
             }
 
-            currentPt.phases[0].documents.push({
-                id: `custom_doc_${Date.now()}`,
-                code: newCode.trim(),
-                name: newName.trim(),
-                desc: "Văn bản mẫu bổ sung theo quy trình quản trị"
-            });
-
-            renderAdminDocsTable(currentPt);
-            showToast("Đã thêm mẫu văn bản mới vào hình thức LCNT!");
+            renderAdminDocsTable(currentItem);
+            showToast("Đã thêm mẫu văn bản mới!");
         });
     }
 
     const btnAddNewProcurementType = document.getElementById("btnAddNewProcurementType");
     if (btnAddNewProcurementType) {
         btnAddNewProcurementType.addEventListener("click", () => {
-            const newName = prompt("Nhập tên Hình thức LCNT mới (ví dụ: 7. Đặt hàng dịch vụ công ích):", "");
-            if (!newName || !newName.trim()) return;
+            if (activeAdminCategory === "implementation") {
+                const newName = prompt("Nhập tên Quy trình Triển khai mới (ví dụ: 4. Triển khai dự án khẩn cấp):", "");
+                if (!newName || !newName.trim()) return;
 
-            const newId = `hinh_thuc_${Date.now()}`;
-            PROCUREMENT_MATRIX.procurementTypes.push({
-                id: newId,
-                name: newName.trim(),
-                code: "HT_MOI",
-                legalBasis: "Luật Đấu thầu số 22/2023/QH15",
-                desc: "Hình thức lựa chọn nhà thầu tùy biến bởi quản trị viên",
-                phases: [
-                    {
-                        phaseId: "ph_1",
-                        phaseName: "Giai đoạn thực hiện",
-                        documents: [
-                            { id: `doc_${Date.now()}_1`, code: "01.TTr", name: "Tờ trình đề xuất thực hiện" },
-                            { id: `doc_${Date.now()}_2`, code: "02.QD", name: "Quyết định phê duyệt" }
-                        ]
-                    }
-                ]
-            });
+                const newId = `trien_khai_${Date.now()}`;
+                IMPLEMENTATION_MATRIX.implementationTypes.push({
+                    id: newId,
+                    name: newName.trim(),
+                    code: "TK-MOI",
+                    description: "Quy trình triển khai tùy biến bởi quản trị viên",
+                    documents: [
+                        { id: `doc_${Date.now()}_1`, code: "01.TTr", name: "Tờ trình đề xuất triển khai", signer: "Chủ đầu tư", duration: 2, dateFormula: { type: "manual" }, defaultDate: "2026-01-12", docNo: "01/TTr", templateFile: "templates/01_To_trinh_KHLCNT.docx" },
+                        { id: `doc_${Date.now()}_2`, code: "02.QD", name: "Quyết định phê duyệt triển khai", signer: "Cấp thẩm quyền", duration: 1, dateFormula: { type: "default" }, defaultDate: "", docNo: "02/QĐ", templateFile: "templates/02_Quyet_dinh_KHLCNT.docx" }
+                    ]
+                });
 
-            activeAdminTypeId = newId;
-            renderAdminMatrixModal();
-            showToast(`Đã thêm Hình thức LCNT mới: ${newName}!`);
+                activeAdminImplTypeId = newId;
+                renderAdminMatrixModal();
+                showToast(`Đã thêm Quy trình Triển khai mới: ${newName}!`);
+            } else {
+                const newName = prompt("Nhập tên Hình thức LCNT mới (ví dụ: 7. Đặt hàng dịch vụ công ích):", "");
+                if (!newName || !newName.trim()) return;
+
+                const newId = `hinh_thuc_${Date.now()}`;
+                PROCUREMENT_MATRIX.procurementTypes.push({
+                    id: newId,
+                    name: newName.trim(),
+                    code: "HT_MOI",
+                    legalBasis: "Luật Đấu thầu số 22/2023/QH15",
+                    desc: "Hình thức lựa chọn nhà thầu tùy biến bởi quản trị viên",
+                    phases: [
+                        {
+                            phaseId: "ph_1",
+                            phaseName: "Giai đoạn thực hiện",
+                            documents: [
+                                { id: `doc_${Date.now()}_1`, code: "01.TTr", name: "Tờ trình đề xuất thực hiện" },
+                                { id: `doc_${Date.now()}_2`, code: "02.QD", name: "Quyết định phê duyệt" }
+                            ]
+                        }
+                    ]
+                });
+
+                activeAdminTypeId = newId;
+                renderAdminMatrixModal();
+                showToast(`Đã thêm Hình thức LCNT mới: ${newName}!`);
+            }
         });
     }
 
@@ -3699,8 +4202,15 @@
 
             try {
                 localStorage.setItem("ho_so_tu_dong_matrix_custom", JSON.stringify(PROCUREMENT_MATRIX));
+                localStorage.setItem("ho_so_tu_dong_implementation_matrix", JSON.stringify(IMPLEMENTATION_MATRIX));
             } catch (err) {
                 console.error("Save custom matrix error:", err);
+            }
+
+            // Sync active implementation type with roadmap
+            if (appState.projectRoadmap) {
+                applyImplementationTypeToRoadmap(appState.projectRoadmap.implementationTypeId, false);
+                recalculateAllTaskDates(false, true);
             }
 
             // Apply changes across the app
@@ -3711,26 +4221,35 @@
 
             const modal = document.getElementById("modalProcurementMatrixManager");
             if (modal) modal.classList.add("hidden");
-            showToast("Đã lưu và áp dụng toàn diện cấu hình Hình thức LCNT & thứ tự mẫu văn bản!", "success");
+            showToast("Đã lưu và áp dụng toàn diện cấu hình LCNT, Triển khai & thứ tự mẫu văn bản!", "success");
         });
     }
 
     const btnResetMatrixDefault = document.getElementById("btnResetMatrixDefault");
     if (btnResetMatrixDefault) {
         btnResetMatrixDefault.addEventListener("click", () => {
-            if (confirm("Bạn có chắc chắn muốn khôi phục toàn bộ Ma trận Hình thức LCNT & Thứ tự mẫu văn bản về mặc định ban đầu?")) {
+            if (confirm("Bạn có chắc chắn muốn khôi phục toàn bộ Ma trận Hình thức LCNT & Quy trình Triển khai về mặc định ban đầu?")) {
                 PROCUREMENT_MATRIX = JSON.parse(JSON.stringify(DEFAULT_PROCUREMENT_MATRIX));
+                IMPLEMENTATION_MATRIX = JSON.parse(JSON.stringify(DEFAULT_IMPLEMENTATION_MATRIX));
                 try {
                     localStorage.removeItem("ho_so_tu_dong_matrix_custom");
+                    localStorage.removeItem("ho_so_tu_dong_implementation_matrix");
                 } catch (e) {}
 
                 activeAdminTypeId = PROCUREMENT_MATRIX.procurementTypes[0].id;
+                activeAdminImplTypeId = IMPLEMENTATION_MATRIX.implementationTypes[0].id;
+                if (appState.projectRoadmap) {
+                    appState.projectRoadmap.implementationTypeId = "trien_khai_sua_chua";
+                    applyImplementationTypeToRoadmap("trien_khai_sua_chua", true);
+                    recalculateAllTaskDates(false, true);
+                }
+
                 initProcurementTypeSelector();
                 renderRoadmapUI();
                 renderDocTabs();
                 renderDocumentPreview();
                 renderAdminMatrixModal();
-                showToast("Đã khôi phục Ma trận LCNT về mặc định ban đầu!", "info");
+                showToast("Đã khôi phục Ma trận LCNT & Quy trình Triển khai về mặc định ban đầu!", "info");
             }
         });
     }

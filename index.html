@@ -85,6 +85,10 @@
                             <i class="fa-solid fa-sliders text-emerald-600"></i>
                             <span>Điều chỉnh Hình thức LCNT</span>
                         </button>
+                        <button id="btnOpenImplementationSettings" type="button" class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 text-emerald-950 font-bold flex items-center gap-2 transition-colors text-[11px]">
+                            <i class="fa-solid fa-diagram-project text-emerald-600"></i>
+                            <span>Điều chỉnh Quy trình Triển khai</span>
+                        </button>
                         <div class="border-t border-slate-100 my-1"></div>
                         <div class="px-3 py-0.5 text-[9.5px] text-slate-400">Hồ Sơ Tự Động v3.2 (Thử nghiệm Admin)</div>
                     </div>
@@ -125,8 +129,8 @@
                 </div>
             </div>
 
-            <!-- Project Attributes Grid (Ultra-compact, h-6 inputs) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1 text-[11px]">
+            <!-- Project Attributes Grid (Ultra-compact 5 cols, h-6 inputs) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-1.5 text-[11px]">
                 <div>
                     <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Tên dự án *</label>
                     <input id="rmProjectName" type="text" class="w-full bg-slate-50 border border-slate-300 rounded px-1.5 py-0 h-6 text-[11px] font-bold text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500" value="Sửa chữa góc cua đường khẩn nguy chữa cháy phía tây Sân đỗ tàu bay">
@@ -142,6 +146,17 @@
                 <div>
                     <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Nguồn vốn</label>
                     <input id="rmFundingSource" type="text" class="w-full bg-slate-50 border border-slate-300 rounded px-1.5 py-0 h-6 text-[11px] font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500" value="Quỹ đầu tư phát triển TCT">
+                </div>
+                <div>
+                    <label class="block text-[9.5px] font-bold text-slate-500 uppercase flex items-center justify-between">
+                        <span>Quy trình Triển khai *</span>
+                        <button id="btnConfigImplModalTop" type="button" class="text-emerald-700 hover:text-emerald-900 text-[9px] font-bold" title="Cấu hình danh mục văn bản quy trình triển khai">
+                            <i class="fa-solid fa-sliders"></i> Sửa
+                        </button>
+                    </label>
+                    <select id="rmImplementationTypeSelect" class="w-full bg-emerald-50/80 text-emerald-950 font-bold border border-emerald-400 rounded px-1.5 py-0 h-6 text-[10.5px] focus:bg-white focus:ring-1 focus:ring-emerald-500 cursor-pointer">
+                        <!-- Populated dynamically -->
+                    </select>
                 </div>
             </div>
         </div>
@@ -925,11 +940,24 @@
                         <i class="fa-solid fa-sliders"></i>
                     </div>
                     <div>
-                        <h2 class="font-bold text-slate-900 text-xs">Quản Trị Hình Thức Lựa Chọn Nhà Thầu & Mẫu Văn Bản</h2>
-                        <p class="text-[10px] text-slate-500">Chế độ Admin: Điều chỉnh tên hình thức LCNT và gán sắp xếp thứ tự mẫu văn bản quy trình</p>
+                        <h2 id="modalAdminMatrixTitle" class="font-bold text-slate-900 text-xs">Quản Trị Quy Trình Dự Án &amp; Mẫu Văn Bản</h2>
+                        <p id="modalAdminMatrixSubtitle" class="text-[10px] text-slate-500">Chế độ Admin: Điều chỉnh quy trình Triển khai, hình thức LCNT và gán sắp xếp mẫu văn bản</p>
                     </div>
                 </div>
                 <button id="btnCloseMatrixModal" type="button" class="text-slate-400 hover:text-slate-600 text-base">&times;</button>
+            </div>
+
+            <!-- Category Switcher Tabs (1. Hình thức LCNT vs 2. Quy trình Triển khai) -->
+            <div class="px-3.5 py-1.5 bg-slate-100 border-b border-slate-200 flex flex-wrap items-center justify-between gap-1">
+                <div class="flex items-center space-x-1">
+                    <button id="adminTabProcurement" type="button" class="px-3 py-1 rounded text-xs font-bold transition-all bg-emerald-600 text-white shadow-2xs">
+                        <i class="fa-solid fa-layer-group mr-1"></i> 1. Hình thức Lựa chọn nhà thầu (LCNT)
+                    </button>
+                    <button id="adminTabImplementation" type="button" class="px-3 py-1 rounded text-xs font-bold transition-all bg-white text-slate-700 hover:bg-slate-200 border border-slate-300">
+                        <i class="fa-solid fa-diagram-project mr-1 text-emerald-600"></i> 2. Quy trình Triển khai dự án
+                    </button>
+                </div>
+                <span id="adminCategoryBadge" class="text-[10px] text-slate-500 font-medium">Đang cấu hình: Hình thức LCNT</span>
             </div>
 
             <!-- Body 2 Columns -->
@@ -937,7 +965,7 @@
                 <!-- Col 1: Danh sách các Hình thức LCNT (4 cols) -->
                 <div class="md:col-span-4 p-2.5 bg-slate-50/50 flex flex-col overflow-y-auto">
                     <div class="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-200">
-                        <span class="font-bold text-slate-700 text-[11px] uppercase">Danh sách hình thức LCNT</span>
+                        <span id="adminCol1ListTitle" class="font-bold text-slate-700 text-[11px] uppercase">Danh sách hình thức LCNT</span>
                         <button id="btnAddNewProcurementType" type="button" class="px-1.5 py-0.2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded font-bold text-[10px]">
                             <i class="fa-solid fa-plus text-[9px]"></i> Thêm mới
                         </button>
@@ -952,11 +980,11 @@
                     <!-- Form sửa tên hình thức LCNT -->
                     <div class="bg-slate-50 p-2 rounded border border-slate-200 space-y-1.5">
                         <div class="flex items-center justify-between">
-                            <span class="font-bold text-slate-800 text-[11px]">Thông tin Hình thức LCNT đang chọn</span>
+                            <span id="adminCol2InfoTitle" class="font-bold text-slate-800 text-[11px]">Thông tin Hình thức LCNT đang chọn</span>
                             <span id="matrixTypeActiveBadge" class="bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded font-bold text-[9.5px]">Đang chỉnh sửa</span>
                         </div>
                         <div>
-                            <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Tên hiển thị hình thức LCNT *</label>
+                            <label id="adminNameLabel" class="block text-[9.5px] font-bold text-slate-500 uppercase">Tên hiển thị hình thức LCNT *</label>
                             <input id="matrixTypeNameInput" type="text" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 h-6.5 text-xs font-bold text-slate-800 focus:ring-1 focus:ring-emerald-500">
                         </div>
                         <div class="grid grid-cols-2 gap-2 text-[11px]">
@@ -965,7 +993,7 @@
                                 <input id="matrixTypeCodeInput" type="text" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 h-6 text-[10.5px] font-mono text-slate-700">
                             </div>
                             <div>
-                                <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Căn cứ pháp lý áp dụng</label>
+                                <label id="adminLegalLabel" class="block text-[9.5px] font-bold text-slate-500 uppercase">Căn cứ pháp lý áp dụng</label>
                                 <input id="matrixTypeLegalInput" type="text" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 h-6 text-[10.5px] text-slate-700">
                             </div>
                         </div>
@@ -976,7 +1004,7 @@
                         <div class="flex items-center justify-between pb-1 mb-1 border-b border-slate-200">
                             <div class="flex items-center space-x-1.5">
                                 <i class="fa-solid fa-list-ol text-emerald-600 text-[10px]"></i>
-                                <span class="font-bold text-slate-800 text-[11px]">Thứ tự & Danh mục mẫu văn bản của hình thức này:</span>
+                                <span id="adminDocsListTitle" class="font-bold text-slate-800 text-[11px]">Thứ tự & Danh mục mẫu văn bản của hình thức này:</span>
                             </div>
                             <button id="btnAddNewDocToType" type="button" class="px-2 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded font-bold text-[10.5px] flex items-center space-x-1">
                                 <i class="fa-solid fa-plus text-[9px]"></i>
