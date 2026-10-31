@@ -3504,24 +3504,69 @@
             .replace(/\n/g, "</w:t><w:br/><w:t>");
     }
 
+    function base64ToUint8Array(base64) {
+        const binary = atob(base64);
+        const len = binary.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes;
+    }
+
     async function renderDocxBlob(docId, replacements) {
         const allDocs = getAllDocsForCurrentType();
         const docObj = allDocs.find(d => d.id === docId);
-        let templateUrl = (docObj && docObj.templateFile !== undefined) ? docObj.templateFile : (prebuiltDocxMap[docId] || "");
-        if (!templateUrl) templateUrl = "templates/3_To_trinh_chi_dinh_thau.docx";
+        let templateUrl = (docObj && docObj.templateFile !== undefined && docObj.templateFile !== "") 
+            ? docObj.templateFile 
+            : (prebuiltDocxMap[docId] || "");
+        if (!templateUrl) templateUrl = "templates/01_To_trinh_KHLCNT.docx";
 
-        let arrayBuffer;
+        let arrayBuffer = null;
+
+        // 1. Kiểm tra file mẫu tùy biến do người dùng upload trực tiếp
         if (window.customUploadedDocx && window.customUploadedDocx[templateUrl]) {
             arrayBuffer = window.customUploadedDocx[templateUrl];
-        } else {
-            const response = await fetch(templateUrl);
-            if (!response.ok) throw new Error("Không thể tải file mẫu: " + templateUrl);
-            arrayBuffer = await response.arrayBuffer();
+        }
+
+        // 2. Kiểm tra bộ mẫu có sẵn nhúng trực tiếp (Base64) - CHẠY 100% CẢ GIAO THỨC file:/// LẪN OFFLINE KHÔNG CẦN FETCH!
+        if (!arrayBuffer && window.BUILTIN_DOCX_TEMPLATES) {
+            let b64 = window.BUILTIN_DOCX_TEMPLATES[templateUrl];
+            if (!b64) {
+                const baseName = templateUrl.split("/").pop();
+                const matchedKey = Object.keys(window.BUILTIN_DOCX_TEMPLATES).find(k => k.endsWith(baseName));
+                if (matchedKey) b64 = window.BUILTIN_DOCX_TEMPLATES[matchedKey];
+            }
+            if (!b64) {
+                // Fallback về mẫu Tờ trình chuẩn nếu văn bản này chưa có file template riêng
+                b64 = window.BUILTIN_DOCX_TEMPLATES["templates/01_To_trinh_KHLCNT.docx"] || Object.values(window.BUILTIN_DOCX_TEMPLATES)[0];
+            }
+            if (b64) {
+                const bytes = base64ToUint8Array(b64);
+                arrayBuffer = bytes.buffer;
+            }
+        }
+
+        // 3. Fallback tải qua fetch nếu chạy trên web server (http / https)
+        if (!arrayBuffer) {
+            try {
+                const response = await fetch(templateUrl);
+                if (response.ok) {
+                    arrayBuffer = await response.arrayBuffer();
+                }
+            } catch (err) {
+                console.warn("fetch template failed:", err);
+            }
+        }
+
+        if (!arrayBuffer) {
+            throw new Error("Không thể nạp dữ liệu mẫu văn bản cho " + (docObj ? docObj.code : docId));
         }
 
         const zip = await JSZip.loadAsync(arrayBuffer);
         let docXml = await zip.file("word/document.xml").async("string");
 
+        // Thay thế toàn bộ biến xạ {{KEY}} và {KEY}
         for (const [key, rawVal] of Object.entries(replacements)) {
             const val = escapeXml(rawVal);
             const tag1 = `{{${key}}}`;
@@ -4833,6 +4878,9 @@
     window.renderDocumentPreview = renderDocumentPreview;
     window.getAllDocsForCurrentType = getAllDocsForCurrentType;
     window.renderDocTabs = renderDocTabs;
+    window.renderDocxBlob = renderDocxBlob;
+    window.getCurrentActiveDoc = getCurrentActiveDoc;
+    window.getMergedData = getMergedData;
     window.selectDocumentById = selectDocumentById;
     window.renderAllDocsCatalogModal = renderAllDocsCatalogModal;
     window.makeVariableInlineEditable = makeVariableInlineEditable;
