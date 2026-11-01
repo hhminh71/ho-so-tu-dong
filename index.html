@@ -56,6 +56,10 @@
                     <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
                     <span>Chuẩn hóa Template</span>
                 </a>
+                <button id="btnOpenVarsModal" type="button" class="hover:text-emerald-800 text-emerald-700 font-bold flex items-center space-x-1 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200 transition-colors text-[11px] cursor-pointer" title="Tra cứu mã thẻ chèn {TAG} cho Word Template">
+                    <i class="fa-solid fa-book-bookmark text-emerald-600"></i>
+                    <span>Tra cứu Biến xạ</span>
+                </button>
                 <a href="https://github.com/hhminh71/ho-so-tu-dong" target="_blank" class="text-slate-500 hover:text-slate-800 flex items-center space-x-1 px-1.5 py-0.5 text-[11px]">
                     <i class="fa-brands fa-github text-sm"></i>
                     <span class="hidden md:inline">GitHub</span>
@@ -117,6 +121,10 @@
                     <button id="btnOpenImportCsvModal" type="button" class="px-2 py-0.5 text-[10.5px] font-bold rounded border transition-all flex items-center space-x-1 bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300 shadow-2xs h-6">
                         <i class="fa-solid fa-file-csv text-amber-600 text-[10px]"></i>
                         <span>Nhập tiến độ CSV</span>
+                    </button>
+                    <button id="btnExportExcelRoadmap" type="button" class="px-2 py-0.5 text-[10.5px] font-bold rounded border transition-all flex items-center space-x-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-300 shadow-2xs h-6 cursor-pointer" title="Xuất toàn bộ Kế hoạch & Biến xạ sang file Excel 2 Sheet">
+                        <i class="fa-solid fa-file-excel text-emerald-600 text-[10px]"></i>
+                        <span>Xuất Excel</span>
                     </button>
                     <button id="btnAddPackageRoadmap" type="button" class="px-2 py-0.5 text-[10.5px] font-bold rounded border transition-all flex items-center space-x-1 bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300 shadow-2xs h-6">
                         <i class="fa-solid fa-plus text-emerald-600 text-[10px]"></i>
@@ -286,6 +294,10 @@
                 <button id="btnImportExcel" class="px-2 py-0.5 text-[11px] font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 rounded border border-slate-300 h-6.5 flex items-center space-x-1">
                     <i class="fa-solid fa-file-import text-blue-600"></i>
                     <span>Import</span>
+                </button>
+                <button id="btnExportExcel" type="button" class="px-2 py-0.5 text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded border border-emerald-300 h-6.5 flex items-center space-x-1 cursor-pointer" title="Xuất toàn bộ Kế hoạch & Biến xạ sang file Excel 2 Sheet">
+                    <i class="fa-solid fa-file-excel text-emerald-600"></i>
+                    <span>Xuất Excel</span>
                 </button>
 
                 <button id="btnClearAll" class="px-2 py-0.5 text-[11px] font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded border border-red-200 h-6.5 flex items-center space-x-1">
@@ -1375,6 +1387,87 @@
     </div>
 
     <script src="templates_data.js"></script>
+    <!-- Modal: Từ điển & Tra cứu Biến xạ Word Template -->
+    <div id="modalVarsDictionary" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 hidden backdrop-blur-xs">
+        <div class="bg-white rounded-xl max-w-4xl w-full p-4 shadow-2xl border border-slate-200 text-xs flex flex-col max-h-[90vh]">
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b pb-2 border-slate-200 shrink-0">
+                <div class="flex items-center space-x-2">
+                    <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm shadow-2xs">
+                        <i class="fa-solid fa-book-bookmark"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+                            <span>Từ Điển &amp; Tra Cứu Biến Xạ Word Template</span>
+                            <span class="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-1.5 py-0.2 rounded font-semibold">Chuẩn NĐ 24/2024 &amp; NĐ 30/2020</span>
+                        </h3>
+                        <p class="text-[10.5px] text-slate-500">Tra cứu nhanh mã thẻ chèn <code class="font-mono text-emerald-700 font-bold">{TAG}</code> để dán vào file Word (.docx) mẫu. Bấm để sao chép 1-chạm.</p>
+                    </div>
+                </div>
+                <button id="btnCloseVarsModal" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer px-1.5 py-0.5 rounded hover:bg-slate-100">&times;</button>
+            </div>
+
+            <!-- Search & Filters -->
+            <div class="py-2.5 border-b border-slate-100 space-y-2 shrink-0">
+                <div class="flex items-center gap-2">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+                        <input id="varsSearchInput" type="text" placeholder="Tìm theo mã biến {TAG}, tên trường hoặc nội dung (VD: ngày, số, nhà thầu, hợp đồng)..." class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all">
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0 text-[11px] text-slate-600">
+                        <span class="font-medium text-slate-500">Gói thầu:</span>
+                        <select id="varsPackageSelect" class="bg-slate-50 border border-slate-300 text-slate-800 rounded px-2 py-1 text-xs font-semibold focus:ring-1 focus:ring-emerald-500">
+                            <!-- Populated with packages -->
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Category Pills -->
+                <div id="varsCategoryFilters" class="flex flex-wrap items-center gap-1 text-[10.5px]">
+                    <button type="button" data-cat="all" class="var-filter-pill px-2 py-0.5 rounded-full font-bold bg-slate-800 text-white cursor-pointer transition-colors">Tất cả (<span id="countVarAll">0</span>)</button>
+                    <button type="button" data-cat="A" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">A. Chủ đầu tư</button>
+                    <button type="button" data-cat="B" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">B. Dự án &amp; Gói</button>
+                    <button type="button" data-cat="C" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">C. Tài chính</button>
+                    <button type="button" data-cat="D" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">D. Nhà thầu</button>
+                    <button type="button" data-cat="E" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">E. Số hiệu VB</button>
+                    <button type="button" data-cat="F" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">F. Ngày (dd/mm/yyyy)</button>
+                    <button type="button" data-cat="G" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">G. Ngày (Full)</button>
+                    <button type="button" data-cat="H" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">H. Tên trích dẫn</button>
+                    <button type="button" data-cat="I" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">I. Căn cứ pháp lý</button>
+                </div>
+            </div>
+
+            <!-- Table of Variables -->
+            <div class="flex-1 overflow-y-auto min-h-0 py-1">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-50 sticky top-0 z-10 text-[10px] uppercase font-bold text-slate-600 border-b border-slate-200 shadow-2xs">
+                        <tr>
+                            <th class="py-1.5 px-2 w-10 text-center">STT</th>
+                            <th class="py-1.5 px-2.5 w-52">Mã biến {TAG}</th>
+                            <th class="py-1.5 px-2.5 w-52">Tên trường dữ liệu</th>
+                            <th class="py-1.5 px-2.5 w-32">Phân nhóm</th>
+                            <th class="py-1.5 px-2.5">Giá trị hiện tại</th>
+                            <th class="py-1.5 px-2 w-20 text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="varsDictionaryTableBody" class="text-xs divide-y divide-slate-100 font-normal">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Footer -->
+            <div class="pt-2 border-t border-slate-200 flex items-center justify-between shrink-0 text-[11px] text-slate-500">
+                <div class="flex items-center gap-1.5">
+                    <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                    <span>Mẹo: Trong Word, bạn chỉ cần gõ đúng mã <code class="font-mono bg-slate-100 px-1 py-0.2 rounded text-emerald-800 font-bold">{TEN_BIEN}</code>, hệ thống sẽ tự động điền giá trị khi xuất hồ sơ.</span>
+                </div>
+                <button id="btnFooterCloseVarsModal" type="button" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded cursor-pointer">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+
     <script src="app.js"></script>
 
     <!-- ============================================================= -->
@@ -1492,5 +1585,5 @@
         </div>
     </div>
 
-</body>
+    </body>
 </html>

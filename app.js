@@ -2795,6 +2795,20 @@
         return merged;
     }
 
+    function getMergedDataForPackage(pkgIdx) {
+        const pkgs = appState.packages || [];
+        const targetPkg = pkgs[pkgIdx] || { fields: {} };
+        const merged = {
+            ...appState.generalInfo,
+            ...targetPkg.fields
+        };
+        const prevIdx = appState.activePackageIndex;
+        appState.activePackageIndex = pkgIdx;
+        syncTimelineDatesAndDocNosToData(merged);
+        appState.activePackageIndex = prevIdx;
+        return merged;
+    }
+
     function formatDateToVN(dateStr) {
         if (!dateStr || String(dateStr).trim() === "") return "";
         const str = String(dateStr).trim();
@@ -3563,15 +3577,265 @@
     }
 
     // -------------------------------------------------------------
-    // Excel Sample Generation & Import (SheetJS)
+        // Master Variables Catalog for 2-Sheet Excel & Lookup Dictionary
     // -------------------------------------------------------------
-    btnDownloadSample.addEventListener("click", () => {
-        window.location.href = "MauNhapLieu_ChiDinhThau_SAMPLE_v2.xlsx";
-    });
+    const MASTER_VARIABLES_CATALOG = [
+        // A. Chủ đầu tư
+        { stt: 1, groupKey: "A", group: "A. Chủ đầu tư", label: "Tên Chủ đầu tư (*)", tag: "TEN_CHU_DAU_TU", isGeneral: true, example: "Cảng Hàng không Quốc tế Cần Thơ" },
+        { stt: 2, groupKey: "A", group: "A. Chủ đầu tư", label: "Tên Chủ đầu tư (IN HOA)", tag: "TEN_CHU_DAU_TU_VIET_HOA", isGeneral: true, example: "CẢNG HÀNG KHÔNG QUỐC TẾ CẦN THƠ" },
+        { stt: 3, groupKey: "A", group: "A. Chủ đầu tư", label: "Tên Ban QLDA / Phòng ban (*)", tag: "TEN_BAN_QUAN_LY_DU_AN", isGeneral: true, example: "PHÒNG KỸ THUẬT HẠ TẦNG" },
+        { stt: 4, groupKey: "A", group: "A. Chủ đầu tư", label: "Cơ quan trình quyết định", tag: "CO_QUAN_TRINH", isGeneral: true, example: "Trưởng ban Điều hành dự án" },
+        { stt: 5, groupKey: "A", group: "A. Chủ đầu tư", label: "Cấp quyết định đầu tư", tag: "CAP_QUYET_DINH_DAU_TU", isGeneral: true, example: "Tổng công ty Cảng hàng không Việt Nam (TCT)" },
+        { stt: 6, groupKey: "A", group: "A. Chủ đầu tư", label: "Địa danh phát hành văn bản (*)", tag: "DIA_DANH", isGeneral: true, example: "Cần Thơ" },
+        { stt: 7, groupKey: "A", group: "A. Chủ đầu tư", label: "Tỉnh / Thành phố", tag: "TINH_THANH_PHO", isGeneral: true, example: "TP. Cần Thơ" },
+        { stt: 8, groupKey: "A", group: "A. Chủ đầu tư", label: "Địa chỉ trụ sở CĐT", tag: "DIA_CHI_TRU_SO", isGeneral: true, example: "179B Lê Hồng Phong, Trà An, Bình Thủy, TP. Cần Thơ" },
+        { stt: 9, groupKey: "A", group: "A. Chủ đầu tư", label: "Người ký quyết định CĐT (*)", tag: "NGUOI_KY_CDT", isGeneral: true, example: "Nguyễn Văn A" },
+        { stt: 10, groupKey: "A", group: "A. Chủ đầu tư", label: "Chức vụ người ký CĐT", tag: "CHUC_VU_NGUOI_KY", isGeneral: true, example: "Giám đốc" },
+        { stt: 11, groupKey: "A", group: "A. Chủ đầu tư", label: "Trưởng ban Điều hành dự án", tag: "TRUONG_BAN_DHDA", isGeneral: true, example: "Trần Văn B" },
+        { stt: 12, groupKey: "A", group: "A. Chủ đầu tư", label: "Chức vụ Trưởng ban ĐHDA", tag: "CHUC_VU_TRUONG_BAN", isGeneral: true, example: "Trưởng phòng Kỹ thuật hạ tầng" },
+        { stt: 13, groupKey: "A", group: "A. Chủ đầu tư", label: "Kế toán trưởng", tag: "KE_TOAN_TRUONG", isGeneral: true, example: "Lê Thị C" },
+        { stt: 14, groupKey: "A", group: "A. Chủ đầu tư", label: "Chức vụ Kế toán trưởng", tag: "CHUC_VU_KE_TOAN", isGeneral: true, example: "Kế toán trưởng" },
 
-    btnImportExcel.addEventListener("click", () => {
-        excelFileInput.click();
-    });
+        // B. Dự án & Gói thầu
+        { stt: 15, groupKey: "B", group: "B. Dự án & Gói", label: "Tên dự án (*)", tag: "TEN_DU_AN", isGeneral: true, example: "Sửa chữa góc cua đường khẩn nguy chữa cháy..." },
+        { stt: 16, groupKey: "B", group: "B. Dự án & Gói", label: "Tên công trình", tag: "TEN_CONG_TRINH", isGeneral: true, example: "Sửa chữa góc cua đường khẩn nguy chữa cháy..." },
+        { stt: 17, groupKey: "B", group: "B. Dự án & Gói", label: "Nguồn vốn", tag: "NGUON_VON", isGeneral: true, example: "Quỹ đầu tư phát triển TCT" },
+        { stt: 18, groupKey: "B", group: "B. Dự án & Gói", label: "Tên gói thầu (*)", tag: "TEN_GOI_THAU", isGeneral: false, example: "Thi công XDCT sửa chữa góc cua đường khẩn nguy" },
+        { stt: 19, groupKey: "B", group: "B. Dự án & Gói", label: "Hình thức LCNT", tag: "HINH_THUC_LCNT", isGeneral: false, example: "Chỉ định thầu rút gọn" },
+        { stt: 20, groupKey: "B", group: "B. Dự án & Gói", label: "Loại hợp đồng", tag: "LOAI_HOP_DONG", isGeneral: false, example: "Trọn gói" },
+        { stt: 21, groupKey: "B", group: "B. Dự án & Gói", label: "Thời gian thực hiện gói thầu", tag: "THOI_GIAN_THUC_HIEN", isGeneral: false, example: "30 ngày" },
+        { stt: 22, groupKey: "B", group: "B. Dự án & Gói", label: "Thời gian tổ chức LCNT", tag: "THOI_GIAN_TO_CHUC", isGeneral: false, example: "Quý I/2027" },
+
+        // C. Tài chính
+        { stt: 23, groupKey: "C", group: "C. Tài chính", label: "Giá gói thầu (số) (*)", tag: "GIA_GOI_THAU_SO", isGeneral: false, example: "850.000.000" },
+        { stt: 24, groupKey: "C", group: "C. Tài chính", label: "Giá gói thầu (chữ) (*)", tag: "GIA_GOI_THAU_CHU", isGeneral: false, example: "Tám trăm năm mươi triệu đồng chẵn" },
+        { stt: 25, groupKey: "C", group: "C. Tài chính", label: "Giá trị hợp đồng (số)", tag: "GIA_TRI_HOP_DONG_SO", isGeneral: false, example: "835.000.000" },
+        { stt: 26, groupKey: "C", group: "C. Tài chính", label: "Giá trị hợp đồng (chữ)", tag: "GIA_TRI_HOP_DONG_CHU", isGeneral: false, example: "Tám trăm ba mươi lăm triệu đồng" },
+        { stt: 27, groupKey: "C", group: "C. Tài chính", label: "Giá trị giảm giá", tag: "GIA_TRI_GIAM_GIA", isGeneral: false, example: "15.000.000" },
+        { stt: 28, groupKey: "C", group: "C. Tài chính", label: "Chi phí tư vấn", tag: "CHI_PHI_TU_VAN", isGeneral: false, example: "8.000.000" },
+        { stt: 29, groupKey: "C", group: "C. Tài chính", label: "Kho bạc Nhà nước / Nơi giao dịch", tag: "KHO_BAC_NHA_NUOC", isGeneral: true, example: "Kho bạc Nhà nước Cần Thơ" },
+
+        // D. Nhà thầu
+        { stt: 30, groupKey: "D", group: "D. Nhà thầu", label: "Tên nhà thầu (*)", tag: "TEN_NHA_THAU", isGeneral: false, example: "Công ty TNHH Xây dựng Giao thông Miền Tây" },
+        { stt: 31, groupKey: "D", group: "D. Nhà thầu", label: "Tên nhà thầu (IN HOA)", tag: "TEN_NHA_THAU_VIET_HOA", isGeneral: false, example: "CÔNG TY TNHH XÂY DỰNG GIAO THÔNG MIỀN TÂY" },
+        { stt: 32, groupKey: "D", group: "D. Nhà thầu", label: "Tên nhà thầu (viết tắt)", tag: "TEN_NHA_THAU_VIET_TAT", isGeneral: false, example: "MT-CONS" },
+        { stt: 33, groupKey: "D", group: "D. Nhà thầu", label: "Người đại diện nhà thầu", tag: "DAI_DIEN_NHA_THAU", isGeneral: false, example: "Lê Hoàng E" },
+        { stt: 34, groupKey: "D", group: "D. Nhà thầu", label: "Chức vụ đại diện nhà thầu", tag: "CHUC_VU_DAI_DIEN", isGeneral: false, example: "Tổng Giám đốc" },
+        { stt: 35, groupKey: "D", group: "D. Nhà thầu", label: "Địa chỉ nhà thầu", tag: "DIA_CHI_NHA_THAU", isGeneral: false, example: "Số 45 đường CMT8, Bình Thủy, Cần Thơ" },
+        { stt: 36, groupKey: "D", group: "D. Nhà thầu", label: "Mã số thuế nhà thầu", tag: "MA_SO_THUE", isGeneral: false, example: "1807654321" },
+
+        // E. Số hiệu VB
+        { stt: 37, groupKey: "E", group: "E. Số hiệu VB", label: "Số tờ trình chỉ định thầu", tag: "SO_TO_TRINH", isGeneral: false, example: "11/ĐKNCC/TTr-KTHT" },
+        { stt: 38, groupKey: "E", group: "E. Số hiệu VB", label: "Số quyết định chỉ định thầu", tag: "SO_QUYET_DINH", isGeneral: false, example: "968/QĐ-CHKQTCT" },
+        { stt: 39, groupKey: "E", group: "E. Số hiệu VB", label: "Số giấy mời", tag: "SO_GIAY_MOI", isGeneral: false, example: "GM-BQLDA" },
+        { stt: 40, groupKey: "E", group: "E. Số hiệu VB", label: "Số biên bản hoàn thiện", tag: "SO_BIEN_BAN_HOAN_THIEN", isGeneral: false, example: "04/BB-HT" },
+        { stt: 41, groupKey: "E", group: "E. Số hiệu VB", label: "Số hợp đồng kinh tế", tag: "SO_HOP_DONG", isGeneral: false, example: "26076" },
+        { stt: 42, groupKey: "E", group: "E. Số hiệu VB", label: "Số công văn tham gia", tag: "SO_CONG_VAN_THAM_GIA", isGeneral: false, example: "315/CV-HT" },
+
+        // F. Ngày tháng (ngắn)
+        { stt: 43, groupKey: "F", group: "F. Ngày (dd/mm/yyyy)", label: "Ngày Tờ trình (dd/mm/yyyy)", tag: "NGAY_TO_TRINH", isGeneral: false, example: "10/02/2027" },
+        { stt: 44, groupKey: "F", group: "F. Ngày (dd/mm/yyyy)", label: "Ngày Quyết định (dd/mm/yyyy)", tag: "NGAY_QUYET_DINH", isGeneral: false, example: "11/02/2027" },
+        { stt: 45, groupKey: "F", group: "F. Ngày (dd/mm/yyyy)", label: "Ngày Giấy mời (dd/mm/yyyy)", tag: "NGAY_GIAY_MOI", isGeneral: false, example: "11/02/2027" },
+        { stt: 46, groupKey: "F", group: "F. Ngày (dd/mm/yyyy)", label: "Ngày Biên bản hoàn thiện (dd/mm/yyyy)", tag: "NGAY_BIEN_BAN", isGeneral: false, example: "14/02/2027" },
+        { stt: 47, groupKey: "F", group: "F. Ngày (dd/mm/yyyy)", label: "Ngày Hợp đồng (dd/mm/yyyy)", tag: "NGAY_HOP_DONG", isGeneral: false, example: "15/02/2027" },
+
+        // G. Ngày tháng (Full)
+        { stt: 48, groupKey: "G", group: "G. Ngày (Full)", label: "Ngày Tờ trình (Đầy đủ)", tag: "NGAY_TO_TRINH_FULL", isGeneral: false, example: "ngày 10 tháng 02 năm 2027" },
+        { stt: 49, groupKey: "G", group: "G. Ngày (Full)", label: "Ngày Quyết định (Đầy đủ)", tag: "NGAY_QUYET_DINH_FULL", isGeneral: false, example: "ngày 11 tháng 02 năm 2027" },
+        { stt: 50, groupKey: "G", group: "G. Ngày (Full)", label: "Ngày Giấy mời (Đầy đủ)", tag: "NGAY_GIAY_MOI_FULL", isGeneral: false, example: "ngày 11 tháng 02 năm 2027" },
+        { stt: 51, groupKey: "G", group: "G. Ngày (Full)", label: "Ngày Biên bản (Đầy đủ)", tag: "NGAY_BIEN_BAN_FULL", isGeneral: false, example: "ngày 14 tháng 02 năm 2027" },
+        { stt: 52, groupKey: "G", group: "G. Ngày (Full)", label: "Ngày Hợp đồng (Đầy đủ)", tag: "NGAY_HOP_DONG_FULL", isGeneral: false, example: "ngày 15 tháng 02 năm 2027" },
+
+        // H. Tên trích dẫn
+        { stt: 53, groupKey: "H", group: "H. Tên trích dẫn", label: "Tên + Số + Ngày Tờ trình", tag: "TEN_KEM_SO_NGAY_TO_TRINH", isGeneral: false, example: "Tờ trình 11/ĐKNCC/TTr-KTHT ngày 10/02/2027" },
+        { stt: 54, groupKey: "H", group: "H. Tên trích dẫn", label: "Tên + Số + Ngày Quyết định", tag: "TEN_KEM_SO_NGAY_QUYET_DINH", isGeneral: false, example: "Quyết định 968/QĐ-CHKQTCT ngày 11/02/2027" },
+        { stt: 55, groupKey: "H", group: "H. Tên trích dẫn", label: "Tên + Số + Ngày Giấy mời", tag: "TEN_KEM_SO_NGAY_GIAY_MOI", isGeneral: false, example: "Giấy mời GM-BQLDA ngày 11/02/2027" },
+        { stt: 56, groupKey: "H", group: "H. Tên trích dẫn", label: "Tên + Số + Ngày Biên bản", tag: "TEN_KEM_SO_NGAY_BIEN_BAN", isGeneral: false, example: "Biên bản hoàn thiện hợp đồng 04/BB-HT ngày 14/02/2027" },
+        { stt: 57, groupKey: "H", group: "H. Tên trích dẫn", label: "Tên + Số + Ngày Hợp đồng", tag: "TEN_KEM_SO_NGAY_HOP_DONG", isGeneral: false, example: "Hợp đồng kinh tế 26076 ngày 15/02/2027" },
+
+        // I. Căn cứ pháp lý
+        { stt: 58, groupKey: "I", group: "I. Căn cứ pháp lý", label: "Căn cứ pháp lý chung (*)", tag: "CAN_CU_PHAP_LY_CHUNG", isGeneral: true, example: "Căn cứ Luật Đấu thầu số 22/2023/QH15..." }
+    ];
+
+    // Export entire application state to 2-Sheet Excel file (Định hướng & Thông tin)
+    // -------------------------------------------------------------
+    function exportStateToExcel() {
+        try {
+            if (typeof XLSX === "undefined") {
+                showToast("Thư viện SheetJS (XLSX) chưa sẵn sàng!", "error");
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+
+            // 1. Build Sheet "Định hướng"
+            const ws1Data = [
+                ["KẾ HOẠCH & TIẾN ĐỘ THỦ TỤC DỰ ÁN"],
+                ["Chuẩn hóa theo Luật Đấu thầu số 22/2023/QH15 & Nghị định 24/2024/NĐ-CP | Nhập dữ liệu tự động đồng bộ sang Tab 1 & Tab 2"],
+                [],
+                ["I. THÔNG TIN CHUNG DỰ ÁN"],
+                ["Tên dự án (*):", appState.generalInfo.TEN_DU_AN || (appState.projectRoadmap && appState.projectRoadmap.projectName) || "", "Cấp quyết định đầu tư:", appState.generalInfo.CAP_QUYET_DINH_DAU_TU || (appState.projectRoadmap && appState.projectRoadmap.approver) || ""],
+                ["Chủ đầu tư / Đơn vị thực hiện (*):", appState.generalInfo.TEN_CHU_DAU_TU || (appState.projectRoadmap && appState.projectRoadmap.investorName) || "", "Nguồn vốn:", appState.generalInfo.NGUON_VON || (appState.projectRoadmap && appState.projectRoadmap.fundingSource) || ""],
+                ["Địa danh phát hành văn bản (*):", appState.generalInfo.DIA_DANH || "Cần Thơ", "Tỉnh / Thành phố:", appState.generalInfo.TINH_THANH_PHO || "TP. Cần Thơ"],
+                [],
+                ["II. KẾ HOẠCH CÁC GÓI THẦU (ÁP DỤNG TRONG DỰ ÁN)"],
+                ["STT", "Mã gói", "Tên gói thầu", "Lĩnh vực", "Giá gói dự kiến (VNĐ)", "Phương thức LCNT định hướng"]
+            ];
+
+            const rmPackages = (appState.projectRoadmap && Array.isArray(appState.projectRoadmap.packages)) ? appState.projectRoadmap.packages : [];
+            rmPackages.forEach((pkg, idx) => {
+                ws1Data.push([
+                    idx + 1,
+                    pkg.id || `GOI_${idx + 1}`,
+                    pkg.name || `Gói thầu số ${idx + 1}`,
+                    pkg.categoryLabel || pkg.category || "Tư vấn",
+                    pkg.estimatedPrice || (pkg.fields && pkg.fields.GIA_GOI_THAU_SO) || "",
+                    pkg.procurementTypeId ? getProcurementTypeName(pkg.procurementTypeId) : (pkg.fields?.HINH_THUC_LCNT || "")
+                ]);
+            });
+
+            ws1Data.push([]);
+            ws1Data.push(["III. BẢNG TRÌNH TỰ THỦ TỤC & TIẾN ĐỘ VĂN BẢN (ĐỒNG BỘ TAB 1)"]);
+            ws1Data.push(["STT", "Phạm vi / Gói thầu", "Tên công việc / Thủ tục", "Mã văn bản", "Đơn vị ký", "Chế độ", "Thứ", "Ngày ký", "Thời gian", "Số văn bản"]);
+
+            let taskStt = 1;
+            const rmPhases = (appState.projectRoadmap && Array.isArray(appState.projectRoadmap.timelinePhases)) ? appState.projectRoadmap.timelinePhases : [];
+            rmPhases.forEach(phase => {
+                const scopeName = phase.title || (phase.isPackage ? "Gói thầu" : "Triển khai");
+                (phase.tasks || []).forEach(task => {
+                    ws1Data.push([
+                        taskStt++,
+                        scopeName,
+                        task.name || "",
+                        task.docCode || "",
+                        task.signer || "",
+                        task.mode === "auto" ? "Tự động" : "Thủ công",
+                        task.dayOfWeek || "",
+                        task.date ? formatDateToVN(task.date) : "",
+                        task.duration !== undefined ? task.duration : 1,
+                        task.docNo || ""
+                    ]);
+                });
+            });
+
+            const ws1 = XLSX.utils.aoa_to_sheet(ws1Data);
+            ws1["!cols"] = [
+                { wch: 6 },
+                { wch: 22 },
+                { wch: 45 },
+                { wch: 18 },
+                { wch: 24 },
+                { wch: 38 },
+                { wch: 10 },
+                { wch: 14 },
+                { wch: 10 },
+                { wch: 22 }
+            ];
+            XLSX.utils.book_append_sheet(wb, ws1, "Định hướng");
+
+            // 2. Build Sheet "Thông tin"
+            const ws2Data = [
+                ["BẢNG BIẾN XẠ THÔNG TIN DỰ ÁN & CÁC GÓI THẦU"],
+                ["Cột D: Dùng chung toàn dự án (điền 1 lần) | Cột E, F, G: Riêng từng gói thầu | Tự động đồng bộ sang Tab 2 (Tạo hồ sơ)"],
+                [],
+                ["STT", "Phân nhóm thông tin", "Tên trường dữ liệu", "Mã biến xạ {TAG}", "Giá trị DÙNG CHUNG toàn dự án"]
+            ];
+
+            const activePackages = (appState.packages && appState.packages.length > 0) ? appState.packages : rmPackages;
+            activePackages.forEach((pkg, idx) => {
+                ws2Data[3].push(`Gói ${idx + 1}: ${pkg.name || `Gói ${idx + 1}`}`);
+            });
+
+            MASTER_VARIABLES_CATALOG.forEach(v => {
+                const row = [
+                    v.stt,
+                    v.group,
+                    v.label,
+                    v.tag,
+                    v.isGeneral ? (appState.generalInfo[v.tag] || "") : ""
+                ];
+
+                activePackages.forEach((pkg, pIdx) => {
+                    const pkgMerged = getMergedDataForPackage(pIdx);
+                    row.push(v.isGeneral ? "" : (pkgMerged[v.tag] || ""));
+                });
+
+                ws2Data.push(row);
+            });
+
+            // Append custom variables if any
+            if (appState.customVariables && Object.keys(appState.customVariables).length > 0) {
+                let custStt = MASTER_VARIABLES_CATALOG.length + 1;
+                for (const cKey in appState.customVariables) {
+                    const cVar = appState.customVariables[cKey];
+                    const row = [
+                        custStt++,
+                        "J. Tùy biến bổ sung",
+                        cVar.label || cKey,
+                        cKey,
+                        ""
+                    ];
+                    activePackages.forEach((pkg, pIdx) => {
+                        const pkgMerged = getMergedDataForPackage(pIdx);
+                        row.push(pkgMerged[cKey] || "");
+                    });
+                    ws2Data.push(row);
+                }
+            }
+
+            const ws2 = XLSX.utils.aoa_to_sheet(ws2Data);
+            ws2["!cols"] = [
+                { wch: 6 },
+                { wch: 24 },
+                { wch: 40 },
+                { wch: 32 },
+                { wch: 42 }
+            ];
+            activePackages.forEach(() => {
+                ws2["!cols"].push({ wch: 36 });
+            });
+            XLSX.utils.book_append_sheet(wb, ws2, "Thông tin");
+
+            // Format export file name
+            const projNameClean = (appState.generalInfo.TEN_DU_AN || "DuAn")
+                .replace(/[^a-zA-Z0-9_\u00C0-\u1EF9]+/g, "_")
+                .substring(0, 30);
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+            const fileName = `HoSo_${projNameClean}_${dateStr}.xlsx`;
+
+            XLSX.writeFile(wb, fileName);
+            showToast(`Đã xuất thành công file Excel 2 Sheet: ${fileName}`);
+        } catch (err) {
+            console.error("Export Excel error:", err);
+            showToast("Lỗi khi xuất file Excel: " + err.message, "error");
+        }
+    }
+
+    // Excel Sample Generation & Smart Import (2-Sheet & Legacy)
+    // -------------------------------------------------------------
+    if (btnDownloadSample) {
+        btnDownloadSample.addEventListener("click", () => {
+            const link = document.createElement("a");
+            link.href = "MauNhapLieu_HoSo_2Sheets_v3.xlsx";
+            link.download = "MauNhapLieu_HoSo_2Sheets_v3.xlsx";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Đang tải file Excel mẫu 2 Sheet (Định hướng & Thông tin)...");
+        });
+    }
+
+    if (btnImportExcel) {
+        btnImportExcel.addEventListener("click", () => {
+            excelFileInput.click();
+        });
+    }
+
+    const btnExportExcel = document.getElementById("btnExportExcel");
+    const btnExportExcelRoadmap = document.getElementById("btnExportExcelRoadmap");
+    if (btnExportExcel) btnExportExcel.addEventListener("click", exportStateToExcel);
+    if (btnExportExcelRoadmap) btnExportExcelRoadmap.addEventListener("click", exportStateToExcel);
 
     excelFileInput.addEventListener("change", (e) => {
         const file = e.target.files[0];
@@ -3583,118 +3847,390 @@
                 const data = new Uint8Array(evt.target.result);
                 const workbook = XLSX.read(data, { type: "array" });
 
-                const fieldMapping = {
-                    "Tên Chủ đầu tư (*)": "TEN_CHU_DAU_TU",
-                    "Tên Chủ đầu tư": "TEN_CHU_DAU_TU",
-                    "Tên Chủ đầu tư (IN HOA)": "TEN_CHU_DAU_TU_VIET_HOA",
-                    "Tên Ban QLDA (*)": "TEN_BAN_QUAN_LY_DU_AN",
-                    "Tên Ban QLDA": "TEN_BAN_QUAN_LY_DU_AN",
-                    "Cơ quan trình quyết định": "CO_QUAN_TRINH",
-                    "Địa danh phát hành văn bản (*)": "DIA_DANH",
-                    "Địa danh phát hành văn bản": "DIA_DANH",
-                    "Tỉnh / Thành phố": "TINH_THANH_PHO",
-                    "Địa chỉ trụ sở CĐT": "DIA_CHI_TRU_SO",
-                    "Cấp quyết định đầu tư": "CAP_QUYET_DINH_DAU_TU",
-                    "Tên dự án (*)": "TEN_DU_AN",
-                    "Tên dự án": "TEN_DU_AN",
-                    "Tên công trình": "TEN_CONG_TRINH",
-                    "Nguồn vốn": "NGUON_VON",
-                    "Người ký quyết định CĐT (*)": "NGUOI_KY_CDT",
-                    "Người ký quyết định CĐT": "NGUOI_KY_CDT",
-                    "Chức vụ người ký CĐT": "CHUC_VU_NGUOI_KY",
-                    "Trưởng ban Điều hành dự án": "TRUONG_BAN_DHDA",
-                    "Chức vụ Trưởng ban ĐHDA": "CHUC_VU_TRUONG_BAN",
-                    "Kế toán trưởng": "KE_TOAN_TRUONG",
-                    "Chức vụ Kế toán trưởng": "CHUC_VU_KE_TOAN",
-                    "Tên gói thầu (*)": "TEN_GOI_THAU",
-                    "Tên gói thầu": "TEN_GOI_THAU",
-                    "Hình thức LCNT": "HINH_THUC_LCNT",
-                    "Loại hợp đồng": "LOAI_HOP_DONG",
-                    "Thời gian thực hiện gói thầu": "THOI_GIAN_THUC_HIEN",
-                    "Thời gian tổ chức LCNT": "THOI_GIAN_TO_CHUC",
-                    "Giá gói thầu (số) (*)": "GIA_GOI_THAU_SO",
-                    "Giá gói thầu (số)": "GIA_GOI_THAU_SO",
-                    "Giá gói thầu (chữ) (*)": "GIA_GOI_THAU_CHU",
-                    "Giá gói thầu (chữ)": "GIA_GOI_THAU_CHU",
-                    "Giá trị hợp đồng (số)": "GIA_TRI_HOP_DONG_SO",
-                    "Giá trị hợp đồng (chữ)": "GIA_TRI_HOP_DONG_CHU",
-                    "Giá trị giảm giá": "GIA_TRI_GIAM_GIA",
-                    "Chi phí tư vấn": "CHI_PHI_TU_VAN",
-                    "Kho bạc Nhà nước": "KHO_BAC_NHA_NUOC",
-                    "Tên nhà thầu (*)": "TEN_NHA_THAU",
-                    "Tên nhà thầu": "TEN_NHA_THAU",
-                    "Tên nhà thầu (IN HOA)": "TEN_NHA_THAU_VIET_HOA",
-                    "Tên nhà thầu (viết tắt)": "TEN_NHA_THAU_VIET_TAT",
-                    "Người đại diện nhà thầu": "DAI_DIEN_NHA_THAU",
-                    "Chức vụ đại diện nhà thầu": "CHUC_VU_DAI_DIEN",
-                    "Địa chỉ nhà thầu": "DIA_CHI_NHA_THAU",
-                    "Mã số thuế nhà thầu": "MA_SO_THUE",
-                    "Số công văn tham gia": "SO_CONG_VAN_THAM_GIA",
-                    "Số biên bản hoàn thiện HĐ": "SO_BIEN_BAN_HOAN_THIEN",
-                    "Số tờ trình chỉ định thầu": "SO_TO_TRINH",
-                    "Số quyết định chỉ định thầu": "SO_QUYET_DINH",
-                    "Thời gian họp hoàn thiện HĐ": "THOI_GIAN_HOP",
-                    "Địa điểm họp hoàn thiện HĐ": "DIA_DIEM_HOP",
-                    "Ngày giấy mời": "NGAY_GIAY_MOI",
-                    "Ngày biên bản hoàn thiện HĐ": "NGAY_BIEN_BAN",
-                    "Ngày tờ trình": "NGAY_TO_TRINH",
-                    "Ngày quyết định": "NGAY_QUYET_DINH"
-                };
-
-                let newGeneralInfo = { ...appState.generalInfo };
-                let newPackages = [];
-
-                workbook.SheetNames.forEach((sheetName, sIdx) => {
-                    const sheet = workbook.Sheets[sheetName];
-                    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-                    if (sIdx === 0 || sheetName.includes("chung")) {
-                        let canCuList = [];
-                        rows.forEach(r => {
-                            if (r && r[1] && r[2] !== undefined) {
-                                const fieldLabel = String(r[1]).trim();
-                                const val = String(r[2]).trim();
-                                if (fieldMapping[fieldLabel]) {
-                                    newGeneralInfo[fieldMapping[fieldLabel]] = val;
-                                } else if (fieldLabel.startsWith("Căn cứ")) {
-                                    canCuList.push(val);
-                                }
-                            }
-                        });
-                        if (canCuList.length > 0) {
-                            newGeneralInfo.CAN_CU_PHAP_LY_CHUNG = canCuList.join("\n");
-                        }
-                    } else {
-                        let pkgFields = {};
-                        rows.forEach(r => {
-                            if (r && r[1] && r[2] !== undefined) {
-                                const fieldLabel = String(r[1]).trim();
-                                const val = String(r[2]).trim();
-                                if (fieldMapping[fieldLabel]) {
-                                    pkgFields[fieldMapping[fieldLabel]] = val;
-                                }
-                            }
-                        });
-
-                        newPackages.push({
-                            id: `pkg-${Date.now()}-${sIdx}`,
-                            name: sheetName,
-                            sheet_name: sheetName,
-                            fields: pkgFields
-                        });
-                    }
+                const sheetNames = workbook.SheetNames || [];
+                const sheetDinhHuong = sheetNames.find(s => {
+                    const norm = s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    return norm.includes("dinh huong");
+                });
+                const sheetThongTin = sheetNames.find(s => {
+                    const norm = s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    return norm.includes("thong tin");
                 });
 
-                if (newPackages.length > 0) {
+                if (sheetDinhHuong || sheetThongTin) {
+                    // ==========================================
+                    // 2-SHEET WORKBOOK IMPORT
+                    // ==========================================
+                    let newGeneralInfo = { ...appState.generalInfo };
+                    let importedPackages = [];
+                    let importedTimelinePhases = [];
+
+                    // 1. Parse Sheet "Định hướng" if present
+                    if (sheetDinhHuong) {
+                        const wsDH = workbook.Sheets[sheetDinhHuong];
+                        const rowsDH = XLSX.utils.sheet_to_json(wsDH, { header: 1 });
+
+                        let section = "";
+                        let packageRows = [];
+                        let taskRows = [];
+
+                        for (let rIdx = 0; rIdx < rowsDH.length; rIdx++) {
+                            const row = rowsDH[rIdx];
+                            if (!row || row.length === 0) continue;
+                            const firstCell = String(row[0] || "").trim();
+
+                            if (firstCell.includes("I. THÔNG TIN CHUNG")) {
+                                section = "general";
+                                continue;
+                            } else if (firstCell.includes("II. KẾ HOẠCH CÁC GÓI THẦU")) {
+                                section = "packages";
+                                continue;
+                            } else if (firstCell.includes("III. BẢNG TRÌNH TỰ THỦ TỤC") || firstCell.includes("III. TIẾN ĐỘ")) {
+                                section = "timeline";
+                                continue;
+                            }
+
+                            if (section === "general") {
+                                for (let c = 0; c < row.length; c++) {
+                                    const val = String(row[c] || "").trim();
+                                    const nextVal = (row[c+1] !== undefined && row[c+1] !== null) ? String(row[c+1]).trim() : "";
+                                    if (val.startsWith("Tên dự án") && nextVal) {
+                                        newGeneralInfo.TEN_DU_AN = nextVal;
+                                        newGeneralInfo.TEN_CONG_TRINH = nextVal;
+                                        if (appState.projectRoadmap) appState.projectRoadmap.projectName = nextVal;
+                                    } else if ((val.startsWith("Chủ đầu tư") || val.includes("Đơn vị thực hiện")) && nextVal) {
+                                        newGeneralInfo.TEN_CHU_DAU_TU = nextVal;
+                                        newGeneralInfo.TEN_CHU_DAU_TU_VIET_HOA = nextVal.toUpperCase();
+                                        if (appState.projectRoadmap) appState.projectRoadmap.investorName = nextVal;
+                                    } else if (val.startsWith("Cấp quyết định") && nextVal) {
+                                        newGeneralInfo.CAP_QUYET_DINH_DAU_TU = nextVal;
+                                        if (appState.projectRoadmap) appState.projectRoadmap.approver = nextVal;
+                                    } else if (val.startsWith("Nguồn vốn") && nextVal) {
+                                        newGeneralInfo.NGUON_VON = nextVal;
+                                        if (appState.projectRoadmap) appState.projectRoadmap.fundingSource = nextVal;
+                                    } else if (val.startsWith("Địa danh") && nextVal) {
+                                        newGeneralInfo.DIA_DANH = nextVal;
+                                    } else if (val.startsWith("Tỉnh / Thành phố") && nextVal) {
+                                        newGeneralInfo.TINH_THANH_PHO = nextVal;
+                                    }
+                                }
+                            } else if (section === "packages") {
+                                if (firstCell === "STT" || firstCell.toLowerCase().includes("mã gói")) continue;
+                                if (row[2] || row[1]) {
+                                    packageRows.push(row);
+                                }
+                            } else if (section === "timeline") {
+                                if (firstCell === "STT" || firstCell.toLowerCase().includes("phạm vi")) continue;
+                                if (row[1] || row[2]) {
+                                    taskRows.push(row);
+                                }
+                            }
+                        }
+
+                        if (packageRows.length > 0) {
+                            importedPackages = packageRows.map((r, i) => {
+                                const pkgName = String(r[2] || `Gói thầu ${i+1}`).trim();
+                                const catLabel = String(r[3] || "Tư vấn").trim();
+                                let cat = "tu_van";
+                                const catLower = catLabel.toLowerCase();
+                                if (catLower.includes("xây") || catLower.includes("xay")) cat = "xay_lap";
+                                else if (catLower.includes("mua")) cat = "mua_sam";
+                                else if (catLower.includes("phi")) cat = "phi_tu_van";
+
+                                const rawPrice = r[4] !== undefined ? String(r[4]).trim() : "";
+                                const rawProc = r[5] !== undefined ? String(r[5]).trim() : "";
+                                let procId = "chi_dinh_thau_rut_gon";
+                                if (typeof PROCUREMENT_MATRIX !== "undefined" && PROCUREMENT_MATRIX.procurementTypes) {
+                                    const match = PROCUREMENT_MATRIX.procurementTypes.find(pt => 
+                                        rawProc.toLowerCase().includes(pt.name.toLowerCase()) || 
+                                        pt.id === rawProc
+                                    );
+                                    if (match) procId = match.id;
+                                }
+
+                                return {
+                                    id: String(r[1] || `pkg_${i+1}`).trim(),
+                                    name: pkgName,
+                                    category: cat,
+                                    categoryLabel: catLabel,
+                                    procurementTypeId: procId,
+                                    estimatedPrice: rawPrice,
+                                    contractType: "Trọn gói",
+                                    duration: "30 ngày",
+                                    status: "Đang làm",
+                                    fields: {
+                                        TEN_GOI_THAU: pkgName,
+                                        GIA_GOI_THAU_SO: rawPrice,
+                                        HINH_THUC_LCNT: rawProc || getProcurementTypeName(procId)
+                                    }
+                                };
+                            });
+                        }
+
+                        if (taskRows.length > 0) {
+                            const phaseMap = new Map();
+                            taskRows.forEach(r => {
+                                const scope = String(r[1] || "Triển khai").trim();
+                                if (!phaseMap.has(scope)) {
+                                    const isPkg = !scope.toLowerCase().includes("triển khai") && !scope.toLowerCase().includes("trien khai");
+                                    phaseMap.set(scope, {
+                                        id: `phase_${phaseMap.size + 1}`,
+                                        title: scope,
+                                        isPackage: isPkg,
+                                        tasks: []
+                                    });
+                                }
+                                const ph = phaseMap.get(scope);
+                                const tMode = String(r[5] || "").toLowerCase().includes("tự động") ? "auto" : "manual";
+
+                                let isoDate = "";
+                                const rawDate = r[7] !== undefined ? String(r[7]).trim() : "";
+                                if (rawDate) {
+                                    if (rawDate.includes("/")) {
+                                        const p = rawDate.split("/");
+                                        if (p.length === 3) isoDate = `${p[2].padStart(4,"20")}-${p[1].padStart(2,"0")}-${p[0].padStart(2,"0")}`;
+                                    } else if (rawDate.includes("-")) {
+                                        isoDate = rawDate;
+                                    }
+                                }
+
+                                ph.tasks.push({
+                                    id: `task_${ph.tasks.length + 1}`,
+                                    name: String(r[2] || "").trim(),
+                                    docCode: String(r[3] || "").trim(),
+                                    signer: String(r[4] || "").trim(),
+                                    mode: tMode,
+                                    dayOfWeek: String(r[6] || "").trim(),
+                                    date: isoDate,
+                                    duration: parseInt(r[8], 10) || 1,
+                                    docNo: String(r[9] || "").trim(),
+                                    status: "Đã xong"
+                                });
+                            });
+                            importedTimelinePhases = Array.from(phaseMap.values());
+                        }
+                    }
+
+                    // 2. Parse Sheet "Thông tin" if present
+                    let packagesFromInfo = [];
+                    if (sheetThongTin) {
+                        const wsTT = workbook.Sheets[sheetThongTin];
+                        const rowsTT = XLSX.utils.sheet_to_json(wsTT, { header: 1 });
+
+                        let headerRowIdx = -1;
+                        for (let r = 0; r < rowsTT.length; r++) {
+                            const rowStr = (rowsTT[r] || []).map(c => String(c || "")).join(" ");
+                            if (rowStr.includes("Mã biến xạ") || rowStr.includes("{TAG}") || rowStr.includes("Phân nhóm")) {
+                                headerRowIdx = r;
+                                break;
+                            }
+                        }
+
+                        if (headerRowIdx !== -1) {
+                            const headerRow = rowsTT[headerRowIdx];
+                            const pkgColIndices = [];
+                            for (let c = 5; c < headerRow.length; c++) {
+                                const hName = String(headerRow[c] || "").trim();
+                                if (hName) {
+                                    pkgColIndices.push({ colIdx: c, name: hName });
+                                    packagesFromInfo.push({
+                                        id: `pkg-${packagesFromInfo.length + 1}`,
+                                        name: hName.replace(/^Gói\s*\d+:\s*/i, ""),
+                                        sheet_name: hName,
+                                        fields: {}
+                                    });
+                                }
+                            }
+
+                            for (let r = headerRowIdx + 1; r < rowsTT.length; r++) {
+                                const row = rowsTT[r];
+                                if (!row || row.length === 0) continue;
+                                const tagRaw = String(row[3] || "").trim();
+                                const tag = tagRaw.replace(/[{}]/g, "").trim();
+                                if (!tag) continue;
+
+                                const commonVal = (row[4] !== undefined && row[4] !== null) ? String(row[4]).trim() : "";
+                                if (commonVal !== "") {
+                                    newGeneralInfo[tag] = commonVal;
+                                }
+
+                                pkgColIndices.forEach((pCol, pIdx) => {
+                                    const val = (row[pCol.colIdx] !== undefined && row[pCol.colIdx] !== null) ? String(row[pCol.colIdx]).trim() : "";
+                                    if (val !== "") {
+                                        packagesFromInfo[pIdx].fields[tag] = val;
+                                    }
+                                });
+                            }
+                        }
+                    }
+
                     appState.generalInfo = newGeneralInfo;
-                    appState.packages = newPackages;
-                    appState.activePackageIndex = 0;
+
+                    if (importedPackages.length > 0) {
+                        appState.projectRoadmap.packages = importedPackages.map((rp, i) => {
+                            const pInfo = packagesFromInfo[i] || { fields: {} };
+                            return {
+                                ...rp,
+                                fields: { ...rp.fields, ...pInfo.fields }
+                            };
+                        });
+                    } else if (packagesFromInfo.length > 0) {
+                        appState.projectRoadmap.packages = packagesFromInfo.map((p, i) => ({
+                            id: p.id || `pkg_${i+1}`,
+                            name: p.name || `Gói thầu ${i+1}`,
+                            category: "tu_van",
+                            categoryLabel: "Tư vấn",
+                            procurementTypeId: "chi_dinh_thau_rut_gon",
+                            estimatedPrice: p.fields.GIA_GOI_THAU_SO || "",
+                            contractType: p.fields.LOAI_HOP_DONG || "Trọn gói",
+                            duration: p.fields.THOI_GIAN_THUC_HIEN || "30 ngày",
+                            status: "Đang làm",
+                            fields: p.fields
+                        }));
+                    }
+
+                    if (importedTimelinePhases.length > 0) {
+                        appState.projectRoadmap.timelinePhases = importedTimelinePhases;
+                    }
+
+                    if (packagesFromInfo.length > 0) {
+                        appState.packages = packagesFromInfo;
+                    } else if (importedPackages.length > 0) {
+                        appState.packages = importedPackages.map(ip => ({
+                            id: ip.id,
+                            name: ip.name,
+                            sheet_name: ip.name,
+                            fields: { ...ip.fields }
+                        }));
+                    }
+
+                    syncRoadmapToDocs();
                     saveState();
+                    renderRoadmapUI();
                     renderPackageDropdown();
                     populateFormInputs();
-                    showToast(`Đã import thành công ${newPackages.length} gói thầu từ file Excel!`);
+                    renderInteractivePreview();
+
+                    const totalPkgs = (appState.packages || []).length;
+                    showToast(`Đã import thành công file Excel 2 Sheet (${totalPkgs} gói thầu)!`);
                 } else {
-                    showToast("Không tìm thấy dữ liệu gói thầu trong file!", "error");
+                    // ==========================================
+                    // LEGACY MULTI-SHEET WORKBOOK FALLBACK
+                    // ==========================================
+                    const fieldMapping = {
+                        "Tên Chủ đầu tư (*)": "TEN_CHU_DAU_TU",
+                        "Tên Chủ đầu tư": "TEN_CHU_DAU_TU",
+                        "Tên Chủ đầu tư (IN HOA)": "TEN_CHU_DAU_TU_VIET_HOA",
+                        "Tên Ban QLDA (*)": "TEN_BAN_QUAN_LY_DU_AN",
+                        "Tên Ban QLDA": "TEN_BAN_QUAN_LY_DU_AN",
+                        "Cơ quan trình quyết định": "CO_QUAN_TRINH",
+                        "Địa danh phát hành văn bản (*)": "DIA_DANH",
+                        "Địa danh phát hành văn bản": "DIA_DANH",
+                        "Tỉnh / Thành phố": "TINH_THANH_PHO",
+                        "Địa chỉ trụ sở CĐT": "DIA_CHI_TRU_SO",
+                        "Cấp quyết định đầu tư": "CAP_QUYET_DINH_DAU_TU",
+                        "Tên dự án (*)": "TEN_DU_AN",
+                        "Tên dự án": "TEN_DU_AN",
+                        "Tên công trình": "TEN_CONG_TRINH",
+                        "Nguồn vốn": "NGUON_VON",
+                        "Người ký quyết định CĐT (*)": "NGUOI_KY_CDT",
+                        "Người ký quyết định CĐT": "NGUOI_KY_CDT",
+                        "Chức vụ người ký CĐT": "CHUC_VU_NGUOI_KY",
+                        "Trưởng ban Điều hành dự án": "TRUONG_BAN_DHDA",
+                        "Chức vụ Trưởng ban ĐHDA": "CHUC_VU_TRUONG_BAN",
+                        "Kế toán trưởng": "KE_TOAN_TRUONG",
+                        "Chức vụ Kế toán trưởng": "CHUC_VU_KE_TOAN",
+                        "Tên gói thầu (*)": "TEN_GOI_THAU",
+                        "Tên gói thầu": "TEN_GOI_THAU",
+                        "Hình thức LCNT": "HINH_THUC_LCNT",
+                        "Loại hợp đồng": "LOAI_HOP_DONG",
+                        "Thời gian thực hiện gói thầu": "THOI_GIAN_THUC_HIEN",
+                        "Thời gian tổ chức LCNT": "THOI_GIAN_TO_CHUC",
+                        "Giá gói thầu (số) (*)": "GIA_GOI_THAU_SO",
+                        "Giá gói thầu (số)": "GIA_GOI_THAU_SO",
+                        "Giá gói thầu (chữ) (*)": "GIA_GOI_THAU_CHU",
+                        "Giá gói thầu (chữ)": "GIA_GOI_THAU_CHU",
+                        "Giá trị hợp đồng (số)": "GIA_TRI_HOP_DONG_SO",
+                        "Giá trị hợp đồng (chữ)": "GIA_TRI_HOP_DONG_CHU",
+                        "Giá trị giảm giá": "GIA_TRI_GIAM_GIA",
+                        "Chi phí tư vấn": "CHI_PHI_TU_VAN",
+                        "Kho bạc Nhà nước": "KHO_BAC_NHA_NUOC",
+                        "Tên nhà thầu (*)": "TEN_NHA_THAU",
+                        "Tên nhà thầu": "TEN_NHA_THAU",
+                        "Tên nhà thầu (IN HOA)": "TEN_NHA_THAU_VIET_HOA",
+                        "Tên nhà thầu (viết tắt)": "TEN_NHA_THAU_VIET_TAT",
+                        "Người đại diện nhà thầu": "DAI_DIEN_NHA_THAU",
+                        "Chức vụ đại diện nhà thầu": "CHUC_VU_DAI_DIEN",
+                        "Địa chỉ nhà thầu": "DIA_CHI_NHA_THAU",
+                        "Mã số thuế nhà thầu": "MA_SO_THUE",
+                        "Số công văn tham gia": "SO_CONG_VAN_THAM_GIA",
+                        "Số biên bản hoàn thiện HĐ": "SO_BIEN_BAN_HOAN_THIEN",
+                        "Số tờ trình chỉ định thầu": "SO_TO_TRINH",
+                        "Số quyết định chỉ định thầu": "SO_QUYET_DINH",
+                        "Thời gian họp hoàn thiện HĐ": "THOI_GIAN_HOP",
+                        "Địa điểm họp hoàn thiện HĐ": "DIA_DIEM_HOP",
+                        "Ngày giấy mời": "NGAY_GIAY_MOI",
+                        "Ngày biên bản hoàn thiện HĐ": "NGAY_BIEN_BAN",
+                        "Ngày tờ trình": "NGAY_TO_TRINH",
+                        "Ngày quyết định": "NGAY_QUYET_DINH"
+                    };
+
+                    let newGeneralInfo = { ...appState.generalInfo };
+                    let newPackages = [];
+
+                    workbook.SheetNames.forEach((sheetName, sIdx) => {
+                        const sheet = workbook.Sheets[sheetName];
+                        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+                        if (sIdx === 0 || sheetName.includes("chung")) {
+                            let canCuList = [];
+                            rows.forEach(r => {
+                                if (r && r[1] && r[2] !== undefined) {
+                                    const fieldLabel = String(r[1]).trim();
+                                    const val = String(r[2]).trim();
+                                    if (fieldMapping[fieldLabel]) {
+                                        newGeneralInfo[fieldMapping[fieldLabel]] = val;
+                                    } else if (fieldLabel.startsWith("Căn cứ")) {
+                                        canCuList.push(val);
+                                    }
+                                }
+                            });
+                            if (canCuList.length > 0) {
+                                newGeneralInfo.CAN_CU_PHAP_LY_CHUNG = canCuList.join("\n");
+                            }
+                        } else {
+                            let pkgFields = {};
+                            rows.forEach(r => {
+                                if (r && r[1] && r[2] !== undefined) {
+                                    const fieldLabel = String(r[1]).trim();
+                                    const val = String(r[2]).trim();
+                                    if (fieldMapping[fieldLabel]) {
+                                        pkgFields[fieldMapping[fieldLabel]] = val;
+                                    }
+                                }
+                            });
+
+                            newPackages.push({
+                                id: `pkg-${Date.now()}-${sIdx}`,
+                                name: sheetName,
+                                sheet_name: sheetName,
+                                fields: pkgFields
+                            });
+                        }
+                    });
+
+                    if (newPackages.length > 0) {
+                        appState.generalInfo = newGeneralInfo;
+                        appState.packages = newPackages;
+                        appState.activePackageIndex = 0;
+                        saveState();
+                        renderPackageDropdown();
+                        populateFormInputs();
+                        renderInteractivePreview();
+                        showToast(`Đã import thành công ${newPackages.length} gói thầu từ file Excel cũ!`);
+                    } else {
+                        showToast("Không tìm thấy dữ liệu gói thầu trong file!", "error");
+                    }
                 }
             } catch (err) {
                 console.error("Excel import error:", err);
@@ -3703,6 +4239,186 @@
             excelFileInput.value = "";
         };
         reader.readAsArrayBuffer(file);
+    });
+
+    // -------------------------------------------------------------
+    // Tra cứu Biến xạ Word Template Modal Controller
+    // -------------------------------------------------------------
+    const modalVarsDictionary = document.getElementById("modalVarsDictionary");
+    const btnOpenVarsModal = document.getElementById("btnOpenVarsModal");
+    const btnCloseVarsModal = document.getElementById("btnCloseVarsModal");
+    const btnFooterCloseVarsModal = document.getElementById("btnFooterCloseVarsModal");
+    const varsSearchInput = document.getElementById("varsSearchInput");
+    const varsPackageSelect = document.getElementById("varsPackageSelect");
+    const varsDictionaryTableBody = document.getElementById("varsDictionaryTableBody");
+    const countVarAll = document.getElementById("countVarAll");
+
+    let currentVarCatFilter = "all";
+
+    function copyTextToClipboard(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text));
+        } else {
+            fallbackCopyText(text);
+        }
+    }
+
+    function fallbackCopyText(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand("copy");
+        } catch (err) {
+            console.error("Fallback copy failed", err);
+        }
+        document.body.removeChild(textArea);
+    }
+
+    function openVarsDictionaryModal() {
+        const modal = document.getElementById("modalVarsDictionary");
+        if (!modal) return;
+
+        if (varsPackageSelect) {
+            varsPackageSelect.innerHTML = "";
+            const pkgs = appState.packages && appState.packages.length > 0 ? appState.packages : (appState.projectRoadmap?.packages || []);
+            pkgs.forEach((p, idx) => {
+                const opt = document.createElement("option");
+                opt.value = idx;
+                opt.textContent = `Gói ${idx + 1}: ${p.name || `Gói thầu ${idx + 1}`}`;
+                if (idx === appState.activePackageIndex) opt.selected = true;
+                varsPackageSelect.appendChild(opt);
+            });
+        }
+
+        renderVarsDictionaryTable();
+        modal.classList.remove("hidden");
+        if (varsSearchInput) {
+            varsSearchInput.value = "";
+            setTimeout(() => varsSearchInput.focus(), 100);
+        }
+    }
+
+    function closeVarsDictionaryModal() {
+        if (modalVarsDictionary) modalVarsDictionary.classList.add("hidden");
+    }
+
+    function renderVarsDictionaryTable() {
+        if (!varsDictionaryTableBody) return;
+
+        const query = varsSearchInput ? varsSearchInput.value.trim().toLowerCase() : "";
+        const selectedPkgIdx = varsPackageSelect ? parseInt(varsPackageSelect.value, 10) || 0 : 0;
+        const mergedData = getMergedDataForPackage(selectedPkgIdx);
+
+        const allVars = [...MASTER_VARIABLES_CATALOG];
+        if (appState.customVariables) {
+            let cStt = allVars.length + 1;
+            for (const k in appState.customVariables) {
+                allVars.push({
+                    stt: cStt++,
+                    groupKey: "J",
+                    group: "J. Tùy biến bổ sung",
+                    label: appState.customVariables[k].label || k,
+                    tag: k,
+                    isGeneral: false,
+                    example: ""
+                });
+            }
+        }
+
+        if (countVarAll) countVarAll.textContent = allVars.length;
+
+        const filtered = allVars.filter(v => {
+            if (currentVarCatFilter !== "all" && v.groupKey !== currentVarCatFilter) return false;
+            if (!query) return true;
+            const inTag = v.tag.toLowerCase().includes(query);
+            const inLabel = v.label.toLowerCase().includes(query);
+            const inGroup = v.group.toLowerCase().includes(query);
+            const curVal = String(v.isGeneral ? (appState.generalInfo[v.tag] || "") : (mergedData[v.tag] || "")).toLowerCase();
+            return inTag || inLabel || inGroup || curVal.includes(query);
+        });
+
+        if (filtered.length === 0) {
+            varsDictionaryTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="py-6 text-center text-slate-400 italic">
+                        Không tìm thấy biến xạ phù hợp với từ khóa "${query}"
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        varsDictionaryTableBody.innerHTML = filtered.map(v => {
+            const val = v.isGeneral ? (appState.generalInfo[v.tag] || "") : (mergedData[v.tag] || "");
+            const valDisplay = val ? `<span class="text-slate-800 font-medium">${val}</span>` : `<span class="text-slate-300 italic">(chưa có giá trị)</span>`;
+
+            return `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="py-1.5 px-2 text-center text-slate-400 font-mono text-[10.5px]">${v.stt}</td>
+                    <td class="py-1.5 px-2.5">
+                        <button type="button" class="btn-copy-tag group font-mono text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded flex items-center gap-1 transition-all cursor-pointer" data-tag="{${v.tag}}" title="Bấm để sao chép vào Word">
+                            <span>{${v.tag}}</span>
+                            <i class="fa-regular fa-copy text-[10px] text-emerald-600 group-hover:scale-110 transition-transform"></i>
+                        </button>
+                    </td>
+                    <td class="py-1.5 px-2.5 text-slate-700 font-medium text-[11.5px]">${v.label}</td>
+                    <td class="py-1.5 px-2.5">
+                        <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold ${v.isGeneral ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-700'}">${v.group}</span>
+                    </td>
+                    <td class="py-1.5 px-2.5 text-[11px] max-w-xs truncate" title="${val}">${valDisplay}</td>
+                    <td class="py-1.5 px-2 text-center">
+                        <button type="button" class="btn-copy-tag text-[10px] font-bold text-emerald-700 hover:text-emerald-900 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 px-2 py-0.5 rounded cursor-pointer transition-all" data-tag="{${v.tag}}">
+                            Sao chép
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+
+        varsDictionaryTableBody.querySelectorAll(".btn-copy-tag").forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                const tagToCopy = btn.getAttribute("data-tag");
+                copyTextToClipboard(tagToCopy);
+                showToast(`Đã sao chép ${tagToCopy} vào clipboard!`);
+            };
+        });
+    }
+
+    window.exportStateToExcel = exportStateToExcel;
+    window.openVarsDictionaryModal = openVarsDictionaryModal;
+    window.closeVarsDictionaryModal = closeVarsDictionaryModal;
+
+    if (btnOpenVarsModal) btnOpenVarsModal.addEventListener("click", openVarsDictionaryModal);
+    if (btnCloseVarsModal) btnCloseVarsModal.addEventListener("click", closeVarsDictionaryModal);
+    if (btnFooterCloseVarsModal) btnFooterCloseVarsModal.addEventListener("click", closeVarsDictionaryModal);
+    if (modalVarsDictionary) {
+        modalVarsDictionary.addEventListener("click", (e) => {
+            if (e.target === modalVarsDictionary) closeVarsDictionaryModal();
+        });
+    }
+    if (varsSearchInput) {
+        varsSearchInput.addEventListener("input", renderVarsDictionaryTable);
+    }
+    if (varsPackageSelect) {
+        varsPackageSelect.addEventListener("change", renderVarsDictionaryTable);
+    }
+
+    const filterPills = document.querySelectorAll(".var-filter-pill");
+    filterPills.forEach(pill => {
+        pill.addEventListener("click", () => {
+            filterPills.forEach(p => {
+                p.className = "var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors";
+            });
+            pill.className = "var-filter-pill px-2 py-0.5 rounded-full font-bold bg-slate-800 text-white cursor-pointer transition-colors";
+            currentVarCatFilter = pill.getAttribute("data-cat");
+            renderVarsDictionaryTable();
+        });
     });
 
     // -------------------------------------------------------------
