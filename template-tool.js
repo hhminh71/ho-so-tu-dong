@@ -1087,6 +1087,18 @@
 
     function renderStudioVarsTable() {
         if (!studioVarsTableBody) return;
+
+        const catCounts = { all: MASTER_VARIABLES_CATALOG.length, A: 0, B: 0, C: 0, D: 0, E: 0, F: 0, G: 0, H: 0, I: 0, J: 0 };
+        MASTER_VARIABLES_CATALOG.forEach(v => {
+            const k = (v.groupKey || "J").toUpperCase();
+            if (catCounts[k] !== undefined) catCounts[k]++;
+            else catCounts["J"]++;
+        });
+
+        for (const k in catCounts) {
+            const el = document.getElementById(`countStudioVar_${k}`);
+            if (el) el.textContent = catCounts[k];
+        }
         const query = studioVarsSearchInput ? studioVarsSearchInput.value.trim().toLowerCase() : "";
 
         const filtered = MASTER_VARIABLES_CATALOG.filter(v => {

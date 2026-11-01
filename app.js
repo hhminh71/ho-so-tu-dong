@@ -4325,6 +4325,18 @@
             }
         }
 
+        // Update category counts across all 10 groups
+        const catCounts = { all: allVars.length, A: 0, B: 0, C: 0, D: 0, E: 0, F: 0, G: 0, H: 0, I: 0, J: 0 };
+        allVars.forEach(v => {
+            const k = (v.groupKey || "J").toUpperCase();
+            if (catCounts[k] !== undefined) catCounts[k]++;
+            else catCounts["J"]++;
+        });
+
+        for (const k in catCounts) {
+            const el = document.getElementById(`countVar_${k}`);
+            if (el) el.textContent = catCounts[k];
+        }
         if (countVarAll) countVarAll.textContent = allVars.length;
 
         const filtered = allVars.filter(v => {
@@ -4977,6 +4989,76 @@
     window.closeEditVariableModal = closeEditVariableModal;
 
     window.exportStateToExcel = exportStateToExcel;
+    
+    function exportVarsCatalogToExcel() {
+        if (typeof XLSX === "undefined") {
+            showToast("Thư viện Excel (XLSX) chưa sẵn sàng!", "error");
+            return;
+        }
+
+        try {
+            const allVars = [...MASTER_VARIABLES_CATALOG];
+            const selPkgIdx = varsPackageSelect ? parseInt(varsPackageSelect.value, 10) || 0 : 0;
+            const mergedData = getMergedDataForPackage(selPkgIdx);
+            const curPkg = appState?.packages ? appState.packages[selPkgIdx] : null;
+            const pkgName = curPkg ? curPkg.name : "Gói thầu 1";
+
+            const headers = [
+                "STT",
+                "Phân nhóm",
+                "Mã thẻ chèn {TAG}",
+                "Tên trường dữ liệu",
+                "Phạm vi áp dụng",
+                "Giá trị ví dụ / gợi ý",
+                `Giá trị thực tế (${pkgName})`
+            ];
+
+            const rows = [headers];
+
+            allVars.forEach((v, idx) => {
+                const actualVal = v.isGeneral ? (appState?.generalInfo ? appState.generalInfo[v.tag] || "" : "") : (mergedData[v.tag] || "");
+                rows.push([
+                    idx + 1,
+                    v.group || "J. Tùy biến bổ sung",
+                    `{${v.tag}}`,
+                    v.label || v.tag,
+                    v.isGeneral ? "Tầng 1: Dùng chung dự án" : "Tầng 2 & 3: Riêng từng gói / VB",
+                    v.example || "",
+                    actualVal
+                ]);
+            });
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+
+            ws["!cols"] = [
+                { wch: 6 },
+                { wch: 24 },
+                { wch: 28 },
+                { wch: 38 },
+                { wch: 30 },
+                { wch: 35 },
+                { wch: 35 }
+            ];
+
+            XLSX.utils.book_append_sheet(wb, ws, "Danh mục biến xạ");
+
+            const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+            const fileName = `DanhMuc_BienXa_TongHop_${today}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+
+            showToast(`Đã xuất tổng hợp ${allVars.length} biến xạ ra file Excel: ${fileName}!`, "success");
+        } catch (err) {
+            console.error("Lỗi xuất Excel danh mục biến xạ:", err);
+            showToast("Có lỗi xảy ra khi xuất file Excel danh mục biến xạ!", "error");
+        }
+    }
+
+    const btnExportVarsCatalogExcel = document.getElementById("btnExportVarsCatalogExcel");
+    if (btnExportVarsCatalogExcel) {
+        btnExportVarsCatalogExcel.onclick = exportVarsCatalogToExcel;
+    }
+
     window.openVarsDictionaryModal = openVarsDictionaryModal;
     window.closeVarsDictionaryModal = closeVarsDictionaryModal;
 

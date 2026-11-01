@@ -1537,6 +1537,10 @@
                             <!-- Populated with packages -->
                         </select>
                     </div>
+                    <button id="btnExportVarsCatalogExcel" type="button" class="px-2.5 py-1 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded flex items-center space-x-1 cursor-pointer shrink-0 transition-colors" title="Xuất toàn bộ danh mục biến và phân nhóm ra file Excel">
+                        <i class="fa-solid fa-file-excel text-emerald-600"></i>
+                        <span>Xuất Excel</span>
+                    </button>
                     <button id="btnAddNewVarFromDict" type="button" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded shadow-xs flex items-center space-x-1 cursor-pointer shrink-0 transition-colors" title="Tạo thêm biến xạ mới">
                         <i class="fa-solid fa-plus text-[10px]"></i>
                         <span>Thêm biến mới</span>
@@ -1547,18 +1551,19 @@
                     </button>
                 </div>
 
-                <!-- Category Pills -->
+                <!-- Category Pills (Đầy đủ 10 phân nhóm chuẩn A -> J với bộ đếm số lượng) -->
                 <div id="varsCategoryFilters" class="flex flex-wrap items-center gap-1 text-[10.5px]">
-                    <button type="button" data-cat="all" class="var-filter-pill px-2 py-0.5 rounded-full font-bold bg-slate-800 text-white cursor-pointer transition-colors">Tất cả (<span id="countVarAll">0</span>)</button>
-                    <button type="button" data-cat="A" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">A. Chủ đầu tư</button>
-                    <button type="button" data-cat="B" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">B. Dự án &amp; Gói</button>
-                    <button type="button" data-cat="C" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">C. Tài chính</button>
-                    <button type="button" data-cat="D" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">D. Nhà thầu</button>
-                    <button type="button" data-cat="E" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">E. Số hiệu VB</button>
-                    <button type="button" data-cat="F" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">F. Ngày (dd/mm/yyyy)</button>
-                    <button type="button" data-cat="G" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">G. Ngày (Full)</button>
-                    <button type="button" data-cat="H" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">H. Tên trích dẫn</button>
-                    <button type="button" data-cat="I" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">I. Căn cứ pháp lý</button>
+                    <button type="button" data-cat="all" class="var-filter-pill px-2 py-0.5 rounded-full font-bold bg-slate-800 text-white cursor-pointer transition-colors">Tất cả (<span id="countVar_all">0</span>)</button>
+                    <button type="button" data-cat="A" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">A. Chủ đầu tư (<span id="countVar_A">0</span>)</button>
+                    <button type="button" data-cat="B" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">B. Dự án &amp; Gói (<span id="countVar_B">0</span>)</button>
+                    <button type="button" data-cat="C" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">C. Tài chính (<span id="countVar_C">0</span>)</button>
+                    <button type="button" data-cat="D" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">D. Nhà thầu (<span id="countVar_D">0</span>)</button>
+                    <button type="button" data-cat="E" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">E. Số hiệu VB (<span id="countVar_E">0</span>)</button>
+                    <button type="button" data-cat="F" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">F. Ngày (ngắn) (<span id="countVar_F">0</span>)</button>
+                    <button type="button" data-cat="G" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">G. Ngày (Full) (<span id="countVar_G">0</span>)</button>
+                    <button type="button" data-cat="H" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">H. Tên trích dẫn (<span id="countVar_H">0</span>)</button>
+                    <button type="button" data-cat="I" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">I. Căn cứ pháp lý (<span id="countVar_I">0</span>)</button>
+                    <button type="button" data-cat="J" class="var-filter-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors">J. Tùy biến bổ sung (<span id="countVar_J">0</span>)</button>
                 </div>
             </div>
 
