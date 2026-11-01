@@ -289,16 +289,16 @@ input[type="text"]:hover, select:not(#procurementTypeSelect):hover, textarea:hov
 
 /* Active inline editing on variable span (Double-Click) */
 .var-inline-editing {
-    outline: 2px solid #059669 !important;
-    background-color: #ecfdf5 !important;
+    outline: none !important;
+    border-bottom: 2px dashed #059669 !important;
+    background-color: rgba(16, 185, 129, 0.12) !important;
     color: #065f46 !important;
-    border-radius: 3px !important;
-    padding: 1px 5px !important;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25) !important;
-    min-width: 24px;
-    display: inline-block;
+    border-radius: 2px !important;
+    padding: 0 2px !important;
+    box-shadow: 0 1px 3px rgba(16, 185, 129, 0.2) !important;
+    display: inline !important;
     cursor: text !important;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease;
 }
 
 .a4-preview-page .placeholder-tag {

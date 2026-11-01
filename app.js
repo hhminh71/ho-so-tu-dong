@@ -7953,46 +7953,82 @@
         span.contentEditable = "true";
         span.classList.add("var-inline-editing");
 
-        // Focus & select all content in span
+        // Focus & đặt con trỏ thân thiện (không bôi đen toàn bộ tránh xóa nhầm)
         span.focus();
-        try {
-            const range = document.createRange();
-            range.selectNodeContents(span);
-            const sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
-        } catch (err) {
-            // fallback
+        if (isPlaceholder) {
+            span.textContent = "";
+        } else {
+            try {
+                const sel = window.getSelection();
+                if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+                    const range = document.createRange();
+                    range.selectNodeContents(span);
+                    range.collapse(false); // Đưa con trỏ về cuối chữ, không bôi đen cả câu
+                    sel?.removeAllRanges();
+                    sel?.addRange(range);
+                }
+            } catch (err) {}
         }
 
-        // Position Floating Badge
+        // Position Floating Toolbar thông minh: đặt DƯỚI dòng chữ để không che câu chữ phía trên
         const badge = document.getElementById("varEditFloatingBadge");
         const badgeKey = document.getElementById("varEditBadgeKey");
+        const btnSave = document.getElementById("btnVarEditSave");
+        const btnCancel = document.getElementById("btnVarEditCancel");
+
         if (badge && badgeKey) {
             badgeKey.textContent = `{${varKey}}`;
             const rect = span.getBoundingClientRect();
-            let topPos = rect.top - 32;
-            if (topPos < 10) topPos = rect.bottom + 6;
-            let leftPos = rect.left;
-            if (leftPos + 320 > window.innerWidth) leftPos = window.innerWidth - 330;
-            badge.style.top = `${Math.max(5, topPos)}px`;
-            badge.style.left = `${Math.max(10, leftPos)}px`;
+            // Đặt phía dưới span để không bao giờ che dòng ngữ cảnh phía trên
+            let topPos = rect.bottom + 6;
+            if (topPos + 38 > window.innerHeight) {
+                topPos = Math.max(5, rect.top - 36);
+            }
+            let leftPos = Math.max(10, Math.min(rect.left, window.innerWidth - 380));
+            badge.style.top = `${topPos}px`;
+            badge.style.left = `${leftPos}px`;
             badge.classList.remove("hidden");
         }
 
+        function onBtnSaveClick(ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            cleanupListeners();
+            commitVariableEdit(span, true);
+        }
+
+        function onBtnCancelClick(ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            cleanupListeners();
+            commitVariableEdit(span, false);
+        }
+
+        if (btnSave) btnSave.onclick = onBtnSaveClick;
+        if (btnCancel) btnCancel.onclick = onBtnCancelClick;
+
         function handleKeydown(e) {
             if (e.key === "Enter" && !e.shiftKey) {
+                // Nhấn Enter: HOÀN TẤT & LƯU
                 e.preventDefault();
                 cleanupListeners();
                 commitVariableEdit(span, true);
+            } else if (e.key === "Enter" && e.shiftKey) {
+                // Nhấn Shift+Enter: Xuống dòng bên trong biến
+                // Cho phép mặc định chèn dòng mới
             } else if (e.key === "Escape") {
+                // Nhấn Esc: HỦY BỎ & KHÔI PHỤC BAN ĐẦU
                 e.preventDefault();
                 cleanupListeners();
                 commitVariableEdit(span, false);
             }
         }
 
-        function handleBlur() {
+        function handleBlur(e) {
+            // Nếu người dùng click vào nút Lưu hoặc Hủy trên toolbar thì không blur save ở đây
+            if (e.relatedTarget && (e.relatedTarget.id === "btnVarEditCancel" || e.relatedTarget.id === "btnVarEditSave")) {
+                return;
+            }
             cleanupListeners();
             commitVariableEdit(span, true);
         }
@@ -8064,7 +8100,7 @@
         const originalVal = span.dataset.originalVal !== undefined ? span.dataset.originalVal : "";
 
         if (!shouldSave) {
-            // Revert back
+            // 1. Phục hồi lại thẻ span trên Preview
             if (originalVal === "") {
                 span.className = "placeholder-tag";
                 span.innerHTML = `<i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${varKey}}`;
@@ -8072,6 +8108,46 @@
                 span.className = "filled-val";
                 span.textContent = originalVal;
             }
+
+            // 2. Phục hồi lại appState
+            if (generalFieldsList.includes(varKey)) {
+                if (!appState.generalInfo) appState.generalInfo = {};
+                appState.generalInfo[varKey] = originalVal;
+                (appState.packages || []).forEach(p => {
+                    if (p.fields && p.fields[varKey] !== undefined) delete p.fields[varKey];
+                });
+            } else {
+                const currentPkg = appState.packages[appState.activePackageIndex];
+                if (currentPkg && currentPkg.fields) {
+                    currentPkg.fields[varKey] = originalVal;
+                }
+            }
+
+            // 3. Phục hồi lại ô nhập liệu tương ứng ở bảng bên trái
+            const formInput = document.querySelector(`input[data-field="${varKey}"], textarea[data-field="${varKey}"]`);
+            if (formInput) {
+                formInput.value = originalVal;
+            }
+
+            // 4. Phục hồi các vị trí khác cùng chứa biến này
+            const allMatchingSpans = documentPreviewContent.querySelectorAll(`[data-var-key="${varKey}"]`);
+            allMatchingSpans.forEach(el => {
+                const isHeaderDate = el.getAttribute("data-date-role") === "header";
+                if (originalVal !== "") {
+                    el.className = "filled-val";
+                    el.textContent = isHeaderDate ? formatDateLongVN(originalVal) : originalVal;
+                } else {
+                    el.className = "placeholder-tag";
+                    el.innerHTML = isHeaderDate
+                        ? `<i class="fa-solid fa-calendar-days text-[9px] text-amber-700"></i> ngày ..... tháng ..... năm 202...`
+                        : `<i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${varKey}}`;
+                }
+            });
+
+            syncDocFieldChangeToTimeline(varKey, originalVal);
+            updateProgress();
+            saveState();
+            showToast(`Đã hủy chỉnh sửa biến {${varKey}}, khôi phục giá trị ban đầu!`, "info");
             return;
         }
 
