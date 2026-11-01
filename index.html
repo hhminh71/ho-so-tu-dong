@@ -1758,32 +1758,98 @@
     </div>
 
     <!-- Modal: Bổ sung Biến xạ mới từ vùng chọn Preview -->
-    <div id="modalCreateVarFromPreview" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 hidden backdrop-blur-xs">
-        <div class="bg-white rounded-xl max-w-sm w-full p-3.5 shadow-2xl border border-slate-100 text-xs space-y-2.5">
-            <div class="flex items-center justify-between border-b pb-1.5 border-slate-200">
-                <div class="flex items-center space-x-1.5 font-bold text-slate-900">
-                    <i class="fa-solid fa-square-plus text-emerald-600"></i>
-                    <span>Bổ Sung Biến Xạ Mới Từ Vùng Chọn</span>
+    <div id="modalCreateVarFromPreview" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 hidden backdrop-blur-xs select-none">
+        <div class="bg-white rounded-xl max-w-md w-full p-4 shadow-2xl border border-slate-200 text-xs space-y-3 animate-fade-in">
+            <div class="flex items-center justify-between border-b pb-2 border-slate-200">
+                <div class="flex items-center space-x-2">
+                    <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm shadow-xs">
+                        <i class="fa-solid fa-square-plus"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-900 text-xs">Bổ Sung Biến Xạ Mới Từ Vùng Chọn</div>
+                        <div class="text-[10px] text-slate-500">Tự động nhận diện ngữ cảnh &amp; chuẩn hóa mã thẻ {TAG}</div>
+                    </div>
                 </div>
-                <button id="btnCloseCreateVarModal" type="button" class="text-slate-400 hover:text-slate-600 text-base cursor-pointer">&times;</button>
+                <button id="btnCloseCreateVarModal" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer leading-none">&times;</button>
             </div>
+
+            <!-- Tên hiển thị trên form -->
             <div>
-                <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Mã biến xạ (KEY VIẾT HOA) *</label>
-                <input id="inputNewVarKey" type="text" placeholder="VD: TEN_PHONG_BAN" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 font-mono text-xs font-bold text-slate-800 uppercase focus:bg-white focus:ring-1 focus:ring-emerald-500">
-                <span class="text-[9px] text-slate-400">Dùng chữ hoa không dấu, ngăn cách bằng gạch dưới _</span>
+                <label class="block text-[11px] font-bold text-slate-700 mb-0.5">
+                    Tên hiển thị trên form <span class="text-rose-500">*</span>
+                </label>
+                <input id="inputNewVarLabel" type="text" placeholder="VD: Căn cứ Luật Đấu thầu hoặc CC LDT" class="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1.5 text-xs font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                <div id="newVarLabelFeedback" class="text-[10px] mt-0.5 hidden"></div>
             </div>
+
+            <!-- Mã biến xạ {TAG} -->
             <div>
-                <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Tên hiển thị trên form *</label>
-                <input id="inputNewVarLabel" type="text" placeholder="VD: Tên phòng ban phụ trách" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                <div class="flex items-center justify-between mb-0.5">
+                    <div class="flex items-center gap-1.5">
+                        <label class="block text-[11px] font-bold text-slate-700">
+                            Mã thẻ chèn {TAG} <span class="text-rose-500">*</span>
+                        </label>
+                        <button id="btnSuggestNewVarKey" type="button" class="px-1.5 py-0.2 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors" title="Tự động sinh mã TAG chuẩn theo Tên hiển thị (không trùng lặp)">
+                            <i class="fa-solid fa-wand-magic-sparkles text-amber-500 text-[9px]"></i>
+                            <span>Tự động gợi ý TAG</span>
+                        </button>
+                    </div>
+                    <span class="text-[10.5px] text-emerald-700 font-mono font-bold" id="newVarKeyPreview">{TAG}</span>
+                </div>
+                <div class="relative">
+                    <span class="absolute left-2.5 top-1.5 font-mono text-slate-400 font-bold">{</span>
+                    <input id="inputNewVarKey" type="text" placeholder="VD: CAN_CU_LUAT_DAU_THAU" class="w-full pl-6 pr-6 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs text-slate-900 font-mono font-bold uppercase focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                    <span class="absolute right-2.5 top-1.5 font-mono text-slate-400 font-bold">}</span>
+                </div>
+                <!-- Real-time Duplicate Alert Area for New Var -->
+                <div id="newVarKeyFeedback" class="mt-1 p-1.5 rounded text-[10.5px] flex items-start gap-1.5 hidden">
+                    <!-- Dynamic -->
+                </div>
             </div>
+
+            <!-- Phân nhóm & Phạm vi áp dụng -->
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <div class="flex items-center justify-between mb-0.5">
+                        <label class="block text-[11px] font-bold text-slate-700">Phân nhóm</label>
+                        <span id="newVarDetectedGroupBadge" class="text-[9.5px] text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200 font-semibold hidden">Tự nhận diện</span>
+                    </div>
+                    <select id="inputNewVarGroup" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                        <option value="A">A. Chủ đầu tư</option>
+                        <option value="B">B. Dự án &amp; Gói thầu</option>
+                        <option value="C">C. Tài chính</option>
+                        <option value="D">D. Nhà thầu</option>
+                        <option value="E">E. Số hiệu VB</option>
+                        <option value="F">F. Ngày (dd/mm/yyyy)</option>
+                        <option value="G">G. Ngày (Full)</option>
+                        <option value="H">H. Tên trích dẫn</option>
+                        <option value="I">I. Căn cứ pháp lý</option>
+                        <option value="J">J. Tùy biến bổ sung</option>
+                    </select>
+                </div>
+                <div>
+                    <div class="flex items-center justify-between mb-0.5">
+                        <label class="block text-[11px] font-bold text-slate-700">Phạm vi áp dụng</label>
+                        <span id="newVarDetectedScopeBadge" class="text-[9.5px] text-blue-700 bg-blue-50 px-1 py-0.2 rounded border border-blue-200 font-semibold hidden">Tự nhận diện</span>
+                    </div>
+                    <select id="inputNewVarScope" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                        <option value="general">Tầng 1: Dùng chung dự án</option>
+                        <option value="package">Tầng 2 &amp; 3: Riêng từng gói / VB</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Giá trị ban đầu (vùng chọn) -->
             <div>
-                <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Giá trị ban đầu</label>
-                <input id="inputNewVarVal" type="text" class="w-full bg-slate-50 border border-slate-300 rounded px-2 py-1 text-xs text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                <label class="block text-[11px] font-bold text-slate-700 mb-0.5">Giá trị ban đầu (nội dung trích dẫn từ văn bản)</label>
+                <textarea id="inputNewVarVal" rows="2" class="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-xs text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500 resize-none"></textarea>
             </div>
-            <div class="flex items-center justify-end space-x-1.5 pt-1 border-t border-slate-100">
-                <button id="btnCancelCreateVar" type="button" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium cursor-pointer">Hủy</button>
-                <button id="btnConfirmCreateVar" type="button" class="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1 shadow-2xs cursor-pointer">
-                    <i class="fa-solid fa-check text-[10px]"></i>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+                <button id="btnCancelCreateVar" type="button" class="px-3 py-1.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium cursor-pointer">Hủy</button>
+                <button id="btnConfirmCreateVar" type="button" class="px-3.5 py-1.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5 shadow-xs cursor-pointer">
+                    <i class="fa-solid fa-check text-[11px]"></i>
                     <span>Tạo &amp; Gán ngay</span>
                 </button>
             </div>

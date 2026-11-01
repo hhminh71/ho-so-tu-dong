@@ -6500,6 +6500,9 @@
                 sel.addRange(range);
                 lastSelectedRange = range.cloneRange();
                 lastSelectedText = lastSelectedSpan.textContent.trim();
+            } else if (window.lastSelectedText) {
+                lastSelectedText = window.lastSelectedText;
+                lastSelectedRange = window.lastSelectedRange || lastSelectedRange;
             } else {
                 lastSelectedRange = null;
                 lastSelectedText = "";
@@ -6802,28 +6805,351 @@
         showToast(`Đã link vùng chọn vào biến: {${varKey}}!`, "success");
     }
 
+        // Helper: Smart Detection of Context (Group, Scope, Label, Tag) from selected text
+    function detectContextFromText(text) {
+        if (!text) {
+            return {
+                groupKey: "J",
+                groupName: "J. Tùy biến bổ sung",
+                isGeneral: false,
+                suggestedLabel: "Biến bổ sung",
+                suggestedKey: "BIEN_MOI_" + Date.now().toString().slice(-4)
+            };
+        }
+        const trimmed = text.trim();
+        const lower = trimmed.toLowerCase();
+
+        // 1. Căn cứ pháp lý
+        if (/^(căn cứ|can cu)/i.test(trimmed) || lower.includes("luật đấu thầu") || lower.includes("nghị định") || lower.includes("thông tư")) {
+            let label = "Căn cứ pháp lý";
+            let tag = "CAN_CU_PHAP_LY";
+            if (lower.includes("luật đấu thầu")) {
+                const matchNum = trimmed.match(/(\d+[\d\/a-zA-Z\-_]*)/);
+                tag = matchNum ? `CAN_CU_LUAT_DAU_THAU_${matchNum[1].replace(/[^0-9]/g, "")}` : "CAN_CU_LUAT_DAU_THAU";
+                label = "Căn cứ Luật Đấu thầu" + (matchNum ? ` số ${matchNum[1]}` : "");
+            } else if (lower.includes("nghị định")) {
+                const matchNum = trimmed.match(/nghị định số\s*([0-9\/]+)/i);
+                tag = matchNum ? `CAN_CU_ND_${matchNum[1].replace(/[^0-9]/g, "_")}` : "CAN_CU_NGHI_DINH";
+                label = matchNum ? `Căn cứ Nghị định ${matchNum[1]}` : "Căn cứ Nghị định";
+            } else if (lower.includes("thông tư")) {
+                const matchNum = trimmed.match(/thông tư số\s*([0-9\/]+)/i);
+                tag = matchNum ? `CAN_CU_TT_${matchNum[1].replace(/[^0-9]/g, "_")}` : "CAN_CU_THONG_TU";
+                label = matchNum ? `Căn cứ Thông tư ${matchNum[1]}` : "Căn cứ Thông tư";
+            } else {
+                const words = trimmed.split(/\s+/).slice(0, 5).join(" ");
+                label = words;
+                tag = slugifyToUpperSnake(words).slice(0, 24);
+            }
+            return {
+                groupKey: "I",
+                groupName: "I. Căn cứ pháp lý",
+                isGeneral: true,
+                suggestedLabel: label,
+                suggestedKey: tag
+            };
+        }
+
+        // 2. Số hiệu văn bản
+        if (/(quyết định số|tờ trình số|thông báo số|biên bản số|công văn số|\/qđ-|\/ttr-|\/tb-|\/bb-|\/bql)/i.test(trimmed)) {
+            let label = "Số hiệu văn bản";
+            let tag = "SO_VAN_BAN";
+            if (/tờ trình/i.test(trimmed)) {
+                label = "Số Tờ trình";
+                tag = "SO_TO_TRINH";
+            } else if (/quyết định/i.test(trimmed)) {
+                label = "Số Quyết định";
+                tag = "SO_QUYET_DINH";
+            } else if (/thông báo/i.test(trimmed)) {
+                label = "Số Thông báo";
+                tag = "SO_THONG_BAO";
+            } else if (/biên bản/i.test(trimmed)) {
+                label = "Số Biên bản";
+                tag = "SO_BIEN_BAN";
+            }
+            return {
+                groupKey: "E",
+                groupName: "E. Số hiệu VB",
+                isGeneral: false,
+                suggestedLabel: label,
+                suggestedKey: tag
+            };
+        }
+
+        // 3. Ngày tháng
+        if (/ngày\s+\d{1,2}\s+tháng\s+\d{1,2}\s+năm\s+\d{4}/i.test(trimmed)) {
+            return {
+                groupKey: "G",
+                groupName: "G. Ngày (Full)",
+                isGeneral: false,
+                suggestedLabel: "Ngày ban hành (Full)",
+                suggestedKey: "NGAY_BAN_HANH_FULL"
+            };
+        }
+        if (/\b\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}\b/.test(trimmed)) {
+            return {
+                groupKey: "F",
+                groupName: "F. Ngày (dd/mm/yyyy)",
+                isGeneral: false,
+                suggestedLabel: "Ngày văn bản (dd/mm/yyyy)",
+                suggestedKey: "NGAY_VAN_BAN"
+            };
+        }
+
+        // 4. Tài chính
+        if (/(\b\d{1,3}(\.\d{3})+|\b\d+)\s*(đồng|vnd|vnđ)/i.test(trimmed) || /giá gói|dự toán|tiết kiệm/i.test(trimmed)) {
+            return {
+                groupKey: "C",
+                groupName: "C. Tài chính",
+                isGeneral: false,
+                suggestedLabel: "Giá trị / Số tiền",
+                suggestedKey: "GIA_TRI_TIEN"
+            };
+        }
+
+        // 5. Nhà thầu
+        if (/^(công ty|doanh nghiệp|nhà thầu|tổng công ty|liên danh)/i.test(trimmed) || /tên nhà thầu/i.test(trimmed)) {
+            const shortName = trimmed.replace(/^(công ty|tnhh|cổ phần|cp|tổng công ty)\s+/i, "").split(/\s+/).slice(0, 3).join(" ");
+            return {
+                groupKey: "D",
+                groupName: "D. Nhà thầu",
+                isGeneral: false,
+                suggestedLabel: `Nhà thầu ${shortName}`,
+                suggestedKey: `NHA_THAU_${slugifyToUpperSnake(shortName).slice(0, 18)}`
+            };
+        }
+
+        // 6. Chủ đầu tư
+        if (/(chủ đầu tư|ban quản lý|ban điều hành|ban qlda|cảng hàng không|giám đốc ban)/i.test(trimmed)) {
+            return {
+                groupKey: "A",
+                groupName: "A. Chủ đầu tư",
+                isGeneral: true,
+                suggestedLabel: trimmed.length > 35 ? trimmed.slice(0, 35) + "..." : trimmed,
+                suggestedKey: "DON_VI_CDT"
+            };
+        }
+
+        // 7. Dự án & Gói thầu
+        if (/(dự án|công trình|gói thầu|hạng mục)/i.test(trimmed)) {
+            return {
+                groupKey: "B",
+                groupName: "B. Dự án & Gói thầu",
+                isGeneral: /dự án|công trình/i.test(trimmed),
+                suggestedLabel: trimmed.length > 35 ? trimmed.slice(0, 35) + "..." : trimmed,
+                suggestedKey: /gói thầu/i.test(trimmed) ? "TEN_GOI_THAU_MOI" : "TEN_DU_AN_MOI"
+            };
+        }
+
+        // 8. Tùy biến bổ sung (Default)
+        const words = trimmed.split(/\s+/).slice(0, 4).join(" ");
+        return {
+            groupKey: "J",
+            groupName: "J. Tùy biến bổ sung",
+            isGeneral: false,
+            suggestedLabel: words.length > 35 ? words.slice(0, 35) : words,
+            suggestedKey: slugifyToUpperSnake(words).slice(0, 22)
+        };
+    }
+
+    function validateNewVarInputs() {
+        const keyInput = document.getElementById("inputNewVarKey");
+        const labelInput = document.getElementById("inputNewVarLabel");
+        const preview = document.getElementById("newVarKeyPreview");
+        const feedback = document.getElementById("newVarKeyFeedback");
+        const btnConfirm = document.getElementById("btnConfirmCreateVar");
+
+        if (!keyInput || !labelInput || !btnConfirm) return;
+
+        let rawKey = keyInput.value;
+        let cleanKey = slugifyToUpperSnake(rawKey);
+        if (keyInput.value !== cleanKey && document.activeElement === keyInput) {
+            const pos = keyInput.selectionStart;
+            keyInput.value = cleanKey;
+            keyInput.setSelectionRange(pos, pos);
+        } else {
+            keyInput.value = cleanKey;
+        }
+
+        if (preview) preview.textContent = cleanKey ? `{${cleanKey}}` : "{TAG}";
+
+        const label = labelInput.value.trim();
+        let isKeyValid = false;
+        let isDuplicate = false;
+        let conflictingVar = null;
+
+        if (!cleanKey) {
+            if (feedback) {
+                feedback.className = "mt-1 p-1.5 rounded text-[10.5px] bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-1.5";
+                feedback.innerHTML = `<i class="fa-solid fa-circle-info text-slate-500"></i><span>Vui lòng nhập mã thẻ (viết HOA không dấu, ví dụ: <code>CAN_CU_LUAT_DAU_THAU</code>).</span>`;
+                feedback.classList.remove("hidden");
+            }
+            keyInput.className = "w-full pl-6 pr-6 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs text-slate-900 font-mono font-bold uppercase focus:bg-white focus:ring-1 focus:ring-emerald-500";
+        } else {
+            conflictingVar = isTagInUse(cleanKey);
+
+            if (conflictingVar) {
+                isDuplicate = true;
+                const candidates = generateCandidateTags(cleanKey);
+                const sampleName = label || "Biến mới";
+                if (feedback) {
+                    feedback.className = "mt-1.5 p-2 rounded text-[11px] bg-rose-50 text-rose-900 border border-rose-300 flex items-start gap-2 shadow-xs";
+                    feedback.innerHTML = `
+                        <i class="fa-solid fa-triangle-exclamation text-rose-600 mt-0.5 shrink-0 text-sm"></i>
+                        <div class="flex-1 space-y-1.5">
+                            <div>
+                                <b>❌ TRÙNG LẶP MÃ THẺ!</b> Mã <code>{${cleanKey}}</code> đã được dùng cho biến: <b>"${conflictingVar.label}"</b> (${conflictingVar.group}).
+                            </div>
+                            <div class="text-[10px] text-amber-900 bg-amber-50/80 p-1.5 rounded border border-amber-200 leading-normal">
+                                <span class="font-bold"><i class="fa-solid fa-lightbulb text-amber-600"></i> Đề xuất:</span> Điều chỉnh lại tên hiển thị (Ví dụ: <em>"${sampleName} tờ trình"</em> ➔ mã <code>{${cleanKey}_TO_TRINH}</code>) hoặc bấm chọn nhanh một trong các gợi ý an toàn bên dưới:
+                            </div>
+                            ${candidates.length > 0 ? `
+                            <div class="pt-0.5">
+                                <div class="text-[10px] text-slate-700 font-semibold mb-1">Gợi ý mã thẻ an toàn (bấm để chọn nhanh):</div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${candidates.map(c => `
+                                        <button type="button" class="btn-choose-new-var-tag px-2 py-0.5 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 hover:border-emerald-500 rounded font-mono text-[10.5px] font-bold cursor-pointer transition-all shadow-xs flex items-center gap-1" data-tag="${c}">
+                                            <i class="fa-solid fa-plus text-[9px] text-emerald-600"></i><span>{${c}}</span>
+                                        </button>
+                                    `).join("")}
+                                </div>
+                            </div>
+                            ` : ""}
+                        </div>
+                    `;
+                    feedback.classList.remove("hidden");
+
+                    feedback.querySelectorAll(".btn-choose-new-var-tag").forEach(btn => {
+                        btn.onclick = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const chosen = btn.getAttribute("data-tag");
+                            if (chosen) {
+                                keyInput.value = chosen;
+                                validateNewVarInputs();
+                                keyInput.focus();
+                            }
+                        };
+                    });
+                }
+                keyInput.className = "w-full pl-6 pr-6 py-1.5 bg-rose-50 border-2 border-rose-500 rounded text-xs text-rose-900 font-mono font-bold uppercase focus:bg-white focus:ring-2 focus:ring-rose-500";
+            } else {
+                isKeyValid = true;
+                if (feedback) {
+                    feedback.className = "mt-1 p-1.5 rounded text-[10.5px] bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1.5";
+                    feedback.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i><span><b>✅ Mã thẻ hợp lệ!</b> Mã <code>{${cleanKey}}</code> là duy nhất và chưa từng bị trùng lặp.</span>`;
+                    feedback.classList.remove("hidden");
+                }
+                keyInput.className = "w-full pl-6 pr-6 py-1.5 bg-emerald-50/50 border border-emerald-400 rounded text-xs text-emerald-950 font-mono font-bold uppercase focus:bg-white focus:ring-1 focus:ring-emerald-500";
+            }
+        }
+
+        const isLabelValid = label.length > 0;
+        btnConfirm.disabled = !isKeyValid || isDuplicate || !isLabelValid;
+    }
+
+    function autoSuggestNewVarKey() {
+        const labelInput = document.getElementById("inputNewVarLabel");
+        const keyInput = document.getElementById("inputNewVarKey");
+        if (!labelInput || !keyInput) return;
+
+        const label = labelInput.value.trim();
+        if (!label) {
+            showToast("Vui lòng nhập Tên hiển thị trên form trước để gợi ý mã TAG!", "warning");
+            labelInput.focus();
+            return;
+        }
+
+        const baseTag = slugifyToUpperSnake(label);
+        if (!baseTag) {
+            showToast("Tên hiển thị không hợp lệ để tạo mã TAG!", "error");
+            return;
+        }
+
+        const conflicting = isTagInUse(baseTag);
+        if (!conflicting) {
+            keyInput.value = baseTag;
+            validateNewVarInputs();
+            showToast(`Đã tự động tạo mã TAG: {${baseTag}}`, "success");
+        } else {
+            const candidates = generateCandidateTags(baseTag);
+            const safeTag = candidates.length > 0 ? candidates[0] : `${baseTag}_1`;
+            keyInput.value = safeTag;
+            validateNewVarInputs();
+            showToast(`Mã {${baseTag}} đã trùng với "${conflicting.label}". Đã đề xuất mã an toàn: {${safeTag}}!`, "warning");
+        }
+    }
+
     // Context Menu: "Bổ sung Biến xạ mới"
     const ctxMenuAddVar = document.getElementById("ctxMenuAddVar");
     const modalCreateVar = document.getElementById("modalCreateVarFromPreview");
     const inputNewVarKey = document.getElementById("inputNewVarKey");
     const inputNewVarLabel = document.getElementById("inputNewVarLabel");
     const inputNewVarVal = document.getElementById("inputNewVarVal");
+    const btnSuggestNewVarKey = document.getElementById("btnSuggestNewVarKey");
     const btnConfirmCreateVar = document.getElementById("btnConfirmCreateVar");
+    const btnCloseCreateVarModal = document.getElementById("btnCloseCreateVarModal");
+    const btnCancelCreateVar = document.getElementById("btnCancelCreateVar");
+
+    if (btnSuggestNewVarKey) btnSuggestNewVarKey.onclick = autoSuggestNewVarKey;
+    if (inputNewVarKey) inputNewVarKey.oninput = validateNewVarInputs;
+    if (inputNewVarLabel) inputNewVarLabel.oninput = validateNewVarInputs;
+
+    if (modalCreateVar) {
+        setupSafeModalBackdropClose(modalCreateVar, () => modalCreateVar.classList.add("hidden"));
+    }
+    if (btnCloseCreateVarModal) {
+        btnCloseCreateVarModal.onclick = () => modalCreateVar?.classList.add("hidden");
+    }
+    if (btnCancelCreateVar) {
+        btnCancelCreateVar.onclick = () => modalCreateVar?.classList.add("hidden");
+    }
 
     if (ctxMenuAddVar) {
         ctxMenuAddVar.addEventListener("click", () => {
             document.getElementById("previewContextMenu")?.classList.add("hidden");
+            if (!lastSelectedText && window.lastSelectedText) {
+                lastSelectedText = window.lastSelectedText;
+            }
+            if (!lastSelectedRange && window.lastSelectedRange) {
+                lastSelectedRange = window.lastSelectedRange;
+            }
             if (!lastSelectedText && !lastSelectedRange) {
                 showToast("Vui lòng quét khối văn bản cần tạo biến trước!", "error");
                 return;
             }
 
-            const suggestedKey = slugifyToUpperSnake(lastSelectedText);
-            if (inputNewVarKey) inputNewVarKey.value = suggestedKey;
-            if (inputNewVarLabel) inputNewVarLabel.value = lastSelectedText || "Biến bổ sung";
-            if (inputNewVarVal) inputNewVarVal.value = lastSelectedText;
+            const rawText = lastSelectedText.trim();
+            const detected = detectContextFromText(rawText);
+
+            if (inputNewVarVal) inputNewVarVal.value = rawText;
+            if (inputNewVarLabel) inputNewVarLabel.value = detected.suggestedLabel;
+
+            const groupSelect = document.getElementById("inputNewVarGroup");
+            if (groupSelect) groupSelect.value = detected.groupKey;
+
+            const scopeSelect = document.getElementById("inputNewVarScope");
+            if (scopeSelect) scopeSelect.value = detected.isGeneral ? "general" : "package";
+
+            const grpBadge = document.getElementById("newVarDetectedGroupBadge");
+            if (grpBadge) grpBadge.classList.remove("hidden");
+            const scopeBadge = document.getElementById("newVarDetectedScopeBadge");
+            if (scopeBadge) scopeBadge.classList.remove("hidden");
+
+            let safeKey = detected.suggestedKey;
+            if (isTagInUse(safeKey)) {
+                const candidates = generateCandidateTags(safeKey);
+                if (candidates.length > 0) safeKey = candidates[0];
+                else safeKey = `${safeKey}_1`;
+            }
+            if (inputNewVarKey) inputNewVarKey.value = safeKey;
+
+            validateNewVarInputs();
 
             if (modalCreateVar) modalCreateVar.classList.remove("hidden");
+            setTimeout(() => {
+                inputNewVarLabel?.focus();
+                inputNewVarLabel?.select();
+            }, 100);
         });
     }
 
@@ -6832,9 +7158,25 @@
             const key = inputNewVarKey ? inputNewVarKey.value.trim().toUpperCase() : "";
             const label = inputNewVarLabel ? inputNewVarLabel.value.trim() : key;
             const val = inputNewVarVal ? inputNewVarVal.value.trim() : "";
+            const groupKey = document.getElementById("inputNewVarGroup")?.value || "J";
+            const isGeneral = document.getElementById("inputNewVarScope")?.value === "general";
 
-            if (!key) {
-                alert("Vui lòng nhập Mã biến xạ!");
+            const groupNames = {
+                "A": "A. Chủ đầu tư",
+                "B": "B. Dự án & Gói thầu",
+                "C": "C. Tài chính",
+                "D": "D. Nhà thầu",
+                "E": "E. Số hiệu VB",
+                "F": "F. Ngày (dd/mm/yyyy)",
+                "G": "G. Ngày (Full)",
+                "H": "H. Tên trích dẫn",
+                "I": "I. Căn cứ pháp lý",
+                "J": "J. Tùy biến bổ sung"
+            };
+            const groupName = groupNames[groupKey] || "J. Tùy biến bổ sung";
+
+            if (!key || !label) {
+                alert("Vui lòng nhập đầy đủ Mã biến xạ và Tên hiển thị!");
                 return;
             }
 
@@ -6843,15 +7185,18 @@
             const existingCat = MASTER_VARIABLES_CATALOG.find(v => v.tag.toUpperCase() === cleanTag);
             if (existingCat) {
                 existingCat.label = label;
+                existingCat.groupKey = groupKey;
+                existingCat.group = groupName;
+                existingCat.isGeneral = isGeneral;
                 existingCat.example = val;
             } else {
                 MASTER_VARIABLES_CATALOG.push({
                     stt: MASTER_VARIABLES_CATALOG.length + 1,
-                    groupKey: "J",
-                    group: "J. Tùy biến bổ sung",
+                    groupKey: groupKey,
+                    group: groupName,
                     label: label,
                     tag: cleanTag,
-                    isGeneral: true,
+                    isGeneral: isGeneral,
                     example: val,
                     isCustom: true
                 });
@@ -6860,14 +7205,22 @@
             if (typeof renderVarsDictionaryTable === "function") renderVarsDictionaryTable();
 
             // 2. Set value in appState
-            appState.generalInfo[cleanTag] = val;
+            if (isGeneral) {
+                appState.generalInfo[cleanTag] = val;
+            } else {
+                const curPkg = appState.packages[appState.activePackageIndex];
+                if (curPkg) {
+                    if (!curPkg.fields) curPkg.fields = {};
+                    curPkg.fields[cleanTag] = val;
+                }
+            }
 
             // 3. Apply to selection in preview
             applyVariableToSelection(cleanTag);
             populateFormInputs();
 
             if (modalCreateVar) modalCreateVar.classList.add("hidden");
-            showToast(`Đã tạo và gán thành công biến xạ: {${key}}!`, "success");
+            showToast(`Đã tạo biến {${cleanTag}} thuộc nhóm "${groupName}" thành công!`, "success");
         });
     }
 
