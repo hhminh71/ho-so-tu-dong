@@ -1881,6 +1881,17 @@
         <button type="button" id="ctxMenuMergeVars" class="hidden"></button>
         <button type="button" id="ctxMenuLinkVar" class="hidden"></button>
 
+        <!-- Sao chép biến xạ (hiện khi click trên biến) -->
+        <button type="button" id="ctxMenuCopyVar" class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-900 font-medium flex items-center gap-2 transition-colors cursor-pointer hidden">
+            <i class="fa-solid fa-copy text-emerald-600 text-xs w-4 text-center"></i>
+            <span id="ctxMenuCopyVarText">Sao chép biến xạ này</span>
+        </button>
+        <!-- Dán biến xạ đã sao chép -->
+        <button type="button" id="ctxMenuPasteVar" class="w-full text-left px-3 py-1.5 hover:bg-blue-50 text-slate-700 hover:text-blue-900 font-medium flex items-center gap-2 transition-colors cursor-pointer hidden">
+            <i class="fa-solid fa-paste text-blue-600 text-xs w-4 text-center"></i>
+            <span id="ctxMenuPasteVarText">Dán biến xạ vừa sao chép</span>
+        </button>
+
         <!-- 2. Bổ sung Biến xạ mới -->
         <button type="button" id="ctxMenuAddVar" class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 text-slate-700 hover:text-emerald-900 font-medium flex items-center gap-2 transition-colors cursor-pointer">
             <i class="fa-solid fa-square-plus text-emerald-600 text-xs w-4 text-center"></i>

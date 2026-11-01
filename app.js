@@ -7141,7 +7141,280 @@
 
             menu.style.left = `${Math.max(10, x)}px`;
             menu.style.top = `${Math.max(10, y)}px`;
+
+            // Toggle Copy / Paste buttons in Context Menu
+            const ctxMenuCopyVar = document.getElementById("ctxMenuCopyVar");
+            const ctxMenuCopyVarText = document.getElementById("ctxMenuCopyVarText");
+            const ctxMenuPasteVar = document.getElementById("ctxMenuPasteVar");
+            const ctxMenuPasteVarText = document.getElementById("ctxMenuPasteVarText");
+
+            if (lastSelectedSpan && ctxMenuCopyVar) {
+                const tag = lastSelectedSpan.getAttribute("data-var-key");
+                if (ctxMenuCopyVarText) ctxMenuCopyVarText.textContent = `Sao chép biến {${tag}}`;
+                ctxMenuCopyVar.classList.remove("hidden");
+            } else if (ctxMenuCopyVar) {
+                ctxMenuCopyVar.classList.add("hidden");
+            }
+
+            if (window.lastCopiedVar && ctxMenuPasteVar) {
+                if (ctxMenuPasteVarText) ctxMenuPasteVarText.textContent = `Dán biến {${window.lastCopiedVar.varKey}}`;
+                ctxMenuPasteVar.classList.remove("hidden");
+            } else if (ctxMenuPasteVar) {
+                ctxMenuPasteVar.classList.add("hidden");
+            }
+
             menu.classList.remove("hidden");
+        });
+    }
+
+    // -------------------------------------------------------------
+    // Intelligent Copy & Paste for Variables (.filled-val [data-var-key])
+    // -------------------------------------------------------------
+    let lastCopiedVar = null;
+    window.lastCopiedVar = lastCopiedVar;
+
+    function copyVariableToClipboard(varKey, val) {
+        window.lastCopiedVar = { varKey, val };
+        lastCopiedVar = window.lastCopiedVar;
+        const htmlToCopy = `<span class="filled-val" data-var-key="${varKey}" title="Biến: {${varKey}}">${val}</span>`;
+        if (navigator.clipboard && navigator.clipboard.write) {
+            try {
+                const blobHtml = new Blob([htmlToCopy], { type: "text/html" });
+                const blobText = new Blob([val], { type: "text/plain" });
+                const item = new ClipboardItem({
+                    "text/html": blobHtml,
+                    "text/plain": blobText
+                });
+                navigator.clipboard.write([item]).catch(() => {});
+            } catch (err) {}
+        }
+        showToast(`Đã sao chép biến {${varKey}}! Bạn có thể dán (Ctrl+V) vào bất cứ đâu.`, "success");
+    }
+
+    function pasteVariableIntoPreview(varKey) {
+        const data = getMergedData();
+        const currentVal = data[varKey] !== undefined ? data[varKey] : `{${varKey}}`;
+        const activeDoc = getCurrentActiveDoc();
+        if (!activeDoc) return;
+
+        const span = document.createElement("span");
+        span.className = (currentVal && String(currentVal).trim() !== "") ? "filled-val" : "placeholder-tag";
+        span.setAttribute("data-var-key", varKey);
+        span.title = `Biến: {${varKey}}`;
+        span.textContent = currentVal || `{${varKey}}`;
+
+        if (lastSelectedRange) {
+            lastSelectedRange.deleteContents();
+            lastSelectedRange.insertNode(span);
+
+            const newRange = document.createRange();
+            newRange.setStartAfter(span);
+            newRange.collapse(true);
+            const sel = window.getSelection();
+            if (sel) {
+                sel.removeAllRanges();
+                sel.addRange(newRange);
+            }
+            lastSelectedRange = newRange.cloneRange();
+        } else if (documentPreviewContent) {
+            documentPreviewContent.appendChild(span);
+        }
+
+        if (!appState.customDocumentHtml) appState.customDocumentHtml = {};
+        appState.customDocumentHtml[activeDoc.id] = documentPreviewContent.innerHTML;
+        if (btnResetPreviewDoc) btnResetPreviewDoc.classList.remove("hidden");
+        saveState();
+        showToast(`Đã dán biến {${varKey}} và liên kết dữ liệu tự động!`, "success");
+    }
+
+    window.copyVariableToClipboard = copyVariableToClipboard;
+    window.pasteVariableIntoPreview = pasteVariableIntoPreview;
+
+    // Context Menu Copy/Paste Handlers
+    const ctxMenuCopyVar = document.getElementById("ctxMenuCopyVar");
+    const ctxMenuPasteVar = document.getElementById("ctxMenuPasteVar");
+    if (ctxMenuCopyVar) {
+        ctxMenuCopyVar.addEventListener("click", () => {
+            document.getElementById("previewContextMenu")?.classList.add("hidden");
+            if (lastSelectedSpan) {
+                const varKey = lastSelectedSpan.getAttribute("data-var-key");
+                const data = getMergedData();
+                const val = data[varKey] || lastSelectedSpan.textContent;
+                copyVariableToClipboard(varKey, val);
+            }
+        });
+    }
+
+    if (ctxMenuPasteVar) {
+        ctxMenuPasteVar.addEventListener("click", () => {
+            document.getElementById("previewContextMenu")?.classList.add("hidden");
+            if (window.lastCopiedVar && window.lastCopiedVar.varKey) {
+                pasteVariableIntoPreview(window.lastCopiedVar.varKey);
+            }
+        });
+    }
+
+    if (documentPreviewContent) {
+        // Native copy listener: Preserve variable metadata
+        documentPreviewContent.addEventListener("copy", (e) => {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+
+            const range = sel.getRangeAt(0);
+            const container = document.createElement("div");
+            container.appendChild(range.cloneContents());
+
+            // 1. Check if selection is inside a single variable span
+            const startNode = range.startContainer;
+            const parentSpan = startNode.nodeType === Node.ELEMENT_NODE 
+                ? startNode.closest("[data-var-key]") 
+                : startNode.parentElement?.closest("[data-var-key]");
+
+            if (parentSpan) {
+                const varKey = parentSpan.getAttribute("data-var-key");
+                const data = getMergedData();
+                const currentVal = data[varKey] || parentSpan.textContent;
+                const htmlToCopy = `<span class="filled-val" data-var-key="${varKey}" title="Biến: {${varKey}}">${currentVal}</span>`;
+
+                window.lastCopiedVar = { varKey, val: currentVal };
+                lastCopiedVar = window.lastCopiedVar;
+
+                e.clipboardData.setData("text/html", htmlToCopy);
+                e.clipboardData.setData("text/plain", currentVal);
+                e.clipboardData.setData("application/x-ho-so-var", JSON.stringify({ varKey, val: currentVal }));
+                e.preventDefault();
+                return;
+            }
+
+            // 2. Check if selection contains multiple variable spans
+            if (container.querySelector("[data-var-key]")) {
+                const data = getMergedData();
+                container.querySelectorAll("[data-var-key]").forEach(span => {
+                    const k = span.getAttribute("data-var-key");
+                    span.className = "filled-val";
+                    span.setAttribute("title", `Biến: {${k}}`);
+                    if (data[k]) span.textContent = data[k];
+                });
+
+                const firstSpan = container.querySelector("[data-var-key]");
+                if (firstSpan) {
+                    const firstKey = firstSpan.getAttribute("data-var-key");
+                    window.lastCopiedVar = { varKey: firstKey, val: firstSpan.textContent };
+                    lastCopiedVar = window.lastCopiedVar;
+                }
+
+                e.clipboardData.setData("text/html", container.innerHTML);
+                e.clipboardData.setData("text/plain", sel.toString());
+                e.preventDefault();
+                return;
+            }
+        });
+
+        // Native paste listener: Automatically rebind variable spans and tags
+        documentPreviewContent.addEventListener("paste", (e) => {
+            const customVarJson = e.clipboardData?.getData("application/x-ho-so-var");
+            const htmlData = e.clipboardData?.getData("text/html");
+            const textData = e.clipboardData?.getData("text/plain");
+
+            let fragmentToInsert = null;
+
+            // Case 1: Custom ho-so-var metadata
+            if (customVarJson) {
+                try {
+                    const parsed = JSON.parse(customVarJson);
+                    if (parsed && parsed.varKey) {
+                        const varKey = parsed.varKey;
+                        const data = getMergedData();
+                        const currentVal = data[varKey] !== undefined ? data[varKey] : parsed.val;
+                        const span = document.createElement("span");
+                        span.className = (currentVal && String(currentVal).trim() !== "") ? "filled-val" : "placeholder-tag";
+                        span.setAttribute("data-var-key", varKey);
+                        span.title = `Biến: {${varKey}}`;
+                        span.textContent = currentVal || `{${varKey}}`;
+
+                        fragmentToInsert = document.createDocumentFragment();
+                        fragmentToInsert.appendChild(span);
+                    }
+                } catch (err) {}
+            }
+
+            // Case 2: HTML with data-var-key
+            if (!fragmentToInsert && htmlData && htmlData.includes("data-var-key")) {
+                const temp = document.createElement("div");
+                temp.innerHTML = htmlData;
+                const data = getMergedData();
+                temp.querySelectorAll("[data-var-key]").forEach(span => {
+                    const varKey = span.getAttribute("data-var-key");
+                    const currentVal = data[varKey] !== undefined ? data[varKey] : span.textContent;
+                    span.className = (currentVal && String(currentVal).trim() !== "") ? "filled-val" : "placeholder-tag";
+                    span.title = `Biến: {${varKey}}`;
+                    span.textContent = currentVal || `{${varKey}}`;
+                });
+
+                fragmentToInsert = document.createDocumentFragment();
+                while (temp.firstChild) {
+                    fragmentToInsert.appendChild(temp.firstChild);
+                }
+            }
+
+            // Case 3: Raw tag {TAG} or {{TAG}} pasted as text
+            if (!fragmentToInsert && textData) {
+                const trimmed = textData.trim();
+                const tagMatch = trimmed.match(/^\{+([A-Z0-9_]{3,})\}+$/);
+                if (tagMatch) {
+                    const varKey = tagMatch[1];
+                    const data = getMergedData();
+                    const exists = MASTER_VARIABLES_CATALOG.some(v => v.tag === varKey) || data[varKey] !== undefined;
+                    if (exists) {
+                        const currentVal = data[varKey];
+                        const span = document.createElement("span");
+                        span.className = (currentVal && String(currentVal).trim() !== "") ? "filled-val" : "placeholder-tag";
+                        span.setAttribute("data-var-key", varKey);
+                        span.title = `Biến: {${varKey}}`;
+                        span.textContent = currentVal || `{${varKey}}`;
+
+                        fragmentToInsert = document.createDocumentFragment();
+                        fragmentToInsert.appendChild(span);
+                    }
+                }
+            }
+
+            // If we have variable fragment to insert
+            if (fragmentToInsert) {
+                e.preventDefault();
+                const sel = window.getSelection();
+                if (sel && sel.rangeCount > 0) {
+                    const range = sel.getRangeAt(0);
+                    range.deleteContents();
+
+                    const lastChild = fragmentToInsert.lastChild;
+                    range.insertNode(fragmentToInsert);
+
+                    if (lastChild) {
+                        const newRange = document.createRange();
+                        newRange.setStartAfter(lastChild);
+                        newRange.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(newRange);
+                        lastSelectedRange = newRange.cloneRange();
+                    }
+                } else if (lastSelectedRange) {
+                    lastSelectedRange.deleteContents();
+                    lastSelectedRange.insertNode(fragmentToInsert);
+                } else {
+                    documentPreviewContent.appendChild(fragmentToInsert);
+                }
+
+                // Save to customDocumentHtml
+                const activeDoc = getCurrentActiveDoc();
+                if (activeDoc) {
+                    if (!appState.customDocumentHtml) appState.customDocumentHtml = {};
+                    appState.customDocumentHtml[activeDoc.id] = documentPreviewContent.innerHTML;
+                }
+                if (btnResetPreviewDoc) btnResetPreviewDoc.classList.remove("hidden");
+                saveState();
+                showToast("Đã dán biến xạ và đồng bộ dữ liệu tự động thành công!", "success");
+            }
         });
     }
 
