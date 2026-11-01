@@ -2144,6 +2144,9 @@
             const opt = document.createElement("option");
             opt.value = pt.id;
             opt.textContent = `${pt.name}`;
+            opt.className = "bg-white text-slate-900 font-medium py-1";
+            opt.style.color = "#0f172a";
+            opt.style.backgroundColor = "#ffffff";
             if (pt.id === appState.selectedProcurementTypeId) {
                 opt.selected = true;
             }
