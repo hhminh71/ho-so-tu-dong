@@ -855,10 +855,119 @@
         }
     }
 
+
+    // =============================================================
+    // DYNAMIC TIMELINE PHASES GENERATOR FOR ALL PACKAGES
+    // =============================================================
+    function syncPackageProcurementTypeToPhase(pkg, pkgIdx, forceReset = false) {
+        if (!appState.projectRoadmap) return;
+        if (!appState.projectRoadmap.timelinePhases) appState.projectRoadmap.timelinePhases = [];
+        const phases = appState.projectRoadmap.timelinePhases;
+
+        const ptId = pkg.procurementTypeId || "chi_dinh_thau_rut_gon";
+        const pt = (typeof PROCUREMENT_MATRIX !== "undefined" && PROCUREMENT_MATRIX.procurementTypes)
+            ? (PROCUREMENT_MATRIX.procurementTypes.find(t => t.id === ptId) || PROCUREMENT_MATRIX.procurementTypes[3] || PROCUREMENT_MATRIX.procurementTypes[0])
+            : null;
+        if (!pt) return;
+
+        // Tìm phase đã có tương ứng với gói thầu này
+        let phase = phases.find(p => p.packageId === pkg.id || (p.packageIndex !== undefined && p.packageIndex === pkgIdx));
+        if (!phase) {
+            const pkgName = (pkg.name || "").toLowerCase();
+            const pkgNum = `gói thầu số ${pkgIdx + 1}`.toLowerCase();
+            const pkgNumShort = `gói ${pkgIdx + 1}`.toLowerCase();
+            phase = phases.find(p => {
+                if (!p.isPackage) return false;
+                const pTitle = (p.title || "").toLowerCase();
+                return pTitle.includes(pkgNum) || pTitle.includes(pkgNumShort) || pTitle.includes(pkgName);
+            });
+        }
+
+        // Gom toàn bộ danh mục tài liệu/thủ tục từ ma trận quy trình LCNT được chọn
+        const allDocs = [];
+        (pt.phases || []).forEach(ph => {
+            (ph.documents || []).forEach(d => allDocs.push({ ...d, phaseName: ph.phaseName }));
+        });
+
+        const romanCodes = ["II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+        const phaseCode = romanCodes[pkgIdx] || `${pkgIdx + 2}`;
+
+        if (!phase) {
+            // Tạo mới Giai đoạn thủ tục cho gói thầu này
+            const tasks = allDocs.map((doc, dIdx) => ({
+                id: `task_${pkgIdx + 1}_${dIdx}`,
+                stt: `${dIdx + 1}`,
+                name: doc.name,
+                docNo: "",
+                signer: "",
+                date: "",
+                duration: doc.duration !== undefined ? doc.duration : 1,
+                note: "",
+                status: "Đang làm",
+                dateFormula: { type: dIdx === 0 ? "manual" : "default" },
+                docCode: doc.code || "",
+                templateFile: doc.templateFile || "",
+                docId: doc.id
+            }));
+
+            phase = {
+                id: `phase_pkg_${pkg.id || (pkgIdx + 1)}`,
+                packageId: pkg.id,
+                packageIndex: pkgIdx,
+                code: phaseCode,
+                title: pkg.name || `Gói thầu số ${pkgIdx + 1}`,
+                isPackage: true,
+                packageName: pkg.name || `Gói thầu số ${pkgIdx + 1}`,
+                tasks: tasks
+            };
+            phases.push(phase);
+        } else {
+            // Cập nhật thông tin phase hiện có
+            phase.packageId = pkg.id;
+            phase.packageIndex = pkgIdx;
+            phase.isPackage = true;
+            if (!phase.code || phase.code === "I") phase.code = phaseCode;
+            phase.title = pkg.name || phase.title;
+            phase.packageName = pkg.name || phase.packageName;
+
+            // Nếu đổi quy trình LCNT hoặc phase chưa có tasks nào
+            const existingTasks = phase.tasks || [];
+            if (forceReset || existingTasks.length === 0) {
+                phase.tasks = allDocs.map((doc, dIdx) => {
+                    const existing = existingTasks.find(et => et.docId === doc.id || (et.docCode && et.docCode === doc.code));
+                    return {
+                        id: existing ? existing.id : `task_${pkgIdx + 1}_${dIdx}`,
+                        stt: `${dIdx + 1}`,
+                        name: doc.name,
+                        docNo: existing ? existing.docNo : "",
+                        signer: existing ? existing.signer : "",
+                        date: existing ? existing.date : "",
+                        duration: existing ? existing.duration : (doc.duration !== undefined ? doc.duration : 1),
+                        note: existing ? existing.note : "",
+                        status: existing ? existing.status : "Đang làm",
+                        dateFormula: existing ? existing.dateFormula : { type: dIdx === 0 ? "manual" : "default" },
+                        docCode: doc.code || "",
+                        templateFile: doc.templateFile || "",
+                        docId: doc.id
+                    };
+                });
+            }
+        }
+    }
+
+    function ensureTimelinePhasesForPackages() {
+        if (!appState.projectRoadmap || !appState.projectRoadmap.packages) return;
+        const pkgs = appState.projectRoadmap.packages;
+        pkgs.forEach((pkg, idx) => {
+            syncPackageProcurementTypeToPhase(pkg, idx, false);
+        });
+    }
+
     function renderRoadmapUI() {
         if (!appState.projectRoadmap) {
             appState.projectRoadmap = JSON.parse(JSON.stringify(defaultRoadmap));
         }
+        ensureTimelinePhasesForPackages();
         const rm = appState.projectRoadmap;
         if (appState.selectedRoadmapPackageIndex === undefined) {
             appState.selectedRoadmapPackageIndex = 0; // Default to Gói 1
@@ -1000,7 +1109,11 @@
                 sel.addEventListener("change", (e) => {
                     e.stopPropagation();
                     pkg.procurementTypeId = e.target.value;
+                    syncPackageProcurementTypeToPhase(pkg, idx, true);
+                    renderTimelineTable();
+                    recalculateAllTaskDates(false, true);
                     saveState();
+                    showToast(`Đã cập nhật danh mục thủ tục cho ${pkg.name}`);
                 });
 
                 // Handle Click "Sửa thông tin gói"
@@ -1512,6 +1625,7 @@
         const rmTimelineStats = document.getElementById("rmTimelineStats");
         if (!rmTimelineContainer || !appState.projectRoadmap) return;
 
+        ensureTimelinePhasesForPackages();
         ensureTaskDefaults();
 
         const phases = appState.projectRoadmap.timelinePhases || [];
@@ -1544,9 +1658,13 @@
             } else if (selPkgIdx >= 0 && currentPkg) {
                 if (isInitPhase) {
                     shouldShowPhase = true;
+                } else if (phase.packageId && phase.packageId === currentPkg.id) {
+                    shouldShowPhase = true;
+                } else if (phase.packageIndex !== undefined && phase.packageIndex === selPkgIdx) {
+                    shouldShowPhase = true;
                 } else {
-                    const pTitle = phase.title.toLowerCase();
-                    const pkgName = currentPkg.name.toLowerCase();
+                    const pTitle = (phase.title || "").toLowerCase();
+                    const pkgName = (currentPkg.name || "").toLowerCase();
                     const pkgNum = `gói thầu số ${selPkgIdx + 1}`.toLowerCase();
                     const pkgNumShort = `gói ${selPkgIdx + 1}`.toLowerCase();
 
@@ -6599,9 +6717,11 @@
             }
         };
         appState.projectRoadmap.packages.push(newPkg);
+        syncPackageProcurementTypeToPhase(newPkg, pCount - 1, true);
+        appState.selectedRoadmapPackageIndex = pCount - 1;
         renderRoadmapUI();
         saveState();
-        showToast("Đã bổ sung gói thầu mới vào định hướng dự án!");
+        showToast("Đã bổ sung gói thầu mới và tạo danh mục thủ tục tự động!");
     }
     if (btnAddPackageRoadmap) btnAddPackageRoadmap.addEventListener("click", handleAddNewPackage);
     if (btnAddPackageCard) btnAddPackageCard.addEventListener("click", handleAddNewPackage);
