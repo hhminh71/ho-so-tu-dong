@@ -5784,12 +5784,17 @@
             });
         }
 
-        // Quick Export Zip button on Preview Header
+        // Quick Export Zip button on Preview Header (with Pre-Flight Quality Audit)
         const btnQuickExportZip = document.getElementById("btnQuickExportZip");
         if (btnQuickExportZip) {
             btnQuickExportZip.addEventListener("click", () => {
-                const modal = document.getElementById("batchExportModal");
-                if (modal) modal.classList.remove("hidden");
+                const audit = runPreflightAudit({ showModal: false, scope: "all" });
+                if (audit && (audit.missingCount > 0 || audit.errorCount > 0)) {
+                    runPreflightAudit({ showModal: true, scope: "all" });
+                } else {
+                    const modal = document.getElementById("batchExportModal");
+                    if (modal) modal.classList.remove("hidden");
+                }
             });
         }
 
@@ -7969,6 +7974,588 @@
         });
     }
 
+
+    // =============================================================
+    // GIAI ĐOẠN 1: QUẢN LÝ DỰ ÁN ĐỘC LẬP (.hoso) & KIỂM TOÁN CHẤT LƯỢNG (PRE-FLIGHT AUDIT)
+    // =============================================================
+
+    // -------------------------------------------------------------
+    // 1. Independent Project Bundle Management (.hoso / .json)
+    // -------------------------------------------------------------
+    function exportProjectBundle() {
+        try {
+            const projectName = (appState.generalInfo && appState.generalInfo.TEN_DU_AN) ? appState.generalInfo.TEN_DU_AN.trim() : "Du_An";
+            const safeName = projectName.replace(/[\\/:*?"<>|]/g, "_").replace(/\s+/g, "_").substring(0, 45) || "Du_An";
+            const now = new Date();
+            const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+            const fileName = `[HoSo]_${safeName}_${dateStr}.hoso`;
+
+            const bundle = {
+                fileFormat: "HO_SO_TU_DONG_PROJECT",
+                version: "3.0",
+                exportedAt: now.toISOString(),
+                projectName: projectName,
+                appState: JSON.parse(JSON.stringify(appState)),
+                customizations: {
+                    catalogCustomizations: JSON.parse(localStorage.getItem(LS_VARS_CUSTOMIZATIONS) || "[]"),
+                    variableCategories: JSON.parse(localStorage.getItem(LS_VARIABLE_CATEGORIES) || "[]"),
+                    customMatrix: localStorage.getItem("ho_so_tu_dong_matrix_custom") ? JSON.parse(localStorage.getItem("ho_so_tu_dong_matrix_custom")) : null,
+                    customImplementation: localStorage.getItem("ho_so_tu_dong_implementation_matrix") ? JSON.parse(localStorage.getItem("ho_so_tu_dong_implementation_matrix")) : null
+                }
+            };
+
+            const jsonStr = JSON.stringify(bundle, null, 2);
+            const blob = new Blob([jsonStr], { type: "application/json;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast(`Đã lưu dự án ra máy: ${fileName}`, "success");
+        } catch (err) {
+            console.error("Export project error:", err);
+            showToast("Lỗi khi lưu file dự án: " + err.message, "error");
+        }
+    }
+
+    function importProjectBundle(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (!data || (!data.appState && !data.packages && !data.generalInfo)) {
+                    showToast("File không đúng cấu trúc dự án (.hoso) hợp lệ!", "error");
+                    return;
+                }
+
+                const incomingState = data.appState ? data.appState : data;
+
+                // Restore appState
+                appState = Object.assign(appState, incomingState);
+                if (appState.filterByDoc === undefined) appState.filterByDoc = true;
+
+                // Restore customizations if available
+                if (data.customizations) {
+                    if (Array.isArray(data.customizations.catalogCustomizations) && data.customizations.catalogCustomizations.length > 0) {
+                        localStorage.setItem(LS_VARS_CUSTOMIZATIONS, JSON.stringify(data.customizations.catalogCustomizations));
+                        loadCatalogCustomizations();
+                    }
+                    if (Array.isArray(data.customizations.variableCategories) && data.customizations.variableCategories.length > 0) {
+                        localStorage.setItem(LS_VARIABLE_CATEGORIES, JSON.stringify(data.customizations.variableCategories));
+                        loadVariableCategories();
+                    }
+                    if (data.customizations.customMatrix) {
+                        localStorage.setItem("ho_so_tu_dong_matrix_custom", JSON.stringify(data.customizations.customMatrix));
+                        PROCUREMENT_MATRIX = data.customizations.customMatrix;
+                    }
+                    if (data.customizations.customImplementation) {
+                        localStorage.setItem("ho_so_tu_dong_implementation_matrix", JSON.stringify(data.customizations.customImplementation));
+                        IMPLEMENTATION_MATRIX = data.customizations.customImplementation;
+                    }
+                }
+
+                saveState();
+
+                // Re-render UI components
+                initProcurementTypeSelector();
+                populateFormInputs();
+                renderPackageDropdown();
+                renderDocTabs();
+                renderRoadmapUI();
+                renderTimelineTable();
+                renderVarsDictionaryTable();
+                renderCustomVariablesUI();
+                populateGroupDropdowns();
+                updateProgress();
+                renderDocumentPreview();
+
+                const pName = (appState.generalInfo && appState.generalInfo.TEN_DU_AN) ? appState.generalInfo.TEN_DU_AN : "Dự án";
+                showToast(`Đã mở dự án thành công: ${pName}`, "success");
+            } catch (err) {
+                console.error("Import project error:", err);
+                showToast("Lỗi khi đọc file dự án: " + err.message, "error");
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function createNewBlankProject() {
+        if (!confirm("Tạo dự án mới sẽ làm mới toàn bộ biểu mẫu để làm hồ sơ cho dự án khác.\nBạn nên Lưu dự án (.hoso) hiện tại trước nếu cần.\n\nBạn có chắc chắn muốn tạo mới không?")) {
+            return;
+        }
+
+        const blankGeneral = {};
+        generalFieldsList.forEach(k => { blankGeneral[k] = ""; });
+        blankGeneral.TEN_DU_AN = "Dự án mới";
+        blankGeneral.DIA_DANH = appState.generalInfo?.DIA_DANH || "";
+        blankGeneral.TINH_THANH_PHO = appState.generalInfo?.TINH_THANH_PHO || "";
+        blankGeneral.TEN_CHU_DAU_TU = appState.generalInfo?.TEN_CHU_DAU_TU || "";
+        blankGeneral.TEN_CHU_DAU_TU_VIET_HOA = appState.generalInfo?.TEN_CHU_DAU_TU_VIET_HOA || "";
+        blankGeneral.TEN_BAN_QUAN_LY_DU_AN = appState.generalInfo?.TEN_BAN_QUAN_LY_DU_AN || "";
+
+        const blankPackage = {
+            id: "pkg_1",
+            name: "Gói thầu số 1",
+            fields: {
+                "TEN_GOI_THAU": "Gói thầu số 1",
+                "HINH_THUC_LCNT": "Chỉ định thầu rút gọn",
+                "LOAI_HOP_DONG": "Trọn gói"
+            }
+        };
+
+        appState.generalInfo = blankGeneral;
+        appState.packages = [blankPackage];
+        appState.activePackageIndex = 0;
+        appState.customDocumentHtml = {};
+        appState.projectRoadmap = JSON.parse(JSON.stringify(defaultRoadmap));
+        if (appState.projectRoadmap.packages) {
+            appState.projectRoadmap.packages = [
+                {
+                    id: "pkg_1",
+                    name: "Gói thầu số 1",
+                    category: "tu_van",
+                    categoryLabel: "Tư vấn",
+                    procurementTypeId: "chi_dinh_thau_rut_gon",
+                    fields: { "TEN_GOI_THAU": "Gói thầu số 1" }
+                }
+            ];
+        }
+
+        saveState();
+
+        populateFormInputs();
+        renderPackageDropdown();
+        renderDocTabs();
+        renderRoadmapUI();
+        renderTimelineTable();
+        renderVarsDictionaryTable();
+        renderCustomVariablesUI();
+        populateGroupDropdowns();
+        updateProgress();
+        renderDocumentPreview();
+
+        showToast("Đã tạo dự án mới thành công. Hãy bắt đầu nhập thông tin!", "info");
+    }
+
+    // Project Dropdown Events
+    const btnProjectMenu = document.getElementById("btnProjectMenu");
+    const projectMenuDropdown = document.getElementById("projectMenuDropdown");
+    const projectMenuWrapper = document.getElementById("projectMenuWrapper");
+    const btnProjectSave = document.getElementById("btnProjectSave");
+    const btnProjectOpen = document.getElementById("btnProjectOpen");
+    const btnProjectNew = document.getElementById("btnProjectNew");
+    const fileProjectBundleInput = document.getElementById("fileProjectBundleInput");
+
+    if (btnProjectMenu && projectMenuDropdown) {
+        btnProjectMenu.addEventListener("click", (e) => {
+            e.stopPropagation();
+            projectMenuDropdown.classList.toggle("hidden");
+        });
+    }
+
+    if (btnProjectSave) {
+        btnProjectSave.addEventListener("click", () => {
+            if (projectMenuDropdown) projectMenuDropdown.classList.add("hidden");
+            exportProjectBundle();
+        });
+    }
+
+    if (btnProjectOpen && fileProjectBundleInput) {
+        btnProjectOpen.addEventListener("click", () => {
+            if (projectMenuDropdown) projectMenuDropdown.classList.add("hidden");
+            fileProjectBundleInput.value = "";
+            fileProjectBundleInput.click();
+        });
+        fileProjectBundleInput.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                importProjectBundle(e.target.files[0]);
+            }
+        });
+    }
+
+    if (btnProjectNew) {
+        btnProjectNew.addEventListener("click", () => {
+            if (projectMenuDropdown) projectMenuDropdown.classList.add("hidden");
+            createNewBlankProject();
+        });
+    }
+
+    document.addEventListener("click", (e) => {
+        if (projectMenuWrapper && projectMenuDropdown && !projectMenuWrapper.contains(e.target)) {
+            projectMenuDropdown.classList.add("hidden");
+        }
+    });
+
+    // -------------------------------------------------------------
+    // 2. Pre-Flight Quality Control & Audit System
+    // -------------------------------------------------------------
+    let currentAuditScope = "doc"; // "doc" | "all"
+
+    function runPreflightAudit(options = { showModal: true }) {
+        const activeDoc = getCurrentActiveDoc();
+        const procType = getCurrentProcurementType();
+        const docs = getAllDocsForCurrentType();
+
+        const scope = (options && options.scope) ? options.scope : currentAuditScope;
+        currentAuditScope = scope;
+
+        // Update scope buttons UI
+        const btnScopeDoc = document.getElementById("btnAuditScopeDoc");
+        const btnScopeAll = document.getElementById("btnAuditScopeAll");
+        if (btnScopeDoc && btnScopeAll) {
+            if (scope === "doc") {
+                btnScopeDoc.className = "px-2 py-0.5 rounded font-bold transition-all bg-white text-emerald-800 shadow-2xs cursor-pointer";
+                btnScopeAll.className = "px-2 py-0.5 rounded font-medium transition-all text-slate-600 hover:text-slate-900 cursor-pointer";
+            } else {
+                btnScopeAll.className = "px-2 py-0.5 rounded font-bold transition-all bg-white text-emerald-800 shadow-2xs cursor-pointer";
+                btnScopeDoc.className = "px-2 py-0.5 rounded font-medium transition-all text-slate-600 hover:text-slate-900 cursor-pointer";
+            }
+        }
+
+        // 1. Missing Variables Scan
+        const allInputs = Array.from(document.querySelectorAll("[data-field]"));
+        const targetInputs = scope === "doc"
+            ? allInputs.filter(inp => {
+                const item = inp.closest(".field-item");
+                return !item || item.style.display !== "none" || (appState.onlyUnfilled && inp.value.trim() === "");
+              })
+            : allInputs;
+
+        const missingItems = [];
+        targetInputs.forEach(input => {
+            const val = input.value.trim();
+            if (!val) {
+                const key = input.getAttribute("data-field");
+                const labelEl = input.closest(".field-item")?.querySelector(".field-label");
+                const label = labelEl ? labelEl.textContent.replace("*", "").trim() : key;
+                const sec = input.closest(".accordion-item");
+                const sectionTitle = sec ? (sec.querySelector(".accordion-header span")?.textContent?.trim() || "") : "Thông tin chung";
+                missingItems.push({ key, label, section: sectionTitle, input });
+            }
+        });
+
+        // 2. Timeline Chronology & Logic Checks
+        const merged = getMergedData();
+        const timelineIssues = [];
+
+        const dateTTr = parseDateString(merged.NGAY_TO_TRINH);
+        const dateQD = parseDateString(merged.NGAY_QUYET_DINH);
+        const dateGM = parseDateString(merged.NGAY_GIAY_MOI);
+        const dateBB = parseDateString(merged.NGAY_BIEN_BAN || merged.NGAY_BIEN_BAN_HOAN_THIEN);
+        const dateHD = parseDateString(merged.NGAY_HOP_DONG || merged.NGAY_KY_HOP_DONG);
+
+        if (dateTTr && dateQD && dateQD < dateTTr) {
+            timelineIssues.push({
+                type: "error",
+                title: "Trình tự Tờ trình và Quyết định bị đảo ngược",
+                desc: `Ngày Quyết định (${merged.NGAY_QUYET_DINH}) trước Ngày Tờ trình (${merged.NGAY_TO_TRINH})!`
+            });
+        }
+        if (dateQD && dateGM && dateGM < dateQD) {
+            timelineIssues.push({
+                type: "error",
+                title: "Trình tự Quyết định và Giấy mời bị đảo ngược",
+                desc: `Ngày Giấy mời (${merged.NGAY_GIAY_MOI}) trước Ngày Quyết định KHLCNT (${merged.NGAY_QUYET_DINH})!`
+            });
+        }
+        if (dateGM && dateBB && dateBB < dateGM) {
+            timelineIssues.push({
+                type: "error",
+                title: "Trình tự Giấy mời và Biên bản bị đảo ngược",
+                desc: `Ngày Biên bản hoàn thiện (${merged.NGAY_BIEN_BAN || merged.NGAY_BIEN_BAN_HOAN_THIEN}) trước Ngày Giấy mời (${merged.NGAY_GIAY_MOI})!`
+            });
+        }
+        if (dateBB && dateHD && dateHD < dateBB) {
+            timelineIssues.push({
+                type: "error",
+                title: "Trình tự Biên bản và Hợp đồng bị đảo ngược",
+                desc: `Ngày ký Hợp đồng (${merged.NGAY_HOP_DONG || merged.NGAY_KY_HOP_DONG}) trước Ngày Biên bản hoàn thiện!`
+            });
+        }
+
+        // Weekend Date Warnings
+        const dateChecks = [
+            { name: "Ngày Tờ trình", dt: dateTTr, str: merged.NGAY_TO_TRINH },
+            { name: "Ngày Quyết định", dt: dateQD, str: merged.NGAY_QUYET_DINH },
+            { name: "Ngày Giấy mời", dt: dateGM, str: merged.NGAY_GIAY_MOI },
+            { name: "Ngày Biên bản", dt: dateBB, str: (merged.NGAY_BIEN_BAN || merged.NGAY_BIEN_BAN_HOAN_THIEN) },
+            { name: "Ngày Hợp đồng", dt: dateHD, str: (merged.NGAY_HOP_DONG || merged.NGAY_KY_HOP_DONG) }
+        ];
+
+        dateChecks.forEach(dc => {
+            if (dc.dt && (dc.dt.getDay() === 0 || dc.dt.getDay() === 6)) {
+                const dayName = dc.dt.getDay() === 0 ? "Chủ Nhật" : "Thứ Bảy";
+                timelineIssues.push({
+                    type: "warning",
+                    title: `${dc.name} rơi vào ngày nghỉ (${dayName})`,
+                    desc: `${dc.name} (${dc.str}) trùng vào ${dayName}. Hãy rà soát lại nếu đơn vị không làm việc cuối tuần.`
+                });
+            }
+        });
+
+        // 3. Document Template Completeness
+        const previewEl = document.getElementById("documentPreviewContent");
+        let unreplacedCount = 0;
+        if (previewEl) {
+            const txt = previewEl.innerText || "";
+            const matches = txt.match(/\{[A-Z0-9_]{3,}\}/g) || [];
+            unreplacedCount = matches.length;
+        }
+
+        // 4. Calculate Readiness Score (0 - 100%)
+        const missingCount = missingItems.length;
+        const errorCount = timelineIssues.filter(i => i.type === "error").length;
+        const warningCount = timelineIssues.filter(i => i.type === "warning").length;
+
+        let score = 100 - (missingCount * 4) - (errorCount * 25) - (warningCount * 4) - (unreplacedCount * 2);
+        if (score < 0) score = 0;
+        if (score > 100) score = 100;
+
+        // 5. Render Modal Preflight Audit UI
+        const modal = document.getElementById("modalPreflightAudit");
+        const auditBadgeStatus = document.getElementById("auditBadgeStatus");
+        const auditScoreVal = document.getElementById("auditScoreVal");
+        const auditScoreDesc = document.getElementById("auditScoreDesc");
+        const auditMissingCountVal = document.getElementById("auditMissingCountVal");
+        const auditMissingBadge = document.getElementById("auditMissingBadge");
+        const auditMissingDesc = document.getElementById("auditMissingDesc");
+        const auditDateIssuesVal = document.getElementById("auditDateIssuesVal");
+        const auditDateDesc = document.getElementById("auditDateDesc");
+        const auditDateStatusBadge = document.getElementById("auditDateStatusBadge");
+        const auditMissingList = document.getElementById("auditMissingList");
+        const auditTimelineCheckList = document.getElementById("auditTimelineCheckList");
+        const auditDocsStatusBadge = document.getElementById("auditDocsStatusBadge");
+        const auditDocsCheckList = document.getElementById("auditDocsCheckList");
+
+        if (auditScoreVal) {
+            auditScoreVal.textContent = `${score}%`;
+            if (score === 100) {
+                auditScoreVal.className = "text-2xl font-black text-emerald-600";
+                if (auditScoreDesc) auditScoreDesc.textContent = "Hồ sơ hoàn hảo, sẵn sàng xuất!";
+                if (auditBadgeStatus) {
+                    auditBadgeStatus.textContent = "🟢 100% Sẵn sàng";
+                    auditBadgeStatus.className = "px-2 py-0.5 text-[10px] rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30";
+                }
+            } else if (score >= 70) {
+                auditScoreVal.className = "text-2xl font-black text-amber-600";
+                if (auditScoreDesc) auditScoreDesc.textContent = "Cần bổ sung một số mục trước khi nộp";
+                if (auditBadgeStatus) {
+                    auditBadgeStatus.textContent = "🟡 Cần lưu ý";
+                    auditBadgeStatus.className = "px-2 py-0.5 text-[10px] rounded-full font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30";
+                }
+            } else {
+                auditScoreVal.className = "text-2xl font-black text-rose-600";
+                if (auditScoreDesc) auditScoreDesc.textContent = "Chưa đủ điều kiện phát hành";
+                if (auditBadgeStatus) {
+                    auditBadgeStatus.textContent = "🔴 Chưa sẵn sàng";
+                    auditBadgeStatus.className = "px-2 py-0.5 text-[10px] rounded-full font-bold bg-rose-500/20 text-rose-300 border border-rose-400/30";
+                }
+            }
+        }
+
+        if (auditMissingCountVal) auditMissingCountVal.textContent = missingCount;
+        if (auditMissingBadge) auditMissingBadge.textContent = missingCount;
+        if (auditMissingDesc) {
+            auditMissingDesc.textContent = (scope === "doc" && activeDoc)
+                ? `Ô trống trong ${activeDoc.code}`
+                : `Ô trống toàn dự án`;
+        }
+
+        if (auditDateIssuesVal) {
+            if (errorCount > 0) {
+                auditDateIssuesVal.innerHTML = `<span class="text-rose-600">${errorCount} lỗi đảo</span>`;
+                if (auditDateDesc) auditDateDesc.textContent = "Sai trình tự thời gian";
+                if (auditDateStatusBadge) {
+                    auditDateStatusBadge.textContent = `${errorCount} lỗi cần chỉnh`;
+                    auditDateStatusBadge.className = "text-[10.5px] font-semibold text-rose-600";
+                }
+            } else if (warningCount > 0) {
+                auditDateIssuesVal.innerHTML = `<span class="text-amber-600">${warningCount} lưu ý</span>`;
+                if (auditDateDesc) auditDateDesc.textContent = "Trùng ngày cuối tuần";
+                if (auditDateStatusBadge) {
+                    auditDateStatusBadge.textContent = `${warningCount} cảnh báo ngày nghỉ`;
+                    auditDateStatusBadge.className = "text-[10.5px] font-semibold text-amber-600";
+                }
+            } else {
+                auditDateIssuesVal.innerHTML = `<span class="text-emerald-600">Chuẩn</span>`;
+                if (auditDateDesc) auditDateDesc.textContent = "Trình tự hợp lệ";
+                if (auditDateStatusBadge) {
+                    auditDateStatusBadge.textContent = "Trình tự hợp lệ";
+                    auditDateStatusBadge.className = "text-[10.5px] font-semibold text-emerald-600";
+                }
+            }
+        }
+
+        // Render Missing Variables List with 1-Click "Điền ngay"
+        if (auditMissingList) {
+            if (missingItems.length === 0) {
+                auditMissingList.innerHTML = `
+                    <div class="p-3 text-center text-emerald-700 bg-emerald-50 rounded-lg font-bold flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+                        <span>Đã điền đầy đủ tất cả các trường dữ liệu cần thiết!</span>
+                    </div>`;
+            } else {
+                auditMissingList.innerHTML = "";
+                missingItems.forEach(item => {
+                    const row = document.createElement("div");
+                    row.className = "flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-200 hover:bg-white transition-colors";
+                    row.innerHTML = `
+                        <div class="min-w-0 pr-2">
+                            <div class="font-bold text-slate-800 text-[11.5px] truncate">${item.label}</div>
+                            <div class="text-[10px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                                <span class="font-mono text-emerald-700 font-semibold bg-emerald-50 px-1 rounded border border-emerald-200/60">{${item.key}}</span>
+                                <span>•</span>
+                                <span>${item.section}</span>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-audit-jump shrink-0 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-[10.5px] transition-colors shadow-2xs cursor-pointer flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-right-to-bracket text-[9px]"></i>
+                            <span>Điền ngay</span>
+                        </button>
+                    `;
+                    const btnJump = row.querySelector(".btn-audit-jump");
+                    btnJump.addEventListener("click", () => {
+                        if (modal) modal.classList.add("hidden");
+                        const inp = item.input;
+                        if (inp) {
+                            const acc = inp.closest(".accordion-item");
+                            if (acc) {
+                                const c = acc.querySelector(".accordion-content");
+                                if (c && c.classList.contains("hidden")) {
+                                    c.classList.remove("hidden");
+                                    const chevron = acc.querySelector(".accordion-header i.fa-chevron-down");
+                                    if (chevron) chevron.classList.add("rotate-180");
+                                }
+                            }
+                            inp.scrollIntoView({ behavior: "smooth", block: "center" });
+                            setTimeout(() => {
+                                inp.focus();
+                                inp.classList.add("ring-4", "ring-emerald-400", "bg-emerald-50");
+                                setTimeout(() => {
+                                    inp.classList.remove("ring-4", "ring-emerald-400", "bg-emerald-50");
+                                }, 2200);
+                            }, 300);
+                        }
+                    });
+                    auditMissingList.appendChild(row);
+                });
+            }
+        }
+
+        // Render Timeline Issues List
+        if (auditTimelineCheckList) {
+            if (timelineIssues.length === 0) {
+                auditTimelineCheckList.innerHTML = `
+                    <div class="p-2.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-medium flex items-center gap-2">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
+                        <span>Logic trình tự chuẩn xác (Tờ trình &rarr; Quyết định &rarr; Giấy mời &rarr; Biên bản &rarr; Hợp đồng). Không rơi vào cuối tuần.</span>
+                    </div>`;
+            } else {
+                auditTimelineCheckList.innerHTML = "";
+                timelineIssues.forEach(iss => {
+                    const el = document.createElement("div");
+                    const isErr = iss.type === "error";
+                    el.className = `p-2 rounded-lg border flex items-start gap-2 ${isErr ? "bg-rose-50/70 border-rose-200 text-rose-900" : "bg-amber-50/70 border-amber-200 text-amber-900"}`;
+                    el.innerHTML = `
+                        <i class="fa-solid ${isErr ? "fa-circle-xmark text-rose-600" : "fa-triangle-exclamation text-amber-600"} text-sm mt-0.5 shrink-0"></i>
+                        <div class="text-xs">
+                            <div class="font-bold">${iss.title}</div>
+                            <div class="text-[11px] opacity-90">${iss.desc}</div>
+                        </div>
+                    `;
+                    auditTimelineCheckList.appendChild(el);
+                });
+            }
+        }
+
+        // Render Docs Completeness
+        if (auditDocsStatusBadge) {
+            auditDocsStatusBadge.textContent = `${docs.length} văn bản trong quy trình`;
+        }
+        if (auditDocsCheckList) {
+            auditDocsCheckList.innerHTML = `
+                <div class="flex items-center justify-between py-1 border-b border-slate-100">
+                    <span>Quy trình hiện tại: <strong class="text-slate-800">${procType.name}</strong></span>
+                    <span class="text-slate-500 font-mono">${procType.code}</span>
+                </div>
+                <div class="flex items-center justify-between py-1 border-b border-slate-100">
+                    <span>Văn bản đang xem trên Preview: <strong class="text-slate-800">${activeDoc ? activeDoc.name : "Chưa chọn"}</strong></span>
+                    <span class="text-slate-500 font-mono">${activeDoc ? activeDoc.code : ""}</span>
+                </div>
+                <div class="flex items-center justify-between py-1">
+                    <span>Mã thẻ chưa thay thế trên Preview:</span>
+                    <span class="${unreplacedCount > 0 ? "text-amber-700 font-bold" : "text-emerald-700 font-bold"}">
+                        ${unreplacedCount > 0 ? `${unreplacedCount} thẻ chưa điền` : "Đã thay thế 100%"}
+                    </span>
+                </div>
+            `;
+        }
+
+        if (options && options.showModal !== false && modal) {
+            modal.classList.remove("hidden");
+        }
+
+        return { score, missingCount, errorCount, warningCount, unreplacedCount };
+    }
+
+    // Preflight Audit UI Events
+    const btnPreflightAudit = document.getElementById("btnPreflightAudit");
+    const btnClosePreflightAudit = document.getElementById("btnClosePreflightAudit");
+    const btnAuditClose = document.getElementById("btnAuditClose");
+    const btnAuditProceedZip = document.getElementById("btnAuditProceedZip");
+
+    if (btnPreflightAudit) {
+        btnPreflightAudit.addEventListener("click", () => {
+            runPreflightAudit({ showModal: true });
+        });
+    }
+
+    if (btnClosePreflightAudit) {
+        btnClosePreflightAudit.addEventListener("click", () => {
+            const modal = document.getElementById("modalPreflightAudit");
+            if (modal) modal.classList.add("hidden");
+        });
+    }
+
+    if (btnAuditClose) {
+        btnAuditClose.addEventListener("click", () => {
+            const modal = document.getElementById("modalPreflightAudit");
+            if (modal) modal.classList.add("hidden");
+        });
+    }
+
+    if (btnAuditProceedZip) {
+        btnAuditProceedZip.addEventListener("click", () => {
+            const auditModal = document.getElementById("modalPreflightAudit");
+            if (auditModal) auditModal.classList.add("hidden");
+            const batchModal = document.getElementById("batchExportModal");
+            if (batchModal) batchModal.classList.remove("hidden");
+        });
+    }
+
+    const btnAuditScopeDoc = document.getElementById("btnAuditScopeDoc");
+    const btnAuditScopeAll = document.getElementById("btnAuditScopeAll");
+    if (btnAuditScopeDoc) {
+        btnAuditScopeDoc.addEventListener("click", () => {
+            runPreflightAudit({ showModal: true, scope: "doc" });
+        });
+    }
+    if (btnAuditScopeAll) {
+        btnAuditScopeAll.addEventListener("click", () => {
+            runPreflightAudit({ showModal: true, scope: "all" });
+        });
+    }
+
+    // Expose functions globally for integrations & automation
+    window.runPreflightAudit = runPreflightAudit;
+    window.exportProjectBundle = exportProjectBundle;
+    window.importProjectBundle = importProjectBundle;
+    window.createNewBlankProject = createNewBlankProject;
 
     switchMainTab(initialTab, false);
 

@@ -172,6 +172,40 @@
 
             <!-- Navigation Links & User Block -->
             <div class="flex items-center space-x-2 shrink-0 text-xs">
+                <!-- Project Bundle Management Dropdown -->
+                <div class="relative" id="projectMenuWrapper">
+                    <button id="btnProjectMenu" type="button" class="hover:bg-white/20 text-white font-bold flex items-center space-x-1.5 bg-white/10 px-2 py-1 rounded border border-white/15 transition-colors text-[11px] cursor-pointer shadow-xs" title="Quản lý file dự án (.hoso) - Lưu / Mở / Tạo mới">
+                        <i class="fa-solid fa-folder-closed text-amber-300"></i>
+                        <span>Dự án</span>
+                        <i class="fa-solid fa-chevron-down text-[8px] text-blue-200"></i>
+                    </button>
+                    <!-- Project Dropdown Menu -->
+                    <div id="projectMenuDropdown" class="hidden absolute left-0 top-8 z-50 bg-white border border-slate-200 rounded-xl shadow-2xl py-1.5 w-60 text-xs text-slate-800 animate-fade-in font-normal">
+                        <button id="btnProjectSave" type="button" class="w-full text-left px-3 py-2 hover:bg-emerald-50 hover:text-emerald-800 flex items-center gap-2.5 cursor-pointer transition-colors">
+                            <i class="fa-solid fa-floppy-disk text-emerald-600 text-sm w-4"></i>
+                            <div>
+                                <div class="font-bold text-[11.5px] text-slate-800">Lưu dự án ra máy (.hoso)</div>
+                                <div class="text-[10px] text-slate-500">Đóng gói toàn bộ dữ liệu &amp; tiến độ</div>
+                            </div>
+                        </button>
+                        <button id="btnProjectOpen" type="button" class="w-full text-left px-3 py-2 hover:bg-blue-50 hover:text-blue-800 flex items-center gap-2.5 cursor-pointer transition-colors border-t border-slate-100">
+                            <i class="fa-solid fa-folder-open text-blue-600 text-sm w-4"></i>
+                            <div>
+                                <div class="font-bold text-[11.5px] text-slate-800">Mở file dự án (.hoso)</div>
+                                <div class="text-[10px] text-slate-500">Nạp lại dự án đã lưu từ máy tính</div>
+                            </div>
+                        </button>
+                        <button id="btnProjectNew" type="button" class="w-full text-left px-3 py-2 hover:bg-rose-50 hover:text-rose-800 flex items-center gap-2.5 cursor-pointer transition-colors border-t border-slate-100">
+                            <i class="fa-solid fa-file-circle-plus text-rose-500 text-sm w-4"></i>
+                            <div>
+                                <div class="font-bold text-[11.5px] text-rose-700">Tạo dự án mới (Trắng)</div>
+                                <div class="text-[10px] text-slate-500">Làm mới toàn bộ biểu mẫu để làm dự án mới</div>
+                            </div>
+                        </button>
+                    </div>
+                    <input type="file" id="fileProjectBundleInput" accept=".hoso,.json" class="hidden">
+                </div>
+
                 <a href="template-tool.html" class="hover:bg-white/20 text-white font-bold flex items-center space-x-1 bg-white/10 px-2 py-1 rounded border border-white/15 transition-colors text-[11px]">
                     <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
                     <span>Chuẩn hóa Template</span>
@@ -997,6 +1031,11 @@
                                 <button id="btnResetPreviewDoc" type="button" class="hidden text-[10px] bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 font-medium px-1.5 py-0.5 rounded border border-slate-200 h-7 transition-all cursor-pointer" title="Khôi phục lại nội dung mẫu mặc định ban đầu của văn bản này">
                                     <i class="fa-solid fa-rotate-left text-[9px]"></i>
                                     <span>Khôi phục</span>
+                                </button>
+                                <!-- Pre-Flight Audit Button -->
+                                <button id="btnPreflightAudit" type="button" class="text-[10.5px] bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-bold px-2 py-0.5 rounded shadow-2xs flex items-center space-x-1 h-7 transition-all cursor-pointer" title="Kiểm tra & Rà soát chất lượng hồ sơ trước khi xuất (Audit Pre-flight)">
+                                    <i class="fa-solid fa-shield-halved text-amber-600 text-[11px]"></i>
+                                    <span>Kiểm tra hồ sơ</span>
                                 </button>
                                 <!-- Primary Download Button: Single Doc Word (.docx) -->
                                 <button id="btnExportSingleDoc" type="button" class="text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-0.5 rounded shadow-xs flex items-center space-x-1 h-7 transition-all cursor-pointer" title="Tải văn bản đang xem về máy dưới dạng Microsoft Word (.docx)">
@@ -2149,6 +2188,119 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: PRE-FLIGHT QUALITY CONTROL & AUDIT  -->
+    <!-- ========================================== -->
+    <div id="modalPreflightAudit" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-3 hidden backdrop-blur-xs select-none">
+        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] text-xs animate-fade-in">
+            <!-- Header -->
+            <div class="px-5 py-3.5 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 text-sm shadow-xs">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm tracking-tight text-white flex items-center gap-2">
+                            <span>Rà Soát &amp; Kiểm Tra Chất Lượng Hồ Sơ</span>
+                            <span id="auditBadgeStatus" class="px-2 py-0.5 text-[10px] rounded-full font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                                Sẵn sàng
+                            </span>
+                        </h3>
+                        <p class="text-[11px] text-slate-300">Hệ thống kiểm toán tự động trước khi xuất văn bản Word và gói ZIP</p>
+                    </div>
+                </div>
+                <button id="btnClosePreflightAudit" type="button" class="w-7 h-7 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 flex items-center justify-center text-lg transition-colors cursor-pointer">&times;</button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-5 overflow-y-auto space-y-4 flex-1 bg-slate-50/50 select-text">
+                <!-- Score Cards Overview -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs text-center">
+                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Mức độ sẵn sàng</div>
+                        <div id="auditScoreVal" class="text-2xl font-black text-emerald-600">100%</div>
+                        <div id="auditScoreDesc" class="text-[10px] text-slate-400 mt-0.5">Không có lỗi cản trở</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs text-center">
+                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Biến còn thiếu</div>
+                        <div id="auditMissingCountVal" class="text-2xl font-black text-slate-700">0</div>
+                        <div id="auditMissingDesc" class="text-[10px] text-slate-400 mt-0.5">Trường dữ liệu trống</div>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-2xs text-center">
+                        <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Logic ngày tháng</div>
+                        <div id="auditDateIssuesVal" class="text-2xl font-black text-emerald-600">Chuẩn</div>
+                        <div id="auditDateDesc" class="text-[10px] text-slate-400 mt-0.5">Trình tự hợp lệ</div>
+                    </div>
+                </div>
+
+                <!-- Missing Variables Audit Section -->
+                <div class="bg-white rounded-xl border border-slate-200 p-3.5 shadow-2xs">
+                    <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-100 flex-wrap gap-2">
+                        <div class="font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-500"></i>
+                            <span>Các trường dữ liệu cần điền</span>
+                            <span id="auditMissingBadge" class="px-1.5 py-0.2 bg-amber-100 text-amber-800 text-[10px] rounded font-mono font-bold">0</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="flex items-center bg-slate-100 p-0.5 rounded border border-slate-200 text-[10px]">
+                                <button id="btnAuditScopeDoc" type="button" class="px-2 py-0.5 rounded font-bold transition-all bg-white text-emerald-800 shadow-2xs cursor-pointer">
+                                    Văn bản hiện tại
+                                </button>
+                                <button id="btnAuditScopeAll" type="button" class="px-2 py-0.5 rounded font-medium transition-all text-slate-600 hover:text-slate-900 cursor-pointer">
+                                    Toàn bộ gói thầu
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="auditMissingList" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Date & Timeline Chronology Audit Section -->
+                <div class="bg-white rounded-xl border border-slate-200 p-3.5 shadow-2xs">
+                    <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-100">
+                        <div class="font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-blue-600"></i>
+                            <span>Kiểm tra logic trình tự ngày tháng</span>
+                        </div>
+                        <span id="auditDateStatusBadge" class="text-[10.5px] font-semibold text-emerald-600">Hợp lệ</span>
+                    </div>
+                    <div id="auditTimelineCheckList" class="space-y-1.5 text-xs">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Document & Template Completeness Section -->
+                <div class="bg-white rounded-xl border border-slate-200 p-3.5 shadow-2xs">
+                    <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-100">
+                        <div class="font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-file-lines text-indigo-600"></i>
+                            <span>Trạng thái văn bản trong quy trình</span>
+                        </div>
+                        <span id="auditDocsStatusBadge" class="text-[10.5px] font-semibold text-slate-500"></span>
+                    </div>
+                    <div id="auditDocsCheckList" class="space-y-1 text-[11px] text-slate-600">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-5 py-3 bg-white border-t border-slate-200 flex items-center justify-between shrink-0">
+                <button id="btnAuditClose" type="button" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors cursor-pointer">
+                    Đóng &amp; Sửa tiếp
+                </button>
+                <div class="flex items-center gap-2">
+                    <button id="btnAuditProceedZip" type="button" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer">
+                        <i class="fa-solid fa-file-zipper"></i>
+                        <span>Tiếp tục Tải trọn bộ ZIP</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
