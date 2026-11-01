@@ -3594,6 +3594,56 @@
             // Tải lại bản tùy biến của người dùng và điền các giá trị biến mới nhất
             const tempDiv = document.createElement("div");
             tempDiv.innerHTML = appState.customDocumentHtml[docId];
+
+            // AUTO-HEAL: Phục hồi các thẻ span của biến nếu vô tình bị trình duyệt xóa khi sửa trực tiếp
+            // 1. Phục hồi biến TEN_DU_AN nếu thẻ span bị mất trong dòng "Dự án: ..." hoặc "thuộc dự án: ..."
+            tempDiv.querySelectorAll("p, div, h2, b").forEach(el => {
+                const text = el.textContent || "";
+                if (!el.querySelector('[data-var-key="TEN_DU_AN"]') && !el.querySelector('p, div')) {
+                    if (text.includes("Dự án:") || text.includes("Dự án :")) {
+                        const projectVal = data["TEN_DU_AN"] || "";
+                        el.innerHTML = el.innerHTML.replace(
+                            /(Dự án\s*:\s*)([^<]*)/i,
+                            `$1<span class="filled-val" data-var-key="TEN_DU_AN" title="Biến: {TEN_DU_AN}">${projectVal || '{TEN_DU_AN}'}</span>`
+                        );
+                    } else if (text.includes("cho dự án:") || text.includes("thuộc dự án:")) {
+                        const projectVal = data["TEN_DU_AN"] || "";
+                        el.innerHTML = el.innerHTML.replace(
+                            /(cho dự án\s*:\s*<b>|thuộc dự án\s*:\s*<b>)([^<]*)/i,
+                            `$1<span class="filled-val" data-var-key="TEN_DU_AN" title="Biến: {TEN_DU_AN}">${projectVal || '{TEN_DU_AN}'}</span>`
+                        );
+                    }
+                }
+            });
+
+            // 2. Phục hồi biến TEN_GOI_THAU nếu bị mất span
+            tempDiv.querySelectorAll("p, div, b").forEach(el => {
+                const text = el.textContent || "";
+                if (!el.querySelector('[data-var-key="TEN_GOI_THAU"]') && !el.querySelector('p, div')) {
+                    if (text.includes("Tên gói thầu:") || text.includes("gói thầu:")) {
+                        const pkgVal = data["TEN_GOI_THAU"] || "";
+                        el.innerHTML = el.innerHTML.replace(
+                            /(Tên gói thầu\s*:\s*<b>|gói thầu\s*:\s*<b>)([^<]*)/i,
+                            `$1<span class="filled-val" data-var-key="TEN_GOI_THAU" title="Biến: {TEN_GOI_THAU}">${pkgVal || '{TEN_GOI_THAU}'}</span>`
+                        );
+                    }
+                }
+            });
+
+            // 3. Phục hồi các biến khác nếu giá trị cũ tồn tại trong HTML nhưng mất span
+            if (!appState._lastKnownValues) appState._lastKnownValues = {};
+            for (const k in data) {
+                const oldVal = appState._lastKnownValues[k];
+                const curVal = data[k];
+                if (oldVal && typeof oldVal === "string" && oldVal.trim().length >= 4 && oldVal !== curVal) {
+                    if (tempDiv.querySelectorAll(`[data-var-key="${k}"]`).length === 0) {
+                        if (tempDiv.innerHTML.includes(oldVal)) {
+                            tempDiv.innerHTML = tempDiv.innerHTML.split(oldVal).join(`<span class="filled-val" data-var-key="${k}" title="Biến: {${k}}">${curVal}</span>`);
+                        }
+                    }
+                }
+            }
+
             tempDiv.querySelectorAll("[data-var-key]").forEach(el => {
                 const k = el.getAttribute("data-var-key");
                 const currentVal = data[k];
@@ -3631,12 +3681,18 @@
                 grid.innerHTML = grid.innerHTML.replace(/(,\s*)ngày\s+ngày\s+/gi, '$1ngày ');
             });
 
+            // Lưu lại HTML đã được cập nhật giá trị biến và phục hồi span
+            appState.customDocumentHtml[docId] = tempDiv.innerHTML;
+
             documentPreviewContent.innerHTML = tempDiv.innerHTML;
             if (btnResetPreviewDoc) btnResetPreviewDoc.classList.remove("hidden");
         } else {
             documentPreviewContent.innerHTML = html;
             if (btnResetPreviewDoc) btnResetPreviewDoc.classList.add("hidden");
         }
+
+        // Cập nhật lại giá trị đã biết mới nhất để phục vụ auto-heal cho các lần nhập sau
+        appState._lastKnownValues = { ...data };
 
         // Áp dụng chế độ xem Bản in Word chuẩn nếu đang bật
         if (appState.previewPrintMode && documentPreviewContent) {
@@ -7403,9 +7459,101 @@
 
     // Save custom HTML when user edits preview directly
     if (documentPreviewContent) {
-        documentPreviewContent.addEventListener("input", () => {
+        documentPreviewContent.addEventListener("input", (e) => {
             const activeDoc = getCurrentActiveDoc();
             if (!activeDoc) return;
+
+            // 1. Nhận diện biến đang được sửa trực tiếp trên Preview để đồng bộ ngược về Form
+            let targetSpan = null;
+            if (e.target && e.target.nodeType === Node.ELEMENT_NODE) {
+                targetSpan = e.target.closest("[data-var-key]");
+            }
+            if (!targetSpan) {
+                const sel = window.getSelection();
+                if (sel && sel.anchorNode) {
+                    const node = sel.anchorNode.nodeType === Node.ELEMENT_NODE ? sel.anchorNode : sel.anchorNode.parentElement;
+                    targetSpan = node ? node.closest("[data-var-key]") : null;
+                }
+            }
+            if (!targetSpan && activeEditingVarSpan) {
+                targetSpan = activeEditingVarSpan;
+            }
+            // Nếu không xác định được targetSpan từ sự kiện/con trỏ, quét tìm span nào có nội dung vừa bị người dùng thay đổi
+            if (!targetSpan) {
+                const currentData = getMergedData();
+                const allSpans = documentPreviewContent.querySelectorAll("[data-var-key]");
+                for (const s of allSpans) {
+                    const k = s.getAttribute("data-var-key");
+                    const txt = s.innerText.replace(/\u00a0/g, ' ').trim();
+                    const expected = currentData[k] || "";
+                    if (txt !== "" && !txt.startsWith("{") && txt !== expected) {
+                        targetSpan = s;
+                        break;
+                    }
+                }
+            }
+
+            if (targetSpan) {
+                const varKey = targetSpan.getAttribute("data-var-key");
+                if (varKey) {
+                    let newVal = targetSpan.innerText.replace(/\u00a0/g, ' ').trim();
+                    if (newVal.startsWith("{") && newVal.endsWith("}")) {
+                        newVal = "";
+                    }
+
+                    let valToSave = newVal;
+                    if (varKey.startsWith("NGAY_")) {
+                        const parsed = parseDateToDDMMYYYY(newVal);
+                        if (parsed) valToSave = parsed;
+                    }
+
+                    // Đồng bộ ngay vào appState
+                    if (generalFieldsList.includes(varKey)) {
+                        appState.generalInfo[varKey] = valToSave;
+                    } else {
+                        const currentPkg = appState.packages[appState.activePackageIndex];
+                        if (currentPkg) {
+                            if (!currentPkg.fields) currentPkg.fields = {};
+                            currentPkg.fields[varKey] = valToSave;
+                            if (varKey === "TEN_GOI_THAU" && valToSave.trim()) {
+                                currentPkg.name = valToSave.split(" ").slice(0, 4).join(" ");
+                                renderPackageDropdown();
+                            }
+                        }
+                    }
+
+                    // Đồng bộ ngay sang ô nhập liệu tương ứng ở bảng bên trái
+                    const formInput = document.querySelector(`input[data-field="${varKey}"], textarea[data-field="${varKey}"]`);
+                    if (formInput && formInput.value !== valToSave) {
+                        formInput.value = valToSave;
+                        formInput.classList.add("bg-emerald-50");
+                        clearTimeout(formInput._syncHighlightTimer);
+                        formInput._syncHighlightTimer = setTimeout(() => formInput.classList.remove("bg-emerald-50"), 800);
+                    }
+
+                    // Đồng bộ sang các vị trí khác cùng chứa biến này trên Preview
+                    const allMatching = documentPreviewContent.querySelectorAll(`[data-var-key="${varKey}"]`);
+                    allMatching.forEach(s => {
+                        if (s !== targetSpan) {
+                            const isHdr = s.getAttribute("data-date-role") === "header";
+                            if (valToSave !== "") {
+                                s.className = "filled-val";
+                                s.textContent = isHdr ? formatDateLongVN(valToSave) : valToSave;
+                            } else {
+                                s.className = "placeholder-tag";
+                                s.innerHTML = isHdr
+                                    ? `<i class="fa-solid fa-calendar-days text-[9px] text-amber-700"></i> ngày ..... tháng ..... năm 202...`
+                                    : `<i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${varKey}}`;
+                            }
+                        }
+                    });
+
+                    // Đồng bộ với Tab 1 Tiến độ
+                    syncDocFieldChangeToTimeline(varKey, valToSave);
+                    updateProgress();
+                }
+            }
+
             if (!appState.customDocumentHtml) appState.customDocumentHtml = {};
             appState.customDocumentHtml[activeDoc.id] = documentPreviewContent.innerHTML;
             if (btnResetPreviewDoc) btnResetPreviewDoc.classList.remove("hidden");
@@ -7822,13 +7970,56 @@
             commitVariableEdit(span, true);
         }
 
+        function handleInput() {
+            const rawVal = span.innerText.replace(/\u00a0/g, ' ').trim();
+            let valToSave = rawVal;
+            if (varKey.startsWith("NGAY_")) {
+                const parsed = parseDateToDDMMYYYY(rawVal);
+                if (parsed) valToSave = parsed;
+            }
+
+            // Đồng bộ trực tiếp vào appState khi người dùng gõ từng ký tự
+            if (generalFieldsList.includes(varKey)) {
+                appState.generalInfo[varKey] = valToSave;
+            } else {
+                const currentPkg = appState.packages[appState.activePackageIndex];
+                if (currentPkg) {
+                    if (!currentPkg.fields) currentPkg.fields = {};
+                    currentPkg.fields[varKey] = valToSave;
+                }
+            }
+
+            // Đồng bộ sang ô nhập liệu bên trái ngay khi gõ
+            const formInput = document.querySelector(`input[data-field="${varKey}"], textarea[data-field="${varKey}"]`);
+            if (formInput && formInput.value !== valToSave) {
+                formInput.value = valToSave;
+                formInput.classList.add("bg-emerald-50");
+                clearTimeout(formInput._syncHighlightTimer);
+                formInput._syncHighlightTimer = setTimeout(() => formInput.classList.remove("bg-emerald-50"), 800);
+            }
+
+            // Đồng bộ sang các span khác cùng biến
+            const allSpans = documentPreviewContent.querySelectorAll(`[data-var-key="${varKey}"]`);
+            allSpans.forEach(s => {
+                if (s !== span) {
+                    const isHdr = s.getAttribute("data-date-role") === "header";
+                    s.textContent = isHdr ? formatDateLongVN(valToSave) : valToSave;
+                }
+            });
+
+            syncDocFieldChangeToTimeline(varKey, valToSave);
+            updateProgress();
+        }
+
         function cleanupListeners() {
             span.removeEventListener("keydown", handleKeydown);
             span.removeEventListener("blur", handleBlur);
+            span.removeEventListener("input", handleInput);
         }
 
         span.addEventListener("keydown", handleKeydown);
         span.addEventListener("blur", handleBlur);
+        span.addEventListener("input", handleInput);
     }
 
     function commitVariableEdit(span, shouldSave) {
