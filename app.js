@@ -2257,46 +2257,41 @@
     // Render Custom Variables from Template Studio
     // -------------------------------------------------------------
     function renderCustomVariablesUI() {
-        const customVarsJson = localStorage.getItem("ho_so_custom_variables");
-        const customSection = document.getElementById("customVariablesSection");
-        const customContainer = document.getElementById("customVariablesContainer");
-        const customBadge = document.getElementById("customVarsBadge");
-        if (!customSection || !customContainer) return;
-
-        if (!customVarsJson) {
-            customSection.classList.add("hidden");
-            return;
-        }
-
+        // Section 10 (Biến bổ sung từ Template Studio) has been removed.
+        // Migrate any legacy custom variables directly into MASTER_VARIABLES_CATALOG
         try {
-            const customVars = JSON.parse(customVarsJson);
-            if (!Array.isArray(customVars) || customVars.length === 0) {
-                customSection.classList.add("hidden");
-                return;
-            }
-
-            customSection.classList.remove("hidden");
-            if (customBadge) customBadge.textContent = `${customVars.length} biến`;
-            customContainer.innerHTML = "";
-
-            customVars.forEach(v => {
-                if (v.targetSheet === "Thông tin chung" && !generalFieldsList.includes(v.key)) {
-                    generalFieldsList.push(v.key);
+            const customVarsJson = localStorage.getItem("ho_so_custom_variables");
+            if (customVarsJson) {
+                const customVars = JSON.parse(customVarsJson);
+                if (Array.isArray(customVars)) {
+                    let hasNew = false;
+                    customVars.forEach(v => {
+                        if (v && v.key) {
+                            const cleanTag = v.key.replace(/^[{]+|[}]+$/g, "").toUpperCase();
+                            const exists = MASTER_VARIABLES_CATALOG.find(m => m.tag.toUpperCase() === cleanTag);
+                            if (!exists) {
+                                MASTER_VARIABLES_CATALOG.push({
+                                    stt: MASTER_VARIABLES_CATALOG.length + 1,
+                                    groupKey: "J",
+                                    group: "J. Tùy biến bổ sung",
+                                    label: v.label || cleanTag,
+                                    tag: cleanTag,
+                                    isGeneral: v.targetSheet === "Thông tin chung",
+                                    example: v.value || "",
+                                    isCustom: true
+                                });
+                                hasNew = true;
+                            }
+                        }
+                    });
+                    if (hasNew && typeof saveCatalogCustomizations === "function") {
+                        saveCatalogCustomizations();
+                    }
                 }
-
-                const div = document.createElement("div");
-                div.className = "space-y-0.5";
-                div.innerHTML = `
-                    <div class="flex items-center justify-between">
-                        <label class="field-label">${v.label} <span class="text-indigo-500 font-mono text-[9px]">({{${v.key}}})</span></label>
-                        <span class="text-[9px] bg-indigo-50 text-indigo-700 px-1 py-0.2 rounded">${v.targetSheet || "Từng gói thầu"}</span>
-                    </div>
-                    <input type="text" data-field="${v.key}" placeholder="VD: ${v.value || ''}" class="w-full text-xs px-2 py-0.5 h-6 border rounded border-indigo-200 focus:ring-1 focus:ring-emerald-500 bg-white text-slate-800">
-                `;
-                customContainer.appendChild(div);
-            });
+                localStorage.removeItem("ho_so_custom_variables");
+            }
         } catch (e) {
-            console.warn("Could not render custom variables:", e);
+            localStorage.removeItem("ho_so_custom_variables");
         }
     }
 
@@ -4434,8 +4429,48 @@
         }
     }
 
+    window.MASTER_VARIABLES_CATALOG = MASTER_VARIABLES_CATALOG;
+
+    function migrateLegacyCustomVariables() {
+        try {
+            const customVarsJson = localStorage.getItem("ho_so_custom_variables");
+            if (customVarsJson) {
+                const customVars = JSON.parse(customVarsJson);
+                if (Array.isArray(customVars)) {
+                    let hasNew = false;
+                    customVars.forEach(v => {
+                        if (v && v.key) {
+                            const cleanTag = v.key.replace(/^[{]+|[}]+$/g, "").toUpperCase();
+                            const exists = MASTER_VARIABLES_CATALOG.find(m => m.tag.toUpperCase() === cleanTag);
+                            if (!exists) {
+                                MASTER_VARIABLES_CATALOG.push({
+                                    stt: MASTER_VARIABLES_CATALOG.length + 1,
+                                    groupKey: "J",
+                                    group: "J. Tùy biến bổ sung",
+                                    label: v.label || cleanTag,
+                                    tag: cleanTag,
+                                    isGeneral: v.targetSheet === "Thông tin chung",
+                                    example: v.value || "",
+                                    isCustom: true
+                                });
+                                hasNew = true;
+                            }
+                        }
+                    });
+                    if (hasNew && typeof saveCatalogCustomizations === "function") {
+                        saveCatalogCustomizations();
+                    }
+                }
+                localStorage.removeItem("ho_so_custom_variables");
+            }
+        } catch (e) {
+            localStorage.removeItem("ho_so_custom_variables");
+        }
+    }
+
     // Call on script load
     loadCatalogCustomizations();
+    migrateLegacyCustomVariables();
 
     function openEditVariableModal(tagToEdit = null) {
         const modal = document.getElementById("modalEditVariable");
@@ -6803,30 +6838,32 @@
                 return;
             }
 
-            // 1. Add to custom variables in localStorage
-            let customVars = [];
-            try {
-                const saved = localStorage.getItem("ho_so_custom_variables");
-                if (saved) customVars = JSON.parse(saved);
-            } catch (e) {}
-
-            const existingIdx = customVars.findIndex(v => v.key === key);
-            const varObj = { key: key, label: label, value: val, targetSheet: "Thông tin chung" };
-            if (existingIdx >= 0) {
-                customVars[existingIdx] = varObj;
+            // 1. Add to MASTER_VARIABLES_CATALOG and save customizations
+            const cleanTag = key.replace(/^[{]+|[}]+$/g, "").toUpperCase();
+            const existingCat = MASTER_VARIABLES_CATALOG.find(v => v.tag.toUpperCase() === cleanTag);
+            if (existingCat) {
+                existingCat.label = label;
+                existingCat.example = val;
             } else {
-                customVars.push(varObj);
+                MASTER_VARIABLES_CATALOG.push({
+                    stt: MASTER_VARIABLES_CATALOG.length + 1,
+                    groupKey: "J",
+                    group: "J. Tùy biến bổ sung",
+                    label: label,
+                    tag: cleanTag,
+                    isGeneral: true,
+                    example: val,
+                    isCustom: true
+                });
             }
-            localStorage.setItem("ho_so_custom_variables", JSON.stringify(customVars));
+            if (typeof saveCatalogCustomizations === "function") saveCatalogCustomizations();
+            if (typeof renderVarsDictionaryTable === "function") renderVarsDictionaryTable();
 
             // 2. Set value in appState
-            appState.generalInfo[key] = val;
+            appState.generalInfo[cleanTag] = val;
 
             // 3. Apply to selection in preview
-            applyVariableToSelection(key);
-
-            // 4. Update Section 10 UI on the left
-            renderCustomVariablesUI();
+            applyVariableToSelection(cleanTag);
             populateFormInputs();
 
             if (modalCreateVar) modalCreateVar.classList.add("hidden");
@@ -6888,19 +6925,29 @@
                 return;
             }
 
-            // Add to custom variables
-            let customVars = [];
-            try {
-                const saved = localStorage.getItem("ho_so_custom_variables");
-                if (saved) customVars = JSON.parse(saved);
-            } catch (e) {}
+            // Add to MASTER_VARIABLES_CATALOG and save customizations
+            const cleanTag = key.replace(/^[{]+|[}]+$/g, "").toUpperCase();
+            const existingCat = MASTER_VARIABLES_CATALOG.find(v => v.tag.toUpperCase() === cleanTag);
+            if (existingCat) {
+                existingCat.label = label;
+                existingCat.example = val;
+            } else {
+                MASTER_VARIABLES_CATALOG.push({
+                    stt: MASTER_VARIABLES_CATALOG.length + 1,
+                    groupKey: "J",
+                    group: "J. Tùy biến bổ sung",
+                    label: label,
+                    tag: cleanTag,
+                    isGeneral: true,
+                    example: val,
+                    isCustom: true
+                });
+            }
+            if (typeof saveCatalogCustomizations === "function") saveCatalogCustomizations();
+            if (typeof renderVarsDictionaryTable === "function") renderVarsDictionaryTable();
 
-            customVars.push({ key: key, label: label, value: val, targetSheet: "Thông tin chung" });
-            localStorage.setItem("ho_so_custom_variables", JSON.stringify(customVars));
-
-            appState.generalInfo[key] = val;
-            applyVariableToSelection(key);
-            renderCustomVariablesUI();
+            appState.generalInfo[cleanTag] = val;
+            applyVariableToSelection(cleanTag);
             populateFormInputs();
 
             if (modalMergeVars) modalMergeVars.classList.add("hidden");
