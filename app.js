@@ -2387,6 +2387,9 @@
         updateProgress();
         renderDocumentPreview();
         applyVariableFilter();
+        if (typeof window.refreshExpandableTextareas === "function") {
+            window.refreshExpandableTextareas();
+        }
     }
 
     function syncDocFieldChangeToTimeline(field, val) {
@@ -7244,10 +7247,79 @@
         if (m) m.classList.remove("hidden");
     };
 
-        initProcurementTypeSelector();
+        // -------------------------------------------------------------
+    // Auto-Expand & Toggle Expand/Collapse for Multi-line Textareas
+    // -------------------------------------------------------------
+    let isLegalBasisExpanded = false;
+
+    function adjustTextareaHeight(textarea, isExpanded) {
+        if (!textarea) return;
+        if (isExpanded) {
+            textarea.style.height = "auto";
+            const scrollH = textarea.scrollHeight;
+            const targetH = Math.min(Math.max(scrollH + 8, 90), 650);
+            textarea.style.height = `${targetH}px`;
+            textarea.style.overflowY = scrollH > 650 ? "auto" : "hidden";
+        } else {
+            textarea.style.height = "46px";
+            textarea.style.overflowY = "auto";
+        }
+    }
+
+    function initAutoExpandTextareas() {
+        const textareaLegal = document.getElementById("textareaLegalBasis");
+        const btnToggle = document.getElementById("btnToggleExpandLegal");
+
+        function updateBtnUI() {
+            if (!btnToggle) return;
+            if (isLegalBasisExpanded) {
+                btnToggle.innerHTML = `<i class="fa-solid fa-down-left-and-up-right-to-center text-[9px]"></i> <span>Thu gọn</span>`;
+                btnToggle.className = "text-[10px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300 flex items-center gap-1 cursor-pointer transition-all shadow-2xs";
+                btnToggle.title = "Bấm để thu gọn ô nhập liệu về kích thước mặc định";
+            } else {
+                btnToggle.innerHTML = `<i class="fa-solid fa-up-right-and-down-left-from-center text-[9px]"></i> <span>Bung vừa nội dung</span>`;
+                btnToggle.className = "text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 flex items-center gap-1 cursor-pointer transition-all shadow-2xs";
+                btnToggle.title = "Bấm để tự động bung/giãn ô vừa vặn với toàn bộ nội dung";
+            }
+        }
+
+        if (btnToggle && textareaLegal) {
+            btnToggle.addEventListener("click", () => {
+                isLegalBasisExpanded = !isLegalBasisExpanded;
+                updateBtnUI();
+                adjustTextareaHeight(textareaLegal, isLegalBasisExpanded);
+            });
+
+            // Double click on the textarea toggles expand/collapse
+            textareaLegal.addEventListener("dblclick", (e) => {
+                if (e.target === textareaLegal) {
+                    isLegalBasisExpanded = !isLegalBasisExpanded;
+                    updateBtnUI();
+                    adjustTextareaHeight(textareaLegal, isLegalBasisExpanded);
+                }
+            });
+
+            // Dynamic adjustment on input if currently expanded
+            textareaLegal.addEventListener("input", () => {
+                if (isLegalBasisExpanded) {
+                    adjustTextareaHeight(textareaLegal, true);
+                }
+            });
+        }
+
+        window.refreshExpandableTextareas = () => {
+            if (textareaLegal && isLegalBasisExpanded) {
+                adjustTextareaHeight(textareaLegal, true);
+            }
+        };
+        window.adjustTextareaHeight = adjustTextareaHeight;
+    }
+
+    initProcurementTypeSelector();
     renderDocTabs();
     renderCustomVariablesUI();
     renderPackageDropdown();
+    initAutoExpandTextareas();
     populateFormInputs();
     applyVariableFilter();
     const initialTab = (window.location.hash === "#docs" || window.location.hash === "#tao-ho-so") 

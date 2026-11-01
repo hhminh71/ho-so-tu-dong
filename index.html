@@ -988,9 +988,15 @@
                         </div>
                     </button>
                     <div class="accordion-content p-2 space-y-1">
-                        <div class="field-item">
-                            <label class="field-label">Căn cứ pháp lý chung của dự án</label>
-                            <textarea data-field="CAN_CU_PHAP_LY_CHUNG" rows="2" placeholder="Căn cứ QĐ chủ trương đầu tư, phê duyệt dự toán, kế hoạch LCNT..." class="w-full border rounded border-slate-300 text-xs p-1"></textarea>
+                        <div class="field-item" id="fieldItemLegalBasis">
+                            <div class="flex items-center justify-between mb-0.5">
+                                <label class="field-label mb-0">Căn cứ pháp lý chung của dự án</label>
+                                <button type="button" id="btnToggleExpandLegal" class="text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200 flex items-center gap-1 cursor-pointer transition-all shadow-2xs" title="Bấm để bung vừa vặn toàn bộ nội dung hoặc thu gọn lại">
+                                    <i class="fa-solid fa-up-right-and-down-left-from-center text-[9px]"></i>
+                                    <span id="btnToggleExpandLegalText">Bung vừa nội dung</span>
+                                </button>
+                            </div>
+                            <textarea data-field="CAN_CU_PHAP_LY_CHUNG" id="textareaLegalBasis" rows="2" placeholder="Căn cứ QĐ chủ trương đầu tư, phê duyệt dự toán, kế hoạch LCNT..." class="w-full border rounded border-slate-300 text-xs p-1.5 leading-relaxed transition-all resize-y" style="min-height: 46px; max-height: 600px;"></textarea>
                         </div>
                     </div>
                 </div>

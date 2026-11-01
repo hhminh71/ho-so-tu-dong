@@ -60,6 +60,16 @@ input[type="text"]:hover, select:not(#procurementTypeSelect):hover, textarea:hov
     padding: 6px 10px !important;
 }
 
+/* Expandable Multi-line Textarea Styling (Bung / Thu gọn linh hoạt) */
+#textareaLegalBasis,
+.expandable-textarea {
+    line-height: 1.4 !important;
+    padding: 4px 6px !important;
+    font-size: 11px !important;
+    transition: height 0.22s ease-in-out, border-color 0.15s ease-in-out;
+    resize: vertical;
+}
+
 /* Ultra-compact field layout */
 .field-group {
     display: flex;
