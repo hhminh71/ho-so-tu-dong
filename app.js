@@ -5644,12 +5644,10 @@
     }
 
     
-    async function renderDocxBlob(docId, replacements) {
-        const allDocs = getAllDocsForCurrentType();
-        const docObj = allDocs.find(d => d.id === docId);
+    async function getDocTemplateArrayBuffer(docObj) {
         let templateUrl = (docObj && docObj.templateFile !== undefined && docObj.templateFile !== "") 
             ? docObj.templateFile 
-            : (prebuiltDocxMap[docId] || "");
+            : (prebuiltDocxMap[docObj.id] || "");
         if (!templateUrl) templateUrl = "templates/01_To_trinh_KHLCNT.docx";
 
         let arrayBuffer = null;
@@ -5668,7 +5666,6 @@
                 if (matchedKey) b64 = window.BUILTIN_DOCX_TEMPLATES[matchedKey];
             }
             if (!b64) {
-                // Fallback về mẫu Tờ trình chuẩn nếu văn bản này chưa có file template riêng
                 b64 = window.BUILTIN_DOCX_TEMPLATES["templates/01_To_trinh_KHLCNT.docx"] || Object.values(window.BUILTIN_DOCX_TEMPLATES)[0];
             }
             if (b64) {
@@ -5688,6 +5685,14 @@
                 console.warn("fetch template failed:", err);
             }
         }
+
+        return arrayBuffer;
+    }
+
+    async function renderDocxBlob(docId, replacements) {
+        const allDocs = getAllDocsForCurrentType();
+        const docObj = allDocs.find(d => d.id === docId);
+        const arrayBuffer = await getDocTemplateArrayBuffer(docObj);
 
         if (!arrayBuffer) {
             throw new Error("Không thể nạp dữ liệu mẫu văn bản cho " + (docObj ? docObj.code : docId));
@@ -5723,6 +5728,91 @@
 
         zip.file("word/document.xml", docXml);
         return await zip.generateAsync({ type: "blob" });
+    }
+
+    // Xuất toàn bộ văn bản trong quy trình vào DUY NHẤT 1 file Word (.docx), ngắt bằng Section Break (Next Page)
+    async function renderMergedDocxBlob(docs, replacements) {
+        if (!docs || docs.length === 0) {
+            throw new Error("Không có văn bản nào trong quy trình để gộp.");
+        }
+
+        const firstBuf = await getDocTemplateArrayBuffer(docs[0]);
+        if (!firstBuf) {
+            throw new Error("Không thể nạp file mẫu ban đầu để khởi tạo tài liệu gộp.");
+        }
+
+        const baseZip = await JSZip.loadAsync(firstBuf);
+
+        let combinedBodyXml = "";
+        let finalSectPr = "";
+
+        const headerDateKeys = [
+            "NGAY_TO_TRINH", "NGAY_QUYET_DINH", "NGAY_GIAY_MOI", "NGAY_BIEN_BAN",
+            "NGAY_HOP_DONG", "NGAY_KY_HOP_DONG", "NGAY_BAO_CAO", "NGAY_NGHIEM_THU"
+        ];
+
+        for (let i = 0; i < docs.length; i++) {
+            const docObj = docs[i];
+            const tmplBuf = await getDocTemplateArrayBuffer(docObj);
+            if (!tmplBuf) continue;
+
+            const currentZip = await JSZip.loadAsync(tmplBuf);
+            let docXml = await currentZip.file("word/document.xml").async("string");
+
+            // Thay thế ngày tháng Header
+            for (const k of headerDateKeys) {
+                const rawVal = replacements[k];
+                if (rawVal) {
+                    const longDate = formatDateLongVN(rawVal);
+                    const regHeader = new RegExp(`,\\s*ngày\\s*\\{+${k}\\}+`, 'gi');
+                    docXml = docXml.replace(regHeader, `, ${longDate}`);
+                }
+            }
+
+            // Thay thế toàn bộ biến xạ
+            for (const [key, rawVal] of Object.entries(replacements)) {
+                const val = escapeXml(rawVal);
+                docXml = docXml.split(`{{${key}}}`).join(val);
+                docXml = docXml.split(`{${key}}`).join(val);
+            }
+
+            // Trích xuất nội dung body và sectPr
+            const startBodyTag = "<w:body>";
+            const startBodyIdx = docXml.indexOf(startBodyTag);
+            const endSectIdx = docXml.lastIndexOf("<w:sectPr");
+            const endBodyIdx = docXml.lastIndexOf("</w:body>");
+
+            if (startBodyIdx !== -1 && endSectIdx !== -1 && endBodyIdx !== -1) {
+                const bodyContent = docXml.substring(startBodyIdx + startBodyTag.length, endSectIdx);
+                let sectPr = docXml.substring(endSectIdx, endBodyIdx);
+
+                if (!sectPr.includes("<w:type")) {
+                    sectPr = sectPr.replace("<w:sectPr", '<w:sectPr><w:type w:val="nextPage"/>');
+                }
+
+                const isLast = (i === docs.length - 1);
+                if (!isLast) {
+                    // Chèn Section Break (Next Page) ở cuối mỗi văn bản
+                    combinedBodyXml += bodyContent;
+                    combinedBodyXml += `<w:p><w:pPr>${sectPr}</w:pPr></w:p>`;
+                } else {
+                    combinedBodyXml += bodyContent;
+                    finalSectPr = sectPr;
+                }
+            }
+        }
+
+        if (!finalSectPr) {
+            finalSectPr = '<w:sectPr><w:pgSz w:w="12240" w:h="15840"/><w:pgMar w:top="1152" w:right="1008" w:bottom="1152" w:left="1584" w:header="720" w:footer="720" w:gutter="0"/><w:cols w:space="720"/><w:docGrid w:linePitch="360"/></w:sectPr>';
+        }
+
+        const baseXml = await baseZip.file("word/document.xml").async("string");
+        const bodyStart = baseXml.indexOf("<w:body>");
+        const headerPrefix = baseXml.substring(0, bodyStart + "<w:body>".length);
+
+        const mergedXml = `${headerPrefix}${combinedBodyXml}${finalSectPr}</w:body></w:document>`;
+        baseZip.file("word/document.xml", mergedXml);
+        return await baseZip.generateAsync({ type: "blob" });
     }
 
     // Single Word Export Button
@@ -5890,6 +5980,15 @@
             });
         }
 
+        const btnModalDownloadMergedDocx = document.getElementById("btnModalDownloadMergedDocx");
+        if (btnModalDownloadMergedDocx) {
+            btnModalDownloadMergedDocx.addEventListener("click", () => {
+                modalAllDocsCatalog?.classList.add("hidden");
+                const btnMerged = document.getElementById("btnExportMergedDocx");
+                if (btnMerged) btnMerged.click();
+            });
+        }
+
         btnExportSingleDoc.addEventListener("click", async () => {
         const activeDoc = getCurrentActiveDoc();
         if (!activeDoc) return;
@@ -5915,6 +6014,41 @@
             btnExportSingleDoc.innerHTML = `<i class="fa-solid fa-download"></i> <span>Tải Word (.docx)</span>`;
         }
     });
+
+    const btnExportMergedDocx = document.getElementById("btnExportMergedDocx");
+    if (btnExportMergedDocx) {
+        btnExportMergedDocx.addEventListener("click", async () => {
+            const allDocs = getAllDocsForCurrentType();
+            if (!allDocs || allDocs.length === 0) {
+                showToast("Không có văn bản nào trong quy trình để gộp!", "error");
+                return;
+            }
+
+            const currentPkg = appState.packages[appState.activePackageIndex] || { name: "GoiThau" };
+            const procType = getCurrentProcurementType();
+
+            try {
+                btnExportMergedDocx.disabled = true;
+                btnExportMergedDocx.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-white"></i> <span>Đang gộp...</span>`;
+
+                const data = getMergedData();
+                const blob = await renderMergedDocxBlob(allDocs, data);
+
+                const safeProcCode = (procType.code || "QuyTrinh").replace(/[^a-zA-Z0-9_-]/g, "_");
+                const safePkgName = (currentPkg.name || "GoiThau").replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9]/g, "_");
+                const fileName = `Tron_bo_ho_so_${safeProcCode}_${safePkgName}.docx`;
+
+                saveAs(blob, fileName);
+                showToast(`Đã xuất 1 file Word trọn bộ (${allDocs.length} văn bản ngắt Section) thành công!`, "success");
+            } catch (err) {
+                console.error("Export merged docx error:", err);
+                showToast("Lỗi khi xuất file Word gộp: " + err.message, "error");
+            } finally {
+                btnExportMergedDocx.disabled = false;
+                btnExportMergedDocx.innerHTML = `<i class="fa-solid fa-file-word text-[11px]"></i> <span>Tải 1 File Gộp (Section)</span>`;
+            }
+        });
+    }
 
     // -------------------------------------------------------------
     // Batch Export Modal Logic
@@ -7029,6 +7163,7 @@
     window.getAllDocsForCurrentType = getAllDocsForCurrentType;
     window.renderDocTabs = renderDocTabs;
     window.renderDocxBlob = renderDocxBlob;
+    window.renderMergedDocxBlob = renderMergedDocxBlob;
     window.getCurrentActiveDoc = getCurrentActiveDoc;
     window.getMergedData = getMergedData;
     window.selectDocumentById = selectDocumentById;

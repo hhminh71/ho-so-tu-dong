@@ -1029,6 +1029,11 @@
                                     <i class="fa-solid fa-download text-xs"></i>
                                     <span>Tải Word (.docx)</span>
                                 </button>
+                                <!-- Merged Download Button: All Docs in 1 Single Word (.docx) with Section Breaks -->
+                                <button id="btnExportMergedDocx" type="button" class="text-[10.5px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-2 py-0.5 rounded shadow-xs flex items-center space-x-1 h-6.5 transition-all cursor-pointer whitespace-nowrap" title="Gộp toàn bộ văn bản của gói thầu này vào 1 file Word duy nhất, phân tách bằng Section Break (Ngắt Section) chuẩn Word">
+                                    <i class="fa-solid fa-file-word text-[11px]"></i>
+                                    <span>Tải 1 File Gộp (Section)</span>
+                                </button>
                                 <!-- Bulk Download Button: All Docs in Package ZIP -->
                                 <button id="btnQuickExportZip" type="button" class="text-[10.5px] bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold px-2 py-0.5 rounded shadow-2xs flex items-center space-x-1 h-6.5 transition-all cursor-pointer whitespace-nowrap" title="Tải toàn bộ các file văn bản của gói thầu này (.zip)">
                                     <i class="fa-solid fa-file-zipper text-emerald-600 text-[10px]"></i>
@@ -1138,6 +1143,10 @@
             <div class="flex items-center justify-between border-t pt-2.5 border-slate-200 text-xs">
                 <span class="text-slate-500 text-[11px]" id="modalAllDocsCount">Tổng số: 0 văn bản</span>
                 <div class="flex items-center gap-2">
+                    <button type="button" id="btnModalDownloadMergedDocx" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer" title="Gộp tất cả văn bản vào 1 file Word duy nhất, ngắt bằng Section">
+                        <i class="fa-solid fa-file-word"></i>
+                        <span>Tải 1 File Gộp (Word)</span>
+                    </button>
                     <button type="button" id="btnModalDownloadZip" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer">
                         <i class="fa-solid fa-file-zipper"></i>
                         <span>Tải trọn bộ (.zip)</span>
