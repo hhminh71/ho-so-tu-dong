@@ -356,6 +356,24 @@
         console.warn("Could not load from localStorage:", e);
     }
 
+    // Tự động dọn dẹp các biến dự án chung (như TEN_DU_AN) bị lưu nhầm vào gói thầu cũ
+    try {
+        if (appState && appState.packages && Array.isArray(appState.packages)) {
+            appState.packages.forEach(p => {
+                if (p.fields) {
+                    generalFieldsList.forEach(k => {
+                        if (p.fields[k] !== undefined) {
+                            if (!appState.generalInfo[k]) {
+                                appState.generalInfo[k] = p.fields[k];
+                            }
+                            delete p.fields[k];
+                        }
+                    });
+                }
+            });
+        }
+    } catch(e) {}
+
     function saveState() {
         try {
             localStorage.setItem("ho_so_tu_dong_state_v3", JSON.stringify(appState));
@@ -2471,6 +2489,10 @@
 
         if (generalFieldsList.includes(field)) {
             appState.generalInfo[field] = val;
+            // Xóa triệt để biến chung khỏi tất cả các gói thầu để không bị che khuất (shadowing)
+            (appState.packages || []).forEach(p => {
+                if (p.fields && p.fields[field] !== undefined) delete p.fields[field];
+            });
         } else {
             const currentPkg = appState.packages[appState.activePackageIndex];
             if (currentPkg) {
@@ -2843,9 +2865,12 @@
     // -------------------------------------------------------------
     function getMergedData() {
         const currentPkg = appState.packages[appState.activePackageIndex] || { fields: {} };
+        const pkgFieldsClean = { ...(currentPkg.fields || {}) };
+        // Đảm bảo các biến chung (như TEN_DU_AN) không bao giờ bị ghi đè bởi gói thầu
+        generalFieldsList.forEach(k => { delete pkgFieldsClean[k]; });
         const merged = {
-            ...appState.generalInfo,
-            ...currentPkg.fields
+            ...pkgFieldsClean,
+            ...(appState.generalInfo || {})
         };
         // Tự động link ngày tháng & số văn bản từ Tab 1: Định hướng & Tiến độ
         syncTimelineDatesAndDocNosToData(merged);
@@ -2855,9 +2880,11 @@
     function getMergedDataForPackage(pkgIdx) {
         const pkgs = appState.packages || [];
         const targetPkg = pkgs[pkgIdx] || { fields: {} };
+        const pkgFieldsClean = { ...(targetPkg.fields || {}) };
+        generalFieldsList.forEach(k => { delete pkgFieldsClean[k]; });
         const merged = {
-            ...appState.generalInfo,
-            ...targetPkg.fields
+            ...pkgFieldsClean,
+            ...(appState.generalInfo || {})
         };
         const prevIdx = appState.activePackageIndex;
         appState.activePackageIndex = pkgIdx;
@@ -8058,13 +8085,18 @@
         const newValToSave = normalizedVal;
 
         // 1. Update data in state
-        if (!appState.generalInfo) appState.generalInfo = {};
-        appState.generalInfo[varKey] = newValToSave || newVal;
-
-        const currentPkg = appState.packages[appState.activePackageIndex];
-        if (currentPkg) {
-            if (!currentPkg.fields) currentPkg.fields = {};
-            currentPkg.fields[varKey] = newValToSave || newVal;
+        if (generalFieldsList.includes(varKey)) {
+            if (!appState.generalInfo) appState.generalInfo = {};
+            appState.generalInfo[varKey] = newValToSave || newVal;
+            (appState.packages || []).forEach(p => {
+                if (p.fields && p.fields[varKey] !== undefined) delete p.fields[varKey];
+            });
+        } else {
+            const currentPkg = appState.packages[appState.activePackageIndex];
+            if (currentPkg) {
+                if (!currentPkg.fields) currentPkg.fields = {};
+                currentPkg.fields[varKey] = newValToSave || newVal;
+            }
         }
 
         if (window.customVariables && window.customVariables[varKey]) {
