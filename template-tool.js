@@ -567,14 +567,14 @@
             if (batchItem) filledCount++;
 
             const fileCell = batchItem ? `
-                <div class="flex items-center space-x-1.5 font-medium text-slate-800">
-                    <i class="fa-solid fa-file-word text-blue-600 text-sm"></i>
+                <div class="flex items-center space-x-1.5 font-medium text-slate-800 text-[10.5px]">
+                    <i class="fa-solid fa-file-word text-blue-600 text-xs shrink-0"></i>
                     <span class="truncate max-w-[200px]" title="${batchItem.name}">${batchItem.name}</span>
-                    <span class="text-[9.5px] text-slate-400 font-mono">(${(batchItem.size/1024).toFixed(0)}KB)</span>
+                    <span class="text-[9px] text-slate-400 font-mono shrink-0">(${(batchItem.size/1024).toFixed(0)}KB)</span>
                 </div>
             ` : `
-                <div class="text-slate-400 italic text-[11px] flex items-center gap-1">
-                    <i class="fa-regular fa-circle-xmark text-slate-300"></i>
+                <div class="text-slate-400 italic text-[10px] flex items-center gap-1">
+                    <i class="fa-regular fa-circle-xmark text-slate-300 text-[9px]"></i>
                     <span>Chưa có file</span>
                 </div>
             `;
@@ -588,41 +588,43 @@
                 const t4 = batchItem.mappings.filter(m => m.tier === 4).length;
 
                 tagsSummary = `
-                    <div class="flex flex-wrap items-center gap-1">
-                        ${t1 > 0 ? `<span class="bg-emerald-50 text-emerald-800 border border-emerald-200 px-1 py-0.2 rounded text-[9.5px] font-bold" title="${t1} biến dùng chung dự án">🟢 ${t1} chung</span>` : ""}
-                        ${t2 > 0 ? `<span class="bg-blue-50 text-blue-800 border border-blue-200 px-1 py-0.2 rounded text-[9.5px] font-bold" title="${t2} biến gói thầu">🔵 ${t2} gói</span>` : ""}
-                        ${t3 > 0 ? `<span class="bg-amber-50 text-amber-800 border border-amber-200 px-1 py-0.2 rounded text-[9.5px] font-bold" title="${t3} biến định danh số VB riêng">🟡 ${t3} riêng</span>` : ""}
-                        ${t4 > 0 ? `<span class="bg-purple-50 text-purple-800 border border-purple-200 px-1 py-0.2 rounded text-[9.5px] font-bold" title="${t4} biến trích dẫn căn cứ">🟣 ${t4} căn cứ</span>` : ""}
+                    <div class="flex flex-wrap items-center gap-1 text-[9px]">
+                        ${t1 > 0 ? `<span class="bg-emerald-50 text-emerald-800 border border-emerald-200 px-1 py-0.2 rounded font-bold" title="${t1} biến dùng chung dự án">🟢 ${t1} chung</span>` : ""}
+                        ${t2 > 0 ? `<span class="bg-blue-50 text-blue-800 border border-blue-200 px-1 py-0.2 rounded font-bold" title="${t2} biến gói thầu">🔵 ${t2} gói</span>` : ""}
+                        ${t3 > 0 ? `<span class="bg-amber-50 text-amber-800 border border-amber-200 px-1 py-0.2 rounded font-bold" title="${t3} biến định danh số VB riêng">🟡 ${t3} riêng</span>` : ""}
+                        ${t4 > 0 ? `<span class="bg-purple-50 text-purple-800 border border-purple-200 px-1 py-0.2 rounded font-bold" title="${t4} biến trích dẫn căn cứ">🟣 ${t4} căn cứ</span>` : ""}
                     </div>
                 `;
             }
 
             const statusBadge = batchItem 
-                ? `<span class="bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded text-[10px] flex items-center justify-center gap-1"><i class="fa-solid fa-check"></i> Đã khớp</span>`
-                : `<span class="bg-slate-100 text-slate-500 font-medium px-1.5 py-0.5 rounded text-[10px] flex items-center justify-center gap-1">Chờ file</span>`;
+                ? `<span class="bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold px-1.5 py-0.2 rounded text-[9.5px] inline-flex items-center gap-1"><i class="fa-solid fa-check text-[8.5px]"></i> Đã khớp</span>`
+                : `<span class="bg-slate-50 text-slate-400 border border-slate-200 font-medium px-1.5 py-0.2 rounded text-[9.5px] inline-flex items-center gap-1">Chờ file</span>`;
 
             return `
-                <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="py-2 px-2 text-center text-slate-400 font-mono text-[10.5px]">${idx + 1}</td>
-                    <td class="py-2 px-2.5">
-                        <div class="font-bold text-slate-900 text-[11px]">${doc.name}</div>
-                        <div class="font-mono text-[9.5px] text-emerald-700">${doc.code}</div>
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="py-1 px-1.5 text-center text-slate-400 font-mono text-[9.5px] border-r border-slate-100">${idx + 1}</td>
+                    <td class="py-1 px-2 border-r border-slate-100">
+                        <div class="font-bold text-slate-800 text-[11px] leading-snug">${doc.name}</div>
+                        <div class="font-mono text-[9px] text-emerald-700 font-semibold leading-tight">${doc.code}</div>
                     </td>
-                    <td class="py-2 px-2.5">${fileCell}</td>
-                    <td class="py-2 px-2.5">${tagsSummary}</td>
-                    <td class="py-2 px-2 text-center">${statusBadge}</td>
-                    <td class="py-2 px-2 text-center">
+                    <td class="py-1 px-2 border-r border-slate-100">${fileCell}</td>
+                    <td class="py-1 px-2 border-r border-slate-100">${tagsSummary}</td>
+                    <td class="py-1 px-1.5 text-center border-r border-slate-100">${statusBadge}</td>
+                    <td class="py-1 px-1.5 text-center">
                         <div class="flex items-center justify-center space-x-1">
                             ${batchItem ? `
-                                <button type="button" class="btn-edit-doc-detail px-2 py-0.5 text-[10.5px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded cursor-pointer" data-id="${doc.id}" title="Soát chi tiết biến và xem trước văn bản">
-                                    <i class="fa-solid fa-pen-to-square text-[9.5px]"></i> Sửa chi tiết
+                                <button type="button" class="btn-edit-doc-detail px-2 py-0.5 text-[9.5px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded cursor-pointer transition-colors flex items-center gap-1" data-id="${doc.id}" title="Soát chi tiết biến và xem trước văn bản">
+                                    <i class="fa-solid fa-pen-to-square text-[8.5px]"></i>
+                                    <span>Sửa chi tiết</span>
                                 </button>
-                                <button type="button" class="btn-download-doc-single px-1.5 py-0.5 text-[10.5px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 border border-indigo-200 rounded cursor-pointer" data-id="${doc.id}" title="Tải riêng template này">
-                                    <i class="fa-solid fa-download text-[9.5px]"></i>
+                                <button type="button" class="btn-download-doc-single px-1.5 py-0.5 text-[9.5px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 border border-indigo-200 rounded cursor-pointer transition-colors" data-id="${doc.id}" title="Tải riêng template này">
+                                    <i class="fa-solid fa-download text-[8.5px]"></i>
                                 </button>
                             ` : `
-                                <button type="button" class="btn-upload-for-slot px-2 py-0.5 text-[10.5px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded cursor-pointer" data-id="${doc.id}">
-                                    <i class="fa-solid fa-plus text-[9.5px]"></i> Chọn file
+                                <button type="button" class="btn-upload-for-slot px-2 py-0.5 text-[9.5px] font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded cursor-pointer transition-colors flex items-center gap-1" data-id="${doc.id}">
+                                    <i class="fa-solid fa-plus text-[8.5px]"></i>
+                                    <span>Chọn file</span>
                                 </button>
                             `}
                         </div>
@@ -631,7 +633,7 @@
             `;
         }).join("");
 
-        if (batchProgressBadge) {
+                if (batchProgressBadge) {
             batchProgressBadge.textContent = `Đã khớp: ${filledCount}/${wf.documents.length} văn bản`;
         }
 
@@ -1119,25 +1121,25 @@
         }
 
         studioVarsTableBody.innerHTML = filtered.map(v => `
-            <tr class="hover:bg-slate-50 transition-colors">
-                <td class="py-1.5 px-2 text-center text-slate-400 font-mono text-[10.5px]">${v.stt}</td>
-                <td class="py-1.5 px-2.5">
-                    <button type="button" class="btn-copy-tag group font-mono text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded flex items-center gap-1 cursor-pointer" data-tag="{${v.tag}}" title="Bấm để sao chép vào Word">
-                        <span>{${v.tag}}</span>
-                        <i class="fa-regular fa-copy text-[10px] text-emerald-600 group-hover:scale-110"></i>
+            <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="col-stt py-0.5 px-1.5 text-center text-slate-400 font-mono text-[9.5px] border-r border-slate-100">${v.stt}</td>
+                <td class="col-tag py-0.5 px-2 border-r border-slate-100 font-mono">
+                    <button type="button" class="btn-copy-tag group font-mono text-[10px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-1.5 py-0.2 rounded flex items-center gap-1 transition-all cursor-pointer truncate max-w-full" data-tag="{${v.tag}}" title="Bấm để sao chép vào Word">
+                        <span class="truncate">{${v.tag}}</span>
+                        <i class="fa-regular fa-copy text-[9px] text-emerald-600 shrink-0"></i>
                     </button>
                 </td>
-                <td class="py-1.5 px-2.5 text-slate-700 font-medium text-[11.5px]">${v.label}</td>
-                <td class="py-1.5 px-2.5">
-                    <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold ${v.isGeneral ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-700'}">${v.group}</span>
+                <td class="col-label py-0.5 px-2 text-slate-700 font-medium text-[11px] border-r border-slate-100 truncate" title="${v.label}">${v.label}</td>
+                <td class="col-group py-0.5 px-2 border-r border-slate-100">
+                    <span class="px-1.5 py-0.2 rounded text-[9.5px] font-semibold truncate block ${v.isGeneral ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-700'}" title="${v.group}">${v.group}</span>
                 </td>
-                <td class="py-1.5 px-2 text-center">
+                <td class="col-actions py-0.5 px-1 text-center">
                     <div class="flex items-center justify-center space-x-1">
-                        <button type="button" class="btn-copy-tag text-[10.5px] font-bold text-emerald-700 hover:text-emerald-900 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 px-1.5 py-0.5 rounded cursor-pointer" data-tag="{${v.tag}}" title="Sao chép">
+                        <button type="button" class="btn-copy-tag text-[9.5px] font-bold text-emerald-700 hover:text-emerald-900 bg-white hover:bg-emerald-50 border border-slate-200 px-1 py-0.5 rounded cursor-pointer transition-all" data-tag="{${v.tag}}" title="Sao chép {${v.tag}}">
                             <i class="fa-regular fa-copy"></i>
                         </button>
-                        <button type="button" class="btn-edit-studio-var text-[10.5px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 hover:border-indigo-300 px-2 py-0.5 rounded cursor-pointer flex items-center gap-1" data-tag="${v.tag}" title="Điều chỉnh tên biến và mã TAG">
-                            <i class="fa-solid fa-pen-to-square text-[9.5px]"></i>
+                        <button type="button" class="btn-edit-studio-var text-[9.5px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-1.5 py-0.5 rounded cursor-pointer transition-all flex items-center gap-0.5" data-tag="${v.tag}" title="Điều chỉnh tên biến và mã TAG">
+                            <i class="fa-solid fa-pen-to-square text-[8.5px]"></i>
                             <span>Sửa</span>
                         </button>
                     </div>
