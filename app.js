@@ -4275,6 +4275,8 @@
     }
 
     function openVarsDictionaryModal() {
+        initTableColumnResizing();
+        applyColumnVisibility();
         const modal = document.getElementById("modalVarsDictionary");
         if (!modal) return;
 
@@ -4352,7 +4354,7 @@
         if (filtered.length === 0) {
             varsDictionaryTableBody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="py-6 text-center text-slate-400 italic">
+                    <td colspan="7" class="py-4 text-center text-slate-400 italic text-xs">
                         Không tìm thấy biến xạ phù hợp với từ khóa "${query}"
                     </td>
                 </tr>
@@ -4365,26 +4367,29 @@
             const valDisplay = val ? `<span class="text-slate-800 font-medium">${val}</span>` : `<span class="text-slate-300 italic">(chưa có giá trị)</span>`;
 
             return `
-                <tr class="hover:bg-slate-50 transition-colors">
-                    <td class="py-1.5 px-2 text-center text-slate-400 font-mono text-[10.5px]">${v.stt}</td>
-                    <td class="py-1.5 px-2.5">
-                        <button type="button" class="btn-copy-tag group font-mono text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded flex items-center gap-1 transition-all cursor-pointer" data-tag="{${v.tag}}" title="Bấm để sao chép vào Word">
-                            <span>{${v.tag}}</span>
-                            <i class="fa-regular fa-copy text-[10px] text-emerald-600 group-hover:scale-110 transition-transform"></i>
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="col-stt py-0.5 px-1.5 text-center text-slate-400 font-mono text-[9.5px] border-r border-slate-100">${v.stt}</td>
+                    <td class="col-tag py-0.5 px-2 border-r border-slate-100 font-mono">
+                        <button type="button" class="btn-copy-tag group font-mono text-[10px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-1.5 py-0.2 rounded flex items-center gap-1 transition-all cursor-pointer truncate max-w-full" data-tag="{${v.tag}}" title="Bấm để sao chép vào Word">
+                            <span class="truncate">{${v.tag}}</span>
+                            <i class="fa-regular fa-copy text-[9px] text-emerald-600 shrink-0"></i>
                         </button>
                     </td>
-                    <td class="py-1.5 px-2.5 text-slate-700 font-medium text-[11.5px]">${v.label}</td>
-                    <td class="py-1.5 px-2.5">
-                        <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold ${v.isGeneral ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-700'}">${v.group}</span>
+                    <td class="col-label py-0.5 px-2 text-slate-700 font-medium text-[11px] border-r border-slate-100 truncate" title="${v.label}">${v.label}</td>
+                    <td class="col-group py-0.5 px-2 border-r border-slate-100">
+                        <span class="px-1.5 py-0.2 rounded text-[9.5px] font-semibold truncate block ${v.isGeneral ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-700'}" title="${v.group}">${v.group}</span>
                     </td>
-                    <td class="py-1.5 px-2.5 text-[11px] max-w-xs truncate" title="${val}">${valDisplay}</td>
-                    <td class="py-1.5 px-2 text-center">
+                    <td class="col-scope py-0.5 px-2 border-r border-slate-100 text-[10px] text-slate-600 hidden">
+                        ${v.isGeneral ? '<span class="text-blue-700 font-medium">Tầng 1 (Dự án)</span>' : '<span class="text-slate-600">Tầng 2 (Gói)</span>'}
+                    </td>
+                    <td class="col-val py-0.5 px-2 text-[10.5px] border-r border-slate-100 truncate" title="${val}">${valDisplay}</td>
+                    <td class="col-actions py-0.5 px-1 text-center">
                         <div class="flex items-center justify-center space-x-1">
-                            <button type="button" class="btn-copy-tag text-[10.5px] font-bold text-emerald-700 hover:text-emerald-900 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 px-1.5 py-0.5 rounded cursor-pointer transition-all" data-tag="{${v.tag}}" title="Sao chép {${v.tag}}">
+                            <button type="button" class="btn-copy-tag text-[9.5px] font-bold text-emerald-700 hover:text-emerald-900 bg-white hover:bg-emerald-50 border border-slate-200 px-1 py-0.5 rounded cursor-pointer transition-all" data-tag="{${v.tag}}" title="Sao chép {${v.tag}}">
                                 <i class="fa-regular fa-copy"></i>
                             </button>
-                            <button type="button" class="btn-edit-var text-[10.5px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 hover:border-indigo-300 px-2 py-0.5 rounded cursor-pointer transition-all flex items-center gap-1" data-tag="${v.tag}" title="Điều chỉnh tên biến và mã TAG">
-                                <i class="fa-solid fa-pen-to-square text-[9.5px]"></i>
+                            <button type="button" class="btn-edit-var text-[9.5px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-1.5 py-0.5 rounded cursor-pointer transition-all flex items-center gap-0.5" data-tag="${v.tag}" title="Điều chỉnh tên biến và mã TAG">
+                                <i class="fa-solid fa-pen-to-square text-[8.5px]"></i>
                                 <span>Sửa</span>
                             </button>
                         </div>
@@ -4409,6 +4414,8 @@
                 openEditVariableModal(tagToEdit);
             };
         });
+
+        applyColumnVisibility();
     }
 
     // -------------------------------------------------------------
@@ -5058,6 +5065,140 @@
     if (btnExportVarsCatalogExcel) {
         btnExportVarsCatalogExcel.onclick = exportVarsCatalogToExcel;
     }
+
+    
+    // -------------------------------------------------------------
+    // Table Column Visibility & Resizing Controller
+    // -------------------------------------------------------------
+    const LS_DICT_COLS_VIS = "ho_so_vars_dict_col_vis";
+    const LS_DICT_COLS_WIDTHS = "ho_so_vars_dict_col_widths";
+
+    function applyColumnVisibility() {
+        let colSettings = {};
+        try {
+            const saved = localStorage.getItem(LS_DICT_COLS_VIS);
+            if (saved) colSettings = JSON.parse(saved);
+        } catch(e) {}
+
+        const defaultVis = {
+            "col-stt": true,
+            "col-tag": true,
+            "col-label": true,
+            "col-group": true,
+            "col-scope": false,
+            "col-val": true,
+            "col-actions": true
+        };
+
+        const finalVis = Object.assign({}, defaultVis, colSettings);
+
+        for (const colClass in finalVis) {
+            const isVisible = finalVis[colClass];
+            document.querySelectorAll(`#tableVarsDictionary th.${colClass}`).forEach(el => {
+                if (isVisible) el.classList.remove("hidden");
+                else el.classList.add("hidden");
+            });
+            document.querySelectorAll(`#varsDictionaryTableBody td.${colClass}`).forEach(el => {
+                if (isVisible) el.classList.remove("hidden");
+                else el.classList.add("hidden");
+            });
+            const chk = document.querySelector(`#dictColsDropdownMenu input[data-col="${colClass}"]`);
+            if (chk) chk.checked = isVisible;
+        }
+    }
+
+    function initTableColumnResizing() {
+        const table = document.getElementById("tableVarsDictionary");
+        if (!table) return;
+
+        let savedWidths = {};
+        try {
+            const raw = localStorage.getItem(LS_DICT_COLS_WIDTHS);
+            if (raw) savedWidths = JSON.parse(raw);
+        } catch(e) {}
+
+        const headers = table.querySelectorAll("thead th");
+        headers.forEach(th => {
+            const colClass = Array.from(th.classList).find(c => c.startsWith("col-"));
+            if (colClass && savedWidths[colClass]) {
+                th.style.width = savedWidths[colClass];
+                th.style.minWidth = savedWidths[colClass];
+            }
+
+            const resizer = th.querySelector(".col-resizer");
+            if (!resizer) return;
+
+            let startX = 0;
+            let startW = 0;
+
+            const onMouseMove = (e) => {
+                const diff = e.pageX - startX;
+                const newW = Math.max(30, startW + diff);
+                th.style.width = newW + "px";
+                th.style.minWidth = newW + "px";
+            };
+
+            const onMouseUp = () => {
+                document.removeEventListener("mousemove", onMouseMove);
+                document.removeEventListener("mouseup", onMouseUp);
+                document.body.style.cursor = "";
+                document.body.style.userSelect = "";
+
+                if (colClass) {
+                    savedWidths[colClass] = th.style.width;
+                    try {
+                        localStorage.setItem(LS_DICT_COLS_WIDTHS, JSON.stringify(savedWidths));
+                    } catch(e) {}
+                }
+            };
+
+            resizer.onmousedown = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                startX = e.pageX;
+                startW = th.offsetWidth;
+                document.body.style.cursor = "col-resize";
+                document.body.style.userSelect = "none";
+                document.addEventListener("mousemove", onMouseMove);
+                document.addEventListener("mouseup", onMouseUp);
+            };
+        });
+    }
+
+    // Attach Column Dropdown listeners
+    const btnToggleDictColsDropdown = document.getElementById("btnToggleDictColsDropdown");
+    const dictColsDropdownMenu = document.getElementById("dictColsDropdownMenu");
+
+    if (btnToggleDictColsDropdown && dictColsDropdownMenu) {
+        btnToggleDictColsDropdown.onclick = (e) => {
+            e.stopPropagation();
+            dictColsDropdownMenu.classList.toggle("hidden");
+        };
+
+        document.addEventListener("click", (e) => {
+            if (!dictColsDropdownMenu.contains(e.target) && e.target !== btnToggleDictColsDropdown) {
+                dictColsDropdownMenu.classList.add("hidden");
+            }
+        });
+
+        dictColsDropdownMenu.querySelectorAll("input[data-col]").forEach(chk => {
+            chk.onchange = () => {
+                let colSettings = {};
+                try {
+                    const saved = localStorage.getItem(LS_DICT_COLS_VIS);
+                    if (saved) colSettings = JSON.parse(saved);
+                } catch(e) {}
+
+                const col = chk.getAttribute("data-col");
+                colSettings[col] = chk.checked;
+                localStorage.setItem(LS_DICT_COLS_VIS, JSON.stringify(colSettings));
+                applyColumnVisibility();
+            };
+        });
+    }
+
+    window.applyColumnVisibility = applyColumnVisibility;
+    window.initTableColumnResizing = initTableColumnResizing;
 
     window.openVarsDictionaryModal = openVarsDictionaryModal;
     window.closeVarsDictionaryModal = closeVarsDictionaryModal;
