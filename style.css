@@ -312,8 +312,20 @@ input[type="text"]:hover, select:not(#procurementTypeSelect):hover, textarea:hov
 }
 
 #varEditFloatingBadge {
+    pointer-events: auto !important;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.35));
+}
+
+.var-inline-editing:empty {
+    display: inline-block !important;
+    min-width: 60px;
+}
+
+.var-inline-editing:empty::before {
+    content: "Gõ nội dung...";
+    color: #94a3b8;
+    font-style: italic;
     pointer-events: none;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
 }
 
 /* Utilities for horizontal scroll tabs */

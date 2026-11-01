@@ -16,7 +16,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="style.css?v=20261101_v5">
+    <link rel="stylesheet" href="style.css?v=20261101_v6">
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col text-[11.5px]">
 
@@ -1899,17 +1899,17 @@
     <!-- PREVIEW CONTEXT MENU & VARIABLE CUSTOMIZATION MODALS -->
     <!-- ============================================================= -->
     <!-- Floating Toolbar for Double Click Variable Editing -->
-    <div id="varEditFloatingBadge" class="hidden fixed z-50 bg-slate-900/95 text-white text-[10.5px] px-2.5 py-1.5 rounded-lg shadow-2xl flex items-center gap-2 border border-slate-700 select-none transition-all">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+    <div id="varEditFloatingBadge" class="hidden fixed z-50 bg-slate-900/95 text-white text-[11px] px-3 py-1.5 rounded-lg shadow-2xl flex items-center gap-2 border border-slate-700 select-none transition-all">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
         <span id="varEditBadgeKey" class="text-emerald-400 font-mono font-bold shrink-0">{VAR_KEY}</span>
-        <div class="h-3 w-px bg-slate-700"></div>
-        <button type="button" id="btnVarEditSave" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-2 py-0.5 rounded text-[10px] flex items-center gap-1 cursor-pointer transition-all shadow-xs" title="Lưu giá trị này (Phím Enter)">
-            <i class="fa-solid fa-check text-[9px]"></i> <span>Lưu (Enter)</span>
+        <div class="h-4 w-px bg-slate-700"></div>
+        <button type="button" id="btnVarEditSave" class="bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded text-[10.5px] flex items-center gap-1.5 cursor-pointer shadow-sm transition-all" title="Lưu giá trị này (Enter hoặc click ra ngoài)">
+            <i class="fa-solid fa-check text-[10px]"></i> <span>Lưu (Enter)</span>
         </button>
-        <button type="button" id="btnVarEditCancel" class="bg-slate-800 hover:bg-rose-900/80 hover:text-rose-200 text-slate-300 px-2 py-0.5 rounded text-[10px] flex items-center gap-1 cursor-pointer transition-all border border-slate-700" title="Hủy bỏ thay đổi và quay lại giá trị ban đầu (Phím Esc)">
-            <i class="fa-solid fa-xmark text-[9px]"></i> <span>Hủy (Esc)</span>
+        <button type="button" id="btnVarEditCancel" class="bg-slate-800 hover:bg-rose-900/80 hover:text-rose-100 text-slate-300 px-2.5 py-1 rounded text-[10.5px] flex items-center gap-1.5 cursor-pointer transition-all border border-slate-700 shadow-sm" title="Hủy bỏ thay đổi và quay lại giá trị ban đầu (Esc)">
+            <i class="fa-solid fa-xmark text-[10px]"></i> <span>Hủy (Esc)</span>
         </button>
-        <span class="text-slate-400 text-[9px] hidden sm:inline italic">| Shift+Enter: xuống dòng</span>
+        <span class="text-slate-400 text-[9.5px] hidden md:inline italic pl-1 border-l border-slate-800">Ctrl+Z: Hoàn tác | Click ngoài: Lưu</span>
     </div>
 
     <!-- Custom Context Menu for Document Preview -->
@@ -2437,7 +2437,7 @@
     </div>
 
     <!-- Script RBAC & Xác thực tài khoản -->
-    <script src="app.js?v=20261101_v5"></script>
+    <script src="app.js?v=20261101_v6"></script>
     <script src="auth.js"></script>
 
 </body>

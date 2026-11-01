@@ -5988,7 +5988,7 @@
                 e.stopPropagation();
                 const varKey = varSpan.getAttribute("data-var-key");
                 if (varKey) {
-                    highlightFieldWithRedAura(varKey);
+                    highlightFieldWithRedAura(varKey, { noFocus: true });
                 }
                 makeVariableInlineEditable(varSpan);
             }
@@ -7933,7 +7933,7 @@
         const varKey = span.getAttribute("data-var-key");
         if (!varKey) return;
 
-        // If another span is currently being edited, commit it first
+        // If another span is currently being edited, commit and save it first
         if (activeEditingVarSpan && activeEditingVarSpan !== span) {
             commitVariableEdit(activeEditingVarSpan, true);
         }
@@ -7953,88 +7953,164 @@
         span.contentEditable = "true";
         span.classList.add("var-inline-editing");
 
-        // Focus & đặt con trỏ thân thiện (không bôi đen toàn bộ tránh xóa nhầm)
+        // Focus & đặt con trỏ thân thiện
         span.focus();
-        if (isPlaceholder) {
-            span.textContent = "";
-        } else {
+        if (!isPlaceholder && span.textContent.length > 0) {
             try {
+                const range = document.createRange();
+                range.selectNodeContents(span);
+                range.collapse(false);
                 const sel = window.getSelection();
-                if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
-                    const range = document.createRange();
-                    range.selectNodeContents(span);
-                    range.collapse(false); // Đưa con trỏ về cuối chữ, không bôi đen cả câu
-                    sel?.removeAllRanges();
-                    sel?.addRange(range);
-                }
+                sel?.removeAllRanges();
+                sel?.addRange(range);
             } catch (err) {}
         }
 
-        // Position Floating Toolbar thông minh: đặt DƯỚI dòng chữ để không che câu chữ phía trên
+        // Undo / Redo history stack for Ctrl+Z
+        const undoStack = [span.innerText];
+        const redoStack = [];
+        let isUndoRedoAction = false;
+
+        // Position Floating Toolbar thông minh
         const badge = document.getElementById("varEditFloatingBadge");
         const badgeKey = document.getElementById("varEditBadgeKey");
         const btnSave = document.getElementById("btnVarEditSave");
         const btnCancel = document.getElementById("btnVarEditCancel");
 
-        if (badge && badgeKey) {
-            badgeKey.textContent = `{${varKey}}`;
+        function updateBadgePosition() {
+            if (!badge || badge.classList.contains("hidden")) return;
             const rect = span.getBoundingClientRect();
-            // Đặt phía dưới span để không bao giờ che dòng ngữ cảnh phía trên
             let topPos = rect.bottom + 6;
-            if (topPos + 38 > window.innerHeight) {
-                topPos = Math.max(5, rect.top - 36);
+            if (topPos + 40 > window.innerHeight) {
+                topPos = Math.max(5, rect.top - 38);
             }
-            let leftPos = Math.max(10, Math.min(rect.left, window.innerWidth - 380));
+            let leftPos = Math.max(10, Math.min(rect.left, window.innerWidth - 420));
             badge.style.top = `${topPos}px`;
             badge.style.left = `${leftPos}px`;
+        }
+
+        if (badge && badgeKey) {
+            badgeKey.textContent = `{${varKey}}`;
+            updateBadgePosition();
             badge.classList.remove("hidden");
+
+            // Quan trọng: Chống blur trên span khi click chuột vào toolbar hoặc các nút
+            badge.onmousedown = (e) => {
+                e.preventDefault();
+            };
+        }
+
+        window.addEventListener("scroll", updateBadgePosition, { passive: true });
+        if (documentPreviewContent) {
+            documentPreviewContent.addEventListener("scroll", updateBadgePosition, { passive: true });
+        }
+
+        function finishEdit(shouldSave) {
+            cleanupListeners();
+            commitVariableEdit(span, shouldSave);
         }
 
         function onBtnSaveClick(ev) {
             ev.preventDefault();
             ev.stopPropagation();
-            cleanupListeners();
-            commitVariableEdit(span, true);
+            finishEdit(true);
         }
 
         function onBtnCancelClick(ev) {
             ev.preventDefault();
             ev.stopPropagation();
-            cleanupListeners();
-            commitVariableEdit(span, false);
+            finishEdit(false);
         }
 
         if (btnSave) btnSave.onclick = onBtnSaveClick;
         if (btnCancel) btnCancel.onclick = onBtnCancelClick;
 
         function handleKeydown(e) {
+            // 1. Phím Enter: Lưu & Hoàn tất (không Shift)
             if (e.key === "Enter" && !e.shiftKey) {
-                // Nhấn Enter: HOÀN TẤT & LƯU
                 e.preventDefault();
-                cleanupListeners();
-                commitVariableEdit(span, true);
-            } else if (e.key === "Enter" && e.shiftKey) {
-                // Nhấn Shift+Enter: Xuống dòng bên trong biến
-                // Cho phép mặc định chèn dòng mới
-            } else if (e.key === "Escape") {
-                // Nhấn Esc: HỦY BỎ & KHÔI PHỤC BAN ĐẦU
-                e.preventDefault();
-                cleanupListeners();
-                commitVariableEdit(span, false);
-            }
-        }
-
-        function handleBlur(e) {
-            // Nếu người dùng click vào nút Lưu hoặc Hủy trên toolbar thì không blur save ở đây
-            if (e.relatedTarget && (e.relatedTarget.id === "btnVarEditCancel" || e.relatedTarget.id === "btnVarEditSave")) {
+                finishEdit(true);
                 return;
             }
-            cleanupListeners();
-            commitVariableEdit(span, true);
+
+            // 2. Phím Esc: Hủy bỏ & Khôi phục 100%
+            if (e.key === "Escape") {
+                e.preventDefault();
+                finishEdit(false);
+                return;
+            }
+
+            // 3. Phím Ctrl + Z: Hoàn tác (Undo)
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !e.shiftKey) {
+                e.preventDefault();
+                if (undoStack.length > 1) {
+                    const current = undoStack.pop();
+                    redoStack.push(current);
+                    const prev = undoStack[undoStack.length - 1];
+                    isUndoRedoAction = true;
+                    span.innerText = prev;
+                    handleInput();
+                    try {
+                        const range = document.createRange();
+                        range.selectNodeContents(span);
+                        range.collapse(false);
+                        const sel = window.getSelection();
+                        sel?.removeAllRanges();
+                        sel?.addRange(range);
+                    } catch (err) {}
+                    isUndoRedoAction = false;
+                } else if (undoStack.length === 1) {
+                    isUndoRedoAction = true;
+                    span.innerText = originalVal;
+                    handleInput();
+                    try {
+                        const range = document.createRange();
+                        range.selectNodeContents(span);
+                        range.collapse(false);
+                        const sel = window.getSelection();
+                        sel?.removeAllRanges();
+                        sel?.addRange(range);
+                    } catch (err) {}
+                    isUndoRedoAction = false;
+                }
+                return;
+            }
+
+            // 4. Phím Ctrl + Y hoặc Ctrl + Shift + Z: Làm lại (Redo)
+            if (((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y") ||
+                ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "z")) {
+                e.preventDefault();
+                if (redoStack.length > 0) {
+                    const nextVal = redoStack.pop();
+                    undoStack.push(nextVal);
+                    isUndoRedoAction = true;
+                    span.innerText = nextVal;
+                    handleInput();
+                    try {
+                        const range = document.createRange();
+                        range.selectNodeContents(span);
+                        range.collapse(false);
+                        const sel = window.getSelection();
+                        sel?.removeAllRanges();
+                        sel?.addRange(range);
+                    } catch (err) {}
+                    isUndoRedoAction = false;
+                }
+                return;
+            }
         }
 
         function handleInput() {
             const rawVal = span.innerText.replace(/\u00a0/g, ' ').trim();
+
+            if (!isUndoRedoAction) {
+                const lastVal = undoStack[undoStack.length - 1];
+                if (lastVal !== span.innerText) {
+                    undoStack.push(span.innerText);
+                    redoStack.length = 0;
+                }
+            }
+
             let valToSave = rawVal;
             if (varKey.startsWith("NGAY_")) {
                 const parsed = parseDateToDDMMYYYY(rawVal);
@@ -8072,17 +8148,35 @@
 
             syncDocFieldChangeToTimeline(varKey, valToSave);
             updateProgress();
+            updateBadgePosition();
+        }
+
+        // Bấm bên ngoài để lưu ("hoặc bấm bên ngoài là lưu")
+        function handleDocumentMouseDown(e) {
+            if (span.contains(e.target)) return;
+            if (badge && badge.contains(e.target)) return;
+            // Người dùng click ra bên ngoài: Hoàn tất & Lưu ngay lập tức!
+            finishEdit(true);
         }
 
         function cleanupListeners() {
             span.removeEventListener("keydown", handleKeydown);
-            span.removeEventListener("blur", handleBlur);
             span.removeEventListener("input", handleInput);
+            document.removeEventListener("mousedown", handleDocumentMouseDown);
+            window.removeEventListener("scroll", updateBadgePosition);
+            if (documentPreviewContent) {
+                documentPreviewContent.removeEventListener("scroll", updateBadgePosition);
+            }
+            if (badge) badge.onmousedown = null;
+            if (btnSave) btnSave.onclick = null;
+            if (btnCancel) btnCancel.onclick = null;
         }
 
         span.addEventListener("keydown", handleKeydown);
-        span.addEventListener("blur", handleBlur);
         span.addEventListener("input", handleInput);
+        setTimeout(() => {
+            document.addEventListener("mousedown", handleDocumentMouseDown);
+        }, 60);
     }
 
     function commitVariableEdit(span, shouldSave) {
