@@ -170,54 +170,11 @@
                 </div>
             </div>
 
-            <!-- Navigation Links & User Block -->
+            <!-- Navigation Links & User Block (Bảng cá nhân & Quản trị) -->
             <div class="flex items-center space-x-2 shrink-0 text-xs">
-                <!-- Project Bundle Management Dropdown -->
-                <div class="relative" id="projectMenuWrapper">
-                    <button id="btnProjectMenu" type="button" class="hover:bg-white/20 text-white font-bold flex items-center space-x-1.5 bg-white/10 px-2 py-1 rounded border border-white/15 transition-colors text-[11px] cursor-pointer shadow-xs" title="Quản lý file dự án (.hoso) - Lưu / Mở / Tạo mới">
-                        <i class="fa-solid fa-folder-closed text-amber-300"></i>
-                        <span>Dự án</span>
-                        <i class="fa-solid fa-chevron-down text-[8px] text-blue-200"></i>
-                    </button>
-                    <!-- Project Dropdown Menu -->
-                    <div id="projectMenuDropdown" class="hidden absolute left-0 top-8 z-50 bg-white border border-slate-200 rounded-xl shadow-2xl py-1.5 w-60 text-xs text-slate-800 animate-fade-in font-normal">
-                        <button id="btnProjectSave" type="button" class="w-full text-left px-3 py-2 hover:bg-emerald-50 hover:text-emerald-800 flex items-center gap-2.5 cursor-pointer transition-colors">
-                            <i class="fa-solid fa-floppy-disk text-emerald-600 text-sm w-4"></i>
-                            <div>
-                                <div class="font-bold text-[11.5px] text-slate-800">Lưu dự án ra máy (.hoso)</div>
-                                <div class="text-[10px] text-slate-500">Đóng gói toàn bộ dữ liệu &amp; tiến độ</div>
-                            </div>
-                        </button>
-                        <button id="btnProjectOpen" type="button" class="w-full text-left px-3 py-2 hover:bg-blue-50 hover:text-blue-800 flex items-center gap-2.5 cursor-pointer transition-colors border-t border-slate-100">
-                            <i class="fa-solid fa-folder-open text-blue-600 text-sm w-4"></i>
-                            <div>
-                                <div class="font-bold text-[11.5px] text-slate-800">Mở file dự án (.hoso)</div>
-                                <div class="text-[10px] text-slate-500">Nạp lại dự án đã lưu từ máy tính</div>
-                            </div>
-                        </button>
-                        <button id="btnProjectNew" type="button" class="w-full text-left px-3 py-2 hover:bg-rose-50 hover:text-rose-800 flex items-center gap-2.5 cursor-pointer transition-colors border-t border-slate-100">
-                            <i class="fa-solid fa-file-circle-plus text-rose-500 text-sm w-4"></i>
-                            <div>
-                                <div class="font-bold text-[11.5px] text-rose-700">Tạo dự án mới (Trắng)</div>
-                                <div class="text-[10px] text-slate-500">Làm mới toàn bộ biểu mẫu để làm dự án mới</div>
-                            </div>
-                        </button>
-                    </div>
-                    <input type="file" id="fileProjectBundleInput" accept=".hoso,.json" class="hidden">
-                </div>
-
-                <a href="template-tool.html" class="hover:bg-white/20 text-white font-bold flex items-center space-x-1 bg-white/10 px-2 py-1 rounded border border-white/15 transition-colors text-[11px]">
-                    <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
-                    <span>Chuẩn hóa Template</span>
-                </a>
-                <button id="btnOpenVarsModal" type="button" class="hover:bg-white/20 text-white font-bold flex items-center space-x-1 bg-white/10 px-2 py-1 rounded border border-white/15 transition-colors text-[11px] cursor-pointer" title="Tra cứu mã thẻ chèn {TAG} cho Word Template">
-                    <i class="fa-solid fa-book-bookmark text-emerald-300"></i>
-                    <span>Tra cứu Biến xạ</span>
-                </button>
-                
-                <!-- User Account Profile Menu -->
-                <div class="relative ml-1" id="userHeaderBlock">
-                    <button id="btnUserAccount" type="button" class="flex items-center space-x-1.5 px-2 py-0.5 rounded-lg bg-black/20 hover:bg-black/30 transition-colors border border-white/15 shadow-2xs h-7.5 cursor-pointer">
+                <!-- User Account Profile Menu (Bảng cá nhân tích hợp đầy đủ công cụ) -->
+                <div class="relative" id="userHeaderBlock">
+                    <button id="btnUserAccount" type="button" class="flex items-center space-x-2 px-2.5 py-1 rounded-lg bg-black/20 hover:bg-black/30 transition-colors border border-white/15 shadow-2xs h-7.5 cursor-pointer">
                         <div id="headerUserAvatar" class="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-[10px] shadow-xs">
                             A
                         </div>
@@ -228,9 +185,10 @@
                         <i class="fa-solid fa-chevron-down text-[8px] text-blue-200/70"></i>
                     </button>
 
-                    <!-- Dropdown Menu -->
-                    <div id="userAccountDropdown" class="hidden absolute right-0 top-9 z-50 bg-white border border-slate-200 rounded-xl shadow-2xl py-1 w-64 text-xs text-slate-800 animate-fade-in">
-                        <div class="px-3.5 py-2.5 border-b border-slate-100 bg-slate-50/70 rounded-t-xl">
+                    <!-- Personal Dropdown Menu (Bảng cá nhân & Tiện ích dự án) -->
+                    <div id="userAccountDropdown" class="hidden absolute right-0 top-9 z-50 bg-white border border-slate-200 rounded-xl shadow-2xl py-1.5 w-72 text-xs text-slate-800 animate-fade-in font-normal divide-y divide-slate-100">
+                        <!-- 1. Thông tin tài khoản -->
+                        <div class="px-3.5 py-2.5 bg-slate-50/70 rounded-t-xl">
                             <div class="font-bold text-slate-900 text-xs flex items-center gap-1.5" id="dropdownUserName">
                                 Quản trị viên
                             </div>
@@ -238,9 +196,64 @@
                             <div class="text-[9.5px] text-slate-500 truncate mt-0.5" id="dropdownUserDept">Phòng TC-KH</div>
                         </div>
 
-                        <!-- Menu Actions -->
+                        <!-- 2. Quản lý File Dự án & Hồ sơ (.hoso) -->
                         <div class="py-1">
-                            <button id="btnOpenUserManagement" type="button" class="w-full text-left px-3.5 py-1.5 hover:bg-blue-50 text-blue-900 font-bold flex items-center gap-2 transition-colors text-[11px] cursor-pointer">
+                            <div class="px-3.5 py-1 text-[9.5px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-folder-closed text-amber-500 text-[10px]"></i>
+                                <span>Hồ sơ &amp; Dự án (.hoso)</span>
+                            </div>
+                            <button id="btnProjectSave" type="button" class="w-full text-left px-3.5 py-2 hover:bg-emerald-50 hover:text-emerald-800 flex items-center gap-2.5 transition-colors cursor-pointer group">
+                                <i class="fa-solid fa-floppy-disk text-emerald-600 w-4 text-center text-sm group-hover:scale-110 transition-transform"></i>
+                                <div>
+                                    <div class="font-bold text-[11.5px] text-slate-800">Lưu dự án ra máy (.hoso)</div>
+                                    <div class="text-[9.5px] text-slate-500 font-normal">Đóng gói toàn bộ biểu mẫu &amp; tiến độ</div>
+                                </div>
+                            </button>
+                            <button id="btnProjectOpen" type="button" class="w-full text-left px-3.5 py-2 hover:bg-blue-50 hover:text-blue-800 flex items-center gap-2.5 transition-colors cursor-pointer group">
+                                <i class="fa-solid fa-folder-open text-blue-600 w-4 text-center text-sm group-hover:scale-110 transition-transform"></i>
+                                <div>
+                                    <div class="font-bold text-[11.5px] text-slate-800">Mở file dự án (.hoso)</div>
+                                    <div class="text-[9.5px] text-slate-500 font-normal">Nạp lại dự án đã lưu từ máy tính</div>
+                                </div>
+                            </button>
+                            <button id="btnProjectNew" type="button" class="w-full text-left px-3.5 py-2 hover:bg-rose-50 hover:text-rose-800 flex items-center gap-2.5 transition-colors cursor-pointer group">
+                                <i class="fa-solid fa-file-circle-plus text-rose-500 w-4 text-center text-sm group-hover:scale-110 transition-transform"></i>
+                                <div>
+                                    <div class="font-bold text-[11.5px] text-rose-700">Tạo dự án mới (Trắng)</div>
+                                    <div class="text-[9.5px] text-slate-500 font-normal">Làm mới dữ liệu để bắt đầu dự án mới</div>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- 3. Công cụ Biểu mẫu & Biến xạ -->
+                        <div class="py-1">
+                            <div class="px-3.5 py-1 text-[9.5px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-wand-magic-sparkles text-emerald-500 text-[10px]"></i>
+                                <span>Công cụ biểu mẫu</span>
+                            </div>
+                            <button id="btnOpenVarsModal" type="button" class="w-full text-left px-3.5 py-2 hover:bg-emerald-50 hover:text-emerald-800 flex items-center gap-2.5 transition-colors cursor-pointer group" title="Tra cứu mã thẻ chèn {TAG} cho Word Template">
+                                <i class="fa-solid fa-book-bookmark text-emerald-600 w-4 text-center text-sm group-hover:scale-110 transition-transform"></i>
+                                <div>
+                                    <div class="font-bold text-[11.5px] text-slate-800">Từ điển &amp; Tra cứu Biến xạ</div>
+                                    <div class="text-[9.5px] text-slate-500 font-normal">Tra cứu mã {TAG} chèn vào văn bản Word</div>
+                                </div>
+                            </button>
+                            <a href="template-tool.html" class="w-full text-left px-3.5 py-2 hover:bg-amber-50 hover:text-amber-900 flex items-center gap-2.5 transition-colors cursor-pointer group">
+                                <i class="fa-solid fa-wand-magic-sparkles text-amber-500 w-4 text-center text-sm group-hover:scale-110 transition-transform"></i>
+                                <div>
+                                    <div class="font-bold text-[11.5px] text-slate-800">Chuẩn hóa Template (Studio)</div>
+                                    <div class="text-[9.5px] text-slate-500 font-normal">Công cụ phân tích &amp; gán thẻ cho file Word</div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- 4. Quản trị & Cấu hình Hệ thống -->
+                        <div class="py-1">
+                            <div class="px-3.5 py-1 text-[9.5px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <i class="fa-solid fa-sliders text-blue-500 text-[10px]"></i>
+                                <span>Quản trị &amp; Cấu hình</span>
+                            </div>
+                            <button id="btnOpenUserManagement" type="button" class="w-full text-left px-3.5 py-1.5 hover:bg-blue-50 text-blue-900 font-semibold flex items-center gap-2 transition-colors text-[11px] cursor-pointer">
                                 <i class="fa-solid fa-users-gear text-blue-600 w-4 text-center"></i>
                                 <span>Phân quyền &amp; Quản lý tài khoản</span>
                             </button>
@@ -254,9 +267,8 @@
                             </button>
                         </div>
 
-                        <div class="border-t border-slate-100 my-1"></div>
-
-                        <div class="px-1 py-0.5">
+                        <!-- 5. Đăng xuất -->
+                        <div class="px-1.5 py-1">
                             <button id="btnAppLogout" type="button" class="w-full text-left px-3 py-1.5 hover:bg-rose-50 text-rose-600 font-bold rounded flex items-center gap-2 transition-colors text-[11px] cursor-pointer">
                                 <i class="fa-solid fa-right-from-bracket w-4 text-center"></i>
                                 <span>Đăng xuất</span>
@@ -264,6 +276,8 @@
                         </div>
                     </div>
                 </div>
+
+                <input type="file" id="fileProjectBundleInput" accept=".hoso,.json" class="hidden">
             </div>
         </div>
     </header>

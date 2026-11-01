@@ -4649,6 +4649,8 @@
     }
 
     function openVarsDictionaryModal() {
+        const userAccountDropdown = document.getElementById("userAccountDropdown");
+        if (userAccountDropdown) userAccountDropdown.classList.add("hidden");
         initTableColumnResizing();
         applyColumnVisibility();
         const modal = document.getElementById("modalVarsDictionary");
@@ -8793,6 +8795,8 @@
 
     if (btnProjectSave) {
         btnProjectSave.addEventListener("click", () => {
+            const userAccountDropdown = document.getElementById("userAccountDropdown");
+            if (userAccountDropdown) userAccountDropdown.classList.add("hidden");
             if (projectMenuDropdown) projectMenuDropdown.classList.add("hidden");
             exportProjectBundle();
         });
@@ -8800,6 +8804,8 @@
 
     if (btnProjectOpen && fileProjectBundleInput) {
         btnProjectOpen.addEventListener("click", () => {
+            const userAccountDropdown = document.getElementById("userAccountDropdown");
+            if (userAccountDropdown) userAccountDropdown.classList.add("hidden");
             if (projectMenuDropdown) projectMenuDropdown.classList.add("hidden");
             fileProjectBundleInput.value = "";
             fileProjectBundleInput.click();
@@ -8813,6 +8819,8 @@
 
     if (btnProjectNew) {
         btnProjectNew.addEventListener("click", () => {
+            const userAccountDropdown = document.getElementById("userAccountDropdown");
+            if (userAccountDropdown) userAccountDropdown.classList.add("hidden");
             if (projectMenuDropdown) projectMenuDropdown.classList.add("hidden");
             createNewBlankProject();
         });
