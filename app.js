@@ -4237,6 +4237,366 @@
     });
 
     // -------------------------------------------------------------
+    // Variable Categories Manager Controller (Add / Edit / Remove)
+    // -------------------------------------------------------------
+    const LS_VARIABLE_CATEGORIES = "ho_so_var_categories";
+    const DEFAULT_VARIABLE_CATEGORIES = [
+        { key: "A", name: "A. Chủ đầu tư" },
+        { key: "B", name: "B. Dự án & Gói" },
+        { key: "C", name: "C. Tài chính" },
+        { key: "D", name: "D. Nhà thầu" },
+        { key: "E", name: "E. Số hiệu VB" },
+        { key: "F", name: "F. Ngày (ngắn)" },
+        { key: "G", name: "G. Ngày (Full)" },
+        { key: "H", name: "H. Tên trích dẫn" },
+        { key: "I", name: "I. Căn cứ pháp lý" },
+        { key: "J", name: "J. Tùy biến bổ sung" }
+    ];
+
+    let currentCategories = [...DEFAULT_VARIABLE_CATEGORIES];
+
+    function loadVariableCategories() {
+        try {
+            const raw = localStorage.getItem(LS_VARIABLE_CATEGORIES);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    currentCategories = parsed;
+                }
+            }
+        } catch(e) {
+            console.warn("Could not load variable categories:", e);
+        }
+    }
+
+    function saveVariableCategories() {
+        try {
+            localStorage.setItem(LS_VARIABLE_CATEGORIES, JSON.stringify(currentCategories));
+        } catch(e) {
+            console.warn("Could not save variable categories:", e);
+        }
+    }
+
+    loadVariableCategories();
+
+    function populateGroupDropdowns() {
+        const editVarGroupSelect = document.getElementById("editVarGroupSelect");
+        const inputNewVarGroup = document.getElementById("inputNewVarGroup");
+
+        const optionsHtml = `<option value="">-- (Để trống / Chưa phân nhóm) --</option>` +
+            currentCategories.map(c => `<option value="${c.key}">${c.name}</option>`).join("");
+
+        if (editVarGroupSelect) {
+            const curVal = editVarGroupSelect.value;
+            editVarGroupSelect.innerHTML = optionsHtml;
+            if (currentCategories.some(c => c.key === curVal) || curVal === "") {
+                editVarGroupSelect.value = curVal;
+            } else {
+                editVarGroupSelect.value = "";
+            }
+        }
+
+        if (inputNewVarGroup) {
+            const curVal = inputNewVarGroup.value;
+            inputNewVarGroup.innerHTML = optionsHtml;
+            if (currentCategories.some(c => c.key === curVal)) {
+                inputNewVarGroup.value = curVal;
+            } else if (currentCategories.length > 0) {
+                inputNewVarGroup.value = currentCategories[0].key;
+            }
+        }
+    }
+
+    function openManageCategoriesModal() {
+        const modal = document.getElementById("modalManageCategories");
+        if (!modal) return;
+        renderManageCategoriesList();
+        modal.classList.remove("hidden");
+    }
+
+    function closeManageCategoriesModal() {
+        const modal = document.getElementById("modalManageCategories");
+        if (modal) modal.classList.add("hidden");
+    }
+
+    function renderManageCategoriesList() {
+        const container = document.getElementById("categoriesListContainer");
+        if (!container) return;
+
+        const allVars = [...MASTER_VARIABLES_CATALOG];
+        if (appState && appState.customVariables) {
+            for (const k in appState.customVariables) {
+                allVars.push({
+                    groupKey: appState.customVariables[k].groupKey || "",
+                    group: appState.customVariables[k].group || ""
+                });
+            }
+        }
+
+        if (currentCategories.length === 0) {
+            container.innerHTML = `
+                <div class="p-6 text-center text-slate-400 italic text-xs">
+                    Chưa có phân nhóm nào. Hãy thêm phân nhóm mới ở khung phía trên.
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = currentCategories.map(cat => {
+            const count = allVars.filter(v => v.groupKey === cat.key).length;
+            return `
+                <div class="flex items-center justify-between p-2 hover:bg-slate-50 gap-2 transition-colors" data-key="${cat.key}">
+                    <span class="w-6 h-6 rounded bg-purple-100 text-purple-800 font-bold text-xs flex items-center justify-center shrink-0 border border-purple-200" title="Mã nhóm: ${cat.key}">${cat.key}</span>
+                    <div class="flex-1 min-w-0">
+                        <input type="text" class="input-cat-name w-full px-2 py-0.5 bg-white border border-slate-300 rounded text-xs font-semibold text-slate-800 focus:ring-1 focus:ring-purple-500 transition-colors" value="${escapeXml(cat.name)}" data-orig="${escapeXml(cat.name)}">
+                    </div>
+                    <span class="text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${count > 0 ? 'bg-slate-100 text-slate-700 font-semibold' : 'bg-slate-50 text-slate-400 italic'}">
+                        ${count} biến
+                    </span>
+                    <div class="flex items-center gap-1 shrink-0">
+                        <button type="button" class="btn-save-cat px-2 py-0.5 text-[10px] font-bold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded cursor-pointer transition-all flex items-center gap-1" data-key="${cat.key}" title="Lưu tên mới">
+                            <i class="fa-solid fa-check text-[9px]"></i>
+                            <span>Lưu</span>
+                        </button>
+                        <button type="button" class="btn-del-cat px-2 py-0.5 text-[10px] font-bold text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded cursor-pointer transition-all flex items-center gap-1" data-key="${cat.key}" title="Loại bỏ nhóm này (biến sẽ để trống)">
+                            <i class="fa-regular fa-trash-can text-[9px]"></i>
+                            <span>Xóa</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join("");
+
+        container.querySelectorAll(".btn-save-cat").forEach(btn => {
+            btn.onclick = () => {
+                const key = btn.getAttribute("data-key");
+                const row = btn.closest("[data-key]");
+                const input = row ? row.querySelector(".input-cat-name") : null;
+                if (input) updateCategoryName(key, input.value);
+            };
+        });
+
+        container.querySelectorAll(".input-cat-name").forEach(inp => {
+            inp.onkeydown = (e) => {
+                if (e.key === "Enter") {
+                    const row = inp.closest("[data-key]");
+                    const key = row ? row.getAttribute("data-key") : null;
+                    if (key) updateCategoryName(key, inp.value);
+                }
+            };
+        });
+
+        container.querySelectorAll(".btn-del-cat").forEach(btn => {
+            btn.onclick = () => {
+                const key = btn.getAttribute("data-key");
+                deleteCategory(key);
+            };
+        });
+    }
+
+    function deleteCategory(catKey) {
+        const cat = currentCategories.find(c => c.key === catKey);
+        if (!cat) return;
+
+        const matchingVars = MASTER_VARIABLES_CATALOG.filter(v => v.groupKey === catKey);
+        let customCount = 0;
+        if (appState && appState.customVariables) {
+            for (const k in appState.customVariables) {
+                if (appState.customVariables[k].groupKey === catKey) customCount++;
+            }
+        }
+        const totalMatching = matchingVars.length + customCount;
+
+        const confirmMsg = totalMatching > 0
+            ? `Xác nhận loại bỏ phân nhóm "${cat.name}"?\n\nCó ${totalMatching} biến đang thuộc nhóm này. Toàn bộ các biến sẽ được ĐỂ TRỐNG (Chưa phân nhóm) và không bị xóa mất dữ liệu.`
+            : `Xác nhận loại bỏ phân nhóm "${cat.name}"?`;
+
+        if (!confirm(confirmMsg)) return;
+
+        // Reset variables belonging to this category to blank (để trống)
+        matchingVars.forEach(v => {
+            v.groupKey = "";
+            v.group = "";
+        });
+
+        if (appState && appState.customVariables) {
+            for (const k in appState.customVariables) {
+                if (appState.customVariables[k].groupKey === catKey) {
+                    appState.customVariables[k].groupKey = "";
+                    appState.customVariables[k].group = "";
+                }
+            }
+            saveState();
+        }
+
+        if (typeof saveCatalogCustomizations === "function") {
+            saveCatalogCustomizations();
+        }
+
+        // Remove from currentCategories
+        currentCategories = currentCategories.filter(c => c.key !== catKey);
+        saveVariableCategories();
+
+        if (currentVarCatFilter === catKey) {
+            currentVarCatFilter = "all";
+        }
+
+        renderManageCategoriesList();
+        renderVarsDictionaryTable();
+        populateGroupDropdowns();
+
+        showToast(`Đã loại bỏ phân nhóm "${cat.name}". ${totalMatching} biến đã được để trống.`);
+    }
+
+    function updateCategoryName(catKey, newName) {
+        const cat = currentCategories.find(c => c.key === catKey);
+        if (!cat) return;
+        newName = (newName || "").trim();
+        if (!newName) {
+            showToast("Tên phân nhóm không được để trống!", "error");
+            return;
+        }
+
+        cat.name = newName;
+
+        // Update group on matching variables
+        MASTER_VARIABLES_CATALOG.forEach(v => {
+            if (v.groupKey === catKey) {
+                v.group = newName;
+            }
+        });
+
+        if (appState && appState.customVariables) {
+            for (const k in appState.customVariables) {
+                if (appState.customVariables[k].groupKey === catKey) {
+                    appState.customVariables[k].group = newName;
+                }
+            }
+            saveState();
+        }
+
+        saveVariableCategories();
+        if (typeof saveCatalogCustomizations === "function") {
+            saveCatalogCustomizations();
+        }
+
+        renderManageCategoriesList();
+        renderVarsDictionaryTable();
+        populateGroupDropdowns();
+
+        showToast(`Đã đổi tên phân nhóm thành "${newName}".`);
+    }
+
+    function addNewCategory(key, name) {
+        name = (name || "").trim();
+        if (!name) {
+            showToast("Vui lòng nhập tên phân nhóm mới!", "error");
+            return false;
+        }
+
+        key = (key || "").trim().toUpperCase();
+        if (!key) {
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            for (let i = 0; i < alphabet.length; i++) {
+                const char = alphabet[i];
+                if (!currentCategories.some(c => c.key === char)) {
+                    key = char;
+                    break;
+                }
+            }
+            if (!key) key = "N" + (currentCategories.length + 1);
+        }
+
+        if (currentCategories.some(c => c.key === key)) {
+            showToast(`Mã phân nhóm "${key}" đã tồn tại! Vui lòng chọn mã khác.`, "error");
+            return false;
+        }
+
+        currentCategories.push({ key, name });
+        saveVariableCategories();
+
+        renderManageCategoriesList();
+        renderVarsDictionaryTable();
+        populateGroupDropdowns();
+
+        showToast(`Đã thêm phân nhóm mới "${name}" (${key})!`);
+        return true;
+    }
+
+    function resetDefaultCategories() {
+        if (!confirm("Khôi phục danh sách phân nhóm về 10 nhóm chuẩn ban đầu (A -> J)?\nCác biến đang để trống hoặc thuộc nhóm tự tạo có thể cần được phân nhóm lại.")) return;
+
+        currentCategories = JSON.parse(JSON.stringify(DEFAULT_VARIABLE_CATEGORIES));
+        saveVariableCategories();
+
+        currentVarCatFilter = "all";
+        renderManageCategoriesList();
+        renderVarsDictionaryTable();
+        populateGroupDropdowns();
+
+        showToast("Đã khôi phục 10 phân nhóm mặc định!", "info");
+    }
+
+    function renderVarsCategoryFilters(allVars) {
+        const container = document.getElementById("varsCategoryFilters");
+        if (!container) return;
+
+        const counts = { all: allVars.length, __unassigned__: 0 };
+        currentCategories.forEach(cat => {
+            counts[cat.key] = 0;
+        });
+
+        allVars.forEach(v => {
+            const k = v.groupKey;
+            if (!k || !v.group || v.group.trim() === "" || !currentCategories.some(c => c.key === k)) {
+                counts.__unassigned__++;
+            } else {
+                if (counts[k] !== undefined) counts[k]++;
+                else counts[k] = 1;
+            }
+        });
+
+        let pillsHtml = `
+            <button type="button" data-cat="all" class="var-filter-pill px-2 py-0.2 rounded-full font-bold ${currentVarCatFilter === 'all' ? 'bg-slate-800 text-white' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'} cursor-pointer transition-colors">Tất cả (${counts.all})</button>
+        `;
+
+        currentCategories.forEach(cat => {
+            const isActive = currentVarCatFilter === cat.key;
+            pillsHtml += `
+                <button type="button" data-cat="${cat.key}" class="var-filter-pill px-1.5 py-0.2 rounded-full font-medium ${isActive ? 'bg-slate-800 text-white font-bold' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'} cursor-pointer transition-colors">${cat.name} (${counts[cat.key] || 0})</button>
+            `;
+        });
+
+        if (counts.__unassigned__ > 0) {
+            const isActive = currentVarCatFilter === '__unassigned__';
+            pillsHtml += `
+                <button type="button" data-cat="__unassigned__" class="var-filter-pill px-1.5 py-0.2 rounded-full font-semibold ${isActive ? 'bg-amber-800 text-white font-bold' : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border border-dashed border-amber-300'} cursor-pointer transition-colors" title="Các biến chưa thuộc nhóm nào hoặc nhóm đã bị loại bỏ">⚠️ Để trống (${counts.__unassigned__})</button>
+            `;
+        }
+
+        pillsHtml += `
+            <button id="btnQuickPillManageCats" type="button" class="px-1.5 py-0.2 rounded-full font-semibold text-[9.5px] bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 cursor-pointer transition-colors flex items-center gap-1 ml-1" title="Quản lý và điều chỉnh phân nhóm">
+                <i class="fa-solid fa-gear text-[8.5px]"></i>
+                <span>Tùy chỉnh nhóm</span>
+            </button>
+        `;
+
+        container.innerHTML = pillsHtml;
+
+        container.querySelectorAll(".var-filter-pill").forEach(pill => {
+            pill.addEventListener("click", () => {
+                currentVarCatFilter = pill.getAttribute("data-cat");
+                renderVarsDictionaryTable();
+            });
+        });
+
+        const quickBtn = document.getElementById("btnQuickPillManageCats");
+        if (quickBtn) {
+            quickBtn.onclick = openManageCategoriesModal;
+        }
+    }
+
+    // -------------------------------------------------------------
     // Tra cứu Biến xạ Word Template Modal Controller
     // -------------------------------------------------------------
     const modalVarsDictionary = document.getElementById("modalVarsDictionary");
@@ -4327,22 +4687,15 @@
             }
         }
 
-        // Update category counts across all 10 groups
-        const catCounts = { all: allVars.length, A: 0, B: 0, C: 0, D: 0, E: 0, F: 0, G: 0, H: 0, I: 0, J: 0 };
-        allVars.forEach(v => {
-            const k = (v.groupKey || "J").toUpperCase();
-            if (catCounts[k] !== undefined) catCounts[k]++;
-            else catCounts["J"]++;
-        });
-
-        for (const k in catCounts) {
-            const el = document.getElementById(`countVar_${k}`);
-            if (el) el.textContent = catCounts[k];
-        }
-        if (countVarAll) countVarAll.textContent = allVars.length;
+        renderVarsCategoryFilters(allVars);
 
         const filtered = allVars.filter(v => {
-            if (currentVarCatFilter !== "all" && v.groupKey !== currentVarCatFilter) return false;
+            if (currentVarCatFilter === "__unassigned__") {
+                const hasValidCat = v.groupKey && v.group && v.group.trim() !== "" && currentCategories.some(c => c.key === v.groupKey);
+                if (hasValidCat) return false;
+            } else if (currentVarCatFilter !== "all" && v.groupKey !== currentVarCatFilter) {
+                return false;
+            }
             if (!query) return true;
             const inTag = v.tag.toLowerCase().includes(query);
             const inLabel = v.label.toLowerCase().includes(query);
@@ -4377,7 +4730,10 @@
                     </td>
                     <td class="col-label py-0.5 px-2 text-slate-700 font-medium text-[11px] border-r border-slate-100 truncate" title="${v.label}">${v.label}</td>
                     <td class="col-group py-0.5 px-2 border-r border-slate-100">
-                        <span class="px-1.5 py-0.2 rounded text-[9.5px] font-semibold truncate block ${v.isGeneral ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-700'}" title="${v.group}">${v.group}</span>
+                        ${(v.group && v.group.trim() !== "" && v.groupKey && currentCategories.some(c => c.key === v.groupKey))
+                            ? `<span class="px-1.5 py-0.2 rounded text-[9.5px] font-semibold truncate block ${v.isGeneral ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-700'}" title="${v.group}">${v.group}</span>`
+                            : `<span class="px-1.5 py-0.2 rounded text-[9.5px] italic text-slate-400 bg-slate-50 border border-dashed border-slate-200 truncate block text-center" title="Chưa phân nhóm / Để trống">(Để trống)</span>`
+                        }
                     </td>
                     <td class="col-scope py-0.5 px-2 border-r border-slate-100 text-[10px] text-slate-600 hidden">
                         ${v.isGeneral ? '<span class="text-blue-700 font-medium">Tầng 1 (Dự án)</span>' : '<span class="text-slate-600">Tầng 2 (Gói)</span>'}
@@ -4504,6 +4860,7 @@
         const btnDelete = document.getElementById("btnDeleteCustomVar");
 
         if (!modal) return;
+        populateGroupDropdowns();
 
         if (tagToEdit) {
             const cleanTag = tagToEdit.replace(/^[{]+|[}]+$/g, "");
@@ -4787,19 +5144,8 @@
         const isGeneral = document.getElementById("editVarScopeSelect")?.value === "general";
         const example = (document.getElementById("editVarExampleInput")?.value || "").trim();
 
-        const groupNames = {
-            "A": "A. Chủ đầu tư",
-            "B": "B. Dự án & Gói",
-            "C": "C. Tài chính",
-            "D": "D. Nhà thầu",
-            "E": "E. Số hiệu VB",
-            "F": "F. Ngày (dd/mm/yyyy)",
-            "G": "G. Ngày (Full)",
-            "H": "H. Tên trích dẫn",
-            "I": "I. Căn cứ pháp lý",
-            "J": "J. Tùy biến bổ sung"
-        };
-        const groupName = groupNames[groupKey] || "A. Chủ đầu tư";
+        const groupCat = currentCategories.find(c => c.key === groupKey);
+        const groupName = groupCat ? groupCat.name : (groupKey ? groupKey : "");
 
         if (!newTag || !label) {
             showToast("Vui lòng điền đầy đủ Tên biến và Mã thẻ {TAG}!", "error");
@@ -5199,6 +5545,38 @@
 
     window.applyColumnVisibility = applyColumnVisibility;
     window.initTableColumnResizing = initTableColumnResizing;
+
+    // Category Manager Modal Listeners
+    const btnManageCategories = document.getElementById("btnManageCategories");
+    const modalManageCategories = document.getElementById("modalManageCategories");
+    const btnCloseManageCatsModal = document.getElementById("btnCloseManageCatsModal");
+    const btnDoneManageCats = document.getElementById("btnDoneManageCats");
+    const btnSubmitAddCategory = document.getElementById("btnSubmitAddCategory");
+    const btnResetDefaultCategories = document.getElementById("btnResetDefaultCategories");
+
+    if (btnManageCategories) btnManageCategories.addEventListener("click", openManageCategoriesModal);
+    if (btnCloseManageCatsModal) btnCloseManageCatsModal.addEventListener("click", closeManageCategoriesModal);
+    if (btnDoneManageCats) btnDoneManageCats.addEventListener("click", closeManageCategoriesModal);
+    if (modalManageCategories) setupSafeModalBackdropClose(modalManageCategories, closeManageCategoriesModal);
+    if (btnSubmitAddCategory) {
+        btnSubmitAddCategory.addEventListener("click", () => {
+            const keyInp = document.getElementById("inputNewCatKey");
+            const nameInp = document.getElementById("inputNewCatName");
+            if (addNewCategory(keyInp?.value, nameInp?.value)) {
+                if (keyInp) keyInp.value = "";
+                if (nameInp) nameInp.value = "";
+            }
+        });
+    }
+    if (btnResetDefaultCategories) btnResetDefaultCategories.addEventListener("click", resetDefaultCategories);
+
+    window.openManageCategoriesModal = openManageCategoriesModal;
+    window.closeManageCategoriesModal = closeManageCategoriesModal;
+    window.deleteCategory = deleteCategory;
+    window.addNewCategory = addNewCategory;
+    window.updateCategoryName = updateCategoryName;
+    window.getCurrentCategories = () => currentCategories;
+    window.resetDefaultCategories = resetDefaultCategories;
 
     window.openVarsDictionaryModal = openVarsDictionaryModal;
     window.closeVarsDictionaryModal = closeVarsDictionaryModal;

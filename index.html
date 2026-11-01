@@ -1563,6 +1563,12 @@
                         <span>Xuất Excel</span>
                     </button>
                     <!-- Thêm biến mới -->
+                    <!-- Quản lý Phân nhóm -->
+                    <button id="btnManageCategories" type="button" class="px-2 py-1 text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-300 rounded shadow-2xs flex items-center space-x-1 cursor-pointer shrink-0 transition-colors" title="Thêm, bớt và điều chỉnh phân nhóm biến xạ">
+                        <i class="fa-solid fa-layer-group text-purple-600 text-[10px]"></i>
+                        <span>Phân nhóm</span>
+                    </button>
+                    <!-- Thêm biến mới -->
                     <button id="btnAddNewVarFromDict" type="button" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded shadow-xs flex items-center space-x-1 cursor-pointer shrink-0 transition-colors" title="Tạo thêm biến xạ mới">
                         <i class="fa-solid fa-plus text-[9px]"></i>
                         <span>Thêm biến mới</span>
@@ -1637,6 +1643,59 @@
                     <span>Mẹo: Trong Word, bạn chỉ cần gõ đúng mã <code class="font-mono bg-slate-100 px-1 py-0.2 rounded text-emerald-800 font-bold">{TEN_BIEN}</code>, hệ thống sẽ tự động điền giá trị khi xuất hồ sơ.</span>
                 </div>
                 <button id="btnFooterCloseVarsModal" type="button" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded cursor-pointer">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Quản Lý Phân Nhóm Biến Xạ -->
+    <div id="modalManageCategories" class="fixed inset-0 bg-slate-900/70 z-[75] flex items-center justify-center p-3 hidden backdrop-blur-xs" style="z-index: 75;">
+        <div class="bg-white rounded-xl max-w-lg w-full p-4 shadow-2xl border border-slate-200 text-xs flex flex-col max-h-[88vh] space-y-3">
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b pb-2 border-slate-200 shrink-0">
+                <div class="flex items-center space-x-2">
+                    <div class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm shadow-2xs">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+                            <span>Quản Lý Phân Nhóm Biến Xạ</span>
+                            <span class="text-[9.5px] bg-purple-50 text-purple-700 border border-purple-200 px-1.5 py-0.2 rounded font-semibold">Tự do Thêm / Sửa / Bớt</span>
+                        </h3>
+                        <p class="text-[10px] text-slate-500">Các biến trong phân nhóm bị loại bỏ sẽ tự động để trống (không bị mất biến).</p>
+                    </div>
+                </div>
+                <button id="btnCloseManageCatsModal" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer px-1.5 py-0.5 rounded hover:bg-slate-100 leading-none">&times;</button>
+            </div>
+
+            <!-- Form Thêm Nhóm Mới -->
+            <div class="bg-purple-50/70 p-2.5 rounded-lg border border-purple-200 shrink-0 space-y-1.5">
+                <div class="text-[10.5px] font-bold text-purple-900 flex items-center gap-1">
+                    <i class="fa-solid fa-circle-plus text-purple-600"></i>
+                    <span>Thêm phân nhóm mới</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <input id="inputNewCatKey" type="text" placeholder="Mã (K..)" maxlength="4" class="w-16 px-2 py-1 bg-white border border-purple-300 rounded text-xs font-bold text-purple-900 text-center uppercase focus:ring-1 focus:ring-purple-500" title="Mã phân nhóm (tùy chọn, hệ thống tự cấp nếu để trống)">
+                    <input id="inputNewCatName" type="text" placeholder="Tên phân nhóm (VD: K. Nghiệm thu & Thanh toán)..." class="flex-1 px-2.5 py-1 bg-white border border-purple-300 rounded text-xs text-slate-800 focus:ring-1 focus:ring-purple-500">
+                    <button id="btnSubmitAddCategory" type="button" class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded text-xs cursor-pointer shadow-xs shrink-0 flex items-center gap-1">
+                        <i class="fa-solid fa-plus text-[10px]"></i>
+                        <span>Thêm nhóm</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Danh Sách Phân Nhóm Hiện Tại -->
+            <div class="flex-1 overflow-y-auto min-h-0 border border-slate-200 rounded divide-y divide-slate-100" id="categoriesListContainer">
+                <!-- Populated dynamically -->
+            </div>
+
+            <!-- Footer -->
+            <div class="pt-2 border-t border-slate-200 flex items-center justify-between shrink-0">
+                <button id="btnResetDefaultCategories" type="button" class="px-2.5 py-1 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded cursor-pointer transition-colors" title="Khôi phục danh sách phân nhóm về 10 nhóm chuẩn ban đầu">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Khôi phục mặc định
+                </button>
+                <button id="btnDoneManageCats" type="button" class="px-4 py-1 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded text-xs cursor-pointer shadow-xs">
+                    Hoàn tất &amp; Đóng
+                </button>
             </div>
         </div>
     </div>
