@@ -481,3 +481,109 @@ tr.timeline-row-aura-red input {
     border-color: rgba(100, 116, 139, 0.4) !important;
     color: #cbd5e1 !important;
 }
+
+
+/* =============================================================
+   Table Variables (Biến xạ dạng bảng) Styles
+   ============================================================= */
+.table-var-container {
+    margin: 14px 0;
+    width: 100%;
+    overflow-x: auto;
+}
+
+.table-var-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 11pt;
+    line-height: 1.35;
+    color: #0f172a;
+    border: 1px solid #1e293b;
+}
+
+.table-var-table th,
+.table-var-table td {
+    border: 1px solid #1e293b;
+    padding: 5px 6px;
+    vertical-align: middle;
+}
+
+.table-var-table thead th {
+    background-color: #f1f5f9;
+    font-weight: bold;
+    text-align: center;
+    font-size: 10.5pt;
+}
+
+.table-var-table tr:hover {
+    background-color: #f8fafc;
+}
+
+.table-var-table .col-stt {
+    width: 36px;
+    text-align: center;
+}
+
+.table-var-table .col-name {
+    text-align: left;
+}
+
+.table-var-table .col-unit {
+    width: 55px;
+    text-align: center;
+}
+
+.table-var-table .col-qty {
+    width: 60px;
+    text-align: right;
+}
+
+.table-var-table .col-price {
+    width: 115px;
+    text-align: right;
+}
+
+.table-var-table .col-amount {
+    width: 125px;
+    text-align: right;
+    font-weight: 600;
+}
+
+.table-var-table .col-note {
+    width: 95px;
+    text-align: center;
+    font-size: 10pt;
+}
+
+.table-var-total-row {
+    font-weight: bold;
+    background-color: #f8fafc;
+}
+
+.table-var-words-row {
+    font-style: italic;
+    background-color: #ffffff;
+    font-size: 10.5pt;
+}
+
+/* Table row input fields inside left editor */
+#tblGoodsItemsBody tr:hover {
+    background-color: #f8fafc;
+}
+
+#tblGoodsItemsBody input {
+    height: 24px;
+    padding: 2px 4px;
+    font-size: 11px;
+    border-radius: 3px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    transition: all 0.15s ease;
+}
+
+#tblGoodsItemsBody input:focus {
+    border-color: #6366f1;
+    outline: none;
+    box-shadow: 0 0 0 1.5px rgba(99, 102, 241, 0.25);
+}
