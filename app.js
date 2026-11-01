@@ -4751,10 +4751,42 @@
 
     const ctxMenuEditVarTag = document.getElementById("ctxMenuEditVarTag");
     if (ctxMenuEditVarTag) {
-        ctxMenuEditVarTag.onclick = () => {
+        ctxMenuEditVarTag.onclick = (e) => {
+            if (e) e.stopPropagation();
             document.getElementById("previewContextMenu")?.classList.add("hidden");
-            // Find active variable key from preview context
-            const activeKey = activeEditingVarKey || (currentEditingSpan?.getAttribute("data-var-key")) || (lastSelectedText ? slugifyToUpperSnake(lastSelectedText) : null);
+
+            let activeKey = null;
+            if (lastSelectedSpan && lastSelectedSpan.getAttribute) {
+                activeKey = lastSelectedSpan.getAttribute("data-var-key");
+            }
+
+            if (!activeKey && lastSelectedRange) {
+                const parentSpan = lastSelectedRange.startContainer?.parentElement?.closest("[data-var-key]");
+                if (parentSpan) activeKey = parentSpan.getAttribute("data-var-key");
+            }
+
+            if (!activeKey && lastSelectedText) {
+                const cleanTxt = lastSelectedText.trim().toLowerCase();
+                const matchedVar = MASTER_VARIABLES_CATALOG.find(v => 
+                    (v.example && v.example.trim().toLowerCase() === cleanTxt) ||
+                    (v.label && v.label.trim().toLowerCase() === cleanTxt)
+                );
+                if (matchedVar) {
+                    activeKey = matchedVar.tag;
+                } else {
+                    const allData = typeof getMergedData === "function" ? getMergedData() : {};
+                    for (const k in allData) {
+                        if (allData[k] && String(allData[k]).trim().toLowerCase() === cleanTxt) {
+                            activeKey = k;
+                            break;
+                        }
+                    }
+                }
+                if (!activeKey) {
+                    activeKey = slugifyToUpperSnake(lastSelectedText);
+                }
+            }
+
             openEditVariableModal(activeKey);
         };
     }
