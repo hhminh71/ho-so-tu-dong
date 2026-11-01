@@ -4372,9 +4372,15 @@
                     </td>
                     <td class="py-1.5 px-2.5 text-[11px] max-w-xs truncate" title="${val}">${valDisplay}</td>
                     <td class="py-1.5 px-2 text-center">
-                        <button type="button" class="btn-copy-tag text-[10px] font-bold text-emerald-700 hover:text-emerald-900 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 px-2 py-0.5 rounded cursor-pointer transition-all" data-tag="{${v.tag}}">
-                            Sao chép
-                        </button>
+                        <div class="flex items-center justify-center space-x-1">
+                            <button type="button" class="btn-copy-tag text-[10.5px] font-bold text-emerald-700 hover:text-emerald-900 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 px-1.5 py-0.5 rounded cursor-pointer transition-all" data-tag="{${v.tag}}" title="Sao chép {${v.tag}}">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                            <button type="button" class="btn-edit-var text-[10.5px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 hover:border-indigo-300 px-2 py-0.5 rounded cursor-pointer transition-all flex items-center gap-1" data-tag="${v.tag}" title="Điều chỉnh tên biến và mã TAG">
+                                <i class="fa-solid fa-pen-to-square text-[9.5px]"></i>
+                                <span>Sửa</span>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -4388,7 +4394,373 @@
                 showToast(`Đã sao chép ${tagToCopy} vào clipboard!`);
             };
         });
+
+        varsDictionaryTableBody.querySelectorAll(".btn-edit-var").forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                const tagToEdit = btn.getAttribute("data-tag");
+                openEditVariableModal(tagToEdit);
+            };
+        });
     }
+
+    // -------------------------------------------------------------
+    // Variable & TAG Editor Controller with Real-time Duplicate Check
+    // -------------------------------------------------------------
+    const LS_VARS_CUSTOMIZATIONS = "ho_so_vars_catalog_customizations";
+
+    function loadCatalogCustomizations() {
+        try {
+            const raw = localStorage.getItem(LS_VARS_CUSTOMIZATIONS);
+            if (!raw) return;
+            const savedList = JSON.parse(raw);
+            if (!Array.isArray(savedList)) return;
+
+            savedList.forEach(savedVar => {
+                const existing = MASTER_VARIABLES_CATALOG.find(v => v.stt === savedVar.stt || v.tag === savedVar.origTag || v.tag === savedVar.tag);
+                if (existing) {
+                    existing.label = savedVar.label;
+                    existing.tag = savedVar.tag;
+                    existing.group = savedVar.group;
+                    existing.groupKey = savedVar.groupKey;
+                    existing.isGeneral = savedVar.isGeneral;
+                    existing.example = savedVar.example;
+                } else {
+                    MASTER_VARIABLES_CATALOG.push(savedVar);
+                }
+            });
+        } catch (e) {
+            console.warn("Error loading catalog customizations:", e);
+        }
+    }
+
+    // Call on script load
+    loadCatalogCustomizations();
+
+    function openEditVariableModal(tagToEdit = null) {
+        const modal = document.getElementById("modalEditVariable");
+        const title = document.getElementById("modalEditVariableTitle");
+        const origTagInput = document.getElementById("editVarOriginalTag");
+        const labelInput = document.getElementById("editVarLabelInput");
+        const tagInput = document.getElementById("editVarTagInput");
+        const tagPreview = document.getElementById("editVarTagPreview");
+        const groupSelect = document.getElementById("editVarGroupSelect");
+        const scopeSelect = document.getElementById("editVarScopeSelect");
+        const exampleInput = document.getElementById("editVarExampleInput");
+        const btnDelete = document.getElementById("btnDeleteCustomVar");
+
+        if (!modal) return;
+
+        if (tagToEdit) {
+            const cleanTag = tagToEdit.replace(/^[{]+|[}]+$/g, "");
+            const v = MASTER_VARIABLES_CATALOG.find(item => item.tag === cleanTag) || 
+                      (appState?.customVariables && appState.customVariables[cleanTag] ? {
+                          tag: cleanTag,
+                          label: appState.customVariables[cleanTag].label || cleanTag,
+                          group: "J. Tùy biến bổ sung",
+                          groupKey: "J",
+                          isGeneral: false,
+                          example: ""
+                      } : null);
+
+            if (title) title.textContent = `Điều Chỉnh Biến Xạ {${cleanTag}}`;
+            if (origTagInput) origTagInput.value = cleanTag;
+            if (labelInput) labelInput.value = v ? v.label : cleanTag;
+            if (tagInput) tagInput.value = cleanTag;
+            if (tagPreview) tagPreview.textContent = `{${cleanTag}}`;
+            if (groupSelect && v && v.groupKey) groupSelect.value = v.groupKey;
+            if (scopeSelect && v) scopeSelect.value = v.isGeneral ? "general" : "package";
+            if (exampleInput) exampleInput.value = (v && v.example) || "";
+
+            if (btnDelete) {
+                if (v && (v.groupKey === "J" || v.isCustom)) {
+                    btnDelete.classList.remove("hidden");
+                } else {
+                    btnDelete.classList.add("hidden");
+                }
+            }
+        } else {
+            if (title) title.textContent = "Thêm Biến Xạ Mới & Mã Thẻ {TAG}";
+            if (origTagInput) origTagInput.value = "";
+            if (labelInput) labelInput.value = "";
+            if (tagInput) tagInput.value = "";
+            if (tagPreview) tagPreview.textContent = "{TAG}";
+            if (groupSelect) groupSelect.value = "A";
+            if (scopeSelect) scopeSelect.value = "general";
+            if (exampleInput) exampleInput.value = "";
+            if (btnDelete) btnDelete.classList.add("hidden");
+        }
+
+        validateVariableInputs();
+        modal.classList.remove("hidden");
+        setTimeout(() => {
+            if (!tagToEdit) labelInput?.focus();
+            else tagInput?.focus();
+        }, 100);
+    }
+
+    function closeEditVariableModal() {
+        const modal = document.getElementById("modalEditVariable");
+        if (modal) modal.classList.add("hidden");
+    }
+
+    function validateVariableInputs() {
+        const origTag = (document.getElementById("editVarOriginalTag")?.value || "").trim().toUpperCase();
+        const labelInput = document.getElementById("editVarLabelInput");
+        const tagInput = document.getElementById("editVarTagInput");
+        const tagPreview = document.getElementById("editVarTagPreview");
+        const tagFeedback = document.getElementById("editVarTagFeedback");
+        const labelFeedback = document.getElementById("editVarLabelFeedback");
+        const btnSave = document.getElementById("btnSaveEditVar");
+
+        if (!tagInput || !labelInput || !btnSave) return;
+
+        let rawTag = tagInput.value;
+        let cleanTag = slugifyToUpperSnake(rawTag);
+        if (tagInput.value !== cleanTag && document.activeElement === tagInput) {
+            const pos = tagInput.selectionStart;
+            tagInput.value = cleanTag;
+            tagInput.setSelectionRange(pos, pos);
+        } else {
+            tagInput.value = cleanTag;
+        }
+
+        if (tagPreview) tagPreview.textContent = cleanTag ? `{${cleanTag}}` : "{TAG}";
+
+        const label = labelInput.value.trim();
+
+        let isTagValid = false;
+        let isDuplicate = false;
+        let conflictingVar = null;
+
+        if (!cleanTag) {
+            if (tagFeedback) {
+                tagFeedback.className = "mt-1 p-1.5 rounded text-[10.5px] bg-slate-100 text-slate-600 border border-slate-200 flex items-center gap-1.5";
+                tagFeedback.innerHTML = `<i class="fa-solid fa-circle-info text-slate-500"></i><span>Vui lòng nhập mã thẻ (viết HOA không dấu, ví dụ: <code>CHUC_VU_TRUONG_BAN</code>).</span>`;
+                tagFeedback.classList.remove("hidden");
+            }
+            tagInput.className = "w-full pl-6 pr-6 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs text-slate-900 font-mono font-bold uppercase focus:bg-white focus:ring-1 focus:ring-emerald-500";
+        } else {
+            conflictingVar = MASTER_VARIABLES_CATALOG.find(v => v.tag.toUpperCase() === cleanTag && v.tag.toUpperCase() !== origTag);
+
+            if (!conflictingVar && window.appState && window.appState.customVariables) {
+                for (const k in window.appState.customVariables) {
+                    if (k.toUpperCase() === cleanTag && k.toUpperCase() !== origTag) {
+                        conflictingVar = {
+                            tag: k,
+                            label: window.appState.customVariables[k].label || k,
+                            group: "J. Tùy biến bổ sung"
+                        };
+                        break;
+                    }
+                }
+            }
+
+            if (conflictingVar) {
+                isDuplicate = true;
+                if (tagFeedback) {
+                    tagFeedback.className = "mt-1 p-1.5 rounded text-[10.5px] bg-rose-50 text-rose-800 border border-rose-300 flex items-start gap-1.5";
+                    tagFeedback.innerHTML = `
+                        <i class="fa-solid fa-triangle-exclamation text-rose-600 mt-0.5 shrink-0 text-xs"></i>
+                        <div>
+                            <b>❌ TRÙNG LẶP MÃ THẺ!</b> Mã <code>{${cleanTag}}</code> đã được dùng cho biến <b>"${conflictingVar.label}"</b> (${conflictingVar.group}). Trùng lặp mã thẻ sẽ gây ghi đè dữ liệu sai lệch giữa các văn bản. Vui lòng chọn mã khác!
+                        </div>
+                    `;
+                    tagFeedback.classList.remove("hidden");
+                }
+                tagInput.className = "w-full pl-6 pr-6 py-1.5 bg-rose-50 border-2 border-rose-500 rounded text-xs text-rose-900 font-mono font-bold uppercase focus:bg-white focus:ring-2 focus:ring-rose-500";
+            } else {
+                isTagValid = true;
+                if (tagFeedback) {
+                    tagFeedback.className = "mt-1 p-1.5 rounded text-[10.5px] bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center gap-1.5";
+                    tagFeedback.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i><span><b>✅ Mã thẻ hợp lệ!</b> Mã <code>{${cleanTag}}</code> là duy nhất và chưa từng bị trùng lặp.</span>`;
+                    tagFeedback.classList.remove("hidden");
+                }
+                tagInput.className = "w-full pl-6 pr-6 py-1.5 bg-emerald-50/50 border border-emerald-400 rounded text-xs text-emerald-950 font-mono font-bold uppercase focus:bg-white focus:ring-1 focus:ring-emerald-500";
+            }
+        }
+
+        let isLabelValid = label.length > 0;
+        if (labelFeedback) {
+            if (label.length === 0) {
+                labelFeedback.textContent = "Tên trường dữ liệu không được để trống.";
+                labelFeedback.className = "text-[10px] mt-0.5 text-rose-600";
+                labelFeedback.classList.remove("hidden");
+            } else {
+                const dupLabelVar = MASTER_VARIABLES_CATALOG.find(v => v.label.toLowerCase() === label.toLowerCase() && v.tag.toUpperCase() !== origTag);
+                if (dupLabelVar) {
+                    labelFeedback.innerHTML = `<i class="fa-solid fa-circle-info text-amber-500"></i> Lưu ý: Tên "${label}" đã có biến <code>{${dupLabelVar.tag}}</code> (${dupLabelVar.group}).`;
+                    labelFeedback.className = "text-[10px] mt-0.5 text-amber-700 font-medium";
+                    labelFeedback.classList.remove("hidden");
+                } else {
+                    labelFeedback.classList.add("hidden");
+                }
+            }
+        }
+
+        btnSave.disabled = !isTagValid || isDuplicate || !isLabelValid;
+    }
+
+    function saveVariableChanges() {
+        const origTag = (document.getElementById("editVarOriginalTag")?.value || "").trim().toUpperCase();
+        const label = (document.getElementById("editVarLabelInput")?.value || "").trim();
+        const newTag = (document.getElementById("editVarTagInput")?.value || "").trim().toUpperCase();
+        const groupKey = document.getElementById("editVarGroupSelect")?.value || "A";
+        const isGeneral = document.getElementById("editVarScopeSelect")?.value === "general";
+        const example = (document.getElementById("editVarExampleInput")?.value || "").trim();
+
+        const groupNames = {
+            "A": "A. Chủ đầu tư",
+            "B": "B. Dự án & Gói",
+            "C": "C. Tài chính",
+            "D": "D. Nhà thầu",
+            "E": "E. Số hiệu VB",
+            "F": "F. Ngày (dd/mm/yyyy)",
+            "G": "G. Ngày (Full)",
+            "H": "H. Tên trích dẫn",
+            "I": "I. Căn cứ pháp lý",
+            "J": "J. Tùy biến bổ sung"
+        };
+        const groupName = groupNames[groupKey] || "A. Chủ đầu tư";
+
+        if (!newTag || !label) {
+            showToast("Vui lòng điền đầy đủ Tên biến và Mã thẻ {TAG}!", "error");
+            return;
+        }
+
+        if (origTag) {
+            const existing = MASTER_VARIABLES_CATALOG.find(v => v.tag.toUpperCase() === origTag);
+            if (existing) {
+                existing.label = label;
+                existing.tag = newTag;
+                existing.group = groupName;
+                existing.groupKey = groupKey;
+                existing.isGeneral = isGeneral;
+                existing.example = example;
+            }
+
+            if (origTag !== newTag && window.appState) {
+                if (window.appState.generalInfo && window.appState.generalInfo[origTag] !== undefined) {
+                    window.appState.generalInfo[newTag] = window.appState.generalInfo[origTag];
+                    delete window.appState.generalInfo[origTag];
+                }
+                if (Array.isArray(window.appState.packages)) {
+                    window.appState.packages.forEach(pkg => {
+                        if (pkg.fields && pkg.fields[origTag] !== undefined) {
+                            pkg.fields[newTag] = pkg.fields[origTag];
+                            delete pkg.fields[origTag];
+                        }
+                    });
+                }
+                document.querySelectorAll(`[data-field="${origTag}"]`).forEach(el => {
+                    el.setAttribute("data-field", newTag);
+                    const labelSibling = el.parentElement?.querySelector("label");
+                    if (labelSibling) labelSibling.textContent = label;
+                });
+            }
+        } else {
+            const newStt = MASTER_VARIABLES_CATALOG.length + 1;
+            MASTER_VARIABLES_CATALOG.push({
+                stt: newStt,
+                groupKey: groupKey,
+                group: groupName,
+                label: label,
+                tag: newTag,
+                isGeneral: isGeneral,
+                example: example,
+                isCustom: true
+            });
+            if (window.appState) {
+                if (isGeneral) {
+                    window.appState.generalInfo[newTag] = example || "";
+                } else {
+                    if (Array.isArray(window.appState.packages)) {
+                        window.appState.packages.forEach(pkg => {
+                            pkg.fields = pkg.fields || {};
+                            pkg.fields[newTag] = example || "";
+                        });
+                    }
+                }
+            }
+        }
+
+        saveCatalogCustomizations();
+
+        if (typeof renderVarsDictionaryTable === "function") renderVarsDictionaryTable();
+        if (typeof populateFormInputs === "function") populateFormInputs();
+        if (typeof renderDocumentPreview === "function") renderDocumentPreview();
+        if (typeof saveState === "function") saveState();
+
+        document.getElementById("modalEditVariable")?.classList.add("hidden");
+        showToast(`Đã lưu biến "${label}" với mã thẻ {${newTag}} thành công!`, "success");
+    }
+
+    function saveCatalogCustomizations() {
+        try {
+            const customizations = MASTER_VARIABLES_CATALOG.map(v => ({
+                stt: v.stt,
+                groupKey: v.groupKey,
+                group: v.group,
+                label: v.label,
+                tag: v.tag,
+                isGeneral: v.isGeneral,
+                example: v.example,
+                isCustom: !!v.isCustom
+            }));
+            localStorage.setItem(LS_VARS_CUSTOMIZATIONS, JSON.stringify(customizations));
+        } catch (e) {
+            console.warn("Could not save catalog customizations:", e);
+        }
+    }
+
+    function resetCatalogToDefault() {
+        if (confirm("Bạn có chắc chắn muốn khôi phục toàn bộ Danh mục Biến xạ về cấu hình chuẩn ban đầu? Mọi tùy chỉnh tên hoặc mã thẻ sẽ được đặt lại.")) {
+            localStorage.removeItem(LS_VARS_CUSTOMIZATIONS);
+            location.reload();
+        }
+    }
+
+    // Attach event listeners for Edit Variable Modal
+    const btnAddNewVarFromDict = document.getElementById("btnAddNewVarFromDict");
+    if (btnAddNewVarFromDict) btnAddNewVarFromDict.onclick = () => openEditVariableModal(null);
+
+    const btnResetVarsDefault = document.getElementById("btnResetVarsDefault");
+    if (btnResetVarsDefault) btnResetVarsDefault.onclick = resetCatalogToDefault;
+
+    const btnCloseEditVarModal = document.getElementById("btnCloseEditVarModal");
+    if (btnCloseEditVarModal) btnCloseEditVarModal.onclick = closeEditVariableModal;
+
+    const btnCancelEditVar = document.getElementById("btnCancelEditVar");
+    if (btnCancelEditVar) btnCancelEditVar.onclick = closeEditVariableModal;
+
+    const editVarTagInput = document.getElementById("editVarTagInput");
+    if (editVarTagInput) editVarTagInput.oninput = validateVariableInputs;
+
+    const editVarLabelInput = document.getElementById("editVarLabelInput");
+    if (editVarLabelInput) editVarLabelInput.oninput = validateVariableInputs;
+
+    const btnSaveEditVar = document.getElementById("btnSaveEditVar");
+    if (btnSaveEditVar) btnSaveEditVar.onclick = saveVariableChanges;
+
+    const modalEditVariable = document.getElementById("modalEditVariable");
+    if (modalEditVariable) {
+        modalEditVariable.onclick = (e) => {
+            if (e.target === modalEditVariable) closeEditVariableModal();
+        };
+    }
+
+    const ctxMenuEditVarTag = document.getElementById("ctxMenuEditVarTag");
+    if (ctxMenuEditVarTag) {
+        ctxMenuEditVarTag.onclick = () => {
+            document.getElementById("previewContextMenu")?.classList.add("hidden");
+            // Find active variable key from preview context
+            const activeKey = activeEditingVarKey || (currentEditingSpan?.getAttribute("data-var-key")) || (lastSelectedText ? slugifyToUpperSnake(lastSelectedText) : null);
+            openEditVariableModal(activeKey);
+        };
+    }
+
+    window.openEditVariableModal = openEditVariableModal;
+    window.closeEditVariableModal = closeEditVariableModal;
 
     window.exportStateToExcel = exportStateToExcel;
     window.openVarsDictionaryModal = openVarsDictionaryModal;
