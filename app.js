@@ -7106,11 +7106,21 @@
                 sel.addRange(range);
                 lastSelectedRange = range.cloneRange();
                 lastSelectedText = lastSelectedSpan.textContent.trim();
-            } else if (window.lastSelectedText) {
-                lastSelectedText = window.lastSelectedText;
-                lastSelectedRange = window.lastSelectedRange || lastSelectedRange;
+            } else if (sel && sel.rangeCount > 0) {
+                lastSelectedRange = sel.getRangeAt(0).cloneRange();
+                lastSelectedText = "";
             } else {
-                lastSelectedRange = null;
+                if (document.caretRangeFromPoint) {
+                    lastSelectedRange = document.caretRangeFromPoint(e.clientX, e.clientY);
+                } else if (document.caretPositionFromPoint) {
+                    const pos = document.caretPositionFromPoint(e.clientX, e.clientY);
+                    if (pos) {
+                        const range = document.createRange();
+                        range.setStart(pos.offsetNode, pos.offset);
+                        range.collapse(true);
+                        lastSelectedRange = range;
+                    }
+                }
                 lastSelectedText = "";
             }
 
@@ -7121,21 +7131,17 @@
             if (previewLabel) {
                 previewLabel.textContent = lastSelectedText 
                     ? `Vùng chọn: "${lastSelectedText.slice(0, 25)}${lastSelectedText.length > 25 ? '...' : ''}"` 
-                    : "Chọn văn bản để gán biến";
+                    : "Vị trí con trỏ (chèn mới)";
             }
-
-            // Populate existing variables submenu
-            populateCtxVarsSubmenu();
 
             // Position context menu
             let x = e.clientX, y = e.clientY;
-            if (x + 270 > window.innerWidth) x = window.innerWidth - 275;
+            if (x + 280 > window.innerWidth) x = window.innerWidth - 285;
             if (y + 280 > window.innerHeight) y = window.innerHeight - 285;
 
             menu.style.left = `${Math.max(10, x)}px`;
             menu.style.top = `${Math.max(10, y)}px`;
             menu.classList.remove("hidden");
-            document.getElementById("ctxLinkVarSubmenu")?.classList.add("hidden");
         });
     }
 
@@ -7381,8 +7387,8 @@
 
     function applyVariableToSelection(varKey) {
         const activeDoc = getCurrentActiveDoc();
-        if (!activeDoc || !lastSelectedRange) {
-            showToast("Vui lòng quét khối một vùng văn bản trên Preview trước!", "error");
+        if (!activeDoc) {
+            showToast("Vui lòng chọn một văn bản trên Preview trước!", "error");
             return;
         }
 
@@ -7399,8 +7405,22 @@
         span.setAttribute("data-var-key", varKey);
         span.title = `Biến: {${varKey}}`;
 
-        lastSelectedRange.deleteContents();
-        lastSelectedRange.insertNode(span);
+        if (lastSelectedRange) {
+            lastSelectedRange.deleteContents();
+            lastSelectedRange.insertNode(span);
+
+            const newRange = document.createRange();
+            newRange.setStartAfter(span);
+            newRange.collapse(true);
+            const sel = window.getSelection();
+            if (sel) {
+                sel.removeAllRanges();
+                sel.addRange(newRange);
+            }
+            lastSelectedRange = newRange.cloneRange();
+        } else if (documentPreviewContent) {
+            documentPreviewContent.appendChild(span);
+        }
 
         // Save custom document HTML
         if (!appState.customDocumentHtml) appState.customDocumentHtml = {};
@@ -7408,7 +7428,6 @@
         if (btnResetPreviewDoc) btnResetPreviewDoc.classList.remove("hidden");
 
         saveState();
-        showToast(`Đã link vùng chọn vào biến: {${varKey}}!`, "success");
     }
 
         // Helper: Smart Detection of Context (Group, Scope, Label, Tag) from selected text
@@ -7830,89 +7849,245 @@
         });
     }
 
-    // Context Menu: "Gộp các biến xạ đã chọn"
-    const ctxMenuMergeVars = document.getElementById("ctxMenuMergeVars");
-    const modalMergeVars = document.getElementById("modalMergeVars");
-    const mergeVarsDetectedList = document.getElementById("mergeVarsDetectedList");
-    const inputMergedVarKey = document.getElementById("inputMergedVarKey");
-    const inputMergedVarLabel = document.getElementById("inputMergedVarLabel");
-    const btnConfirmMergeVars = document.getElementById("btnConfirmMergeVars");
-    let detectedVarsInSelection = [];
+    // =============================================================
+    // Controller: Chèn / Gán Biến Xạ Có Sẵn Vào Văn Bản (Preview)
+    // =============================================================
+    const modalInsertVar = document.getElementById("modalInsertVar");
+    const ctxMenuInsertVar = document.getElementById("ctxMenuInsertVar");
+    const inputSearchInsertVar = document.getElementById("inputSearchInsertVar");
+    const selectInsertVarCategory = document.getElementById("selectInsertVarCategory");
+    const insertVarTableBody = document.getElementById("insertVarTableBody");
+    const insertVarCountLabel = document.getElementById("insertVarCountLabel");
+    const btnCloseInsertVarModal = document.getElementById("btnCloseInsertVarModal");
+    const btnCancelInsertVar = document.getElementById("btnCancelInsertVar");
+    const btnSwitchToCreateNewVar = document.getElementById("btnSwitchToCreateNewVar");
 
-    if (ctxMenuMergeVars) {
-        ctxMenuMergeVars.addEventListener("click", () => {
-            document.getElementById("previewContextMenu")?.classList.add("hidden");
-            if (!lastSelectedRange) {
-                showToast("Vui lòng quét khối đoạn văn bản chứa các biến cần gộp!", "error");
-                return;
+    let currentInsertScopeFilter = "all"; // "all" | "general" | "package"
+
+    function openInsertVariableModal() {
+        document.getElementById("previewContextMenu")?.classList.add("hidden");
+
+        const modal = document.getElementById("modalInsertVar");
+        const badge = document.getElementById("insertVarTargetBadge");
+        const desc = document.getElementById("insertVarContextDesc");
+        const searchInput = document.getElementById("inputSearchInsertVar");
+        const catSelect = document.getElementById("selectInsertVarCategory");
+
+        if (!modal) return;
+
+        // Context label
+        if (lastSelectedText && lastSelectedText.trim()) {
+            if (badge) {
+                badge.textContent = "Thay thế vùng chọn";
+                badge.className = "px-2 py-0.5 text-[10px] rounded-full font-bold bg-purple-500/20 text-purple-200 border border-purple-400/30";
             }
-
-            // Find all [data-var-key] within selection
-            const frag = lastSelectedRange.cloneContents();
-            const spans = frag.querySelectorAll("[data-var-key]");
-            detectedVarsInSelection = Array.from(spans).map(s => s.getAttribute("data-var-key"));
-
-            if (mergeVarsDetectedList) {
-                if (detectedVarsInSelection.length > 0) {
-                    mergeVarsDetectedList.innerHTML = `
-                        <div class="font-bold text-purple-900 mb-0.5">Phát hiện ${detectedVarsInSelection.length} biến trong vùng chọn:</div>
-                        <div class="flex flex-wrap gap-1">
-                            ${detectedVarsInSelection.map(k => `<span class="bg-purple-200 text-purple-900 font-mono px-1 rounded text-[9px]">{${k}}</span>`).join("")}
-                        </div>
-                    `;
-                } else {
-                    mergeVarsDetectedList.innerHTML = `<span class="text-slate-500 italic">Vùng chọn sẽ được gom thành một biến duy nhất với giá trị: "${lastSelectedText}"</span>`;
-                }
+            if (desc) {
+                desc.textContent = `Vùng chọn: "${lastSelectedText.slice(0, 45)}${lastSelectedText.length > 45 ? '...' : ''}" sẽ được gán biến`;
             }
-
-            const defaultKey = detectedVarsInSelection.length > 0 ? detectedVarsInSelection.join("_GOP_").slice(0, 25) : slugifyToUpperSnake(lastSelectedText);
-            if (inputMergedVarKey) inputMergedVarKey.value = defaultKey;
-            if (inputMergedVarLabel) inputMergedVarLabel.value = `Biến gộp (${detectedVarsInSelection.join(", ") || lastSelectedText.slice(0, 20)})`;
-
-            if (modalMergeVars) modalMergeVars.classList.remove("hidden");
-        });
-    }
-
-    if (btnConfirmMergeVars) {
-        btnConfirmMergeVars.addEventListener("click", () => {
-            const key = inputMergedVarKey ? inputMergedVarKey.value.trim().toUpperCase() : "";
-            const label = inputMergedVarLabel ? inputMergedVarLabel.value.trim() : key;
-            const val = lastSelectedText || "";
-
-            if (!key) {
-                alert("Vui lòng nhập Mã biến gộp!");
-                return;
+        } else {
+            if (badge) {
+                badge.textContent = "Chèn tại con trỏ";
+                badge.className = "px-2 py-0.5 text-[10px] rounded-full font-bold bg-blue-500/20 text-blue-200 border border-blue-400/30";
             }
+            if (desc) {
+                desc.textContent = "Biến được chọn sẽ được chèn ngay tại vị trí con trỏ trong văn bản";
+            }
+        }
 
-            // Add to MASTER_VARIABLES_CATALOG and save customizations
-            const cleanTag = key.replace(/^[{]+|[}]+$/g, "").toUpperCase();
-            const existingCat = MASTER_VARIABLES_CATALOG.find(v => v.tag.toUpperCase() === cleanTag);
-            if (existingCat) {
-                existingCat.label = label;
-                existingCat.example = val;
-            } else {
-                MASTER_VARIABLES_CATALOG.push({
-                    stt: MASTER_VARIABLES_CATALOG.length + 1,
-                    groupKey: "J",
-                    group: "J. Tùy biến bổ sung",
-                    label: label,
-                    tag: cleanTag,
-                    isGeneral: true,
-                    example: val,
-                    isCustom: true
+        // Populate Category dropdown
+        if (catSelect) {
+            catSelect.innerHTML = `<option value="all">-- Tất cả phân nhóm (${MASTER_VARIABLES_CATALOG.length}) --</option>`;
+            if (Array.isArray(currentCategories)) {
+                currentCategories.forEach(cat => {
+                    const count = MASTER_VARIABLES_CATALOG.filter(v => v.groupKey === cat.key || v.group === cat.name).length;
+                    catSelect.innerHTML += `<option value="${cat.key}">${cat.name} (${count})</option>`;
                 });
             }
-            if (typeof saveCatalogCustomizations === "function") saveCatalogCustomizations();
-            if (typeof renderVarsDictionaryTable === "function") renderVarsDictionaryTable();
+            catSelect.value = "all";
+        }
 
-            appState.generalInfo[cleanTag] = val;
-            applyVariableToSelection(cleanTag);
-            populateFormInputs();
+        // Reset search & scope
+        if (searchInput) searchInput.value = "";
+        currentInsertScopeFilter = "all";
+        updateInsertScopePillsUI();
 
-            if (modalMergeVars) modalMergeVars.classList.add("hidden");
-            showToast(`Đã gộp thành công biến xạ: {${key}}!`, "success");
+        // Render table
+        renderInsertVarTable();
+
+        modal.classList.remove("hidden");
+        setTimeout(() => {
+            if (searchInput) searchInput.focus();
+        }, 150);
+    }
+
+    function updateInsertScopePillsUI() {
+        const pills = document.querySelectorAll("#insertVarScopePills .insert-scope-pill");
+        pills.forEach(p => {
+            if (p.getAttribute("data-scope") === currentInsertScopeFilter) {
+                p.className = "insert-scope-pill px-2.5 py-1 rounded-md font-bold transition-all bg-purple-100 text-purple-900 shadow-2xs cursor-pointer";
+            } else {
+                p.className = "insert-scope-pill px-2.5 py-1 rounded-md font-medium transition-all text-slate-600 hover:text-slate-900 cursor-pointer";
+            }
         });
     }
+
+    function renderInsertVarTable() {
+        const tbody = document.getElementById("insertVarTableBody");
+        const searchInput = document.getElementById("inputSearchInsertVar");
+        const catSelect = document.getElementById("selectInsertVarCategory");
+        const countLabel = document.getElementById("insertVarCountLabel");
+        if (!tbody) return;
+
+        const q = (searchInput?.value || "").toLowerCase().trim();
+        const selectedCat = catSelect?.value || "all";
+        const mergedData = getMergedData();
+
+        const filteredVars = MASTER_VARIABLES_CATALOG.filter(v => {
+            // Category check
+            if (selectedCat !== "all") {
+                if (v.groupKey !== selectedCat && v.group !== selectedCat) return false;
+            }
+            // Scope check
+            if (currentInsertScopeFilter === "general" && !v.isGeneral) return false;
+            if (currentInsertScopeFilter === "package" && v.isGeneral) return false;
+            // Search query check
+            if (q) {
+                const tagMatch = v.tag.toLowerCase().includes(q);
+                const labelMatch = (v.label || "").toLowerCase().includes(q);
+                const valMatch = (mergedData[v.tag] ? String(mergedData[v.tag]).toLowerCase().includes(q) : false);
+                const exMatch = (v.example || "").toLowerCase().includes(q);
+                if (!tagMatch && !labelMatch && !valMatch && !exMatch) return false;
+            }
+            return true;
+        });
+
+        if (countLabel) {
+            countLabel.textContent = `Hiển thị ${filteredVars.length}/${MASTER_VARIABLES_CATALOG.length} biến xạ`;
+        }
+
+        if (filteredVars.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="py-8 text-center text-slate-400">
+                        <i class="fa-solid fa-inbox text-2xl mb-1 text-slate-300 block"></i>
+                        Không tìm thấy biến xạ nào khớp với bộ lọc "${q || selectedCat}"
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        tbody.innerHTML = "";
+        filteredVars.forEach(v => {
+            const tr = document.createElement("tr");
+            tr.className = "hover:bg-purple-50/60 cursor-pointer transition-colors group";
+            
+            const currentVal = mergedData[v.tag] !== undefined && mergedData[v.tag] !== "" ? String(mergedData[v.tag]) : "";
+            const isGen = !!v.isGeneral;
+            const scopeBadge = isGen
+                ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200" title="Tầng 1: Dùng chung toàn bộ dự án">
+                     <i class="fa-solid fa-layer-group text-[8px]"></i> Tầng 1: Chung
+                   </span>`
+                : `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200" title="Tầng 2: Riêng từng gói thầu">
+                     <i class="fa-solid fa-box text-[8px]"></i> Tầng 2: Riêng gói
+                   </span>`;
+
+            tr.innerHTML = `
+                <td class="py-1.5 px-2.5 whitespace-nowrap">
+                    <span class="font-mono font-bold text-purple-700 bg-purple-50 group-hover:bg-purple-100 px-1.5 py-0.5 rounded border border-purple-200 text-[11px] select-all">
+                        {${v.tag}}
+                    </span>
+                </td>
+                <td class="py-1.5 px-2.5 font-medium text-slate-800">
+                    <div>${v.label}</div>
+                    ${v.example ? `<div class="text-[9.5px] text-slate-400 truncate max-w-xs italic">Ví dụ: ${v.example}</div>` : ""}
+                </td>
+                <td class="py-1.5 px-2 text-center whitespace-nowrap">
+                    <span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-600 border border-slate-200 font-medium">
+                        ${v.group || v.groupKey || "---"}
+                    </span>
+                </td>
+                <td class="py-1.5 px-2 text-center whitespace-nowrap">
+                    ${scopeBadge}
+                </td>
+                <td class="py-1.5 px-2.5 max-w-[180px] truncate">
+                    ${currentVal ? `<span class="text-slate-800 font-semibold" title="${currentVal}">${currentVal}</span>` : `<span class="text-slate-400 italic text-[10px]">(Trống)</span>`}
+                </td>
+                <td class="py-1.5 px-2.5 text-right whitespace-nowrap">
+                    <button type="button" class="btn-do-insert px-2.5 py-1 rounded-md bg-purple-600 hover:bg-purple-700 text-white font-bold text-[10.5px] transition-colors shadow-2xs flex items-center gap-1 ml-auto cursor-pointer">
+                        <i class="fa-solid fa-arrow-down-to-bracket text-[9px]"></i>
+                        <span>Chèn</span>
+                    </button>
+                </td>
+            `;
+
+            const handleInsert = (e) => {
+                e.stopPropagation();
+                applyVariableToSelection(v.tag);
+                document.getElementById("modalInsertVar")?.classList.add("hidden");
+                showToast(`Đã chèn biến {${v.tag}} vào văn bản thành công!`, "success");
+            };
+
+            tr.querySelector(".btn-do-insert")?.addEventListener("click", handleInsert);
+            tr.addEventListener("dblclick", handleInsert);
+
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Context Menu: "Chèn biến xạ có sẵn..."
+    if (ctxMenuInsertVar) {
+        ctxMenuInsertVar.addEventListener("click", () => {
+            openInsertVariableModal();
+        });
+    }
+    const oldCtxMerge = document.getElementById("ctxMenuMergeVars");
+    if (oldCtxMerge) {
+        oldCtxMerge.addEventListener("click", () => {
+            openInsertVariableModal();
+        });
+    }
+    const oldCtxLink = document.getElementById("ctxMenuLinkVar");
+    if (oldCtxLink) {
+        oldCtxLink.addEventListener("click", () => {
+            openInsertVariableModal();
+        });
+    }
+
+    // Modal Search and Filter Events
+    if (inputSearchInsertVar) {
+        inputSearchInsertVar.addEventListener("input", renderInsertVarTable);
+    }
+    if (selectInsertVarCategory) {
+        selectInsertVarCategory.addEventListener("change", renderInsertVarTable);
+    }
+
+    document.querySelectorAll("#insertVarScopePills .insert-scope-pill").forEach(btn => {
+        btn.addEventListener("click", () => {
+            currentInsertScopeFilter = btn.getAttribute("data-scope") || "all";
+            updateInsertScopePillsUI();
+            renderInsertVarTable();
+        });
+    });
+
+    if (btnCloseInsertVarModal) {
+        btnCloseInsertVarModal.addEventListener("click", () => {
+            document.getElementById("modalInsertVar")?.classList.add("hidden");
+        });
+    }
+    if (btnCancelInsertVar) {
+        btnCancelInsertVar.addEventListener("click", () => {
+            document.getElementById("modalInsertVar")?.classList.add("hidden");
+        });
+    }
+
+    if (btnSwitchToCreateNewVar) {
+        btnSwitchToCreateNewVar.addEventListener("click", () => {
+            document.getElementById("modalInsertVar")?.classList.add("hidden");
+            openCreateVarModal();
+        });
+    }
+
+    window.openInsertVariableModal = openInsertVariableModal;
 
     // Context Menu: "Hủy liên kết biến xạ (giữ chữ thường)"
     const ctxMenuUnlinkVar = document.getElementById("ctxMenuUnlinkVar");
