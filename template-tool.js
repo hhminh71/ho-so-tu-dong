@@ -1,722 +1,748 @@
-// Công Cụ Chuẩn Hóa Template Word (.docx) & Đồng Bộ Excel - Template Studio
+// Template Studio 2.0 — Chuẩn Hóa & Đóng Gói Bộ Template Word (.docx)
+// Chuyên biệt hóa • Chống chồng chéo biến xạ • Xử lý hàng loạt • Không ghi đè Excel
 (function () {
+    "use strict";
+
     // -------------------------------------------------------------
-    // System Standard Variables Catalog
+    // Master Variables Catalog (4-Tier Scoping & Anti-Collision)
     // -------------------------------------------------------------
-    const STANDARD_VARIABLES = [
-        { key: "TEN_CHU_DAU_TU", label: "Tên Chủ đầu tư", desc: "VD: UBND phường Hoàn Kiếm", defaultSheet: "Thông tin chung" },
-        { key: "TEN_CHU_DAU_TU_VIET_HOA", label: "Tên CĐT (IN HOA)", desc: "VD: UBND PHƯỜNG HOÀN KIẾM", defaultSheet: "Thông tin chung" },
-        { key: "TEN_BAN_QUAN_LY_DU_AN", label: "Tên Ban QLDA", desc: "VD: BAN QUẢN LÝ ĐẦU TƯ VÀ XÂY DỰNG...", defaultSheet: "Thông tin chung" },
-        { key: "CO_QUAN_TRINH", label: "Cơ quan trình", desc: "VD: Trưởng ban Điều hành dự án", defaultSheet: "Thông tin chung" },
-        { key: "DIA_DANH", label: "Địa danh", desc: "VD: Phường Hoàn Kiếm", defaultSheet: "Thông tin chung" },
-        { key: "DIA_CHI_TRU_SO", label: "Địa chỉ trụ sở CĐT", desc: "VD: 18 Lê Lai, Hoàn Kiếm...", defaultSheet: "Thông tin chung" },
-        { key: "TEN_DU_AN", label: "Tên dự án", desc: "VD: Sửa chữa, cải tạo trụ sở...", defaultSheet: "Thông tin chung" },
-        { key: "TEN_CONG_TRINH", label: "Tên công trình", desc: "VD: Trụ sở UBND...", defaultSheet: "Thông tin chung" },
-        { key: "NGUON_VON", label: "Nguồn vốn", desc: "VD: Ngân sách quận", defaultSheet: "Thông tin chung" },
-        { key: "TEN_GOI_THAU", label: "Tên gói thầu", desc: "VD: Tư vấn giám sát thi công...", defaultSheet: "Từng gói thầu" },
-        { key: "HINH_THUC_LCNT", label: "Hình thức LCNT", desc: "VD: Chỉ định thầu rút gọn", defaultSheet: "Từng gói thầu" },
-        { key: "LOAI_HOP_DONG", label: "Loại hợp đồng", desc: "VD: Trọn gói", defaultSheet: "Từng gói thầu" },
-        { key: "THOI_GIAN_THUC_HIEN", label: "Thời gian thực hiện", desc: "VD: 90 ngày", defaultSheet: "Từng gói thầu" },
-        { key: "GIA_GOI_THAU_SO", label: "Giá gói thầu (số)", desc: "VD: 120.000.000", defaultSheet: "Từng gói thầu" },
-        { key: "GIA_GOI_THAU_CHU", label: "Giá gói thầu (chữ)", desc: "VD: Một trăm hai mươi triệu đồng", defaultSheet: "Từng gói thầu" },
-        { key: "GIA_TRI_HOP_DONG_SO", label: "Giá trị hợp đồng (số)", desc: "VD: 115.000.000", defaultSheet: "Từng gói thầu" },
-        { key: "GIA_TRI_HOP_DONG_CHU", label: "Giá trị hợp đồng (chữ)", desc: "VD: Một trăm mười lăm triệu đồng chẵn", defaultSheet: "Từng gói thầu" },
-        { key: "GIA_TRI_GIAM_GIA", label: "Giá trị giảm giá", desc: "VD: 5.000.000", defaultSheet: "Từng gói thầu" },
-        { key: "KHO_BAC_NHA_NUOC", label: "Kho bạc Nhà nước", desc: "VD: Quận Hoàn Kiếm, TP. Hà Nội", defaultSheet: "Từng gói thầu" },
-        { key: "TEN_NHA_THAU", label: "Tên nhà thầu", desc: "VD: Công ty TNHH Giám sát Xây dựng...", defaultSheet: "Từng gói thầu" },
-        { key: "TEN_NHA_THAU_VIET_HOA", label: "Tên nhà thầu (IN HOA)", desc: "VD: CÔNG TY TNHH...", defaultSheet: "Từng gói thầu" },
-        { key: "TEN_NHA_THAU_VIET_TAT", label: "Tên nhà thầu (viết tắt)", desc: "VD: Hà Thành", defaultSheet: "Từng gói thầu" },
-        { key: "DAI_DIEN_NHA_THAU", label: "Người đại diện nhà thầu", desc: "VD: Đỗ Mạnh Cường", defaultSheet: "Từng gói thầu" },
-        { key: "CHUC_VU_DAI_DIEN", label: "Chức vụ đại diện nhà thầu", desc: "VD: Giám đốc", defaultSheet: "Từng gói thầu" },
-        { key: "DIA_CHI_NHA_THAU", label: "Địa chỉ trụ sở nhà thầu", desc: "VD: 125 Nguyễn Du...", defaultSheet: "Từng gói thầu" },
-        { key: "MA_SO_THUE", label: "Mã số thuế nhà thầu", desc: "VD: 0109876543", defaultSheet: "Từng gói thầu" },
-        { key: "NGUOI_KY_CDT", label: "Người ký Quyết định CĐT", desc: "VD: Nguyễn Văn An", defaultSheet: "Thông tin chung" },
-        { key: "CHUC_VU_NGUOI_KY", label: "Chức vụ người ký CĐT", desc: "VD: Giám đốc Ban QLDA", defaultSheet: "Thông tin chung" },
-        { key: "TRUONG_BAN_DHDA", label: "Trưởng ban ĐHDA", desc: "VD: Lê Thị Bích", defaultSheet: "Thông tin chung" },
-        { key: "KE_TOAN_TRUONG", label: "Kế toán trưởng", desc: "VD: Phạm Thị Hoa", defaultSheet: "Thông tin chung" },
-        { key: "SO_CONG_VAN_THAM_GIA", label: "Số công văn tham gia", desc: "VD: 315/CV-HT", defaultSheet: "Từng gói thầu" },
-        { key: "SO_BIEN_BAN_HOAN_THIEN", label: "Số biên bản hoàn thiện", desc: "VD: 145/BB-BQLDA", defaultSheet: "Từng gói thầu" },
-        { key: "SO_TO_TRINH", label: "Số tờ trình chỉ định thầu", desc: "VD: 146/TTr-ĐHDA", defaultSheet: "Từng gói thầu" },
-        { key: "SO_QUYET_DINH", label: "Số quyết định chỉ định thầu", desc: "VD: 147/QĐ-BQLDA", defaultSheet: "Từng gói thầu" },
-        { key: "THOI_GIAN_HOP", label: "Thời gian cuộc họp", desc: "VD: 08 giờ 30 phút, ngày 15/07/2025", defaultSheet: "Từng gói thầu" },
-        { key: "DIA_DIEM_HOP", label: "Địa điểm cuộc họp", desc: "VD: Văn phòng Ban Quản lý dự án", defaultSheet: "Từng gói thầu" },
-        { key: "NGAY_GIAY_MOI", label: "Ngày giấy mời", desc: "VD: 10/07/2025", defaultSheet: "Từng gói thầu" },
-        { key: "NGAY_BIEN_BAN", label: "Ngày biên bản", desc: "VD: 15/07/2025", defaultSheet: "Từng gói thầu" },
-        { key: "NGAY_TO_TRINH", label: "Ngày tờ trình", desc: "VD: 16/07/2025", defaultSheet: "Từng gói thầu" },
-        { key: "NGAY_QUYET_DINH", label: "Ngày quyết định", desc: "VD: 18/07/2025", defaultSheet: "Từng gói thầu" }
+    const MASTER_VARIABLES_CATALOG = [
+        // A. Chủ đầu tư (Tầng 1 - Dùng chung)
+        { stt: 1, tier: 1, groupKey: "A", group: "A. Chủ đầu tư", label: "Tên Chủ đầu tư (*)", tag: "TEN_CHU_DAU_TU", isGeneral: true, example: "Cảng Hàng không Quốc tế Cần Thơ" },
+        { stt: 2, tier: 1, groupKey: "A", group: "A. Chủ đầu tư", label: "Tên Chủ đầu tư (IN HOA)", tag: "TEN_CHU_DAU_TU_VIET_HOA", isGeneral: true, example: "CẢNG HÀNG KHÔNG QUỐC TẾ CẦN THƠ" },
+        { stt: 3, tier: 1, groupKey: "A", group: "A. Chủ đầu tư", label: "Tên Ban QLDA / Phòng ban (*)", tag: "TEN_BAN_QUAN_LY_DU_AN", isGeneral: true, example: "PHÒNG KỸ THUẬT HẠ TẦNG" },
+        { stt: 4, tier: 1, groupKey: "A", group: "A. Chủ đầu tư", label: "Cơ quan trình quyết định", tag: "CO_QUAN_TRINH", isGeneral: true, example: "Trưởng ban Điều hành dự án" },
+        { stt: 5, tier: 1, groupKey: "A", group: "A. Chủ đầu tư", label: "Cấp quyết định đầu tư", tag: "CAP_QUYET_DINH_DAU_TU", isGeneral: true, example: "Tổng công ty Cảng hàng không Việt Nam (TCT)" },
+        { stt: 6, tier: 1, groupKey: "A", group: "A. Chủ đầu tư", label: "Địa danh phát hành văn bản (*)", tag: "DIA_DANH", isGeneral: true, example: "Cần Thơ" },
+        { stt: 7, tier: 1, groupKey: "A", group: "A. Chủ đầu tư", label: "Tỉnh / Thành phố", tag: "TINH_THANH_PHO", isGeneral: true, example: "TP. Cần Thơ" },
+        { stt: 8, tier: 1, groupKey: "A", group: "A. Chủ đầu tư", label: "Địa chỉ trụ sở CĐT", tag: "DIA_CHI_TRU_SO", isGeneral: true, example: "179B Lê Hồng Phong, Trà An, Bình Thủy, TP. Cần Thơ" },
+        { stt: 9, tier: 1, groupKey: "A", group: "A. Chủ đầu tư", label: "Người ký quyết định CĐT (*)", tag: "NGUOI_KY_CDT", isGeneral: true, example: "Nguyễn Văn A" },
+        { stt: 10, tier: 1, groupKey: "A", group: "A. Chủ đầu tư", label: "Chức vụ người ký CĐT", tag: "CHUC_VU_NGUOI_KY", isGeneral: true, example: "Giám đốc" },
+        { stt: 11, tier: 1, groupKey: "A", group: "A. Chủ đầu tư", label: "Trưởng ban Điều hành dự án", tag: "TRUONG_BAN_DHDA", isGeneral: true, example: "Trần Văn B" },
+        { stt: 12, tier: 1, groupKey: "A", group: "A. Chủ đầu tư", label: "Chức vụ Trưởng ban ĐHDA", tag: "CHUC_VU_TRUONG_BAN", isGeneral: true, example: "Trưởng phòng Kỹ thuật hạ tầng" },
+        { stt: 13, tier: 1, groupKey: "A", group: "A. Chủ đầu tư", label: "Kế toán trưởng", tag: "KE_TOAN_TRUONG", isGeneral: true, example: "Lê Thị C" },
+        { stt: 14, tier: 1, groupKey: "A", group: "A. Chủ đầu tư", label: "Chức vụ Kế toán trưởng", tag: "CHUC_VU_KE_TOAN", isGeneral: true, example: "Kế toán trưởng" },
+
+        // B. Dự án & Gói thầu (Tầng 1 & Tầng 2)
+        { stt: 15, tier: 1, groupKey: "B", group: "B. Dự án & Gói", label: "Tên dự án (*)", tag: "TEN_DU_AN", isGeneral: true, example: "Sửa chữa góc cua đường khẩn nguy chữa cháy..." },
+        { stt: 16, tier: 1, groupKey: "B", group: "B. Dự án & Gói", label: "Tên công trình", tag: "TEN_CONG_TRINH", isGeneral: true, example: "Sửa chữa góc cua đường khẩn nguy chữa cháy..." },
+        { stt: 17, tier: 1, groupKey: "B", group: "B. Dự án & Gói", label: "Nguồn vốn", tag: "NGUON_VON", isGeneral: true, example: "Quỹ đầu tư phát triển TCT" },
+        { stt: 18, tier: 2, groupKey: "B", group: "B. Dự án & Gói", label: "Tên gói thầu (*)", tag: "TEN_GOI_THAU", isGeneral: false, example: "Thi công XDCT sửa chữa góc cua đường khẩn nguy" },
+        { stt: 19, tier: 2, groupKey: "B", group: "B. Dự án & Gói", label: "Hình thức LCNT", tag: "HINH_THUC_LCNT", isGeneral: false, example: "Chỉ định thầu rút gọn" },
+        { stt: 20, tier: 2, groupKey: "B", group: "B. Dự án & Gói", label: "Loại hợp đồng", tag: "LOAI_HOP_DONG", isGeneral: false, example: "Trọn gói" },
+        { stt: 21, tier: 2, groupKey: "B", group: "B. Dự án & Gói", label: "Thời gian thực hiện gói thầu", tag: "THOI_GIAN_THUC_HIEN", isGeneral: false, example: "30 ngày" },
+        { stt: 22, tier: 2, groupKey: "B", group: "B. Dự án & Gói", label: "Thời gian tổ chức LCNT", tag: "THOI_GIAN_TO_CHUC", isGeneral: false, example: "Quý I/2027" },
+
+        // C. Tài chính (Tầng 2)
+        { stt: 23, tier: 2, groupKey: "C", group: "C. Tài chính", label: "Giá gói thầu (số) (*)", tag: "GIA_GOI_THAU_SO", isGeneral: false, example: "850.000.000" },
+        { stt: 24, tier: 2, groupKey: "C", group: "C. Tài chính", label: "Giá gói thầu (chữ) (*)", tag: "GIA_GOI_THAU_CHU", isGeneral: false, example: "Tám trăm năm mươi triệu đồng chẵn" },
+        { stt: 25, tier: 2, groupKey: "C", group: "C. Tài chính", label: "Giá trị hợp đồng (số)", tag: "GIA_TRI_HOP_DONG_SO", isGeneral: false, example: "835.000.000" },
+        { stt: 26, tier: 2, groupKey: "C", group: "C. Tài chính", label: "Giá trị hợp đồng (chữ)", tag: "GIA_TRI_HOP_DONG_CHU", isGeneral: false, example: "Tám trăm ba mươi lăm triệu đồng" },
+        { stt: 27, tier: 2, groupKey: "C", group: "C. Tài chính", label: "Giá trị giảm giá", tag: "GIA_TRI_GIAM_GIA", isGeneral: false, example: "15.000.000" },
+        { stt: 28, tier: 2, groupKey: "C", group: "C. Tài chính", label: "Chi phí tư vấn", tag: "CHI_PHI_TU_VAN", isGeneral: false, example: "8.000.000" },
+        { stt: 29, tier: 1, groupKey: "C", group: "C. Tài chính", label: "Kho bạc Nhà nước / Nơi giao dịch", tag: "KHO_BAC_NHA_NUOC", isGeneral: true, example: "Kho bạc Nhà nước Cần Thơ" },
+
+        // D. Nhà thầu (Tầng 2)
+        { stt: 30, tier: 2, groupKey: "D", group: "D. Nhà thầu", label: "Tên nhà thầu (*)", tag: "TEN_NHA_THAU", isGeneral: false, example: "Công ty TNHH Xây dựng Giao thông Miền Tây" },
+        { stt: 31, tier: 2, groupKey: "D", group: "D. Nhà thầu", label: "Tên nhà thầu (IN HOA)", tag: "TEN_NHA_THAU_VIET_HOA", isGeneral: false, example: "CÔNG TY TNHH XÂY DỰNG GIAO THÔNG MIỀN TÂY" },
+        { stt: 32, tier: 2, groupKey: "D", group: "D. Nhà thầu", label: "Tên nhà thầu (viết tắt)", tag: "TEN_NHA_THAU_VIET_TAT", isGeneral: false, example: "MT-CONS" },
+        { stt: 33, tier: 2, groupKey: "D", group: "D. Nhà thầu", label: "Người đại diện nhà thầu", tag: "DAI_DIEN_NHA_THAU", isGeneral: false, example: "Lê Hoàng E" },
+        { stt: 34, tier: 2, groupKey: "D", group: "D. Nhà thầu", label: "Chức vụ đại diện nhà thầu", tag: "CHUC_VU_DAI_DIEN", isGeneral: false, example: "Tổng Giám đốc" },
+        { stt: 35, tier: 2, groupKey: "D", group: "D. Nhà thầu", label: "Địa chỉ nhà thầu", tag: "DIA_CHI_NHA_THAU", isGeneral: false, example: "Số 45 đường CMT8, Bình Thủy, Cần Thơ" },
+        { stt: 36, tier: 2, groupKey: "D", group: "D. Nhà thầu", label: "Mã số thuế nhà thầu", tag: "MA_SO_THUE", isGeneral: false, example: "1807654321" },
+
+        // E. Số hiệu VB (Tầng 3 - Định danh từng văn bản riêng biệt để chống chồng chéo)
+        { stt: 37, tier: 3, groupKey: "E", group: "E. Số hiệu VB", label: "Số tờ trình KHLCNT", tag: "SO_TO_TRINH", isGeneral: false, example: "11/ĐKNCC/TTr-KTHT" },
+        { stt: 38, tier: 3, groupKey: "E", group: "E. Số hiệu VB", label: "Số quyết định KHLCNT", tag: "SO_QUYET_DINH", isGeneral: false, example: "968/QĐ-CHKQTCT" },
+        { stt: 39, tier: 3, groupKey: "E", group: "E. Số hiệu VB", label: "Số giấy mời thương thảo", tag: "SO_GIAY_MOI", isGeneral: false, example: "GM-BQLDA" },
+        { stt: 40, tier: 3, groupKey: "E", group: "E. Số hiệu VB", label: "Số biên bản hoàn thiện", tag: "SO_BIEN_BAN_HOAN_THIEN", isGeneral: false, example: "04/BB-HT" },
+        { stt: 41, tier: 3, groupKey: "E", group: "E. Số hiệu VB", label: "Số tờ trình KQLCNT", tag: "SO_TO_TRINH_KQLCNT", isGeneral: false, example: "14/ĐKNCC/TTr-KTHT" },
+        { stt: 42, tier: 3, groupKey: "E", group: "E. Số hiệu VB", label: "Số quyết định KQLCNT", tag: "SO_QUYET_DINH_KQLCNT", isGeneral: false, example: "1143/QĐ-CHKQTCT" },
+        { stt: 43, tier: 3, groupKey: "E", group: "E. Số hiệu VB", label: "Số hợp đồng kinh tế", tag: "SO_HOP_DONG", isGeneral: false, example: "26076" },
+        { stt: 44, tier: 3, groupKey: "E", group: "E. Số hiệu VB", label: "Số công văn tham gia", tag: "SO_CONG_VAN_THAM_GIA", isGeneral: false, example: "315/CV-HT" },
+
+        // F. Ngày tháng ngắn dd/mm/yyyy (Tầng 3)
+        { stt: 45, tier: 3, groupKey: "F", group: "F. Ngày (ngắn)", label: "Ngày Tờ trình KHLCNT", tag: "NGAY_TO_TRINH", isGeneral: false, example: "10/02/2027" },
+        { stt: 46, tier: 3, groupKey: "F", group: "F. Ngày (ngắn)", label: "Ngày Quyết định KHLCNT", tag: "NGAY_QUYET_DINH", isGeneral: false, example: "11/02/2027" },
+        { stt: 47, tier: 3, groupKey: "F", group: "F. Ngày (ngắn)", label: "Ngày Giấy mời", tag: "NGAY_GIAY_MOI", isGeneral: false, example: "11/02/2027" },
+        { stt: 48, tier: 3, groupKey: "F", group: "F. Ngày (ngắn)", label: "Ngày Biên bản hoàn thiện", tag: "NGAY_BIEN_BAN", isGeneral: false, example: "14/02/2027" },
+        { stt: 49, tier: 3, groupKey: "F", group: "F. Ngày (ngắn)", label: "Ngày Tờ trình KQLCNT", tag: "NGAY_TO_TRINH_KQLCNT", isGeneral: false, example: "31/08/2026" },
+        { stt: 50, tier: 3, groupKey: "F", group: "F. Ngày (ngắn)", label: "Ngày Quyết định KQLCNT", tag: "NGAY_QUYET_DINH_KQLCNT", isGeneral: false, example: "03/09/2026" },
+        { stt: 51, tier: 3, groupKey: "F", group: "F. Ngày (ngắn)", label: "Ngày Hợp đồng", tag: "NGAY_HOP_DONG", isGeneral: false, example: "15/02/2027" },
+
+        // G. Ngày tháng đầy đủ - Dùng cho Tiêu đề văn bản (Tầng 3)
+        { stt: 52, tier: 3, groupKey: "G", group: "G. Ngày (Full)", label: "Ngày Tờ trình KHLCNT (Đầy đủ)", tag: "NGAY_TO_TRINH_FULL", isGeneral: false, example: "ngày 10 tháng 02 năm 2027" },
+        { stt: 53, tier: 3, groupKey: "G", group: "G. Ngày (Full)", label: "Ngày Quyết định KHLCNT (Đầy đủ)", tag: "NGAY_QUYET_DINH_FULL", isGeneral: false, example: "ngày 11 tháng 02 năm 2027" },
+        { stt: 54, tier: 3, groupKey: "G", group: "G. Ngày (Full)", label: "Ngày Giấy mời (Đầy đủ)", tag: "NGAY_GIAY_MOI_FULL", isGeneral: false, example: "ngày 11 tháng 02 năm 2027" },
+        { stt: 55, tier: 3, groupKey: "G", group: "G. Ngày (Full)", label: "Ngày Biên bản (Đầy đủ)", tag: "NGAY_BIEN_BAN_FULL", isGeneral: false, example: "ngày 14 tháng 02 năm 2027" },
+        { stt: 56, tier: 3, groupKey: "G", group: "G. Ngày (Full)", label: "Ngày Hợp đồng (Đầy đủ)", tag: "NGAY_HOP_DONG_FULL", isGeneral: false, example: "ngày 15 tháng 02 năm 2027" },
+
+        // H. Tên trích dẫn căn cứ hỗn hợp (Tầng 4)
+        { stt: 57, tier: 4, groupKey: "H", group: "H. Tên trích dẫn", label: "Tên + Số + Ngày Tờ trình", tag: "TEN_KEM_SO_NGAY_TO_TRINH", isGeneral: false, example: "Tờ trình 11/ĐKNCC/TTr-KTHT ngày 10/02/2027" },
+        { stt: 58, tier: 4, groupKey: "H", group: "H. Tên trích dẫn", label: "Tên + Số + Ngày Quyết định", tag: "TEN_KEM_SO_NGAY_QUYET_DINH", isGeneral: false, example: "Quyết định 968/QĐ-CHKQTCT ngày 11/02/2027" },
+        { stt: 59, tier: 4, groupKey: "H", group: "H. Tên trích dẫn", label: "Tên + Số + Ngày Giấy mời", tag: "TEN_KEM_SO_NGAY_GIAY_MOI", isGeneral: false, example: "Giấy mời GM-BQLDA ngày 11/02/2027" },
+        { stt: 60, tier: 4, groupKey: "H", group: "H. Tên trích dẫn", label: "Tên + Số + Ngày Biên bản", tag: "TEN_KEM_SO_NGAY_BIEN_BAN", isGeneral: false, example: "Biên bản hoàn thiện hợp đồng 04/BB-HT ngày 14/02/2027" },
+        { stt: 61, tier: 4, groupKey: "H", group: "H. Tên trích dẫn", label: "Tên + Số + Ngày Hợp đồng", tag: "TEN_KEM_SO_NGAY_HOP_DONG", isGeneral: false, example: "Hợp đồng kinh tế 26076 ngày 15/02/2027" },
+
+        // I. Căn cứ pháp lý
+        { stt: 62, tier: 1, groupKey: "I", group: "I. Căn cứ pháp lý", label: "Căn cứ pháp lý chung (*)", tag: "CAN_CU_PHAP_LY_CHUNG", isGeneral: true, example: "Căn cứ Luật Đấu thầu số 22/2023/QH15..." }
     ];
 
-    // State
-    let currentZip = null;
-    let originalDocxArrayBuffer = null;
-    let originalFileName = "";
-    let extractedParagraphs = [];
-    let mappings = []; // [{ key, label, originalText, count, targetSheet, isNew }]
-    let discoveredSuggestions = []; // suggestions for new variables
-    let customSheets = ["Thông tin chung", "Từng gói thầu"];
-    let isTaggedView = false;
-    let processedZipBlob = null;
+    // -------------------------------------------------------------
+    // Standard Workflows Matrix Catalog
+    // -------------------------------------------------------------
+    const STUDIO_WORKFLOWS = {
+        "chi_dinh_thau_rut_gon": {
+            id: "chi_dinh_thau_rut_gon",
+            name: "Chỉ định thầu rút gọn (Tư vấn < 500tr; XL/HH < 1 tỷ)",
+            category: "LCNT",
+            documents: [
+                { id: "cdtrg_1", code: "01.TTr-KHLCNT", name: "01. Tờ trình phê duyệt Kế hoạch LCNT", keywords: ["tờ trình", "kế hoạch", "khlcnt", "01."] },
+                { id: "cdtrg_2", code: "02.QD-KHLCNT", name: "02. Quyết định phê duyệt Kế hoạch LCNT", keywords: ["quyết định", "kế hoạch", "khlcnt", "02."] },
+                { id: "cdtrg_3", code: "03.GM-TT", name: "03. Giấy mời tham gia hoàn thiện hợp đồng", keywords: ["giấy mời", "thư mời", "tham gia", "03."] },
+                { id: "cdtrg_4", code: "04.BB-HT", name: "04. Biên bản hoàn thiện / thương thảo hợp đồng", keywords: ["biên bản", "hoàn thiện", "thương thảo", "04."] },
+                { id: "cdtrg_5", code: "05.TTr-KQLCNT", name: "05. Tờ trình phê duyệt Kết quả LCNT", keywords: ["tờ trình", "kết quả", "kqlcnt", "05."] },
+                { id: "cdtrg_6", code: "06.QD-KQLCNT", name: "06. Quyết định phê duyệt Kết quả LCNT", keywords: ["quyết định", "kết quả", "kqlcnt", "06."] },
+                { id: "cdtrg_7", code: "07.HD-KT", name: "07. Hợp đồng kinh tế", keywords: ["hợp đồng", "kinh tế", "hd-kt", "07."] }
+            ]
+        },
+        "trien_khai_sua_chua": {
+            id: "trien_khai_sua_chua",
+            name: "Triển khai: Hồ sơ sửa chữa, bảo trì",
+            category: "Triển khai",
+            documents: [
+                { id: "tk_sc_1", code: "110.QĐ", name: "01. QĐ giao kế hoạch sửa chữa", keywords: ["giao kế hoạch", "110", "qđ giao"] },
+                { id: "tk_sc_2", code: "BB-KT", name: "02. Biên bản kiểm tra đột xuất / hiện trạng", keywords: ["biên bản kiểm tra", "đột xuất", "hiện trạng"] },
+                { id: "tk_sc_3", code: "01.TTr", name: "03. [TRIỂN KHAI] Tờ trình phê duyệt chủ trương", keywords: ["chủ trương", "triển khai", "tờ trình"] },
+                { id: "tk_sc_4", code: "02.TTr", name: "04. [TL TỔ THẨM ĐỊNH] Tờ trình thành lập tổ", keywords: ["tổ thẩm định", "thành lập", "tờ trình"] },
+                { id: "tk_sc_5", code: "930a.QĐ", name: "05. [TL TỔ THẨM ĐỊNH] Quyết định thành lập", keywords: ["quyết định thành lập", "tổ thẩm định"] },
+                { id: "tk_sc_6", code: "03.BC", name: "06. Báo cáo bảo trì / Báo cáo KTKT", keywords: ["báo cáo bảo trì", "báo cáo ktkt"] },
+                { id: "tk_sc_7", code: "04.TTr", name: "07. [KH LCNT] Tờ trình Kế hoạch LCNT", keywords: ["kh lcnt", "tờ trình"] },
+                { id: "tk_sc_8", code: "05.BC", name: "08. [KH LCNT] Báo cáo thẩm định KHLCNT", keywords: ["thẩm định khlcnt", "báo cáo thẩm định"] },
+                { id: "tk_sc_9", code: "968.QĐ", name: "09. [KH LCNT] Quyết định phê duyệt KHLCNT", keywords: ["phê duyệt khlcnt", "quyết định"] },
+                { id: "tk_sc_10", code: "1125.QĐ", name: "10. [THIẾT KẾ & DỰ TOÁN] Quyết định phê duyệt", keywords: ["thiết kế", "dự toán", "quyết định"] },
+                { id: "tk_sc_11", code: "06.HD", name: "11. Hợp đồng triển khai thực hiện", keywords: ["hợp đồng", "triển khai", "thực hiện"] }
+            ]
+        },
+        "chao_gia_han_che": {
+            id: "chao_gia_han_che",
+            name: "Chào giá cạnh tranh hạn chế (Nội bộ)",
+            category: "LCNT",
+            documents: [
+                { id: "cghc_1", code: "01.TTr-CT", name: "01. Tờ trình phê duyệt chủ trương chào giá", keywords: ["chủ trương", "chào giá"] },
+                { id: "cghc_2", code: "02.BC-MS", name: "02. Báo cáo đề xuất phương án chào giá hạn chế", keywords: ["phương án", "đề xuất"] },
+                { id: "cghc_3", code: "03.TM-CG", name: "03. Thư mời chào giá cạnh tranh", keywords: ["thư mời chào giá"] },
+                { id: "cghc_4", code: "04.BB-MCG", name: "04. Biên bản mở báo giá và đối chiếu năng lực", keywords: ["mở báo giá", "đối chiếu"] },
+                { id: "cghc_5", code: "05.BC-TH", name: "05. Báo cáo tổng hợp kết quả chào giá", keywords: ["báo cáo tổng hợp"] },
+                { id: "cghc_6", code: "06.QD-PD", name: "06. Quyết định phê duyệt kết quả lựa chọn", keywords: ["quyết định phê duyệt", "kết quả"] },
+                { id: "cghc_7", code: "07.HD-KT", name: "07. Hợp đồng mua bán / cung cấp dịch vụ", keywords: ["hợp đồng"] }
+            ]
+        },
+        "duoi_100_trieu": {
+            id: "duoi_100_trieu",
+            name: "Mua sắm thường xuyên 50tr - 100tr (Khoản 4 Điều 23)",
+            category: "LCNT",
+            documents: [
+                { id: "d100_1", code: "01.TTr-KHLCNT", name: "01. Tờ trình phê duyệt Kế hoạch LCNT", keywords: ["tờ trình", "kế hoạch"] },
+                { id: "d100_2", code: "02.QD-KHLCNT", name: "02. Quyết định phê duyệt Kế hoạch LCNT", keywords: ["quyết định", "kế hoạch"] },
+                { id: "d100_3", code: "03.BB-TT", name: "03. Biên bản thương thảo hoàn thiện đơn hàng", keywords: ["biên bản thương thảo"] },
+                { id: "d100_4", code: "04.HD-KT", name: "04. Hợp đồng kinh tế và biên bản giao nhận", keywords: ["hợp đồng"] }
+            ]
+        },
+        "duoi_50_trieu": {
+            id: "duoi_50_trieu",
+            name: "Mua sắm siêu rút gọn (Dưới 50 triệu)",
+            category: "LCNT",
+            documents: [
+                { id: "d50_1", code: "01.TTr-MS", name: "01. Tờ trình phê duyệt chủ trương và dự toán", keywords: ["chủ trương", "dự toán"] },
+                { id: "d50_2", code: "02.BC-MS", name: "02. Báo cáo thẩm định & phê duyệt mua sắm", keywords: ["báo cáo", "thẩm định"] },
+                { id: "d50_3", code: "03.HD-KT", name: "03. Hợp đồng kinh tế / Đơn đặt hàng", keywords: ["hợp đồng", "đơn đặt hàng"] },
+                { id: "d50_4", code: "04.BB-NT", name: "04. Biên bản nghiệm thu bàn giao và thanh lý", keywords: ["nghiệm thu", "thanh lý"] }
+            ]
+        },
+        "trien_khai_mua_sam": {
+            id: "trien_khai_mua_sam",
+            name: "Triển khai: Hồ sơ mua sắm thiết bị",
+            category: "Triển khai",
+            documents: [
+                { id: "tk_ms_1", code: "01.TTr-NCS", name: "01. Tờ trình nhu cầu mua sắm trang thiết bị", keywords: ["nhu cầu", "tờ trình"] },
+                { id: "tk_ms_2", code: "02.QD-TC", name: "02. Quyết định phê duyệt chủ trương mua sắm", keywords: ["chủ trương", "quyết định"] },
+                { id: "tk_ms_3", code: "03.BB-KTHS", name: "03. Biên bản kiểm tra cấu hình & thông số kỹ thuật", keywords: ["cấu hình", "thông số"] },
+                { id: "tk_ms_4", code: "04.TTr-KHLCNT", name: "04. Tờ trình phê duyệt KHLCNT mua sắm", keywords: ["tờ trình khlcnt"] },
+                { id: "tk_ms_5", code: "05.QD-KHLCNT", name: "05. Quyết định phê duyệt KHLCNT mua sắm", keywords: ["quyết định khlcnt"] }
+            ]
+        }
+    };
 
+    // -------------------------------------------------------------
+    // Application State
+    // -------------------------------------------------------------
+    let state = {
+        activeWorkflowId: "chi_dinh_thau_rut_gon",
+        viewMode: "batch", // "batch" vs "single"
+        batchFiles: {},    // { [docId]: { file, name, size, arrayBuffer, paragraphs, mappings, status } }
+        activeDocId: null, // Currently edited document in Single View
+        currentTaggingView: "original" // "original" vs "tagged"
+    };
+
+    // -------------------------------------------------------------
     // DOM Elements
-    const dropZone = document.getElementById("dropZone");
-    const docxUploadInput = document.getElementById("docxUploadInput");
-    const btnTriggerUpload = document.getElementById("btnTriggerUpload");
-    const fileInfoBar = document.getElementById("fileInfoBar");
-    const uploadedFileName = document.getElementById("uploadedFileName");
-    const uploadedFileSize = document.getElementById("uploadedFileSize");
-    const btnChooseAnotherFile = document.getElementById("btnChooseAnotherFile");
-    const btnAutoScanAgain = document.getElementById("btnAutoScanAgain");
+    // -------------------------------------------------------------
+    const studioWorkflowSelect = document.getElementById("studioWorkflowSelect");
+    const workflowBadgeInfo = document.getElementById("workflowBadgeInfo");
+    const btnViewBatchMode = document.getElementById("btnViewBatchMode");
+    const btnViewSingleMode = document.getElementById("btnViewSingleMode");
+    const batchWorkspace = document.getElementById("batchWorkspace");
+    const singleWorkspace = document.getElementById("singleWorkspace");
 
-    const workspaceArea = document.getElementById("workspaceArea");
-    const mappingRowsContainer = document.getElementById("mappingRowsContainer");
-    const detectedCountBadge = document.getElementById("detectedCountBadge");
-    const discoveredSuggestionsBox = document.getElementById("discoveredSuggestionsBox");
-    const suggestionsChipsContainer = document.getElementById("suggestionsChipsContainer");
-    const btnAcceptAllSuggestions = document.getElementById("btnAcceptAllSuggestions");
-    const btnAddCustomVar = document.getElementById("btnAddCustomVar");
-    const btnCreateNewSheet = document.getElementById("btnCreateNewSheet");
-    const btnClearAllMapping = document.getElementById("btnClearAllMapping");
+    const batchDocxUploadInput = document.getElementById("batchDocxUploadInput");
+    const btnTriggerBatchUpload = document.getElementById("btnTriggerBatchUpload");
+    const btnBrowseBatchFiles = document.getElementById("btnBrowseBatchFiles");
+    const batchDropZone = document.getElementById("batchDropZone");
+    const batchDocumentsTableBody = document.getElementById("batchDocumentsTableBody");
+    const batchProgressBadge = document.getElementById("batchProgressBadge");
+    const btnAutoScanAll = document.getElementById("btnAutoScanAll");
+    const btnClearBatchList = document.getElementById("btnClearBatchList");
+    const btnExportAllZip = document.getElementById("btnExportAllZip");
 
-    const btnApplyAllTags = document.getElementById("btnApplyAllTags");
-    const btnDownloadTemplate = document.getElementById("btnDownloadTemplate");
-    const btnDownloadUpdatedExcel = document.getElementById("btnDownloadUpdatedExcel");
-    const btnSyncToMainApp = document.getElementById("btnSyncToMainApp");
-    const btnTestFillTemplate = document.getElementById("btnTestFillTemplate");
-
+    // Single view elements
+    const btnBackToBatch = document.getElementById("btnBackToBatch");
+    const singleDocTitle = document.getElementById("singleDocTitle");
+    const singleDocFileNameBadge = document.getElementById("singleDocFileNameBadge");
+    const btnApplySingleTags = document.getElementById("btnApplySingleTags");
+    const btnDownloadSingleDocx = document.getElementById("btnDownloadSingleDocx");
+    const singleMappingRowsContainer = document.getElementById("singleMappingRowsContainer");
+    const singleDetectedCountBadge = document.getElementById("singleDetectedCountBadge");
+    const singleSuggestionsBox = document.getElementById("singleSuggestionsBox");
+    const singleSuggestionsChips = document.getElementById("singleSuggestionsChips");
+    const btnSingleAcceptAllSuggestions = document.getElementById("btnSingleAcceptAllSuggestions");
+    const btnSingleAddCustomVar = document.getElementById("btnSingleAddCustomVar");
+    const documentContentDisplay = document.getElementById("documentContentDisplay");
     const viewModeOriginal = document.getElementById("viewModeOriginal");
     const viewModeTagged = document.getElementById("viewModeTagged");
-    const documentContentDisplay = document.getElementById("documentContentDisplay");
-    const docViewerWrapper = document.getElementById("docViewerWrapper");
     const selectionMenu = document.getElementById("selectionMenu");
-    const btnQuickCustomTag = document.getElementById("btnQuickCustomTag");
 
-    // Toast
+    // Modal Dictionary elements
+    const modalStudioVars = document.getElementById("modalStudioVars");
+    const btnOpenStudioVarsModal = document.getElementById("btnOpenStudioVarsModal");
+    const btnCloseStudioVarsModal = document.getElementById("btnCloseStudioVarsModal");
+    const btnFooterCloseStudioVarsModal = document.getElementById("btnFooterCloseStudioVarsModal");
+    const studioVarsSearchInput = document.getElementById("studioVarsSearchInput");
+    const studioVarsTableBody = document.getElementById("studioVarsTableBody");
+    const studioVarPills = document.querySelectorAll(".studio-var-pill");
+
     const toast = document.getElementById("toastNotification");
     const toastMsg = document.getElementById("toastMsg");
     const toastIcon = document.getElementById("toastIcon");
 
     function showToast(msg, type = "success") {
+        if (!toast || !toastMsg) return;
         toastMsg.textContent = msg;
-        if (type === "success") {
-            toastIcon.className = "fa-solid fa-circle-check text-emerald-400";
-        } else if (type === "error") {
-            toastIcon.className = "fa-solid fa-circle-exclamation text-rose-400";
-        } else {
-            toastIcon.className = "fa-solid fa-circle-info text-blue-400";
+        if (toastIcon) {
+            if (type === "success") toastIcon.className = "fa-solid fa-circle-check text-emerald-400";
+            else if (type === "error") toastIcon.className = "fa-solid fa-circle-exclamation text-rose-400";
+            else toastIcon.className = "fa-solid fa-circle-info text-blue-400";
         }
         toast.classList.remove("translate-y-20", "opacity-0");
         setTimeout(() => toast.classList.add("translate-y-20", "opacity-0"), 3200);
     }
 
     // -------------------------------------------------------------
-    // Upload Handling
+    // Workflow Initialization
     // -------------------------------------------------------------
-    const welcomeUploadBox = document.getElementById("welcomeUploadBox");
-    if (welcomeUploadBox) {
-        welcomeUploadBox.addEventListener("click", () => docxUploadInput.click());
-        welcomeUploadBox.addEventListener("dragover", (e) => {
-            e.preventDefault();
-            welcomeUploadBox.classList.add("border-emerald-600", "bg-emerald-50/50");
-        });
-        welcomeUploadBox.addEventListener("dragleave", () => {
-            welcomeUploadBox.classList.remove("border-emerald-600", "bg-emerald-50/50");
-        });
-        welcomeUploadBox.addEventListener("drop", (e) => {
-            e.preventDefault();
-            welcomeUploadBox.classList.remove("border-emerald-600", "bg-emerald-50/50");
-            if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
-        });
+    function initWorkflowSelector() {
+        if (!studioWorkflowSelect) return;
+        studioWorkflowSelect.innerHTML = Object.values(STUDIO_WORKFLOWS).map(wf => 
+            `<option value="${wf.id}" ${wf.id === state.activeWorkflowId ? "selected" : ""}>[${wf.category}] ${wf.name}</option>`
+        ).join("");
+
+        studioWorkflowSelect.onchange = (e) => {
+            state.activeWorkflowId = e.target.value;
+            state.batchFiles = {};
+            updateWorkflowBadge();
+            renderBatchTable();
+            showToast(`Đã chuyển sang: ${getCurrentWorkflow().name}`);
+        };
+        updateWorkflowBadge();
     }
 
-    btnTriggerUpload.addEventListener("click", () => docxUploadInput.click());
-    btnChooseAnotherFile.addEventListener("click", () => docxUploadInput.click());
+    function getCurrentWorkflow() {
+        return STUDIO_WORKFLOWS[state.activeWorkflowId] || STUDIO_WORKFLOWS["chi_dinh_thau_rut_gon"];
+    }
 
-    docxUploadInput.addEventListener("change", (e) => {
-        if (e.target.files.length > 0) handleFile(e.target.files[0]);
-    });
-
-    dropZone.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        dropZone.classList.add("border-emerald-500", "bg-emerald-50/20");
-    });
-    dropZone.addEventListener("dragleave", () => {
-        dropZone.classList.remove("border-emerald-500", "bg-emerald-50/20");
-    });
-    dropZone.addEventListener("drop", (e) => {
-        e.preventDefault();
-        dropZone.classList.remove("border-emerald-500", "bg-emerald-50/20");
-        if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
-    });
-
-    async function handleFile(file) {
-        if (!file.name.endsWith(".docx")) {
-            showToast("Vui lòng tải lên file định dạng Word (.docx)!", "error");
-            return;
-        }
-
-        originalFileName = file.name;
-        uploadedFileName.textContent = file.name;
-        uploadedFileSize.textContent = `${(file.size / 1024).toFixed(1)} KB`;
-
-        try {
-            originalDocxArrayBuffer = await file.arrayBuffer();
-            currentZip = await JSZip.loadAsync(originalDocxArrayBuffer);
-
-            const docXmlStr = await currentZip.file("word/document.xml").async("string");
-            extractedParagraphs = parseDocxXmlToParagraphs(docXmlStr);
-
-            btnTriggerUpload.classList.add("hidden");
-            fileInfoBar.classList.remove("hidden");
-            workspaceArea.classList.remove("hidden");
-            if (welcomeUploadBox) welcomeUploadBox.classList.add("hidden");
-
-            runDeepEntityDetector();
-            renderMappingTable();
-            renderDocumentView();
-
-            showToast(`Đã nạp file và quét tìm biến thành công!`);
-        } catch (err) {
-            console.error("Error reading docx:", err);
-            showToast("Không thể đọc file: " + err.message, "error");
+    function updateWorkflowBadge() {
+        const wf = getCurrentWorkflow();
+        if (workflowBadgeInfo) {
+            workflowBadgeInfo.textContent = `${wf.documents.length} văn bản chuẩn`;
         }
     }
 
-    function parseDocxXmlToParagraphs(xmlString) {
-        const parser = new DOMParser();
-        const xmlDoc = parser.parseFromString(xmlString, "application/xml");
-        const pNodes = xmlDoc.getElementsByTagName("w:p");
-        const list = [];
-        for (let i = 0; i < pNodes.length; i++) {
-            const tNodes = pNodes[i].getElementsByTagName("w:t");
-            let text = "";
-            for (let j = 0; j < tNodes.length; j++) text += tNodes[j].textContent || "";
-            if (text.trim() !== "") list.push(text.trim());
-        }
-        return list;
-    }
-
     // -------------------------------------------------------------
-    // Deep Entity & New Variables Detector
+    // View Switcher (Batch Mode vs Single Doc Editor)
     // -------------------------------------------------------------
-    function runDeepEntityDetector() {
-        mappings = [];
-        discoveredSuggestions = [];
-        const fullText = extractedParagraphs.join("\n");
-
-        function countOccurrences(phrase) {
-            if (!phrase) return 0;
-            try {
-                const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                const m = fullText.match(new RegExp(escaped, "gi"));
-                return m ? m.length : 0;
-            } catch (e) {
-                return 0;
-            }
-        }
-
-        function addStandard(key, value) {
-            if (!value) return;
-            const clean = value.trim().replace(/^[\s:–—\-]+/, "").replace(/[\s;.,]+$/, "");
-            if (clean.length < 2) return;
-            const std = STANDARD_VARIABLES.find(v => v.key === key);
-            if (!mappings.some(m => m.key === key || m.originalText.toLowerCase() === clean.toLowerCase())) {
-                const c = countOccurrences(clean);
-                if (c > 0) {
-                    mappings.push({
-                        key: key,
-                        label: std ? std.label : key,
-                        originalText: clean,
-                        count: c,
-                        targetSheet: std ? std.defaultSheet : "Thông tin chung",
-                        isNew: false
-                    });
-                }
-            }
-        }
-
-        function addDiscovered(key, label, value, defaultSheet = "Từng gói thầu") {
-            if (!value) return;
-            const clean = value.trim().replace(/^[\s:–—\-]+/, "").replace(/[\s;.,]+$/, "");
-            if (clean.length < 2) return;
-            if (!mappings.some(m => m.key === key) && !discoveredSuggestions.some(s => s.key === key)) {
-                const c = countOccurrences(clean);
-                if (c > 0) {
-                    discoveredSuggestions.push({
-                        key: key,
-                        label: label,
-                        value: clean,
-                        count: c,
-                        defaultSheet: defaultSheet
-                    });
-                }
-            }
-        }
-
-        // 1. Quét biến chuẩn
-        const cdtRegex = /(?:Ủy ban nhân dân|UBND|Ban Quản lý dự án|Ban QLDA)[^\n,;]+/gi;
-        const cdtMatches = fullText.match(cdtRegex);
-        if (cdtMatches && cdtMatches.length > 0) {
-            addStandard("TEN_CHU_DAU_TU", cdtMatches[0]);
-            if (cdtMatches.length > 1) addStandard("TEN_BAN_QUAN_LY_DU_AN", cdtMatches[1]);
-        }
-
-        const duAnRegex = /(?:thuộc dự án|dự án|Dự án|công trình)[\s:]+([^\n,;.\"]+)/gi;
-        let match;
-        while ((match = duAnRegex.exec(fullText)) !== null) {
-            if (match[1] && match[1].length > 5) {
-                addStandard("TEN_DU_AN", match[1]);
-                break;
-            }
-        }
-
-        const goiThauRegex = /(?:gói thầu|Gói thầu)[\s:]+([^\n,;.\"]+)/gi;
-        while ((match = goiThauRegex.exec(fullText)) !== null) {
-            if (match[1] && match[1].length > 5) {
-                addStandard("TEN_GOI_THAU", match[1]);
-                break;
-            }
-        }
-
-        const nhaThauRegex = /(?:Công ty|Doanh nghiệp|CÔNG TY)[\s]+([^\n,;.\"]+)/gi;
-        while ((match = nhaThauRegex.exec(fullText)) !== null) {
-            if (match[0] && match[0].length > 8) {
-                addStandard("TEN_NHA_THAU", match[0]);
-                break;
-            }
-        }
-
-        const giaSoRegex = /\b\d{1,3}(?:\.\d{3}){1,3}\b/g;
-        const giaMatches = fullText.match(giaSoRegex);
-        if (giaMatches && giaMatches.length > 0) {
-            addStandard("GIA_TRI_HOP_DONG_SO", giaMatches[0]);
-        }
-
-        const giaChuRegex = /(?:Bằng chữ|bằng chữ)[\s:]+([^\n,;.)]+)/gi;
-        while ((match = giaChuRegex.exec(fullText)) !== null) {
-            if (match[1] && match[1].length > 4) {
-                addStandard("GIA_TRI_HOP_DONG_CHU", match[1]);
-                break;
-            }
-        }
-
-        const ngayRegex = /([A-Za-zÀ-ỹ\s]+),\s+ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})\s+năm\s+(\d{4})/i;
-        const ngayMatch = fullText.match(ngayRegex);
-        if (ngayMatch) {
-            addStandard("DIA_DANH", ngayMatch[1].trim());
-            addStandard("NGAY_QUYET_DINH", `${ngayMatch[2]}/${ngayMatch[3]}/${ngayMatch[4]}`);
-        }
-
-        const ngKyRegex = /(?:Ông|Bà|Ông\/Bà)[\s:]+([A-ZÀ-Ỵ][a-zà-ỹ]+(?:\s+[A-ZÀ-Ỵ][a-zà-ỹ]+){1,4})/g;
-        while ((match = ngKyRegex.exec(fullText)) !== null) {
-            if (match[1] && match[1].length > 3) {
-                if (!mappings.some(m => m.key === "NGUOI_KY_CDT")) addStandard("NGUOI_KY_CDT", match[1]);
-                else { addStandard("DAI_DIEN_NHA_THAU", match[1]); break; }
-            }
-        }
-
-        // 2. Quét BIẾN XẠ MỚI (Discovered Custom Variables)
-        // 2.1 Số tài khoản ngân hàng
-        const stkRegex = /(?:Số tài khoản|STK|tài khoản số)[\s:]+([0-9]{8,16})/i;
-        const stkMatch = fullText.match(stkRegex);
-        if (stkMatch) addDiscovered("SO_TAI_KHOAN_NGAN_HANG", "Số tài khoản ngân hàng", stkMatch[1], "Từng gói thầu");
-
-        // 2.2 Tên ngân hàng
-        const bankRegex = /(?:tại ngân hàng|ngân hàng|mở tại)[\s:]+([^\n,;.]+)/i;
-        const bankMatch = fullText.match(bankRegex);
-        if (bankMatch) addDiscovered("TEN_NGAN_HANG", "Tên ngân hàng mở TK", bankMatch[1], "Từng gói thầu");
-
-        // 2.3 Thời gian bảo hành
-        const bhRegex = /(?:bảo hành|thời gian bảo hành)[\s:]+([0-9]+\s+tháng)/i;
-        const bhMatch = fullText.match(bhRegex);
-        if (bhMatch) addDiscovered("THOI_GIAN_BAO_HANH", "Thời gian bảo hành", bhMatch[1], "Từng gói thầu");
-
-        // 2.4 Bảo đảm thực hiện hợp đồng
-        const bdRegex = /(?:bảo đảm thực hiện hợp đồng|bảo lãnh hợp đồng)[\s:]+([^\n,;.]+)/i;
-        const bdMatch = fullText.match(bdRegex);
-        if (bdMatch) addDiscovered("BAO_DAM_HOP_DONG", "Bảo đảm thực hiện HĐ", bdMatch[1], "Từng gói thầu");
-
-        // 2.5 Số điện thoại / Email liên hệ
-        const telRegex = /(?:Điện thoại|SĐT|Tel)[\s:]+([0-9\.\s]{9,15})/i;
-        const telMatch = fullText.match(telRegex);
-        if (telMatch) addDiscovered("SO_DIEN_THOAI", "Số điện thoại liên hệ", telMatch[1].trim(), "Thông tin chung");
-
-        const emailRegex = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/;
-        const emailMatch = fullText.match(emailRegex);
-        if (emailMatch) addDiscovered("EMAIL_LIEN_HE", "Email liên hệ", emailMatch[1], "Thông tin chung");
-
-        // 2.6 Tỷ lệ tạm ứng
-        const tamUngRegex = /(?:tạm ứng)[\s:]+([0-9]{1,2}\s*%\s*[^\n,;.]*)/i;
-        const tuMatch = fullText.match(tamUngRegex);
-        if (tuMatch) addDiscovered("TY_LE_TAM_UNG", "Tỷ lệ tạm ứng hợp đồng", tuMatch[1].trim(), "Từng gói thầu");
-
-        renderDiscoveredSuggestions();
-    }
-
-    function renderDiscoveredSuggestions() {
-        if (!discoveredSuggestions || discoveredSuggestions.length === 0) {
-            discoveredSuggestionsBox.classList.add("hidden");
-            return;
-        }
-
-        discoveredSuggestionsBox.classList.remove("hidden");
-        suggestionsChipsContainer.innerHTML = "";
-
-        discoveredSuggestions.forEach((sug, idx) => {
-            const chip = document.createElement("div");
-            chip.className = "inline-flex items-center space-x-1 px-1.5 py-0.2 bg-white border border-amber-300 rounded text-[10.5px] shadow-xs hover:bg-amber-100 cursor-pointer";
-            chip.innerHTML = `
-                <span class="font-bold text-amber-900">${sug.label}:</span>
-                <span class="text-slate-600 truncate max-w-[120px] font-mono text-[10px]">${sug.value}</span>
-                <i class="fa-solid fa-plus text-emerald-600 ml-0.5 text-[9px]"></i>
-            `;
-            chip.addEventListener("click", () => {
-                // Add to mappings
-                mappings.push({
-                    key: sug.key,
-                    label: sug.label,
-                    originalText: sug.value,
-                    count: sug.count,
-                    targetSheet: sug.defaultSheet,
-                    isNew: true
-                });
-                discoveredSuggestions.splice(idx, 1);
-                renderDiscoveredSuggestions();
-                renderMappingTable();
-                renderDocumentView();
-                showToast(`Đã thêm biến "${sug.label}" vào bảng!`);
-            });
-            suggestionsChipsContainer.appendChild(chip);
-        });
-    }
-
-    btnAcceptAllSuggestions.addEventListener("click", () => {
-        discoveredSuggestions.forEach(sug => {
-            mappings.push({
-                key: sug.key,
-                label: sug.label,
-                originalText: sug.value,
-                count: sug.count,
-                targetSheet: sug.defaultSheet,
-                isNew: true
-            });
-        });
-        const count = discoveredSuggestions.length;
-        discoveredSuggestions = [];
-        renderDiscoveredSuggestions();
-        renderMappingTable();
-        renderDocumentView();
-        showToast(`Đã thêm ${count} biến mới vào bảng!`);
-    });
-
-    // -------------------------------------------------------------
-    // Render Mapping Table UI (Compact & Sheet Customized)
-    // -------------------------------------------------------------
-    function renderMappingTable() {
-        mappingRowsContainer.innerHTML = "";
-        detectedCountBadge.textContent = `${mappings.length} biến`;
-
-        if (mappings.length === 0) {
-            mappingRowsContainer.innerHTML = `
-                <div class="text-center py-6 text-slate-400 text-xs">
-                    <i class="fa-solid fa-list-check text-xl mb-1 text-slate-300"></i>
-                    <p>Chưa có biến nào được ánh xạ.</p>
-                    <p class="text-[10px] mt-0.5 text-slate-400">Bấm "Thêm biến mới" hoặc bôi đen văn bản bên phải để gán thẻ!</p>
-                </div>
-            `;
-            return;
-        }
-
-        mappings.forEach((item, index) => {
-            const row = document.createElement("div");
-            row.className = "p-1.5 bg-slate-50 border border-slate-200 rounded space-y-1 hover:border-emerald-400 hover:bg-emerald-50/20 transition-all text-[11px]";
-
-            // Standard variable selector options
-            let optionsHtml = "";
-            STANDARD_VARIABLES.forEach(v => {
-                const selected = v.key === item.key ? "selected" : "";
-                optionsHtml += `<option value="${v.key}" ${selected}>{{${v.key}}} — ${v.label}</option>`;
-            });
-            // If item.key is custom not in standard
-            if (!STANDARD_VARIABLES.some(v => v.key === item.key)) {
-                optionsHtml = `<option value="${item.key}" selected>{{${item.key}}} — ${item.label || item.key}</option>` + optionsHtml;
-            }
-
-            // Sheet destination options
-            let sheetsHtml = "";
-            customSheets.forEach(s => {
-                const sel = (item.targetSheet === s) ? "selected" : "";
-                sheetsHtml += `<option value="${s}" ${sel}>Sheet: ${s}</option>`;
-            });
-            sheetsHtml += `<option value="__NEW_SHEET__">+ Tạo sheet mới...</option>`;
-
-            const newBadge = item.isNew ? `<span class="bg-indigo-100 text-indigo-700 font-bold px-1 py-0.2 rounded text-[9px] uppercase">Mới</span>` : "";
-
-            row.innerHTML = `
-                <div class="flex items-center justify-between gap-1">
-                    <div class="flex items-center space-x-1 flex-1 min-w-0">
-                        ${newBadge}
-                        <select class="var-select text-[11px] font-bold text-emerald-900 bg-white border border-slate-300 rounded px-1.5 py-0.5 h-6 flex-1 focus:ring-emerald-500">
-                            ${optionsHtml}
-                        </select>
-                    </div>
-                    <div class="flex items-center space-x-1 shrink-0">
-                        <select class="sheet-select text-[10.5px] font-medium text-slate-700 bg-white border border-slate-300 rounded px-1 py-0.5 h-6 focus:ring-indigo-500 max-w-[130px]">
-                            ${sheetsHtml}
-                        </select>
-                        <span class="text-[9.5px] bg-amber-100 text-amber-900 px-1 py-0.2 rounded font-bold whitespace-nowrap">${item.count} lần</span>
-                        <button class="btn-delete-row text-slate-400 hover:text-red-600 p-0.5 rounded text-[11px]" data-index="${index}" title="Xóa biến này">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-1.5">
-                    <span class="text-[9.5px] font-bold text-slate-500 uppercase tracking-tight whitespace-nowrap shrink-0">Từ trong file cũ:</span>
-                    <input type="text" value="${item.originalText || ""}" class="input-orig-text text-[11px] px-1.5 py-0.5 h-6 bg-white border border-slate-300 rounded flex-1 focus:ring-emerald-500 text-slate-800 font-mono" data-index="${index}">
-                </div>
-            `;
-            mappingRowsContainer.appendChild(row);
-        });
-
-        // Event listeners
-        mappingRowsContainer.querySelectorAll(".var-select").forEach((sel, idx) => {
-            sel.addEventListener("change", (e) => {
-                const std = STANDARD_VARIABLES.find(v => v.key === e.target.value);
-                mappings[idx].key = e.target.value;
-                if (std) {
-                    mappings[idx].label = std.label;
-                    mappings[idx].targetSheet = std.defaultSheet;
-                }
-                renderDocumentView();
-            });
-        });
-
-        mappingRowsContainer.querySelectorAll(".sheet-select").forEach((sel, idx) => {
-            sel.addEventListener("change", (e) => {
-                if (e.target.value === "__NEW_SHEET__") {
-                    const newSheet = prompt("Nhập tên Sheet Excel mới cần tạo:", "Pháp lý & Bổ sung");
-                    if (newSheet && newSheet.trim()) {
-                        const cleanName = newSheet.trim();
-                        if (!customSheets.includes(cleanName)) customSheets.push(cleanName);
-                        mappings[idx].targetSheet = cleanName;
-                        renderMappingTable();
-                        showToast(`Đã thêm Sheet "${cleanName}"!`);
-                    } else {
-                        renderMappingTable();
-                    }
-                } else {
-                    mappings[idx].targetSheet = e.target.value;
-                }
-            });
-        });
-
-        mappingRowsContainer.querySelectorAll(".input-orig-text").forEach(inp => {
-            inp.addEventListener("input", (e) => {
-                const idx = parseInt(e.target.getAttribute("data-index"), 10);
-                const newVal = e.target.value;
-                mappings[idx].originalText = newVal;
-                const fullText = extractedParagraphs.join("\n");
-                mappings[idx].count = countOccurrences(fullText, newVal);
-                renderDocumentView();
-            });
-        });
-
-        mappingRowsContainer.querySelectorAll(".btn-delete-row").forEach(btn => {
-            btn.addEventListener("click", () => {
-                const idx = parseInt(btn.getAttribute("data-index"), 10);
-                mappings.splice(idx, 1);
-                renderMappingTable();
-                renderDocumentView();
-            });
-        });
-    }
-
-    function countOccurrences(fullText, phrase) {
-        if (!phrase) return 0;
-        try {
-            const escaped = phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const m = fullText.match(new RegExp(escaped, "gi"));
-            return m ? m.length : 0;
-        } catch (e) {
-            return 0;
-        }
-    }
-
-    btnCreateNewSheet.addEventListener("click", () => {
-        const name = prompt("Nhập tên Sheet Excel mới cần tạo trong file mẫu:", "Bảo đảm & Hợp đồng");
-        if (name && name.trim()) {
-            const clean = name.trim();
-            if (!customSheets.includes(clean)) {
-                customSheets.push(clean);
-                renderMappingTable();
-                showToast(`Đã tạo Sheet mới: ${clean}`);
-            }
-        }
-    });
-
-    btnAddCustomVar.addEventListener("click", () => {
-        const varName = prompt("Nhập mã biến (viết hoa không dấu, vd: SO_HOP_DONG, THOI_HAN_BAO_HANH):", "BIEN_MOI");
-        if (varName && varName.trim()) {
-            const cleanKey = varName.trim().toUpperCase().replace(/[^A-Z0-9_]/g, "_");
-            const label = prompt("Nhập tên tiếng Việt hiển thị (vd: Số hợp đồng, Thời hạn bảo hành):", cleanKey);
-            mappings.unshift({
-                key: cleanKey,
-                label: label || cleanKey,
-                originalText: "",
-                count: 0,
-                targetSheet: "Từng gói thầu",
-                isNew: true
-            });
-            renderMappingTable();
-        }
-    });
-
-    btnClearAllMapping.addEventListener("click", () => {
-        if (confirm("Bạn có chắc muốn xóa tất cả ánh xạ biến?")) {
-            mappings = [];
-            renderMappingTable();
-            renderDocumentView();
-        }
-    });
-
-    // -------------------------------------------------------------
-    // Document Preview
-    // -------------------------------------------------------------
-    viewModeOriginal.addEventListener("click", () => {
-        isTaggedView = false;
-        viewModeOriginal.className = "px-2 py-0.5 rounded font-semibold bg-white text-slate-800 shadow-xs";
-        viewModeTagged.className = "px-2 py-0.5 rounded text-slate-600 hover:text-slate-900";
-        renderDocumentView();
-    });
-
-    viewModeTagged.addEventListener("click", () => {
-        isTaggedView = true;
-        viewModeTagged.className = "px-2 py-0.5 rounded font-semibold bg-emerald-600 text-white shadow-xs";
-        viewModeOriginal.className = "px-2 py-0.5 rounded text-slate-600 hover:text-slate-900";
-        renderDocumentView();
-    });
-
-    function escapeHtml(text) {
-        return (text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
-    function renderDocumentView() {
-        if (!extractedParagraphs || extractedParagraphs.length === 0) {
-            documentContentDisplay.innerHTML = `<p class="text-slate-400 italic">Chưa có nội dung văn bản.</p>`;
-            return;
-        }
-
-        let html = "";
-        extractedParagraphs.forEach(p => {
-            let paragraphHtml = escapeHtml(p);
-
-            if (!isTaggedView) {
-                mappings.forEach(m => {
-                    if (m.originalText && m.originalText.trim() !== "") {
-                        const escaped = m.originalText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                        paragraphHtml = paragraphHtml.replace(
-                            new RegExp(`(${escaped})`, "gi"),
-                            `<span class="highlight-match">$1</span>`
-                        );
-                    }
-                });
-            } else {
-                mappings.forEach(m => {
-                    if (m.originalText && m.originalText.trim() !== "") {
-                        const escaped = m.originalText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                        paragraphHtml = paragraphHtml.replace(
-                            new RegExp(`(${escaped})`, "gi"),
-                            `<span class="tag-badge">{{${m.key}}}</span>`
-                        );
-                    }
-                });
-            }
-            html += `<p class="mb-1 text-[11.5pt] leading-normal text-justify">${paragraphHtml}</p>`;
-        });
-
-        documentContentDisplay.innerHTML = html;
-    }
-
-    // -------------------------------------------------------------
-    // Highlight Text & Quick Click-to-Tag
-    // -------------------------------------------------------------
-    documentContentDisplay.addEventListener("mouseup", () => {
-        const selection = window.getSelection();
-        const selectedText = selection.toString().trim();
-
-        if (selectedText.length > 2) {
-            const range = selection.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
-            const wrapperRect = docViewerWrapper.getBoundingClientRect();
-
-            selectionMenu.style.left = `${rect.left - wrapperRect.left}px`;
-            selectionMenu.style.top = `${rect.top - wrapperRect.top + docViewerWrapper.scrollTop - 35}px`;
-            selectionMenu.classList.remove("hidden");
-            selectionMenu.setAttribute("data-selected-text", selectedText);
+    function switchViewMode(mode) {
+        state.viewMode = mode;
+        if (mode === "batch") {
+            batchWorkspace.classList.remove("hidden");
+            singleWorkspace.classList.add("hidden");
+            btnViewBatchMode.className = "px-2.5 py-0.5 rounded bg-white text-emerald-900 shadow-2xs flex items-center gap-1 cursor-pointer transition-all";
+            btnViewSingleMode.className = "px-2.5 py-0.5 rounded text-slate-600 hover:text-slate-900 flex items-center gap-1 cursor-pointer transition-all";
+            renderBatchTable();
         } else {
-            selectionMenu.classList.add("hidden");
+            batchWorkspace.classList.add("hidden");
+            singleWorkspace.classList.remove("hidden");
+            btnViewSingleMode.className = "px-2.5 py-0.5 rounded bg-white text-emerald-900 shadow-2xs flex items-center gap-1 cursor-pointer transition-all";
+            btnViewBatchMode.className = "px-2.5 py-0.5 rounded text-slate-600 hover:text-slate-900 flex items-center gap-1 cursor-pointer transition-all";
+            renderSingleView();
         }
-    });
+    }
 
-    selectionMenu.querySelectorAll(".quick-tag-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const varKey = btn.getAttribute("data-var");
-            const textToTag = selectionMenu.getAttribute("data-selected-text");
+    if (btnViewBatchMode) btnViewBatchMode.onclick = () => switchViewMode("batch");
+    if (btnViewSingleMode) btnViewSingleMode.onclick = () => {
+        // If no active doc, select first doc that has a file, or first in workflow
+        if (!state.activeDocId) {
+            const wf = getCurrentWorkflow();
+            const firstFilled = wf.documents.find(d => state.batchFiles[d.id]);
+            state.activeDocId = firstFilled ? firstFilled.id : wf.documents[0].id;
+        }
+        switchViewMode("single");
+    };
+    if (btnBackToBatch) btnBackToBatch.onclick = () => switchViewMode("batch");
 
-            if (textToTag) {
-                const std = STANDARD_VARIABLES.find(v => v.key === varKey);
-                const existing = mappings.find(m => m.key === varKey);
-                if (existing) {
-                    existing.originalText = textToTag;
-                    existing.count = countOccurrences(extractedParagraphs.join("\n"), textToTag);
-                } else {
-                    mappings.unshift({
-                        key: varKey,
-                        label: std ? std.label : varKey,
-                        originalText: textToTag,
-                        count: countOccurrences(extractedParagraphs.join("\n"), textToTag),
-                        targetSheet: std ? std.defaultSheet : "Thông tin chung",
-                        isNew: false
-                    });
+    // -------------------------------------------------------------
+    // Batch Files Processing & Smart Matching
+    // -------------------------------------------------------------
+    if (btnTriggerBatchUpload) btnTriggerBatchUpload.onclick = () => batchDocxUploadInput.click();
+    if (btnBrowseBatchFiles) btnBrowseBatchFiles.onclick = () => batchDocxUploadInput.click();
+
+    // Drag and drop handlers for batchDropZone
+    if (batchDropZone) {
+        batchDropZone.ondragover = (e) => { e.preventDefault(); batchDropZone.classList.add("dragover"); };
+        batchDropZone.ondragleave = () => batchDropZone.classList.remove("dragover");
+        batchDropZone.ondrop = async (e) => {
+            e.preventDefault();
+            batchDropZone.classList.remove("dragover");
+            const files = Array.from(e.dataTransfer.files);
+            if (files.length > 0) await processIncomingFiles(files);
+        };
+    }
+
+    if (batchDocxUploadInput) {
+        batchDocxUploadInput.onchange = async (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length > 0) await processIncomingFiles(files);
+            batchDocxUploadInput.value = "";
+        };
+    }
+
+    async function processIncomingFiles(fileList) {
+        let docxFiles = [];
+
+        // 1. Unpack ZIP if uploaded
+        for (const f of fileList) {
+            if (f.name.endsWith(".zip")) {
+                try {
+                    const zip = await JSZip.loadAsync(await f.arrayBuffer());
+                    const zipEntries = Object.keys(zip.files).filter(k => k.endsWith(".docx") && !k.startsWith("__MACOSX") && !k.startsWith("~$"));
+                    for (const entry of zipEntries) {
+                        const blob = await zip.files[entry].async("blob");
+                        const cleanName = entry.split("/").pop();
+                        docxFiles.push(new File([blob], cleanName, { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }));
+                    }
+                    showToast(`Đã giải nén ${zipEntries.length} file Word từ file ZIP!`);
+                } catch (zErr) {
+                    console.error("ZIP read error:", zErr);
                 }
-                selectionMenu.classList.add("hidden");
-                renderMappingTable();
-                renderDocumentView();
-                showToast(`Đã gán "${textToTag.substring(0, 20)}..." thành {{${varKey}}}`);
+            } else if (f.name.endsWith(".docx") && !f.name.startsWith("~$")) {
+                docxFiles.push(f);
             }
-        });
-    });
-
-    btnQuickCustomTag.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const textToTag = selectionMenu.getAttribute("data-selected-text");
-        if (!textToTag) return;
-        const name = prompt("Nhập mã biến mới (VD: SO_HOP_DONG, THOI_HAN_BAO_HANH):", "BIEN_MOI");
-        if (name && name.trim()) {
-            const cleanKey = name.trim().toUpperCase().replace(/[^A-Z0-9_]/g, "_");
-            const label = prompt("Tên tiếng Việt hiển thị:", cleanKey);
-            mappings.unshift({
-                key: cleanKey,
-                label: label || cleanKey,
-                originalText: textToTag,
-                count: countOccurrences(extractedParagraphs.join("\n"), textToTag),
-                targetSheet: "Từng gói thầu",
-                isNew: true
-            });
-            selectionMenu.classList.add("hidden");
-            renderMappingTable();
-            renderDocumentView();
-            showToast(`Đã tạo và gán biến mới: {{${cleanKey}}}`);
         }
-    });
+
+        if (docxFiles.length === 0) {
+            showToast("Vui lòng tải file Word (.docx) hoặc file nén (.zip) chứa file Word!", "error");
+            return;
+        }
+
+        const wf = getCurrentWorkflow();
+        let matchedCount = 0;
+
+        for (const file of docxFiles) {
+            const fileNameLower = file.name.toLowerCase();
+            let matchedDoc = null;
+
+            // Find best matching doc in current workflow
+            for (const doc of wf.documents) {
+                if (state.batchFiles[doc.id]) continue; // already matched
+                const hits = doc.keywords.filter(kw => fileNameLower.includes(kw.toLowerCase()));
+                if (hits.length > 0) {
+                    matchedDoc = doc;
+                    break;
+                }
+            }
+
+            // Fallback: match by code index or next empty slot
+            if (!matchedDoc) {
+                matchedDoc = wf.documents.find(d => !state.batchFiles[d.id]);
+            }
+
+            if (matchedDoc) {
+                const arrayBuffer = await file.arrayBuffer();
+                const paragraphs = await extractParagraphsFromBuffer(arrayBuffer);
+                const mappings = detectEntitiesForDocument(matchedDoc, paragraphs);
+
+                state.batchFiles[matchedDoc.id] = {
+                    file: file,
+                    name: file.name,
+                    size: file.size,
+                    arrayBuffer: arrayBuffer,
+                    paragraphs: paragraphs,
+                    mappings: mappings,
+                    status: "matched"
+                };
+                matchedCount++;
+            }
+        }
+
+        renderBatchTable();
+        showToast(`Đã nhận diện và khớp thành công ${matchedCount} văn bản!`);
+    }
+
+    async function extractParagraphsFromBuffer(arrayBuffer) {
+        try {
+            const zip = await JSZip.loadAsync(arrayBuffer);
+            const docXmlStr = await zip.file("word/document.xml").async("string");
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
+            const pNodes = xmlDoc.getElementsByTagName("w:p");
+            const list = [];
+            for (let i = 0; i < pNodes.length; i++) {
+                const tNodes = pNodes[i].getElementsByTagName("w:t");
+                let text = "";
+                for (let j = 0; j < tNodes.length; j++) text += tNodes[j].textContent || "";
+                if (text.trim() !== "") list.push(text.trim());
+            }
+            return list;
+        } catch (e) {
+            console.error("Error extracting paragraphs:", e);
+            return [];
+        }
+    }
 
     // -------------------------------------------------------------
-    // Word (.docx) XML Tagging & Template Output
+    // 4-Tier Scoping & Anti-Collision Entity Detection
     // -------------------------------------------------------------
-    async function generateStandardizedDocxBlob() {
-        if (!originalDocxArrayBuffer) throw new Error("Chưa nạp file Word!");
-        const zip = await JSZip.loadAsync(originalDocxArrayBuffer);
+    function detectEntitiesForDocument(doc, paragraphs) {
+        const fullText = paragraphs.join("\n");
+        const mappings = [];
 
+        function addMapping(tag, originalText, tier, reason) {
+            if (!originalText || originalText.trim().length < 2) return;
+            const cleanText = originalText.trim().replace(/^[\s:–—\-]+/, "").replace(/[\s;.,]+$/, "");
+            if (mappings.some(m => m.tag === tag || m.originalText === cleanText)) return;
+
+            mappings.push({
+                tag: tag,
+                originalText: cleanText,
+                tier: tier,
+                reason: reason,
+                count: (fullText.match(new RegExp(cleanText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "gi")) || []).length
+            });
+        }
+
+        // TẦNG 1: DÙNG CHUNG TOÀN DỰ ÁN (TIER 1)
+        // Chủ đầu tư
+        const cdtRegexes = [
+            /chủ đầu tư\s*[:–—\-]\s*([^\n.,;]{4,80})/i,
+            /bên a\s*\(?[^\n)]*\)?\s*[:–—\-]\s*([^\n.,;]{4,80})/i
+        ];
+        for (const reg of cdtRegexes) {
+            const m = fullText.match(reg);
+            if (m && m[1]) { addMapping("TEN_CHU_DAU_TU", m[1], 1, "Chủ đầu tư chung"); break; }
+        }
+
+        // Tên dự án
+        const daRegexes = [
+            /dự án\s*[:–—\-]\s*([^\n;]{6,120})/i,
+            /công trình\s*[:–—\-]\s*([^\n;]{6,120})/i
+        ];
+        for (const reg of daRegexes) {
+            const m = fullText.match(reg);
+            if (m && m[1]) { addMapping("TEN_DU_AN", m[1], 1, "Tên dự án chung"); break; }
+        }
+
+        // Địa danh
+        const ddMatch = fullText.match(/(?:^|\n)\s*([A-ZÀ-Ỹa-zà-ỹ\s]{2,30}?),\s*ngày\s+\d+\s+tháng\s+\d+/);
+        if (ddMatch && ddMatch[1] && ddMatch[1].trim().length < 25) {
+            addMapping("DIA_DANH", ddMatch[1].trim(), 1, "Địa danh phát hành VB");
+        }
+
+        // TẦNG 2: THÔNG TIN GÓI THẦU (TIER 2)
+        // Tên gói thầu
+        const gtMatch = fullText.match(/gói thầu\s*(?:số\s*\d+)?\s*[:–—\-]\s*([^\n;]{6,120})/i);
+        if (gtMatch && gtMatch[1]) {
+            addMapping("TEN_GOI_THAU", gtMatch[1], 2, "Tên gói thầu");
+        }
+
+        // Tên nhà thầu
+        const ntMatch = fullText.match(/nhà thầu\s*(?:trúng thầu|được chỉ định)?\s*[:–—\-]\s*([^\n.,;]{6,90})/i) ||
+                        fullText.match(/bên b\s*\(?[^\n)]*\)?\s*[:–—\-]\s*([^\n.,;]{6,90})/i);
+        if (ntMatch && ntMatch[1]) {
+            addMapping("TEN_NHA_THAU", ntMatch[1], 2, "Tên nhà thầu");
+        }
+
+        // Giá gói thầu / Giá hợp đồng
+        const giaMatch = fullText.match(/([\d]{1,3}(?:\.[\d]{3})+)\s*(?:đồng|vnđ)/i);
+        if (giaMatch && giaMatch[1]) {
+            if (doc.code.includes("HD")) {
+                addMapping("GIA_TRI_HOP_DONG_SO", giaMatch[1], 2, "Giá trị hợp đồng");
+            } else {
+                addMapping("GIA_GOI_THAU_SO", giaMatch[1], 2, "Giá gói thầu");
+            }
+        }
+
+        // TẦNG 3: BIẾN ĐỊNH DANH RIÊNG VĂN BẢN (CHỐNG CHỒNG CHÉO SỐ VB VÀ NGÀY KÝ)
+        // Số văn bản ở góc trái trên đầu (hỗ trợ đầy đủ ký tự tiếng Việt như ĐKNCC, QĐ, UBND)
+        const soVbMatch = fullText.match(/số\s*[:–—\-]?\s*([0-9a-zA-ZÀ-ỹ\/\.\-_]+)/i);
+        if (soVbMatch && soVbMatch[1] && soVbMatch[1].includes("/")) {
+            const soStr = soVbMatch[1].trim();
+            if (doc.code.includes("TTr-KHLCNT") || doc.code.includes("01.TTr")) {
+                addMapping("SO_TO_TRINH", soStr, 3, "Số Tờ trình KHLCNT");
+            } else if (doc.code.includes("QD-KHLCNT") || doc.code.includes("02.QD")) {
+                addMapping("SO_QUYET_DINH", soStr, 3, "Số Quyết định KHLCNT");
+            } else if (doc.code.includes("GM")) {
+                addMapping("SO_GIAY_MOI", soStr, 3, "Số Giấy mời");
+            } else if (doc.code.includes("BB")) {
+                addMapping("SO_BIEN_BAN_HOAN_THIEN", soStr, 3, "Số Biên bản");
+            } else if (doc.code.includes("TTr-KQLCNT") || doc.code.includes("05.TTr")) {
+                addMapping("SO_TO_TRINH_KQLCNT", soStr, 3, "Số Tờ trình KQLCNT (Phân nhánh không trùng)");
+            } else if (doc.code.includes("QD-KQLCNT") || doc.code.includes("06.QD")) {
+                addMapping("SO_QUYET_DINH_KQLCNT", soStr, 3, "Số Quyết định KQLCNT (Phân nhánh không trùng)");
+            } else if (doc.code.includes("HD")) {
+                addMapping("SO_HOP_DONG", soStr, 3, "Số Hợp đồng kinh tế");
+            }
+        }
+
+        // Ngày tháng trên tiêu đề văn bản (ngày dd tháng mm năm yyyy)
+        const ngayLongMatch = fullText.match(/ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})\s+năm\s+(\d{4})/i);
+        if (ngayLongMatch) {
+            const rawLongDate = ngayLongMatch[0];
+            if (doc.code.includes("TTr-KHLCNT")) {
+                addMapping("NGAY_TO_TRINH_FULL", rawLongDate, 3, "Ngày Tờ trình KHLCNT đầy đủ (Header)");
+            } else if (doc.code.includes("QD-KHLCNT")) {
+                addMapping("NGAY_QUYET_DINH_FULL", rawLongDate, 3, "Ngày QĐ KHLCNT đầy đủ (Header)");
+            } else if (doc.code.includes("GM")) {
+                addMapping("NGAY_GIAY_MOI_FULL", rawLongDate, 3, "Ngày Giấy mời đầy đủ (Header)");
+            } else if (doc.code.includes("BB")) {
+                addMapping("NGAY_BIEN_BAN_FULL", rawLongDate, 3, "Ngày Biên bản đầy đủ (Header)");
+            } else if (doc.code.includes("HD")) {
+                addMapping("NGAY_HOP_DONG_FULL", rawLongDate, 3, "Ngày Hợp đồng đầy đủ (Header)");
+            }
+        }
+
+        // TẦNG 4: BIẾN TRÍCH DẪN CĂN CỨ HỖN HỢP (TIER 4)
+        // Tìm các câu trích dẫn căn cứ văn bản trước: "Căn cứ Tờ trình số ... ngày ..."
+        const canCuTTrMatch = fullText.match(/tờ trình\s+(?:số\s+)?([0-9a-zA-ZÀ-ỹ\/\.\-_]+)\s+ngày\s+(\d{1,2}\/\d{1,2}\/\d{4})/i);
+        if (canCuTTrMatch) {
+            addMapping("TEN_KEM_SO_NGAY_TO_TRINH", canCuTTrMatch[0], 4, "Trích dẫn căn cứ Tờ trình");
+        }
+
+        const canCuQdMatch = fullText.match(/quyết định\s+(?:số\s+)?([0-9a-zA-ZÀ-ỹ\/\.\-_]+)\s+ngày\s+(\d{1,2}\/\d{1,2}\/\d{4})/i);
+        if (canCuQdMatch) {
+            addMapping("TEN_KEM_SO_NGAY_QUYET_DINH", canCuQdMatch[0], 4, "Trích dẫn căn cứ Quyết định");
+        }
+
+        return mappings;
+    }
+
+    // -------------------------------------------------------------
+    // Batch Table Renderer
+    // -------------------------------------------------------------
+    function renderBatchTable() {
+        if (!batchDocumentsTableBody) return;
+        const wf = getCurrentWorkflow();
+        let filledCount = 0;
+
+        batchDocumentsTableBody.innerHTML = wf.documents.map((doc, idx) => {
+            const batchItem = state.batchFiles[doc.id];
+            if (batchItem) filledCount++;
+
+            const fileCell = batchItem ? `
+                <div class="flex items-center space-x-1.5 font-medium text-slate-800">
+                    <i class="fa-solid fa-file-word text-blue-600 text-sm"></i>
+                    <span class="truncate max-w-[200px]" title="${batchItem.name}">${batchItem.name}</span>
+                    <span class="text-[9.5px] text-slate-400 font-mono">(${(batchItem.size/1024).toFixed(0)}KB)</span>
+                </div>
+            ` : `
+                <div class="text-slate-400 italic text-[11px] flex items-center gap-1">
+                    <i class="fa-regular fa-circle-xmark text-slate-300"></i>
+                    <span>Chưa có file</span>
+                </div>
+            `;
+
+            // Tier distribution pills
+            let tagsSummary = `<span class="text-slate-300 text-[10px]">—</span>`;
+            if (batchItem && batchItem.mappings && batchItem.mappings.length > 0) {
+                const t1 = batchItem.mappings.filter(m => m.tier === 1).length;
+                const t2 = batchItem.mappings.filter(m => m.tier === 2).length;
+                const t3 = batchItem.mappings.filter(m => m.tier === 3).length;
+                const t4 = batchItem.mappings.filter(m => m.tier === 4).length;
+
+                tagsSummary = `
+                    <div class="flex flex-wrap items-center gap-1">
+                        ${t1 > 0 ? `<span class="bg-emerald-50 text-emerald-800 border border-emerald-200 px-1 py-0.2 rounded text-[9.5px] font-bold" title="${t1} biến dùng chung dự án">🟢 ${t1} chung</span>` : ""}
+                        ${t2 > 0 ? `<span class="bg-blue-50 text-blue-800 border border-blue-200 px-1 py-0.2 rounded text-[9.5px] font-bold" title="${t2} biến gói thầu">🔵 ${t2} gói</span>` : ""}
+                        ${t3 > 0 ? `<span class="bg-amber-50 text-amber-800 border border-amber-200 px-1 py-0.2 rounded text-[9.5px] font-bold" title="${t3} biến định danh số VB riêng">🟡 ${t3} riêng</span>` : ""}
+                        ${t4 > 0 ? `<span class="bg-purple-50 text-purple-800 border border-purple-200 px-1 py-0.2 rounded text-[9.5px] font-bold" title="${t4} biến trích dẫn căn cứ">🟣 ${t4} căn cứ</span>` : ""}
+                    </div>
+                `;
+            }
+
+            const statusBadge = batchItem 
+                ? `<span class="bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded text-[10px] flex items-center justify-center gap-1"><i class="fa-solid fa-check"></i> Đã khớp</span>`
+                : `<span class="bg-slate-100 text-slate-500 font-medium px-1.5 py-0.5 rounded text-[10px] flex items-center justify-center gap-1">Chờ file</span>`;
+
+            return `
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="py-2 px-2 text-center text-slate-400 font-mono text-[10.5px]">${idx + 1}</td>
+                    <td class="py-2 px-2.5">
+                        <div class="font-bold text-slate-900 text-[11px]">${doc.name}</div>
+                        <div class="font-mono text-[9.5px] text-emerald-700">${doc.code}</div>
+                    </td>
+                    <td class="py-2 px-2.5">${fileCell}</td>
+                    <td class="py-2 px-2.5">${tagsSummary}</td>
+                    <td class="py-2 px-2 text-center">${statusBadge}</td>
+                    <td class="py-2 px-2 text-center">
+                        <div class="flex items-center justify-center space-x-1">
+                            ${batchItem ? `
+                                <button type="button" class="btn-edit-doc-detail px-2 py-0.5 text-[10.5px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded cursor-pointer" data-id="${doc.id}" title="Soát chi tiết biến và xem trước văn bản">
+                                    <i class="fa-solid fa-pen-to-square text-[9.5px]"></i> Sửa chi tiết
+                                </button>
+                                <button type="button" class="btn-download-doc-single px-1.5 py-0.5 text-[10.5px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 border border-indigo-200 rounded cursor-pointer" data-id="${doc.id}" title="Tải riêng template này">
+                                    <i class="fa-solid fa-download text-[9.5px]"></i>
+                                </button>
+                            ` : `
+                                <button type="button" class="btn-upload-for-slot px-2 py-0.5 text-[10.5px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded cursor-pointer" data-id="${doc.id}">
+                                    <i class="fa-solid fa-plus text-[9.5px]"></i> Chọn file
+                                </button>
+                            `}
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+
+        if (batchProgressBadge) {
+            batchProgressBadge.textContent = `Đã khớp: ${filledCount}/${wf.documents.length} văn bản`;
+        }
+
+        // Attach buttons handlers
+        batchDocumentsTableBody.querySelectorAll(".btn-edit-doc-detail").forEach(btn => {
+            btn.onclick = () => {
+                state.activeDocId = btn.getAttribute("data-id");
+                switchViewMode("single");
+            };
+        });
+
+        batchDocumentsTableBody.querySelectorAll(".btn-download-doc-single").forEach(btn => {
+            btn.onclick = async () => {
+                const docId = btn.getAttribute("data-id");
+                await exportSingleDocument(docId);
+            };
+        });
+
+        batchDocumentsTableBody.querySelectorAll(".btn-upload-for-slot").forEach(btn => {
+            btn.onclick = () => {
+                const docId = btn.getAttribute("data-id");
+                const singleInput = document.createElement("input");
+                singleInput.type = "file";
+                singleInput.accept = ".docx";
+                singleInput.onchange = async (evt) => {
+                    const f = evt.target.files[0];
+                    if (f) {
+                        const arrayBuffer = await f.arrayBuffer();
+                        const paragraphs = await extractParagraphsFromBuffer(arrayBuffer);
+                        const docObj = wf.documents.find(d => d.id === docId);
+                        state.batchFiles[docId] = {
+                            file: f,
+                            name: f.name,
+                            size: f.size,
+                            arrayBuffer: arrayBuffer,
+                            paragraphs: paragraphs,
+                            mappings: detectEntitiesForDocument(docObj, paragraphs),
+                            status: "matched"
+                        };
+                        renderBatchTable();
+                        showToast(`Đã nạp file cho ${docObj.code}!`);
+                    }
+                };
+                singleInput.click();
+            };
+        });
+    }
+
+    if (btnAutoScanAll) {
+        btnAutoScanAll.onclick = () => {
+            const wf = getCurrentWorkflow();
+            let reScanned = 0;
+            wf.documents.forEach(doc => {
+                const item = state.batchFiles[doc.id];
+                if (item && item.paragraphs) {
+                    item.mappings = detectEntitiesForDocument(doc, item.paragraphs);
+                    reScanned++;
+                }
+            });
+            renderBatchTable();
+            showToast(`Đã quét lại ${reScanned} văn bản!`);
+        };
+    }
+
+    if (btnClearBatchList) {
+        btnClearBatchList.onclick = () => {
+            if (confirm("Bạn có chắc chắn muốn làm mới toàn bộ danh sách file đã nạp?")) {
+                state.batchFiles = {};
+                renderBatchTable();
+                showToast("Đã làm mới danh sách!");
+            }
+        };
+    }
+
+    // -------------------------------------------------------------
+    // Batch Tagging & ZIP Export
+    // -------------------------------------------------------------
+    if (btnExportAllZip) {
+        btnExportAllZip.onclick = async () => {
+            const wf = getCurrentWorkflow();
+            const docsWithFiles = wf.documents.filter(d => state.batchFiles[d.id]);
+
+            if (docsWithFiles.length === 0) {
+                showToast("Chưa có file Word nào được nạp vào quy trình!", "error");
+                return;
+            }
+
+            try {
+                showToast(`Đang gắn thẻ XML và đóng gói ${docsWithFiles.length} file Word...`);
+                const outZip = new JSZip();
+
+                for (const doc of docsWithFiles) {
+                    const item = state.batchFiles[doc.id];
+                    const taggedBlob = await createTaggedDocxBlob(item.arrayBuffer, item.mappings);
+                    const cleanFileName = `${doc.code.replace(/[\/\\]/g, "_")}_${doc.name.replace(/[^a-zA-Z0-9_\u00C0-\u1EF9]+/g, "_")}.docx`;
+                    outZip.file(cleanFileName, taggedBlob);
+                }
+
+                const zipContent = await outZip.generateAsync({ type: "blob" });
+                const zipFileName = `Templates_${wf.id}_Standardized.zip`;
+                saveAs(zipContent, zipFileName);
+                showToast(`Đã xuất thành công file ZIP: ${zipFileName}!`);
+            } catch (err) {
+                console.error("Batch ZIP export error:", err);
+                showToast("Lỗi khi đóng gói file ZIP: " + err.message, "error");
+            }
+        };
+    }
+
+    async function createTaggedDocxBlob(arrayBuffer, mappings) {
+        const zip = await JSZip.loadAsync(arrayBuffer);
         const targetFiles = Object.keys(zip.files).filter(fn => 
             fn === "word/document.xml" || fn.startsWith("word/header") || fn.startsWith("word/footer")
         );
@@ -735,7 +761,7 @@
                 mappings.forEach(m => {
                     if (!m.originalText || m.originalText.trim() === "") return;
                     const target = m.originalText.trim();
-                    const placeholder = `{{${m.key}}}`;
+                    const placeholder = `{${m.tag}}`;
 
                     for (let j = 0; j < tNodes.length; j++) {
                         const node = tNodes[j];
@@ -759,211 +785,377 @@
             zip.file(fileName, serializer.serializeToString(xmlDoc));
         }
 
-        return await zip.generateAsync({ type: "blob" });
+        return await zip.generateAsync({
+            type: "blob",
+            mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        });
     }
 
-    btnApplyAllTags.addEventListener("click", async () => {
-        if (mappings.length === 0) {
-            showToast("Vui lòng thiết lập ít nhất 1 biến!", "error");
-            return;
-        }
-        try {
-            btnApplyAllTags.disabled = true;
-            btnApplyAllTags.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang xử lý XML...</span>`;
-            processedZipBlob = await generateStandardizedDocxBlob();
-            viewModeTagged.click();
-            showToast("Đã gắn thẻ XML thành công! Có thể tải file Word hoặc cập nhật Excel!");
-        } catch (err) {
-            console.error("Apply tags error:", err);
-            showToast("Lỗi gắn thẻ: " + err.message, "error");
-        } finally {
-            btnApplyAllTags.disabled = false;
-            btnApplyAllTags.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>1. Gắn Thẻ Word XML</span>`;
-        }
-    });
+    async function exportSingleDocument(docId) {
+        const item = state.batchFiles[docId];
+        if (!item) return;
+        const wf = getCurrentWorkflow();
+        const docObj = wf.documents.find(d => d.id === docId);
 
-    btnDownloadTemplate.addEventListener("click", async () => {
         try {
-            if (!processedZipBlob) processedZipBlob = await generateStandardizedDocxBlob();
-            const outName = `Template_${originalFileName.replace(/\s+/g, "_")}`;
-            saveAs(processedZipBlob, outName);
-            showToast(`Đã tải về file template: ${outName}`);
+            const blob = await createTaggedDocxBlob(item.arrayBuffer, item.mappings);
+            const fileName = `${docObj.code}_${docObj.name.replace(/[^a-zA-Z0-9_\u00C0-\u1EF9]+/g, "_")}.docx`;
+            saveAs(blob, fileName);
+            showToast(`Đã xuất template: ${fileName}`);
         } catch (err) {
-            showToast("Lỗi tải template: " + err.message, "error");
+            console.error("Single doc export error:", err);
+            showToast("Lỗi xuất file: " + err.message, "error");
         }
-    });
+    }
 
     // -------------------------------------------------------------
-    // EXCEL SYNC: Bổ sung biến xạ vào Sheet mẫu & Xuất Excel mới
+    // Single Document Deep Editor Controller
     // -------------------------------------------------------------
-    btnDownloadUpdatedExcel.addEventListener("click", async () => {
-        if (mappings.length === 0) {
-            showToast("Chưa có biến nào để đưa vào Excel!", "error");
-            return;
+    function renderSingleView() {
+        const wf = getCurrentWorkflow();
+        const docObj = wf.documents.find(d => d.id === state.activeDocId) || wf.documents[0];
+        const item = state.batchFiles[docObj.id];
+
+        if (singleDocTitle) singleDocTitle.textContent = `${docObj.code} - ${docObj.name}`;
+        if (singleDocFileNameBadge) {
+            singleDocFileNameBadge.textContent = item ? item.name : "(Chưa có file nạp)";
         }
 
-        try {
-            btnDownloadUpdatedExcel.disabled = true;
-            btnDownloadUpdatedExcel.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang tạo Excel...`;
-
-            // 1. Fetch base Excel template
-            const response = await fetch("MauNhapLieu_ChiDinhThau_SAMPLE_v2.xlsx");
-            let workbook;
-            if (response.ok) {
-                const ab = await response.arrayBuffer();
-                workbook = XLSX.read(ab, { type: "array" });
-            } else {
-                workbook = XLSX.utils.book_new();
+        if (!item) {
+            if (singleMappingRowsContainer) {
+                singleMappingRowsContainer.innerHTML = `
+                    <div class="p-6 text-center text-slate-400 italic">
+                        Văn bản này chưa có file Word. Vui lòng quay lại danh sách bộ để nạp file.
+                    </div>
+                `;
             }
+            if (documentContentDisplay) {
+                documentContentDisplay.innerHTML = `
+                    <div class="p-12 text-center text-slate-400 italic">
+                        Chưa có nội dung văn bản.
+                    </div>
+                `;
+            }
+            return;
+        }
 
-            // 2. Group mappings by target sheet
-            const grouped = {};
-            mappings.forEach(m => {
-                const sheet = m.targetSheet || "Thông tin chung";
-                if (!grouped[sheet]) grouped[sheet] = [];
-                grouped[sheet].push(m);
+        renderSingleMappingRows(item);
+        renderSingleDocumentPreview(item);
+    }
+
+    function renderSingleMappingRows(item) {
+        if (!singleMappingRowsContainer) return;
+        const mappings = item.mappings || [];
+        if (singleDetectedCountBadge) singleDetectedCountBadge.textContent = `${mappings.length} biến`;
+
+        if (mappings.length === 0) {
+            singleMappingRowsContainer.innerHTML = `
+                <div class="p-4 text-center text-slate-400 italic">
+                    Chưa có biến nào được gắn thẻ cho văn bản này. Bôi đen văn bản bên phải để gán thẻ nhanh!
+                </div>
+            `;
+            return;
+        }
+
+        const tierBadges = {
+            1: `<span class="bg-emerald-100 text-emerald-800 text-[9.5px] font-bold px-1.5 py-0.2 rounded">Tầng 1 (Chung CĐT/DA)</span>`,
+            2: `<span class="bg-blue-100 text-blue-800 text-[9.5px] font-bold px-1.5 py-0.2 rounded">Tầng 2 (Gói thầu)</span>`,
+            3: `<span class="bg-amber-100 text-amber-800 text-[9.5px] font-bold px-1.5 py-0.2 rounded">Tầng 3 (Riêng số VB)</span>`,
+            4: `<span class="bg-purple-100 text-purple-800 text-[9.5px] font-bold px-1.5 py-0.2 rounded">Tầng 4 (Căn cứ chéo)</span>`
+        };
+
+        singleMappingRowsContainer.innerHTML = mappings.map((m, idx) => `
+            <div class="p-1.5 bg-slate-50 border border-slate-200 rounded text-xs space-y-1">
+                <div class="flex items-center justify-between">
+                    <span class="font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-1.5 py-0.2 rounded text-[11px]">{${m.tag}}</span>
+                    ${tierBadges[m.tier] || ""}
+                    <button type="button" class="btn-remove-single-mapping text-slate-400 hover:text-rose-600 px-1 cursor-pointer" data-idx="${idx}">&times;</button>
+                </div>
+                <div class="text-[11px] text-slate-600 truncate" title="${m.originalText}">
+                    <span class="font-semibold text-slate-500">Chuỗi gốc:</span> "${m.originalText}"
+                </div>
+                <div class="flex items-center justify-between text-[10px] text-slate-400">
+                    <span>${m.reason || ""}</span>
+                    <span>Xuất hiện: <b>${m.count || 1}</b> lần</span>
+                </div>
+            </div>
+        `).join("");
+
+        singleMappingRowsContainer.querySelectorAll(".btn-remove-single-mapping").forEach(btn => {
+            btn.onclick = () => {
+                const idx = parseInt(btn.getAttribute("data-idx"), 10);
+                item.mappings.splice(idx, 1);
+                renderSingleMappingRows(item);
+                renderSingleDocumentPreview(item);
+                renderBatchTable();
+            };
+        });
+    }
+
+    function renderSingleDocumentPreview(item) {
+        if (!documentContentDisplay) return;
+        const paragraphs = item.paragraphs || [];
+
+        if (state.currentTaggingView === "original") {
+            documentContentDisplay.innerHTML = paragraphs.map(p => `<p class="mb-2 leading-relaxed text-slate-800">${escapeHtml(p)}</p>`).join("");
+        } else {
+            // Tagged view: highlight placeholders
+            documentContentDisplay.innerHTML = paragraphs.map(p => {
+                let text = escapeHtml(p);
+                (item.mappings || []).forEach(m => {
+                    if (m.originalText && text.includes(m.originalText)) {
+                        text = text.split(m.originalText).join(`<span class="tag-badge">{${m.tag}}</span>`);
+                    }
+                });
+                return `<p class="mb-2 leading-relaxed text-slate-800">${text}</p>`;
+            }).join("");
+        }
+    }
+
+    function escapeHtml(str) {
+        return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    if (viewModeOriginal) {
+        viewModeOriginal.onclick = () => {
+            state.currentTaggingView = "original";
+            viewModeOriginal.className = "px-2 py-0.2 rounded font-bold bg-white text-slate-800 shadow-xs cursor-pointer";
+            viewModeTagged.className = "px-2 py-0.2 rounded text-slate-600 hover:text-slate-900 cursor-pointer";
+            const item = state.batchFiles[state.activeDocId];
+            if (item) renderSingleDocumentPreview(item);
+        };
+    }
+
+    if (viewModeTagged) {
+        viewModeTagged.onclick = () => {
+            state.currentTaggingView = "tagged";
+            viewModeTagged.className = "px-2 py-0.2 rounded font-bold bg-white text-slate-800 shadow-xs cursor-pointer";
+            viewModeOriginal.className = "px-2 py-0.2 rounded text-slate-600 hover:text-slate-900 cursor-pointer";
+            const item = state.batchFiles[state.activeDocId];
+            if (item) renderSingleDocumentPreview(item);
+        };
+    }
+
+    if (btnApplySingleTags) {
+        btnApplySingleTags.onclick = () => {
+            const item = state.batchFiles[state.activeDocId];
+            if (!item) return;
+            state.currentTaggingView = "tagged";
+            if (viewModeTagged) viewModeTagged.click();
+            showToast("Đã áp dụng các thẻ vào văn bản xem trước!");
+        };
+    }
+
+    if (btnDownloadSingleDocx) {
+        btnDownloadSingleDocx.onclick = async () => {
+            if (state.activeDocId) await exportSingleDocument(state.activeDocId);
+        };
+    }
+
+    // Text selection & floating menu for quick tagging in Single View
+    let selectedTextToTag = "";
+    document.addEventListener("selectionchange", () => {
+        const sel = window.getSelection();
+        if (!sel || sel.isCollapsed || !documentContentDisplay.contains(sel.anchorNode)) {
+            if (selectionMenu && !selectionMenu.contains(document.activeElement)) {
+                selectionMenu.classList.add("hidden");
+            }
+            return;
+        }
+
+        const text = sel.toString().trim();
+        if (text.length > 1 && text.length < 150) {
+            selectedTextToTag = text;
+            const range = sel.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            const wrapperRect = document.getElementById("docViewerWrapper").getBoundingClientRect();
+
+            selectionMenu.style.top = `${rect.top - wrapperRect.top + document.getElementById("docViewerWrapper").scrollTop - 35}px`;
+            selectionMenu.style.left = `${Math.max(10, rect.left - wrapperRect.left)}px`;
+            selectionMenu.classList.remove("hidden");
+        }
+    });
+
+    document.querySelectorAll(".quick-tag-btn").forEach(btn => {
+        btn.onclick = () => {
+            const tag = btn.getAttribute("data-var");
+            const item = state.batchFiles[state.activeDocId];
+            if (!item || !selectedTextToTag) return;
+
+            item.mappings = item.mappings || [];
+            item.mappings.push({
+                tag: tag,
+                originalText: selectedTextToTag,
+                tier: 2,
+                reason: "Gán thủ công từ vùng chọn",
+                count: 1
             });
 
-            // 3. Update or create sheets in workbook
-            for (const [sheetName, items] of Object.entries(grouped)) {
-                if (sheetName === "Thông tin chung") {
-                    let ws = workbook.Sheets["Thông tin chung"];
-                    let rows = ws ? XLSX.utils.sheet_to_json(ws, { header: 1 }) : [];
-                    if (rows.length === 0) {
-                        rows.push(["THÔNG TIN CHUNG — HỒ SƠ CHỈ ĐỊNH THẦU"]);
-                        rows.push(["Điền 1 lần — áp dụng cho TẤT CẢ gói thầu"]);
-                        rows.push([]);
-                        rows.push(["STT", "Tên trường", "Giá trị (điền vào đây)", "Ghi chú / Ví dụ"]);
-                    }
-
-                    // Section divider
-                    rows.push([null, "E. Biến bổ sung từ Template (" + (originalFileName || "Dự án cũ") + ")", null, null]);
-                    let sttCounter = rows.length;
-                    items.forEach(m => {
-                        rows.push([
-                            sttCounter++,
-                            m.label || m.key,
-                            m.originalText || `[${m.key}]`,
-                            `Thẻ tag: {{${m.key}}}`
-                        ]);
-                    });
-                    const newWs = XLSX.utils.aoa_to_sheet(rows);
-                    newWs['!cols'] = [{ wch: 8 }, { wch: 35 }, { wch: 60 }, { wch: 40 }];
-                    workbook.Sheets["Thông tin chung"] = newWs;
-
-                } else if (sheetName === "Từng gói thầu") {
-                    // Update all package sheets in workbook
-                    workbook.SheetNames.forEach(sName => {
-                        if (sName !== "Thông tin chung") {
-                            let ws = workbook.Sheets[sName];
-                            let rows = ws ? XLSX.utils.sheet_to_json(ws, { header: 1 }) : [];
-                            if (rows.length > 0) {
-                                rows.push([null, "F. Biến bổ sung riêng cho gói thầu", null, null]);
-                                let sttCounter = rows.length;
-                                items.forEach(m => {
-                                    rows.push([
-                                        sttCounter++,
-                                        m.label || m.key,
-                                        m.originalText || `[${m.key}]`,
-                                        `Thẻ tag: {{${m.key}}}`
-                                    ]);
-                                });
-                                const newWs = XLSX.utils.aoa_to_sheet(rows);
-                                newWs['!cols'] = [{ wch: 8 }, { wch: 35 }, { wch: 60 }, { wch: 40 }];
-                                workbook.Sheets[sName] = newWs;
-                            }
-                        }
-                    });
-
-                } else {
-                    // Custom new sheet!
-                    let rows = [
-                        [sheetName.toUpperCase()],
-                        ["Biến xạ bổ sung cho: " + sheetName],
-                        [],
-                        ["STT", "Tên trường", "Giá trị (điền vào đây)", "Ghi chú / Ví dụ"]
-                    ];
-                    let sttCounter = 1;
-                    items.forEach(m => {
-                        rows.push([
-                            sttCounter++,
-                            m.label || m.key,
-                            m.originalText || `[${m.key}]`,
-                            `Thẻ tag: {{${m.key}}}`
-                        ]);
-                    });
-                    const newWs = XLSX.utils.aoa_to_sheet(rows);
-                    newWs['!cols'] = [{ wch: 8 }, { wch: 35 }, { wch: 60 }, { wch: 40 }];
-                    if (workbook.SheetNames.includes(sheetName)) {
-                        workbook.Sheets[sheetName] = newWs;
-                    } else {
-                        XLSX.utils.book_append_sheet(workbook, newWs, sheetName);
-                    }
-                }
-            }
-
-            // Write workbook
-            const wbout = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-            const excelBlob = new Blob([wbout], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-            const outExcelName = "MauNhapLieu_ChiDinhThau_SAMPLE_v3_Updated.xlsx";
-            saveAs(excelBlob, outExcelName);
-
-            showToast(`Đã xuất file Excel mẫu mới: ${outExcelName}!`);
-        } catch (err) {
-            console.error("Excel update error:", err);
-            showToast("Lỗi khi xuất file Excel: " + err.message, "error");
-        } finally {
-            btnDownloadUpdatedExcel.disabled = false;
-            btnDownloadUpdatedExcel.innerHTML = `<i class="fa-solid fa-file-arrow-down"></i> <span>Xuất File Excel Mới (.xlsx)</span>`;
-        }
+            selectionMenu.classList.add("hidden");
+            renderSingleMappingRows(item);
+            renderSingleDocumentPreview(item);
+            renderBatchTable();
+            showToast(`Đã gán {${tag}} cho chuỗi "${selectedTextToTag}"!`);
+        };
     });
 
+    const btnQuickCustomTag = document.getElementById("btnQuickCustomTag");
+    if (btnQuickCustomTag) {
+        btnQuickCustomTag.onclick = () => {
+            const item = state.batchFiles[state.activeDocId];
+            if (!item || !selectedTextToTag) return;
+            const customTag = prompt("Nhập tên mã thẻ chèn (viết HOA, ví dụ: SO_DIEN_THOAI_CDT):", "BIEN_MOI");
+            if (!customTag || !customTag.trim()) return;
+            const cleanTag = customTag.trim().toUpperCase().replace(/[^A-Z0-9_]/g, "_");
+            item.mappings = item.mappings || [];
+            item.mappings.push({
+                tag: cleanTag,
+                originalText: selectedTextToTag,
+                tier: 2,
+                reason: "Tùy biến từ vùng chọn",
+                count: 1
+            });
+            selectionMenu.classList.add("hidden");
+            renderSingleMappingRows(item);
+            renderSingleDocumentPreview(item);
+            renderBatchTable();
+            showToast(`Đã gán thẻ {${cleanTag}} thành công!`);
+        };
+    }
+
+    if (btnSingleAddCustomVar) {
+        btnSingleAddCustomVar.onclick = () => {
+            const item = state.batchFiles[state.activeDocId];
+            if (!item) {
+                showToast("Văn bản này chưa có file Word để thêm biến!", "error");
+                return;
+            }
+            const origText = prompt("Nhập chuỗi văn bản gốc cần thay thế trong file Word:");
+            if (!origText || !origText.trim()) return;
+            const customTag = prompt("Nhập tên mã thẻ chèn {TAG} (viết HOA, ví dụ: DIA_CHI_CHI_NHANH):", "BIEN_MOI");
+            if (!customTag || !customTag.trim()) return;
+            const cleanTag = customTag.trim().toUpperCase().replace(/[^A-Z0-9_]/g, "_");
+
+            item.mappings = item.mappings || [];
+            item.mappings.push({
+                tag: cleanTag,
+                originalText: origText.trim(),
+                tier: 2,
+                reason: "Thêm thủ công",
+                count: 1
+            });
+            renderSingleMappingRows(item);
+            renderSingleDocumentPreview(item);
+            renderBatchTable();
+            showToast(`Đã thêm biến {${cleanTag}}!`);
+        };
+    }
+
     // -------------------------------------------------------------
-    // Sync Custom Variables to Main App Form
+    // Master Dictionary Modal Controller
     // -------------------------------------------------------------
-    btnSyncToMainApp.addEventListener("click", () => {
-        if (mappings.length === 0) {
-            showToast("Chưa có biến nào để đồng bộ!", "error");
+    let currentDictCatFilter = "all";
+
+    function openStudioVarsModal() {
+        if (!modalStudioVars) return;
+        renderStudioVarsTable();
+        modalStudioVars.classList.remove("hidden");
+        if (studioVarsSearchInput) {
+            studioVarsSearchInput.value = "";
+            setTimeout(() => studioVarsSearchInput.focus(), 100);
+        }
+    }
+
+    function closeStudioVarsModal() {
+        if (modalStudioVars) modalStudioVars.classList.add("hidden");
+    }
+
+    function renderStudioVarsTable() {
+        if (!studioVarsTableBody) return;
+        const query = studioVarsSearchInput ? studioVarsSearchInput.value.trim().toLowerCase() : "";
+
+        const filtered = MASTER_VARIABLES_CATALOG.filter(v => {
+            if (currentDictCatFilter !== "all" && v.groupKey !== currentDictCatFilter) return false;
+            if (!query) return true;
+            return v.tag.toLowerCase().includes(query) || v.label.toLowerCase().includes(query) || v.group.toLowerCase().includes(query);
+        });
+
+        if (filtered.length === 0) {
+            studioVarsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="py-6 text-center text-slate-400 italic">
+                        Không tìm thấy mã thẻ phù hợp với từ khóa "${query}"
+                    </td>
+                </tr>
+            `;
             return;
         }
 
-        const customVars = mappings.map(m => ({
-            key: m.key,
-            label: m.label || m.key,
-            value: m.originalText,
-            targetSheet: m.targetSheet
-        }));
+        studioVarsTableBody.innerHTML = filtered.map(v => `
+            <tr class="hover:bg-slate-50 transition-colors">
+                <td class="py-1.5 px-2 text-center text-slate-400 font-mono text-[10.5px]">${v.stt}</td>
+                <td class="py-1.5 px-2.5">
+                    <button type="button" class="btn-copy-tag group font-mono text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded flex items-center gap-1 cursor-pointer" data-tag="{${v.tag}}" title="Bấm để sao chép vào Word">
+                        <span>{${v.tag}}</span>
+                        <i class="fa-regular fa-copy text-[10px] text-emerald-600 group-hover:scale-110"></i>
+                    </button>
+                </td>
+                <td class="py-1.5 px-2.5 text-slate-700 font-medium text-[11.5px]">${v.label}</td>
+                <td class="py-1.5 px-2.5">
+                    <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold ${v.isGeneral ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-700'}">${v.group}</span>
+                </td>
+                <td class="py-1.5 px-2 text-center">
+                    <button type="button" class="btn-copy-tag text-[10px] font-bold text-emerald-700 hover:text-emerald-900 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 px-2 py-0.5 rounded cursor-pointer" data-tag="{${v.tag}}">
+                        Sao chép
+                    </button>
+                </td>
+            </tr>
+        `).join("");
 
-        localStorage.setItem("ho_so_custom_variables", JSON.stringify(customVars));
-        showToast("Đã đồng bộ biến vào Form Tạo Hồ Sơ! Bạn có thể quay lại trang chính để điền!");
+        studioVarsTableBody.querySelectorAll(".btn-copy-tag").forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                const tag = btn.getAttribute("data-tag");
+                if (navigator.clipboard) navigator.clipboard.writeText(tag);
+                showToast(`Đã sao chép ${tag} vào clipboard!`);
+            };
+        });
+    }
+
+    if (btnOpenStudioVarsModal) btnOpenStudioVarsModal.onclick = openStudioVarsModal;
+    if (btnCloseStudioVarsModal) btnCloseStudioVarsModal.onclick = closeStudioVarsModal;
+    if (btnFooterCloseStudioVarsModal) btnFooterCloseStudioVarsModal.onclick = closeStudioVarsModal;
+    if (modalStudioVars) {
+        modalStudioVars.onclick = (e) => { if (e.target === modalStudioVars) closeStudioVarsModal(); };
+    }
+    if (studioVarsSearchInput) {
+        studioVarsSearchInput.oninput = renderStudioVarsTable;
+    }
+    studioVarPills.forEach(pill => {
+        pill.onclick = () => {
+            studioVarPills.forEach(p => p.className = "studio-var-pill px-2 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition-colors");
+            pill.className = "studio-var-pill px-2 py-0.5 rounded-full font-bold bg-slate-800 text-white cursor-pointer transition-colors";
+            currentDictCatFilter = pill.getAttribute("data-cat");
+            renderStudioVarsTable();
+        };
     });
 
-    // -------------------------------------------------------------
-    // Test Fill Template
-    // -------------------------------------------------------------
-    btnTestFillTemplate.addEventListener("click", async () => {
-        try {
-            btnTestFillTemplate.disabled = true;
-            btnTestFillTemplate.textContent = "Đang thử nghiệm...";
+    // Expose for external calls and debugging
+    window.TemplateStudio = {
+        state,
+        STUDIO_WORKFLOWS,
+        MASTER_VARIABLES_CATALOG,
+        detectEntitiesForDocument,
+        processIncomingFiles,
+        createTaggedDocxBlob,
+        switchViewMode,
+        renderBatchTable,
+        renderSingleView,
+        showToast
+    };
 
-            if (!processedZipBlob) processedZipBlob = await generateStandardizedDocxBlob();
-            const testZip = await JSZip.loadAsync(processedZipBlob);
-            let docXml = await testZip.file("word/document.xml").async("string");
-
-            mappings.forEach(m => {
-                docXml = docXml.split(`{{${m.key}}}`).join(`[ĐÃ ĐIỀN: ${m.label || m.key}]`);
-            });
-
-            testZip.file("word/document.xml", docXml);
-            const testedBlob = await testZip.generateAsync({ type: "blob" });
-            saveAs(testedBlob, `TEST_DA_DIEN_${originalFileName}`);
-            showToast("Đã tạo file test điền thành công!");
-        } catch (err) {
-            showToast("Lỗi test: " + err.message, "error");
-        } finally {
-            btnTestFillTemplate.disabled = false;
-            btnTestFillTemplate.innerHTML = `<i class="fa-solid fa-vial"></i> Thử nghiệm điền dữ liệu mẫu vào template vừa tạo`;
-        }
-    });
+    // Initialize on page load
+    initWorkflowSelector();
+    renderBatchTable();
 
 })();

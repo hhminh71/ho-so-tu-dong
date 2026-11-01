@@ -10,6 +10,7 @@ venv/
 # Temporary files
 *.tmp
 *.log
+~$*
 .DS_Store
 Thumbs.db
 
