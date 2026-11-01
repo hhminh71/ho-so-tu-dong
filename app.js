@@ -4869,11 +4869,31 @@
     const btnSaveEditVar = document.getElementById("btnSaveEditVar");
     if (btnSaveEditVar) btnSaveEditVar.onclick = saveVariableChanges;
 
+    function setupSafeModalBackdropClose(modalElement, closeFn) {
+        if (!modalElement || typeof closeFn !== "function") return;
+        let isMouseDownOnBackdrop = false;
+
+        modalElement.addEventListener("mousedown", (e) => {
+            isMouseDownOnBackdrop = (e.target === modalElement);
+        });
+
+        modalElement.addEventListener("mouseup", (e) => {
+            if (!isMouseDownOnBackdrop) {
+                isMouseDownOnBackdrop = false;
+            }
+        });
+
+        modalElement.addEventListener("click", (e) => {
+            if (isMouseDownOnBackdrop && e.target === modalElement) {
+                closeFn();
+            }
+            isMouseDownOnBackdrop = false;
+        });
+    }
+
     const modalEditVariable = document.getElementById("modalEditVariable");
     if (modalEditVariable) {
-        modalEditVariable.onclick = (e) => {
-            if (e.target === modalEditVariable) closeEditVariableModal();
-        };
+        setupSafeModalBackdropClose(modalEditVariable, closeEditVariableModal);
     }
 
     const ctxMenuEditVarTag = document.getElementById("ctxMenuEditVarTag");
@@ -4929,9 +4949,7 @@
     if (btnCloseVarsModal) btnCloseVarsModal.addEventListener("click", closeVarsDictionaryModal);
     if (btnFooterCloseVarsModal) btnFooterCloseVarsModal.addEventListener("click", closeVarsDictionaryModal);
     if (modalVarsDictionary) {
-        modalVarsDictionary.addEventListener("click", (e) => {
-            if (e.target === modalVarsDictionary) closeVarsDictionaryModal();
-        });
+        setupSafeModalBackdropClose(modalVarsDictionary, closeVarsDictionaryModal);
     }
     if (varsSearchInput) {
         varsSearchInput.addEventListener("input", renderVarsDictionaryTable);

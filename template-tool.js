@@ -1154,8 +1154,30 @@
     if (btnOpenStudioVarsModal) btnOpenStudioVarsModal.onclick = openStudioVarsModal;
     if (btnCloseStudioVarsModal) btnCloseStudioVarsModal.onclick = closeStudioVarsModal;
     if (btnFooterCloseStudioVarsModal) btnFooterCloseStudioVarsModal.onclick = closeStudioVarsModal;
+    function setupSafeModalBackdropClose(modalElement, closeFn) {
+        if (!modalElement || typeof closeFn !== "function") return;
+        let isMouseDownOnBackdrop = false;
+
+        modalElement.addEventListener("mousedown", (e) => {
+            isMouseDownOnBackdrop = (e.target === modalElement);
+        });
+
+        modalElement.addEventListener("mouseup", (e) => {
+            if (!isMouseDownOnBackdrop) {
+                isMouseDownOnBackdrop = false;
+            }
+        });
+
+        modalElement.addEventListener("click", (e) => {
+            if (isMouseDownOnBackdrop && e.target === modalElement) {
+                closeFn();
+            }
+            isMouseDownOnBackdrop = false;
+        });
+    }
+
     if (modalStudioVars) {
-        modalStudioVars.onclick = (e) => { if (e.target === modalStudioVars) closeStudioVarsModal(); };
+        setupSafeModalBackdropClose(modalStudioVars, closeStudioVarsModal);
     }
     if (studioVarsSearchInput) {
         studioVarsSearchInput.oninput = renderStudioVarsTable;
@@ -1619,9 +1641,7 @@
 
     const modalEditVariable = document.getElementById("modalEditVariable");
     if (modalEditVariable) {
-        modalEditVariable.onclick = (e) => {
-            if (e.target === modalEditVariable) closeEditVariableModal();
-        };
+        setupSafeModalBackdropClose(modalEditVariable, closeEditVariableModal);
     }
 
     // Initialize on page load
