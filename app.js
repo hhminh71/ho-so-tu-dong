@@ -2058,6 +2058,97 @@
 
     window.highlightFieldWithRedAura = highlightFieldWithRedAura;
 
+    // =============================================================
+    // PREVIEW VARIABLE HIGHLIGHTING (WHEN SELECTING LEFT FORM FIELD)
+    // =============================================================
+    function getMatchingPreviewElements(fieldKey) {
+        if (!documentPreviewContent || !fieldKey) return [];
+        const cleanKey = fieldKey.trim();
+        let selector = `[data-var-key="${cleanKey}"]`;
+        if (cleanKey.endsWith("_FULL")) {
+            const base = cleanKey.replace(/_FULL$/, "");
+            selector += `, [data-var-key="${base}"]`;
+        } else if (cleanKey.startsWith("TEN_KEM_SO_NGAY_")) {
+            const sfx = cleanKey.replace("TEN_KEM_SO_NGAY_", "");
+            selector += `, [data-var-key="SO_${sfx}"], [data-var-key="NGAY_${sfx}"]`;
+        }
+        return Array.from(documentPreviewContent.querySelectorAll(selector));
+    }
+
+    function clearPreviewVariablesHighlight() {
+        if (!documentPreviewContent) return;
+        const highlighted = documentPreviewContent.querySelectorAll(".preview-var-highlight-active");
+        highlighted.forEach(el => {
+            el.classList.remove("preview-var-highlight-active");
+            el.removeAttribute("data-highlighted-by-field");
+        });
+    }
+
+    function highlightPreviewVariables(fieldKey, options = {}) {
+        clearPreviewVariablesHighlight();
+        if (!fieldKey || !documentPreviewContent) return;
+
+        const matches = getMatchingPreviewElements(fieldKey);
+        if (!matches || matches.length === 0) return;
+
+        matches.forEach(el => {
+            el.classList.add("preview-var-highlight-active");
+            el.setAttribute("data-highlighted-by-field", fieldKey);
+        });
+
+        if (!options.noScroll && matches.length > 0) {
+            const firstEl = matches[0];
+            const scrollContainer = documentPreviewContent.parentElement;
+            if (scrollContainer) {
+                const cRect = scrollContainer.getBoundingClientRect();
+                const elRect = firstEl.getBoundingClientRect();
+                if (elRect.top < cRect.top + 30 || elRect.bottom > cRect.bottom - 30) {
+                    firstEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+            }
+        }
+    }
+
+    function reapplyActiveFieldPreviewHighlight() {
+        const active = document.activeElement;
+        if (active && active.hasAttribute && active.hasAttribute("data-field")) {
+            const fieldKey = active.getAttribute("data-field");
+            highlightPreviewVariables(fieldKey, { noScroll: true });
+        }
+    }
+
+    // Lắng nghe focus vào ô điền biến bên trái -> Highlight trên Preview
+    document.addEventListener("focusin", (e) => {
+        const input = e.target.closest && e.target.closest("[data-field]");
+        if (input) {
+            const fieldKey = input.getAttribute("data-field");
+            highlightPreviewVariables(fieldKey);
+        }
+    });
+
+    // Lắng nghe click trực tiếp vào ô điền biến bên trái
+    document.addEventListener("click", (e) => {
+        const input = e.target.closest && e.target.closest("[data-field]");
+        if (input) {
+            const fieldKey = input.getAttribute("data-field");
+            highlightPreviewVariables(fieldKey);
+        }
+    });
+
+    // Lắng nghe rời khỏi ô điền biến bên trái -> Tắt Highlight trên Preview
+    document.addEventListener("focusout", (e) => {
+        const input = e.target.closest && e.target.closest("[data-field]");
+        if (input) {
+            setTimeout(() => {
+                const curActive = document.activeElement;
+                if (!curActive || !curActive.closest || !curActive.closest("[data-field]")) {
+                    clearPreviewVariablesHighlight();
+                }
+            }, 60);
+        }
+    });
+
+
     function getUnfilledList() {
         const isFiltered = !!appState.filterByDoc;
         const activeDoc = getCurrentActiveDoc();
@@ -3728,6 +3819,11 @@
             documentPreviewContent.classList.remove("preview-print-mode");
         }
         if (typeof updatePrintModeButtonUI === "function") updatePrintModeButtonUI();
+
+        // Duy trì highlight biến nếu người dùng đang focus vào ô nhập liệu bên trái
+        if (typeof reapplyActiveFieldPreviewHighlight === "function") {
+            reapplyActiveFieldPreviewHighlight();
+        }
     }
 
     // -------------------------------------------------------------

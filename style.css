@@ -393,3 +393,36 @@ input[type="text"]:hover, select:not(#procurementTypeSelect):hover, textarea:hov
     border-bottom: 1px solid #1e293b;
     margin: 3px auto 4px auto;
 }
+
+/* Active highlight for variables on Preview when selecting left form field */
+@keyframes previewVarPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 2.5px #f59e0b, 0 0 16px rgba(245, 158, 11, 0.65);
+        background-color: #fef08a !important;
+        color: #78350f !important;
+    }
+    50% {
+        box-shadow: 0 0 0 3.5px #d97706, 0 0 24px rgba(217, 119, 6, 0.85);
+        background-color: #fde047 !important;
+        color: #78350f !important;
+    }
+}
+
+.preview-var-highlight-active {
+    animation: previewVarPulse 1.6s infinite ease-in-out !important;
+    border-radius: 3px !important;
+    padding: 0 4px !important;
+    z-index: 20 !important;
+    position: relative !important;
+    color: #78350f !important;
+    font-weight: 700 !important;
+    display: inline !important;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    transition: all 0.15s ease-in-out !important;
+}
+
+.preview-var-highlight-active.placeholder-tag {
+    border-color: #d97706 !important;
+    border-style: solid !important;
+}
