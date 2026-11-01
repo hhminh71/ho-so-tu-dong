@@ -122,6 +122,57 @@ input[type="text"]:hover, select:not(#procurementTypeSelect):hover, textarea:hov
     transform: scale(1.04);
 }
 
+/* ============================================================= */
+/* RED AURA GLOW HIGHLIGHT (Hào quang màu đỏ xung quanh Biến) */
+/* ============================================================= */
+.field-item.field-aura-highlight-red,
+.field-aura-highlight-red {
+    border-radius: 6px !important;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%) !important;
+    box-shadow: 0 0 0 2px #ef4444, 0 0 16px 4px rgba(239, 68, 68, 0.75), 0 0 28px 8px rgba(239, 68, 68, 0.35) !important;
+    animation: redAuraPulse 1.4s infinite alternate ease-in-out !important;
+    padding: 3px 6px !important;
+    margin: -3px -6px !important;
+    position: relative;
+    z-index: 25;
+    transition: all 0.2s ease-in-out;
+}
+
+@keyframes redAuraPulse {
+    0% {
+        box-shadow: 0 0 0 2px #ef4444, 0 0 10px 3px rgba(239, 68, 68, 0.6), 0 0 20px 5px rgba(239, 68, 68, 0.25);
+        transform: scale(1.0);
+    }
+    100% {
+        box-shadow: 0 0 0 2.5px #dc2626, 0 0 22px 7px rgba(220, 38, 38, 0.85), 0 0 36px 12px rgba(239, 68, 68, 0.45);
+        transform: scale(1.018);
+    }
+}
+
+.field-item.field-aura-highlight-red .field-label,
+.field-aura-highlight-red .field-label {
+    color: #b91c1c !important;
+    font-weight: 800 !important;
+    text-shadow: 0 0 2px rgba(239, 68, 68, 0.3) !important;
+}
+
+.field-item.field-aura-highlight-red input,
+.field-item.field-aura-highlight-red input:focus,
+.field-item.field-aura-highlight-red input[type="text"],
+.field-item.field-aura-highlight-red input[type="text"]:focus,
+.field-item.field-aura-highlight-red textarea,
+.field-item.field-aura-highlight-red textarea:focus,
+.field-item.field-aura-highlight-red select,
+.field-item.field-aura-highlight-red select:focus,
+.field-aura-highlight-red input,
+.field-aura-highlight-red input:focus {
+    border-color: #ef4444 !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.5) !important;
+    color: #991b1b !important;
+    font-weight: 700 !important;
+}
+
 .field-highlight-pulse {
     animation: pulseRing 1.8s ease-in-out;
 }

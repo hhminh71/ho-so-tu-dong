@@ -1939,25 +1939,45 @@
     }
 
     // -------------------------------------------------------------
-    // Jump to Field & Missing Fields Tracking (Hỗ trợ định vị ô chưa điền)
+    // Jump to Field & Red Aura Glowing Highlight (Hào quang đỏ quanh Biến)
     // -------------------------------------------------------------
-    function jumpToField(fieldKey) {
-        if (!fieldKey) return;
-        const input = document.querySelector(`[data-field="${fieldKey}"]`) || document.querySelector(`[data-custom-field="${fieldKey}"]`);
-        if (!input) {
-            showToast(`Không tìm thấy trường: ${fieldKey}`, "error");
-            return;
+    let currentHighlightedWrapper = null;
+    let currentHighlightTimeout = null;
+
+    function highlightFieldWithRedAura(fieldKey, options = {}) {
+        if (!fieldKey) return null;
+        const cleanKey = fieldKey.replace(/^[{]+|[}]+$/g, "").trim();
+
+        // Xóa hào quang cũ nếu có
+        if (currentHighlightedWrapper) {
+            currentHighlightedWrapper.classList.remove("field-aura-highlight-red");
+            currentHighlightedWrapper = null;
+        }
+        if (currentHighlightTimeout) {
+            clearTimeout(currentHighlightTimeout);
+            currentHighlightTimeout = null;
         }
 
-        // Nếu trường này đang bị ẩn do đang lọc theo file khác, tự động chuyển sang chế độ hiển thị toàn bộ
-        const wrapper = input.closest(".field-item");
+        // Tìm input / textarea / select khớp mã biến
+        const input = document.querySelector(`[data-field="${cleanKey}"]`)
+                   || document.querySelector(`[data-field="${cleanKey.toUpperCase()}"]`)
+                   || document.querySelector(`[data-custom-field="${cleanKey}"]`);
+
+        if (!input) {
+            if (options.showErrorToast) {
+                showToast(`Không tìm thấy trường: ${cleanKey}`, "error");
+            }
+            return null;
+        }
+
+        // Mở rộng hiển thị nếu đang bị ẩn do lọc
+        const wrapper = input.closest(".field-item") || input.parentElement;
         if (wrapper && wrapper.style.display === "none") {
             appState.filterByDoc = false;
             applyVariableFilter();
-            showToast("Đã chuyển sang chế độ toàn bộ biến để điền trường này", "info");
         }
 
-        // Mở Section chứa trường này nếu đang đóng
+        // Mở Section chứa trường nếu đang đóng
         const accordionItem = input.closest(".accordion-item");
         if (accordionItem) {
             accordionItem.style.display = "";
@@ -1969,20 +1989,56 @@
             }
         }
 
-        // Đóng dropdown danh sách nếu đang mở
+        // Đóng dropdown thiếu nếu đang mở
         const dropdown = document.getElementById("missingFieldsDropdown");
         if (dropdown) dropdown.classList.add("hidden");
 
-        // Cuộn màn hình và focus mượt mà
-        input.scrollIntoView({ behavior: "smooth", block: "center" });
-        setTimeout(() => {
-            input.focus();
-            input.classList.add("field-highlight-pulse");
+        // Cuộn mượt mà đưa ô nhập liệu vào giữa màn hình
+        const targetWrapper = wrapper || input;
+        targetWrapper.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        // Tạo hào quang màu đỏ bao quanh cả tên biến (label) và ô nhập liệu (input)
+        targetWrapper.classList.add("field-aura-highlight-red");
+        currentHighlightedWrapper = targetWrapper;
+
+        // Tự động thu hồi hào quang sau 5 giây
+        currentHighlightTimeout = setTimeout(() => {
+            if (targetWrapper) targetWrapper.classList.remove("field-aura-highlight-red");
+            if (currentHighlightedWrapper === targetWrapper) currentHighlightedWrapper = null;
+        }, 5000);
+
+        // Hủy hào quang sớm khi người dùng tương tác với ô
+        const onInteract = () => {
+            if (targetWrapper) targetWrapper.classList.remove("field-aura-highlight-red");
+            if (currentHighlightedWrapper === targetWrapper) currentHighlightedWrapper = null;
+            input.removeEventListener("input", onInteract);
+            input.removeEventListener("change", onInteract);
+            input.removeEventListener("blur", onInteract);
+        };
+        input.addEventListener("input", onInteract, { once: true });
+        input.addEventListener("change", onInteract, { once: true });
+        input.addEventListener("blur", onInteract, { once: true });
+
+        // Focus vào input trừ khi bị tắt (ví dụ khi mở chuột phải context menu)
+        if (!options.noFocus) {
             setTimeout(() => {
-                input.classList.remove("field-highlight-pulse");
-            }, 1800);
-        }, 180);
+                try {
+                    input.focus();
+                    if (typeof input.select === "function" && input.type !== "date") {
+                        input.select();
+                    }
+                } catch(e) {}
+            }, 200);
+        }
+
+        return input;
     }
+
+    function jumpToField(fieldKey) {
+        return highlightFieldWithRedAura(fieldKey, { showErrorToast: true });
+    }
+
+    window.highlightFieldWithRedAura = highlightFieldWithRedAura;
 
     function getUnfilledList() {
         const isFiltered = !!appState.filterByDoc;
@@ -5837,13 +5893,17 @@
             }
         });
 
-        // Double-click to directly edit variable in preview
+        // Double-click to highlight left field with red aura & directly edit in preview
         documentPreviewContent.addEventListener("dblclick", (e) => {
             clearTimeout(placeholderClickTimer);
             const varSpan = e.target.closest("[data-var-key]");
             if (varSpan) {
                 e.preventDefault();
                 e.stopPropagation();
+                const varKey = varSpan.getAttribute("data-var-key");
+                if (varKey) {
+                    highlightFieldWithRedAura(varKey);
+                }
                 makeVariableInlineEditable(varSpan);
             }
         });
@@ -7285,6 +7345,14 @@
             e.preventDefault();
             const sel = window.getSelection();
             lastSelectedSpan = e.target.closest("[data-var-key]");
+
+            // Highlight corresponding field in left panel with glowing red aura
+            if (lastSelectedSpan) {
+                const varKey = lastSelectedSpan.getAttribute("data-var-key");
+                if (varKey) {
+                    highlightFieldWithRedAura(varKey, { noFocus: true });
+                }
+            }
 
             if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
                 lastSelectedRange = sel.getRangeAt(0).cloneRange();
