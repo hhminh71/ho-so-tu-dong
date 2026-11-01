@@ -16,7 +16,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="style.css?v=20261101_v7">
+    <link rel="stylesheet" href="style.css?v=20261101_v8">
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col text-[11.5px]">
 
@@ -164,10 +164,10 @@
                     </button>
                 </div>
 
-                <!-- Procurement Type Selector (Hiện khi ở Tab Tạo Hồ Sơ) -->
-                <div id="headerProcurementTypeWrapper" class="flex items-center space-x-1 min-w-0 flex-1 max-w-sm hidden">
-                    <span class="text-[10px] font-bold text-blue-200 uppercase tracking-tight shrink-0 hidden sm:inline"><i class="fa-solid fa-layer-group text-emerald-400"></i> Quy trình:</span>
-                    <select id="procurementTypeSelect" class="bg-blue-950/80 text-white border border-blue-400/60 text-[11px] font-bold rounded px-1.5 py-0.5 h-6.5 w-full focus:ring-emerald-500 cursor-pointer">
+                <!-- Procurement Type Selector (Hiện khi ở Tab Tạo Hồ Sơ - Chế độ CHÌM / Khóa hiệu chỉnh vì đã chọn tại Tab 1) -->
+                <div id="headerProcurementTypeWrapper" class="flex items-center space-x-1 min-w-0 flex-1 max-w-sm hidden" title="Quy trình LCNT đã được xác lập từ Tab 1 (Định hướng & Tiến độ). Để đổi quy trình, vui lòng điều chỉnh tại Tab 1.">
+                    <span class="text-[10px] font-bold text-slate-300 uppercase tracking-tight shrink-0 hidden sm:inline"><i class="fa-solid fa-lock text-amber-400 text-[9px] mr-0.5"></i> Quy trình:</span>
+                    <select id="procurementTypeSelect" disabled class="bg-blue-950/40 text-blue-200 border border-blue-500/30 text-[10.5px] font-medium rounded px-1.5 py-0.5 h-6.5 w-full cursor-not-allowed pointer-events-none opacity-65 shadow-none">
                         <!-- Populated dynamically from matrix_procurement.json -->
                     </select>
                 </div>
@@ -339,7 +339,7 @@
                     <label class="block text-[9.5px] font-bold text-slate-500 uppercase">Nguồn vốn</label>
                     <input id="rmFundingSource" type="text" class="w-full bg-slate-50 border border-slate-300 rounded px-1.5 py-0 h-6 text-[11px] font-medium text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500" value="Quỹ đầu tư phát triển TCT">
                 </div>
-                <div>
+                <div id="rmImplementationTypeWrapper" class="transition-all rounded">
                     <label class="block text-[9.5px] font-bold text-slate-500 uppercase flex items-center justify-between">
                         <span>Quy trình Triển khai *</span>
                         <button id="btnConfigImplModalTop" type="button" class="text-emerald-700 hover:text-emerald-900 text-[9px] font-bold" title="Cấu hình danh mục văn bản quy trình triển khai">
@@ -2437,7 +2437,7 @@
     </div>
 
     <!-- Script RBAC & Xác thực tài khoản -->
-    <script src="app.js?v=20261101_v7"></script>
+    <script src="app.js?v=20261101_v8"></script>
     <script src="auth.js"></script>
 
 </body>

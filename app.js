@@ -556,6 +556,72 @@
     // -------------------------------------------------------------
     // Roadmap & Timeline Controller Functions
     // -------------------------------------------------------------
+
+    // =============================================================
+    // ROADMAP HIGHLIGHTING FOR ACTIVE DOC & PACKAGE (WHEN SWITCHING TO TAB 1)
+    // =============================================================
+    let roadmapAuraTimer = null;
+
+    function clearRoadmapAura() {
+        if (roadmapAuraTimer) {
+            clearTimeout(roadmapAuraTimer);
+            roadmapAuraTimer = null;
+        }
+        document.querySelectorAll(".timeline-row-aura-red").forEach(el => el.classList.remove("timeline-row-aura-red"));
+        document.querySelectorAll("#rmPackagesList .field-aura-highlight-red").forEach(el => el.classList.remove("field-aura-highlight-red"));
+        const implWrapper = document.getElementById("rmImplementationTypeWrapper");
+        if (implWrapper) implWrapper.classList.remove("field-aura-highlight-red");
+    }
+
+    function highlightRoadmapForActiveDoc(activeDocId, activePkgIdx) {
+        clearRoadmapAura();
+
+        // 1. Nổi hào quang đỏ ô Gói thầu bên trên
+        if (activePkgIdx !== undefined && activePkgIdx >= 0) {
+            const pkgCard = document.querySelector(`#rmPackagesList [data-pkg-idx="${activePkgIdx}"]`);
+            if (pkgCard) {
+                pkgCard.classList.add("field-aura-highlight-red");
+            }
+        }
+
+        // 2. Nổi hào quang đỏ ô Triển khai bên trên
+        const implWrapper = document.getElementById("rmImplementationTypeWrapper");
+        if (implWrapper) {
+            implWrapper.classList.add("field-aura-highlight-red");
+        }
+
+        // 3. Nổi hào quang đỏ cả hàng văn bản trong bảng Tiến độ
+        let targetRow = null;
+        if (activeDocId) {
+            targetRow = document.querySelector(`#rmTimelineContainer tr[data-doc-id="${activeDocId}"]`);
+            if (!targetRow) {
+                const activeDoc = getCurrentActiveDoc();
+                if (activeDoc) {
+                    const docCodeClean = (activeDoc.code || "").toLowerCase();
+                    const docNameClean = (activeDoc.name || "").toLowerCase().replace(/^[0-9\.\s]+/, "");
+                    const allRows = Array.from(document.querySelectorAll("#rmTimelineContainer tbody tr"));
+                    targetRow = allRows.find(tr => {
+                        const rowText = tr.innerText.toLowerCase();
+                        return (docCodeClean && rowText.includes(docCodeClean)) || (docNameClean && rowText.includes(docNameClean));
+                    });
+                }
+            }
+        }
+
+        if (targetRow) {
+            targetRow.classList.add("timeline-row-aura-red");
+            // Tự động cuộn mượt hàng này vào giữa tầm nhìn
+            setTimeout(() => {
+                targetRow.scrollIntoView({ behavior: "smooth", block: "center" });
+            }, 150);
+        }
+
+        // Tự động gỡ bỏ hào quang sau 8 giây
+        roadmapAuraTimer = setTimeout(() => {
+            clearRoadmapAura();
+        }, 8000);
+    }
+
     function switchMainTab(tabName, updateHistory = true) {
         appState.activeMainTab = tabName;
         const viewRoadmap = document.getElementById("viewRoadmap");
@@ -581,17 +647,31 @@
             if (viewDocs) viewDocs.classList.add("hidden");
             if (headerProcurement) headerProcurement.classList.add("hidden");
 
-            if (btnNavRoadmap) btnNavRoadmap.className = "px-2.5 py-1 text-xs font-bold rounded flex items-center gap-1.5 transition-all bg-emerald-600 text-white shadow-xs";
-            if (btnNavDocs) btnNavDocs.className = "px-2.5 py-1 text-xs font-bold rounded flex items-center gap-1.5 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60";
+            if (btnNavRoadmap) btnNavRoadmap.className = "px-2.5 py-1 text-xs font-bold rounded flex items-center gap-1.5 transition-all bg-emerald-600 text-white shadow-xs cursor-pointer";
+            if (btnNavDocs) btnNavDocs.className = "px-2.5 py-1 text-xs font-bold rounded flex items-center gap-1.5 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 cursor-pointer";
+
+            // Đồng bộ gói thầu đang xem từ Tab 2 sang Tab 1
+            if (appState.activePackageIndex !== undefined) {
+                appState.selectedRoadmapPackageIndex = appState.activePackageIndex;
+            }
 
             renderRoadmapUI();
+
+            // Nổi hào quang đỏ cho hàng văn bản, ô gói thầu và ô triển khai bên trên
+            highlightRoadmapForActiveDoc(appState.activeDocId, appState.activePackageIndex);
         } else {
             if (viewRoadmap) viewRoadmap.classList.add("hidden");
             if (viewDocs) viewDocs.classList.remove("hidden");
             if (headerProcurement) headerProcurement.classList.remove("hidden");
 
-            if (btnNavDocs) btnNavDocs.className = "px-2.5 py-1 text-xs font-bold rounded flex items-center gap-1.5 transition-all bg-emerald-600 text-white shadow-xs";
-            if (btnNavRoadmap) btnNavRoadmap.className = "px-2.5 py-1 text-xs font-bold rounded flex items-center gap-1.5 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60";
+            // Thứ 1: Bên Tab tạo hồ sơ phải làm chìm ô Quy trình (không được chọn hoặc hiệu chỉnh vì đã chọn tại Tab 1)
+            if (procurementTypeSelect) {
+                procurementTypeSelect.disabled = true;
+                procurementTypeSelect.classList.add("opacity-65", "cursor-not-allowed", "pointer-events-none");
+            }
+
+            if (btnNavDocs) btnNavDocs.className = "px-2.5 py-1 text-xs font-bold rounded flex items-center gap-1.5 transition-all bg-emerald-600 text-white shadow-xs cursor-pointer";
+            if (btnNavRoadmap) btnNavRoadmap.className = "px-2.5 py-1 text-xs font-bold rounded flex items-center gap-1.5 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 cursor-pointer";
 
             syncRoadmapToDocs();
             renderPackageDropdown();
@@ -683,6 +763,7 @@
             appState.selectedProcurementTypeId = curPkg.procurementTypeId;
             if (procurementTypeSelect) {
                 procurementTypeSelect.value = curPkg.procurementTypeId;
+                procurementTypeSelect.disabled = true;
             }
         }
     }
@@ -835,6 +916,7 @@
             rmPackagesList.innerHTML = "";
             (rm.packages || []).forEach((pkg, idx) => {
                 const card = document.createElement("div");
+                card.setAttribute("data-pkg-idx", idx);
                 const isSelected = appState.selectedRoadmapPackageIndex === idx;
 
                 card.className = isSelected 
@@ -1602,7 +1684,7 @@
                                 }
 
                                 return `
-                                    <tr class="hover:bg-slate-50 transition-colors h-6" data-phase-idx="${pIdx}" data-task-idx="${realTaskIdx}" data-task-id="${task.id}">
+                                    <tr class="hover:bg-slate-50 transition-colors h-6" data-phase-idx="${pIdx}" data-task-idx="${realTaskIdx}" data-task-id="${task.id}" data-doc-id="${linkedDocId}">
                                         <td class="py-0.5 px-1 text-center text-slate-400 font-bold text-[10px]">${task.stt || (realTaskIdx + 1)}</td>
                                         <td class="py-0.5 px-1.5 font-bold text-slate-800 text-[10.5px]">
                                             <div class="flex items-center gap-1.5 flex-wrap">
@@ -2317,6 +2399,9 @@
             }
             procurementTypeSelect.appendChild(opt);
         });
+
+        // Tab 2 làm chìm ô Quy trình (không cho chọn hoặc hiệu chỉnh)
+        procurementTypeSelect.disabled = true;
 
         procurementTypeSelect.addEventListener("change", (e) => {
             appState.selectedProcurementTypeId = e.target.value;
