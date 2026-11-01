@@ -1216,16 +1216,7 @@
 
     loadCatalogCustomizations();
 
-    function slugifyToUpperSnake(str) {
-        if (!str) return "";
-        return str.normalize("NFD")
-            .replace(/[̀-ͯ]/g, "")
-            .replace(/[đĐ]/g, "D")
-            .toUpperCase()
-            .replace(/[^A-Z0-9]/g, "_")
-            .replace(/_+/g, "_")
-            .replace(/^_|_$/g, "");
-    }
+    // (slugifyToUpperSnake declared below)
 
     function openEditVariableModal(tagToEdit = null, mappingIdx = null) {
         const modal = document.getElementById("modalEditVariable");
@@ -1285,6 +1276,112 @@
         activeEditingMappingIdx = null;
     }
 
+        function slugifyToUpperSnake(str) {
+        if (!str) return "";
+        return str.normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[đĐ]/g, "D")
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, "_")
+            .replace(/_+/g, "_")
+            .replace(/^_|_$/g, "");
+    }
+
+    function isTagInUse(tag, origTag = "") {
+        if (!tag) return null;
+        const cleanTag = tag.trim().toUpperCase();
+        const origClean = (origTag || "").trim().toUpperCase();
+        if (cleanTag === origClean) return null;
+
+        if (typeof MASTER_VARIABLES_CATALOG !== "undefined" && Array.isArray(MASTER_VARIABLES_CATALOG)) {
+            const found = MASTER_VARIABLES_CATALOG.find(v => v.tag.toUpperCase() === cleanTag);
+            if (found) return found;
+        }
+        if (typeof appState !== "undefined" && appState?.customVariables) {
+            for (const k in appState.customVariables) {
+                if (k.toUpperCase() === cleanTag) {
+                    return {
+                        tag: k,
+                        label: appState.customVariables[k].label || k,
+                        group: "J. Tùy biến bổ sung"
+                    };
+                }
+            }
+        }
+        return null;
+    }
+
+    function generateCandidateTags(baseTag, origTag = "") {
+        if (!baseTag) return [];
+        const cleanBase = slugifyToUpperSnake(baseTag);
+        if (!cleanBase) return [];
+
+        const suffixes = ["_TO_TRINH", "_DA", "_GOI_THAU", "_BQL", "_MOI", "_1", "_2", "_3"];
+        const candidates = [];
+
+        for (const suf of suffixes) {
+            const candidate = `${cleanBase}${suf}`;
+            if (!isTagInUse(candidate, origTag) && !candidates.includes(candidate)) {
+                candidates.push(candidate);
+                if (candidates.length >= 4) break;
+            }
+        }
+
+        if (candidates.length === 0) {
+            for (let i = 1; i <= 10; i++) {
+                const candidate = `${cleanBase}_${i}`;
+                if (!isTagInUse(candidate, origTag) && !candidates.includes(candidate)) {
+                    candidates.push(candidate);
+                    if (candidates.length >= 3) break;
+                }
+            }
+        }
+        return candidates;
+    }
+
+    function autoSuggestTagFromLabel() {
+        const labelInput = document.getElementById("editVarLabelInput");
+        const tagInput = document.getElementById("editVarTagInput");
+        const origTag = (document.getElementById("editVarOriginalTag")?.value || "").trim().toUpperCase();
+
+        if (!labelInput || !tagInput) return;
+        const label = labelInput.value.trim();
+        if (!label) {
+            if (typeof showToast === "function") {
+                showToast("Vui lòng nhập Tên trường dữ liệu trước để gợi ý mã TAG!", "warning");
+            } else {
+                alert("Vui lòng nhập Tên trường dữ liệu trước để gợi ý mã TAG!");
+            }
+            labelInput.focus();
+            return;
+        }
+
+        const baseTag = slugifyToUpperSnake(label);
+        if (!baseTag) {
+            if (typeof showToast === "function") {
+                showToast("Tên trường dữ liệu không hợp lệ để tạo mã TAG!", "error");
+            }
+            return;
+        }
+
+        const conflictingVar = isTagInUse(baseTag, origTag);
+        if (!conflictingVar) {
+            tagInput.value = baseTag;
+            validateVariableInputs();
+            if (typeof showToast === "function") {
+                showToast(`Đã tự động tạo mã TAG: {${baseTag}}`, "success");
+            }
+        } else {
+            const candidates = generateCandidateTags(baseTag, origTag);
+            const safeTag = candidates.length > 0 ? candidates[0] : `${baseTag}_1`;
+            tagInput.value = safeTag;
+            validateVariableInputs();
+            if (typeof showToast === "function") {
+                showToast(`Mã {${baseTag}} đã trùng với "${conflictingVar.label}". Đã tự động đề xuất mã an toàn: {${safeTag}}!`, "warning");
+            }
+        }
+    }
+
     function validateVariableInputs() {
         const origTag = (document.getElementById("editVarOriginalTag")?.value || "").trim().toUpperCase();
         const labelInput = document.getElementById("editVarLabelInput");
@@ -1321,19 +1418,51 @@
             }
             tagInput.className = "w-full pl-6 pr-6 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs text-slate-900 font-mono font-bold uppercase focus:bg-white focus:ring-1 focus:ring-emerald-500";
         } else {
-            conflictingVar = MASTER_VARIABLES_CATALOG.find(v => v.tag.toUpperCase() === cleanTag && v.tag.toUpperCase() !== origTag);
+            conflictingVar = isTagInUse(cleanTag, origTag);
 
             if (conflictingVar) {
                 isDuplicate = true;
+                const candidates = generateCandidateTags(cleanTag, origTag);
+                const sampleName = label || "Phòng triển khai";
                 if (tagFeedback) {
-                    tagFeedback.className = "mt-1 p-1.5 rounded text-[10.5px] bg-rose-50 text-rose-800 border border-rose-300 flex items-start gap-1.5";
+                    tagFeedback.className = "mt-1.5 p-2 rounded text-[11px] bg-rose-50 text-rose-900 border border-rose-300 flex items-start gap-2 shadow-xs";
                     tagFeedback.innerHTML = `
-                        <i class="fa-solid fa-triangle-exclamation text-rose-600 mt-0.5 shrink-0 text-xs"></i>
-                        <div>
-                            <b>❌ TRÙNG LẶP MÃ THẺ!</b> Mã <code>{${cleanTag}}</code> đã được dùng cho biến <b>"${conflictingVar.label}"</b> (${conflictingVar.group}). Trùng lặp mã thẻ sẽ khiến các văn bản trong quy trình bị ghi đè dữ liệu sai lệch. Vui lòng chọn mã khác!
+                        <i class="fa-solid fa-triangle-exclamation text-rose-600 mt-0.5 shrink-0 text-sm"></i>
+                        <div class="flex-1 space-y-1.5">
+                            <div>
+                                <b>❌ TRÙNG LẶP MÃ THẺ!</b> Mã <code>{${cleanTag}}</code> đã được dùng cho biến: <b>"${conflictingVar.label}"</b> (${conflictingVar.group}).
+                            </div>
+                            <div class="text-[10px] text-amber-900 bg-amber-50/80 p-1.5 rounded border border-amber-200 leading-normal">
+                                <span class="font-bold"><i class="fa-solid fa-lightbulb text-amber-600"></i> Đề xuất cho Admin:</span> Điều chỉnh lại tên biến mới có thêm ngữ cảnh (Ví dụ: <em>"${sampleName} tờ trình"</em> ➔ mã <code>{${cleanTag}_TO_TRINH}</code> hoặc <em>"${sampleName} dự án"</em>) để tránh trùng lặp và tránh ghi đè dữ liệu sai lệch giữa các văn bản.
+                            </div>
+                            ${candidates.length > 0 ? `
+                            <div class="pt-0.5">
+                                <div class="text-[10px] text-slate-700 font-semibold mb-1">Gợi ý mã thẻ an toàn (bấm để chọn nhanh):</div>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${candidates.map(c => `
+                                        <button type="button" class="btn-choose-suggest-tag px-2 py-0.5 bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 hover:border-emerald-500 rounded font-mono text-[10.5px] font-bold cursor-pointer transition-all shadow-xs flex items-center gap-1" data-tag="${c}">
+                                            <i class="fa-solid fa-plus text-[9px] text-emerald-600"></i><span>{${c}}</span>
+                                        </button>
+                                    `).join("")}
+                                </div>
+                            </div>
+                            ` : ""}
                         </div>
                     `;
                     tagFeedback.classList.remove("hidden");
+
+                    tagFeedback.querySelectorAll(".btn-choose-suggest-tag").forEach(btn => {
+                        btn.onclick = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const chosenTag = btn.getAttribute("data-tag");
+                            if (chosenTag) {
+                                tagInput.value = chosenTag;
+                                validateVariableInputs();
+                                tagInput.focus();
+                            }
+                        };
+                    });
                 }
                 tagInput.className = "w-full pl-6 pr-6 py-1.5 bg-rose-50 border-2 border-rose-500 rounded text-xs text-rose-900 font-mono font-bold uppercase focus:bg-white focus:ring-2 focus:ring-rose-500";
             } else {
@@ -1475,6 +1604,9 @@
 
     const btnCancelEditVar = document.getElementById("btnCancelEditVar");
     if (btnCancelEditVar) btnCancelEditVar.onclick = closeEditVariableModal;
+    const btnAutoSuggestTag = document.getElementById("btnAutoSuggestTag");
+    if (btnAutoSuggestTag) btnAutoSuggestTag.onclick = autoSuggestTagFromLabel;
+
 
     const editVarTagInput = document.getElementById("editVarTagInput");
     if (editVarTagInput) editVarTagInput.oninput = validateVariableInputs;

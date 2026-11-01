@@ -463,9 +463,15 @@
                 <!-- Mã thẻ chèn TAG -->
                 <div>
                     <div class="flex items-center justify-between mb-0.5">
-                        <label class="block text-[11px] font-bold text-slate-700">
-                            Mã thẻ chèn {TAG} <span class="text-rose-500">*</span> <span class="text-slate-400 font-normal">(Viết HOA không dấu)</span>
-                        </label>
+                        <div class="flex items-center gap-1.5">
+                            <label class="block text-[11px] font-bold text-slate-700">
+                                Mã thẻ chèn {TAG} <span class="text-rose-500">*</span>
+                            </label>
+                            <button id="btnAutoSuggestTag" type="button" class="px-1.5 py-0.2 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-colors" title="Tự động sinh mã TAG chuẩn theo Tên trường dữ liệu (không trùng lặp)">
+                                <i class="fa-solid fa-wand-magic-sparkles text-amber-500 text-[9px]"></i>
+                                <span>Tự động gợi ý TAG</span>
+                            </button>
+                        </div>
                         <span class="text-[10.5px] text-emerald-700 font-mono font-bold" id="editVarTagPreview">{TAG}</span>
                     </div>
                     <div class="relative">
