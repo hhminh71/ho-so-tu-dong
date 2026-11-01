@@ -3028,11 +3028,13 @@
                 <div>
                     <div class="font-bold text-[11.5pt] uppercase">${valOrPlaceholder("TEN_CHU_DAU_TU_VIET_HOA", data)}</div>
                     <div class="font-bold text-[10.5pt] uppercase">${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</div>
+                    <div class="rule-agency-header"></div>
                     <div class="mt-1 text-[10.5pt]">Số: ${valOrPlaceholder("SO_TO_TRINH", data) || "....../VB"}</div>
                 </div>
                 <div>
                     <div class="font-bold text-[11pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
-                    <div class="font-bold text-[11.5pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
+                    <div class="font-bold text-[11.5pt]">Độc lập – Tự do – Hạnh phúc</div>
+                    <div class="rule-motto-header"></div>
                     <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ${valOrPlaceholderDateHeader("NGAY_TO_TRINH", data)}</div>
                 </div>
             </div>
@@ -3045,11 +3047,13 @@
                     <div>
                         <div class="font-bold text-[11.5pt] uppercase">${valOrPlaceholder("TEN_CHU_DAU_TU_VIET_HOA", data)}</div>
                         <div class="font-bold text-[10.5pt] uppercase">${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</div>
+                        <div class="rule-agency-header"></div>
                         <div class="mt-1 text-[10.5pt]">Số: GM-BQLDA</div>
                     </div>
                     <div>
                         <div class="font-bold text-[11pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
-                        <div class="font-bold text-[11.5pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
+                        <div class="font-bold text-[11.5pt]">Độc lập – Tự do – Hạnh phúc</div>
+                        <div class="rule-motto-header"></div>
                         <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ${valOrPlaceholderDateHeader("NGAY_GIAY_MOI", data)}</div>
                     </div>
                 </div>
@@ -3291,22 +3295,24 @@
                     <div>
                         <div class="font-bold text-[11.5pt] uppercase">${valOrPlaceholder("TEN_CHU_DAU_TU_VIET_HOA", data)}</div>
                         <div class="font-bold text-[10.5pt] uppercase">${valOrPlaceholder("TEN_BAN_QUAN_LY_DU_AN", data)}</div>
-                        <div class="mt-1 text-[10.5pt]">Số: ${valOrPlaceholder("SO_QUYET_DINH", data) || "....../QĐ-UBND"}</div>
+                        <div class="rule-agency-header"></div>
+                        <div class="mt-1 text-[10.5pt]">Số: ${valOrPlaceholder("SO_QUYET_DINH", data) || "....../QĐ"}</div>
                     </div>
                     <div>
                         <div class="font-bold text-[11pt] uppercase">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
-                        <div class="font-bold text-[11.5pt] underline pb-1">Độc lập – Tự do – Hạnh phúc</div>
+                        <div class="font-bold text-[11.5pt]">Độc lập – Tự do – Hạnh phúc</div>
+                        <div class="rule-motto-header"></div>
                         <div class="italic text-[11pt] mt-1">${valOrPlaceholder("DIA_DANH", data)}, ${valOrPlaceholderDateHeader("NGAY_QUYET_DINH", data)}</div>
                     </div>
                 </div>
 
                 <div class="text-center my-5">
                     <h2 class="font-bold text-[14pt] uppercase tracking-wide">QUYẾT ĐỊNH</h2>
-                    <p class="font-bold text-[12pt] text-slate-700">Về việc phê duyệt Kế hoạch lựa chọn nhà thầu</p>
-                    <p class="font-bold text-[11.5pt] mt-1 text-emerald-800">Dự án: ${valOrPlaceholder("TEN_DU_AN", data)}</p>
+                    <p class="font-bold text-[12pt]">Về việc phê duyệt Kế hoạch lựa chọn nhà thầu</p>
+                    <p class="font-bold text-[11.5pt] mt-1">Dự án: ${valOrPlaceholder("TEN_DU_AN", data)}</p>
                 </div>
 
-                <div class="text-center mb-4 font-bold text-[12.5pt] uppercase text-emerald-950">
+                <div class="text-center mb-4 font-bold text-[12.5pt] uppercase">
                     ${valOrPlaceholder("CAP_QUYET_DINH_DAU_TU", data)}
                 </div>
 
@@ -3569,6 +3575,14 @@
             documentPreviewContent.innerHTML = html;
             if (btnResetPreviewDoc) btnResetPreviewDoc.classList.add("hidden");
         }
+
+        // Áp dụng chế độ xem Bản in Word chuẩn nếu đang bật
+        if (appState.previewPrintMode && documentPreviewContent) {
+            documentPreviewContent.classList.add("preview-print-mode");
+        } else if (documentPreviewContent) {
+            documentPreviewContent.classList.remove("preview-print-mode");
+        }
+        if (typeof updatePrintModeButtonUI === "function") updatePrintModeButtonUI();
     }
 
     // -------------------------------------------------------------
@@ -5629,6 +5643,132 @@
         return bytes;
     }
 
+    
+    // -------------------------------------------------------------
+    // WYSIWYG HTML to Word OpenXML Converter for Custom Edited Documents
+    // -------------------------------------------------------------
+    function convertCustomHtmlToOpenXml(html) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(`<div>${html}</div>`, "text/html");
+        const container = doc.body.firstElementChild;
+        if (!container) return "";
+        let xml = "";
+
+        function buildRPr(pr) {
+            let r = "";
+            if (pr.b) r += "<w:b/>";
+            if (pr.i) r += "<w:i/>";
+            if (pr.u) r += '<w:u w:val="single"/>';
+            const sz = pr.sz || 26; // 13pt
+            r += `<w:sz w:val="${sz}"/><w:szCs w:val="${sz}"/>`;
+            return r ? `<w:rPr>${r}</w:rPr>` : "";
+        }
+
+        function processInline(el, inheritPr = {}) {
+            let runs = "";
+            for (const child of el.childNodes) {
+                if (child.nodeType === Node.TEXT_NODE) {
+                    const text = child.textContent;
+                    if (!text) continue;
+                    const rPr = buildRPr(inheritPr);
+                    runs += `<w:r>${rPr}<w:t xml:space="preserve">${escapeXml(text)}</w:t></w:r>`;
+                } else if (child.nodeType === Node.ELEMENT_NODE) {
+                    const tag = child.tagName.toLowerCase();
+                    if (tag === "br") {
+                        runs += `<w:r><w:br/></w:r>`;
+                        continue;
+                    }
+                    const curPr = { ...inheritPr };
+                    if (tag === "b" || tag === "strong" || child.classList.contains("font-bold") || child.style.fontWeight === "bold") {
+                        curPr.b = true;
+                    }
+                    if (tag === "i" || tag === "em" || child.classList.contains("italic") || child.style.fontStyle === "italic") {
+                        curPr.i = true;
+                    }
+                    if (tag === "u" || child.classList.contains("underline") || child.style.textDecoration?.includes("underline")) {
+                        curPr.u = true;
+                    }
+                    if (child.classList.contains("text-[14pt]") || tag === "h2") curPr.sz = 28;
+                    else if (child.classList.contains("text-[12pt]") || child.classList.contains("text-[12.5pt]")) curPr.sz = 24;
+                    else if (child.classList.contains("text-[11pt]") || child.classList.contains("text-[11.5pt]")) curPr.sz = 23;
+                    else if (child.classList.contains("text-xs") || child.classList.contains("text-[10pt]")) curPr.sz = 20;
+
+                    runs += processInline(child, curPr);
+                }
+            }
+            return runs;
+        }
+
+        function processSingleParagraph(el) {
+            let pPr = "<w:pPr>";
+            if (el.classList.contains("text-center") || el.tagName === "H2") {
+                pPr += '<w:jc w:val="center"/>';
+            } else if (el.classList.contains("text-right")) {
+                pPr += '<w:jc w:val="right"/>';
+            } else if (el.classList.contains("text-justify")) {
+                pPr += '<w:jc w:val="both"/>';
+            }
+
+            if (el.classList.contains("indent-8")) {
+                pPr += '<w:ind w:firstLine="576"/>';
+            } else if (el.classList.contains("pl-8")) {
+                pPr += '<w:ind w:left="576"/>';
+            }
+
+            pPr += '<w:spacing w:before="60" w:after="60" w:line="276" w:lineRule="auto"/>';
+            pPr += "</w:pPr>";
+
+            const runs = processInline(el);
+            if (!runs) return "";
+            return `<w:p>${pPr}${runs}</w:p>`;
+        }
+
+        function processBlock(el) {
+            const tag = el.tagName?.toLowerCase();
+            if (!tag) return "";
+
+            // Bảng 2 cột (Header hoặc Footer Chữ ký)
+            if (el.classList.contains("grid-cols-2") || (el.classList.contains("grid") && el.children.length === 2)) {
+                let tblXml = '<w:tbl>';
+                tblXml += '<w:tblPr><w:tblW w:type="auto" w:w="0"/><w:jc w:val="center"/><w:tblLayout w:type="fixed"/><w:tblBorders><w:top w:val="none" w:sz="0" w:space="0" w:color="auto"/><w:left w:val="none" w:sz="0" w:space="0" w:color="auto"/><w:bottom w:val="none" w:sz="0" w:space="0" w:color="auto"/><w:right w:val="none" w:sz="0" w:space="0" w:color="auto"/><w:insideH w:val="none" w:sz="0" w:space="0" w:color="auto"/><w:insideV w:val="none" w:sz="0" w:space="0" w:color="auto"/></w:tblBorders></w:tblPr>';
+                tblXml += '<w:tblGrid><w:gridCol w:w="4800"/><w:gridCol w:w="4800"/></w:tblGrid>';
+                tblXml += '<w:tr>';
+                for (let i = 0; i < 2; i++) {
+                    const colEl = el.children[i];
+                    tblXml += '<w:tc><w:tcPr><w:tcW w:type="dxa" w:w="4800"/><w:tcMar><w:top w:w="0" w:type="dxa"/><w:bottom w:w="0" w:type="dxa"/><w:left w:w="0" w:type="dxa"/><w:right w:w="0" w:type="dxa"/></w:tcMar></w:tcPr>';
+                    if (colEl) {
+                        let hasP = false;
+                        for (const child of colEl.children) {
+                            if (child.classList.contains("rule-agency-header") || child.classList.contains("rule-motto-header")) continue;
+                            const pXml = processSingleParagraph(child);
+                            if (pXml) { tblXml += pXml; hasP = true; }
+                        }
+                        if (!hasP) {
+                            const pXml = processSingleParagraph(colEl);
+                            tblXml += pXml || '<w:p/>';
+                        }
+                    } else {
+                        tblXml += '<w:p/>';
+                    }
+                    tblXml += '</w:tc>';
+                }
+                tblXml += '</w:tr></w:tbl>';
+                return tblXml;
+            }
+
+            if (el.classList.contains("rule-agency-header") || el.classList.contains("rule-motto-header")) {
+                return "";
+            }
+
+            return processSingleParagraph(el);
+        }
+
+        for (const child of container.children) {
+            xml += processBlock(child);
+        }
+        return xml;
+    }
+
     async function renderDocxBlob(docId, replacements) {
         const allDocs = getAllDocsForCurrentType();
         const docObj = allDocs.find(d => d.id === docId);
@@ -5704,6 +5844,26 @@
 
             docXml = docXml.split(tag1).join(val);
             docXml = docXml.split(tag2).join(val);
+        }
+
+        // Bước 3: True WYSIWYG Docx Export - Nếu người dùng đã chỉnh sửa trực tiếp trên Preview
+        if (appState.customDocumentHtml && appState.customDocumentHtml[docId]) {
+            try {
+                const customXmlBody = convertCustomHtmlToOpenXml(appState.customDocumentHtml[docId]);
+                if (customXmlBody) {
+                    const startTag = '<w:body>';
+                    const endTag = '<w:sectPr';
+                    const idxStart = docXml.indexOf(startTag);
+                    const idxEnd = docXml.indexOf(endTag);
+                    if (idxStart !== -1 && idxEnd !== -1) {
+                        const prefix = docXml.substring(0, idxStart + startTag.length);
+                        const suffix = docXml.substring(idxEnd);
+                        docXml = prefix + customXmlBody + suffix;
+                    }
+                }
+            } catch (convErr) {
+                console.warn("Lỗi chuyển đổi HTML WYSIWYG sang Word, tự động dùng template gốc:", convErr);
+            }
         }
 
         zip.file("word/document.xml", docXml);
@@ -7057,6 +7217,41 @@
     let lastSelectedSpan = null;
 
     // (slugifyToUpperSnake is declared in global scope with full Vietnamese support)
+
+    // Nút chuyển đổi Chế độ Xem Bản In Word (đen trắng NĐ 30) vs Soạn thảo (nổi bật biến)
+    function updatePrintModeButtonUI() {
+        const btn = document.getElementById("btnTogglePrintMode");
+        const btnText = document.getElementById("btnTogglePrintModeText");
+        const btnIcon = document.getElementById("btnTogglePrintModeIcon");
+        if (!btn) return;
+        if (typeof appState !== "undefined" && appState && appState.previewPrintMode) {
+            btn.className = "text-[10px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-2 py-0.5 rounded border border-blue-600 shadow-2xs flex items-center space-x-1 h-6 transition-all cursor-pointer whitespace-nowrap";
+            if (btnIcon) btnIcon.className = "fa-solid fa-file-word text-white text-[10px]";
+            if (btnText) btnText.textContent = "Bản in chuẩn";
+        } else {
+            btn.className = "text-[10px] bg-white hover:bg-slate-100 text-slate-700 hover:text-blue-900 font-bold px-2 py-0.5 rounded border border-slate-300 shadow-2xs flex items-center space-x-1 h-6 transition-all cursor-pointer whitespace-nowrap";
+            if (btnIcon) btnIcon.className = "fa-solid fa-file-lines text-blue-600 text-[10px]";
+            if (btnText) btnText.textContent = "Bản in Word";
+        }
+    }
+
+    const btnTogglePrintMode = document.getElementById("btnTogglePrintMode");
+    if (btnTogglePrintMode) {
+        btnTogglePrintMode.addEventListener("click", () => {
+            appState.previewPrintMode = !appState.previewPrintMode;
+            if (documentPreviewContent) {
+                if (appState.previewPrintMode) {
+                    documentPreviewContent.classList.add("preview-print-mode");
+                    showToast("Đã bật chế độ Xem bản in Word chuẩn (đen trắng theo NĐ 30/2020)!", "info");
+                } else {
+                    documentPreviewContent.classList.remove("preview-print-mode");
+                    showToast("Đã trở về chế độ Soạn thảo (nổi bật biến xạ)!", "info");
+                }
+            }
+            updatePrintModeButtonUI();
+            saveState();
+        });
+    }
 
     const btnTogglePreviewEdit = document.getElementById("btnTogglePreviewEdit");
     const btnTogglePreviewEditText = document.getElementById("btnTogglePreviewEditText");

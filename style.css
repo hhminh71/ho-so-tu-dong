@@ -229,3 +229,60 @@ input[type="text"]:hover, select:hover, textarea:hover {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+/* -------------------------------------------------------------
+   Print View Mode: Chuẩn hóa 100% diện mạo trang in Word Times New Roman (Nghị định 30/2020/NĐ-CP)
+   ------------------------------------------------------------- */
+.a4-preview-page.preview-print-mode {
+    font-family: "Times New Roman", Times, serif !important;
+    color: #000000 !important;
+    background-color: #ffffff !important;
+    line-height: 1.25 !important;
+}
+
+.a4-preview-page.preview-print-mode * {
+    color: #000000 !important;
+}
+
+/* Biến xạ khi xem bản in sẽ biến thành chữ thường đen trắng thuần túy như Word */
+.a4-preview-page.preview-print-mode .filled-val {
+    background: transparent !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+}
+
+.a4-preview-page.preview-print-mode .filled-val:hover {
+    background: transparent !important;
+    box-shadow: none !important;
+    cursor: default;
+}
+
+.a4-preview-page.preview-print-mode .filled-val[data-var-key]:hover::after {
+    display: none !important;
+}
+
+/* Placeholder biến còn thiếu khi xem bản in hiển thị gạch chân cảnh báo nhẹ */
+.a4-preview-page.preview-print-mode .placeholder-tag {
+    color: #b91c1c !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-weight: normal !important;
+    text-decoration: underline dotted !important;
+}
+
+/* Đường kẻ phân cách chuẩn Nghị định 30/2020/NĐ-CP */
+.rule-agency-header {
+    width: 35%;
+    border-bottom: 1px solid #1e293b;
+    margin: 3px auto 4px auto;
+}
+
+.rule-motto-header {
+    width: 45%;
+    border-bottom: 1px solid #1e293b;
+    margin: 3px auto 4px auto;
+}
