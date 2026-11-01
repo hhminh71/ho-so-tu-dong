@@ -3240,353 +3240,259 @@
         return result.charAt(0).toUpperCase() + result.slice(1);
     }
 
+    // =============================================================
+    // ĐA DẠNG HÓA BIẾN XẠ DẠNG BẢNG ({BANG_...}) & QUẢN LÝ TẬP TRUNG
+    // =============================================================
+
+    const DEFAULT_TABLE_DEFINITIONS = [
+        {
+            tag: "BANG_HANG_HOA",
+            name: "Danh mục hàng hóa / Thiết bị / Dịch vụ",
+            icon: "📦",
+            desc: "Bảng chi tiết tên hàng hóa, quy cách phẩm chất, đơn vị tính, số lượng, đơn giá và tự động tính thành tiền.",
+            isSystem: true,
+            hasTotal: true,
+            totalCol: "thanh_tien",
+            currencyWord: true,
+            columns: [
+                { key: "stt", label: "STT", type: "number", align: "center", widthDx: 600, widthPct: "5%" },
+                { key: "ten_hang", label: "Tên hàng hóa / Thiết bị / Dịch vụ", type: "text", align: "left", widthDx: 3400, widthPct: "36%" },
+                { key: "dvt", label: "ĐVT", type: "text", align: "center", widthDx: 700, widthPct: "8%" },
+                { key: "so_luong", label: "SL", type: "number", align: "right", widthDx: 800, widthPct: "8%" },
+                { key: "don_gia", label: "Đơn giá (VNĐ)", type: "currency", align: "right", widthDx: 1400, widthPct: "16%" },
+                { key: "thanh_tien", label: "Thành tiền (VNĐ)", type: "calc_amount", align: "right", widthDx: 1500, widthPct: "17%" },
+                { key: "ghi_chu", label: "Ghi chú", type: "text", align: "left", widthDx: 1000, widthPct: "10%" }
+            ],
+            defaultRows: [
+                { stt: 1, ten_hang: "Máy bơm ly tâm cánh hở trục đứng chuyên dụng", dvt: "Bộ", so_luong: 2, don_gia: 25000000, thanh_tien: 50000000, ghi_chu: "Mới 100%, CO/CQ" },
+                { stt: 2, ten_hang: "Đầu vòi phun chữa cháy tạo bọt phân nhánh đa góc", dvt: "Chiếc", so_luong: 4, don_gia: 6000000, thanh_tien: 24000000, ghi_chu: "Chống gỉ sét" },
+                { stt: 3, ten_hang: "Van khóa áp lực cao chuyên dụng mặt bích DN100", dvt: "Bộ", so_luong: 2, don_gia: 13000000, thanh_tien: 26000000, ghi_chu: "Bảo hành 24 tháng" }
+            ]
+        },
+        {
+            tag: "BANG_NHAN_SU",
+            name: "Danh sách nhân sự / Tổ chuyên gia / Tổ thẩm định",
+            icon: "👥",
+            desc: "Danh sách phân công nhân sự, cơ quan công tác, chức vụ, trình độ chuyên môn và vai trò trong tổ chuyên gia hoặc tổ thẩm định.",
+            isSystem: true,
+            hasTotal: false,
+            columns: [
+                { key: "stt", label: "STT", type: "number", align: "center", widthDx: 600, widthPct: "6%" },
+                { key: "ho_ten", label: "Họ và tên", type: "text", align: "left", widthDx: 2800, widthPct: "26%" },
+                { key: "don_vi", label: "Đơn vị / Chức vụ", type: "text", align: "left", widthDx: 2600, widthPct: "26%" },
+                { key: "trinh_do", label: "Trình độ chuyên môn", type: "text", align: "left", widthDx: 2000, widthPct: "22%" },
+                { key: "vai_tro", label: "Vai trò trong tổ", type: "text", align: "left", widthDx: 1800, widthPct: "20%" }
+            ],
+            defaultRows: [
+                { stt: 1, ho_ten: "Nguyễn Văn Admin", don_vi: "Trưởng phòng Kỹ thuật hạ tầng", trinh_do: "Kỹ sư Xây dựng / Cảng HK", vai_tro: "Tổ trưởng" },
+                { stt: 2, ho_ten: "Trần Thị Bích", don_vi: "Chuyên viên Phòng Kế hoạch - Kế toán", trinh_do: "Cử nhân Kinh tế", vai_tro: "Tổ phó" },
+                { stt: 3, ho_ten: "Lê Văn Hùng", don_vi: "Kỹ sư Ban QLDA Cảng HKQT Cần Thơ", trinh_do: "Kỹ sư Điện lực & PCCC", vai_tro: "Thành viên" }
+            ]
+        },
+        {
+            tag: "BANG_TIEN_DO",
+            name: "Kế hoạch tiến độ & Giải ngân thanh toán",
+            icon: "📅",
+            desc: "Kế hoạch phân kỳ tiến độ thực hiện các giai đoạn công việc và giải ngân thanh toán hợp đồng.",
+            isSystem: true,
+            hasTotal: true,
+            totalCol: "so_tien",
+            currencyWord: true,
+            columns: [
+                { key: "stt", label: "Đợt", type: "number", align: "center", widthDx: 600, widthPct: "6%" },
+                { key: "noi_dung", label: "Giai đoạn / Nội dung thực hiện", type: "text", align: "left", widthDx: 3400, widthPct: "34%" },
+                { key: "thoi_han", label: "Thời hạn hoàn thành", type: "text", align: "center", widthDx: 1800, widthPct: "18%" },
+                { key: "ty_le", label: "Tỷ lệ (%)", type: "number", align: "right", widthDx: 1000, widthPct: "12%" },
+                { key: "so_tien", label: "Số tiền (VNĐ)", type: "currency", align: "right", widthDx: 2200, widthPct: "30%" }
+            ],
+            defaultRows: [
+                { stt: 1, noi_dung: "Tạm ứng hợp đồng sau khi ký kết và nhận bảo lãnh tạm ứng", thoi_han: "Trong 07 ngày", ty_le: 30, so_tien: 30000000 },
+                { stt: 2, noi_dung: "Thanh toán đợt 2 sau khi giao hàng & nghiệm thu kỹ thuật tại công trình", thoi_han: "Trong 15 ngày", ty_le: 40, so_tien: 40000000 },
+                { stt: 3, noi_dung: "Thanh toán quyết toán đợt cuối sau khi nghiệm thu bàn giao và thanh lý hợp đồng", thoi_han: "Trong 10 ngày", ty_le: 30, so_tien: 30000000 }
+            ]
+        }
+    ];
+
+    let currentActiveDictTableTag = "BANG_HANG_HOA";
+
+    function getAllTableDefinitions() {
+        let custom = [];
+        try {
+            const raw = localStorage.getItem("ho_so_custom_table_defs");
+            if (raw) custom = JSON.parse(raw);
+        } catch (e) {
+            console.error("Error loading ho_so_custom_table_defs:", e);
+        }
+        return [...DEFAULT_TABLE_DEFINITIONS, ...(Array.isArray(custom) ? custom : [])];
+    }
+
+    function saveCustomTableDefinitions(customList) {
+        try {
+            localStorage.setItem("ho_so_custom_table_defs", JSON.stringify(customList));
+        } catch (e) {
+            console.error("Error saving ho_so_custom_table_defs:", e);
+        }
+    }
+
+    function getTableDefinitionByTag(tag) {
+        if (!tag) return null;
+        const cleanTag = tag.replace(/[{}\s]/g, "");
+        const all = getAllTableDefinitions();
+        return all.find(t => t.tag === cleanTag) || null;
+    }
+
+    function getTableRowsForPackage(pkgIdx, tag) {
+        const pkgs = appState.packages || [];
+        const targetPkg = pkgs[pkgIdx] || pkgs[appState.activePackageIndex];
+        if (!targetPkg) return [];
+        if (!targetPkg.tableData) targetPkg.tableData = {};
+
+        const tableDef = getTableDefinitionByTag(tag);
+        if (!Array.isArray(targetPkg.tableData[tag])) {
+            const seed = (tableDef && tableDef.defaultRows) ? JSON.parse(JSON.stringify(tableDef.defaultRows)) : [];
+            targetPkg.tableData[tag] = seed;
+        }
+        return targetPkg.tableData[tag];
+    }
+
+    function getActiveTableRows(tag) {
+        const targetTag = tag || currentActiveDictTableTag || "BANG_HANG_HOA";
+        return getTableRowsForPackage(appState.activePackageIndex, targetTag);
+    }
+
+    // Backward-compatible alias for existing BANG_HANG_HOA consumers
     function getTableDataForActivePackage() {
-        const curPkg = appState.packages[appState.activePackageIndex];
-        if (!curPkg) return JSON.parse(JSON.stringify(defaultGoodsItems));
-        if (!curPkg.tableData || !Array.isArray(curPkg.tableData.BANG_HANG_HOA)) {
-            curPkg.tableData = {
-                BANG_HANG_HOA: JSON.parse(JSON.stringify(defaultGoodsItems))
-            };
-        }
-        return curPkg.tableData.BANG_HANG_HOA;
+        return getTableRowsForPackage(appState.activePackageIndex, "BANG_HANG_HOA");
     }
 
-    function renderTableVariableHtml(data) {
-        const curPkg = appState.packages[appState.activePackageIndex] || {};
-        const tableData = (curPkg.tableData && Array.isArray(curPkg.tableData.BANG_HANG_HOA))
-            ? curPkg.tableData.BANG_HANG_HOA
-            : defaultGoodsItems;
-
-        let total = 0;
-        let rowsHtml = "";
-        tableData.forEach((item, idx) => {
-            const stt = item.stt || (idx + 1);
-            const name = escapeXml(item.ten_hang || "");
-            const unit = escapeXml(item.dvt || "");
-            const qty = Number(item.so_luong) || 0;
-            const price = Number(item.don_gia) || 0;
-            const lineTotal = item.thanh_tien !== undefined ? Number(item.thanh_tien) : (qty * price);
-            total += lineTotal;
-
-            rowsHtml += `
-                <tr>
-                    <td class="col-stt">${stt}</td>
-                    <td class="col-name font-medium">${name}</td>
-                    <td class="col-unit">${unit}</td>
-                    <td class="col-qty">${qty}</td>
-                    <td class="col-price">${formatCurrencyVND(price)}</td>
-                    <td class="col-amount">${formatCurrencyVND(lineTotal)}</td>
-                    <td class="col-note">${escapeXml(item.ghi_chu || "")}</td>
-                </tr>
-            `;
-        });
-
-        const totalWords = readVietnameseCurrency(total);
-
-        return `
-            <div class="table-var-container" data-var-key="BANG_HANG_HOA" title="Biến bảng: {BANG_HANG_HOA} (Chỉnh sửa danh mục tại Mục 10 ở cột trái)">
-                <table class="table-var-table">
-                    <thead>
-                        <tr>
-                            <th class="col-stt">STT</th>
-                            <th class="col-name">Tên hàng hóa / Quy cách phẩm chất</th>
-                            <th class="col-unit">ĐVT</th>
-                            <th class="col-qty">SL</th>
-                            <th class="col-price">Đơn giá (VNĐ)</th>
-                            <th class="col-amount">Thành tiền (VNĐ)</th>
-                            <th class="col-note">Ghi chú</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${rowsHtml}
-                        <tr class="table-var-total-row">
-                            <td colspan="5" style="text-align: center; text-transform: uppercase;">Tổng cộng:</td>
-                            <td class="col-amount text-emerald-800">${formatCurrencyVND(total)}</td>
-                            <td style="text-align: center; font-weight: bold;">VNĐ</td>
-                        </tr>
-                        <tr class="table-var-words-row">
-                            <td colspan="7" style="padding: 6px 10px;">
-                                <span class="font-bold not-italic">Số tiền bằng chữ:</span> ${totalWords}.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        `;
-    }
-
-    function renderTableEditor() {
-        const tbody = document.getElementById("tblGoodsItemsBody");
-        if (!tbody) return;
-
-        const tableData = getTableDataForActivePackage();
-        let total = 0;
-        let html = "";
-
-        tableData.forEach((item, idx) => {
-            const stt = item.stt || (idx + 1);
-            item.stt = stt;
-            const qty = Number(item.so_luong) || 0;
-            const price = Number(item.don_gia) || 0;
-            const lineTotal = item.thanh_tien !== undefined ? Number(item.thanh_tien) : (qty * price);
-            item.thanh_tien = lineTotal;
-            total += lineTotal;
-
-            html += `
-                <tr data-row-idx="${idx}">
-                    <td class="py-1 px-1 text-center font-bold text-slate-500 text-[10.5px]">${stt}</td>
-                    <td class="py-1 px-1">
-                        <input type="text" data-col="ten_hang" data-row-idx="${idx}" value="${escapeXml(item.ten_hang || '')}" placeholder="Tên hàng hóa / thiết bị..." class="w-full">
-                    </td>
-                    <td class="py-1 px-1">
-                        <input type="text" data-col="dvt" data-row-idx="${idx}" value="${escapeXml(item.dvt || '')}" placeholder="ĐVT" class="w-full text-center">
-                    </td>
-                    <td class="py-1 px-1">
-                        <input type="number" min="1" data-col="so_luong" data-row-idx="${idx}" value="${qty}" class="w-full text-right font-medium">
-                    </td>
-                    <td class="py-1 px-1">
-                        <input type="text" data-col="don_gia" data-row-idx="${idx}" value="${formatCurrencyVND(price)}" class="w-full text-right">
-                    </td>
-                    <td class="py-1 px-1.5 text-right font-bold text-emerald-700 text-[11px] whitespace-nowrap">
-                        ${formatCurrencyVND(lineTotal)}
-                    </td>
-                    <td class="py-1 px-1">
-                        <input type="text" data-col="ghi_chu" data-row-idx="${idx}" value="${escapeXml(item.ghi_chu || '')}" placeholder="Ghi chú..." class="w-full">
-                    </td>
-                    <td class="py-1 px-1 text-center">
-                        <button type="button" data-action="delete" data-row-idx="${idx}" class="text-slate-400 hover:text-red-600 transition-colors p-1 cursor-pointer" title="Xóa dòng này">
-                            <i class="fa-solid fa-trash-can text-[10px]"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        });
-
-        tbody.innerHTML = html;
-
-        // Update Summary Card & Badges
-        const tableRowsBadge = document.getElementById("tableRowsBadge");
-        if (tableRowsBadge) {
-            tableRowsBadge.textContent = `${tableData.length} mặt hàng`;
-            tableRowsBadge.className = tableData.length > 0
-                ? "sec-badge text-[10px] bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded-full font-bold"
-                : "sec-badge text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.2 rounded-full font-medium";
-        }
-
-        const formattedTotal = formatCurrencyVND(total) + " VNĐ";
-        const words = readVietnameseCurrency(total);
-
-        const totalEl = document.getElementById("tableSummaryTotalFormatted");
-        if (totalEl) totalEl.textContent = formattedTotal;
-
-        const wordsEl = document.getElementById("tableSummaryInWords");
-        if (wordsEl) wordsEl.textContent = words;
-    }
-
-    function addTableRow() {
-        const tableData = getTableDataForActivePackage();
-        const newStt = tableData.length + 1;
-        tableData.push({
-            stt: newStt,
-            ten_hang: "",
-            dvt: "Bộ",
-            so_luong: 1,
-            don_gia: 0,
-            thanh_tien: 0,
-            ghi_chu: ""
-        });
-        saveState();
-        renderTableEditor();
-        renderDocumentPreview();
-
-        // Focus the name input of the new row
-        setTimeout(() => {
-            const lastRow = document.querySelector(`tr[data-row-idx="${tableData.length - 1}"] input[data-col="ten_hang"]`);
-            if (lastRow) lastRow.focus();
-        }, 50);
-    }
-
-    function deleteTableRow(idx) {
-        const tableData = getTableDataForActivePackage();
-        if (idx >= 0 && idx < tableData.length) {
-            tableData.splice(idx, 1);
-            // Re-index STT
-            tableData.forEach((it, i) => { it.stt = i + 1; });
-            saveState();
-            renderTableEditor();
-            renderDocumentPreview();
-            showToast("Đã xóa dòng khỏi danh mục hàng hóa.");
-        }
-    }
-
-    function clearAllTableRows() {
-        if (confirm("Bạn có chắc chắn muốn xóa toàn bộ danh mục hàng hóa của gói thầu này không?")) {
-            const curPkg = appState.packages[appState.activePackageIndex];
-            if (curPkg) {
-                curPkg.tableData = { BANG_HANG_HOA: [] };
-                saveState();
-                renderTableEditor();
-                renderDocumentPreview();
-                showToast("Đã làm trống bảng danh mục hàng hóa.");
-            }
-        }
-    }
-
-    function syncTableToPrices() {
-        const tableData = getTableDataForActivePackage();
-        let total = 0;
-        tableData.forEach(it => {
-            const q = Number(it.so_luong) || 0;
-            const p = Number(it.don_gia) || 0;
-            total += (it.thanh_tien !== undefined ? Number(it.thanh_tien) : (q * p));
-        });
-
-        const totalStr = formatCurrencyVND(total);
-        const totalWords = readVietnameseCurrency(total);
-
-        const curPkg = appState.packages[appState.activePackageIndex];
-        if (curPkg && curPkg.fields) {
-            curPkg.fields["GIA_GOI_THAU_SO"] = totalStr;
-            curPkg.fields["GIA_GOI_THAU_CHU"] = totalWords;
-            curPkg.fields["GIA_TRI_HOP_DONG_SO"] = totalStr;
-            curPkg.fields["GIA_TRI_HOP_DONG_CHU"] = totalWords;
-
-            // Update inputs in UI
-            const inpGiaGoi = document.querySelector('[data-field="GIA_GOI_THAU_SO"]');
-            if (inpGiaGoi) inpGiaGoi.value = totalStr;
-            const inpGiaGoiChu = document.querySelector('[data-field="GIA_GOI_THAU_CHU"]');
-            if (inpGiaGoiChu) inpGiaGoiChu.value = totalWords;
-            const inpHopDong = document.querySelector('[data-field="GIA_TRI_HOP_DONG_SO"]');
-            if (inpHopDong) inpHopDong.value = totalStr;
-            const inpHopDongChu = document.querySelector('[data-field="GIA_TRI_HOP_DONG_CHU"]');
-            if (inpHopDongChu) inpHopDongChu.value = totalWords;
-
-            saveState();
-            renderDocumentPreview();
-            showToast(`Đã đồng bộ Tổng thành tiền (${totalStr} VNĐ) sang Giá gói thầu & Hợp đồng!`, "success");
-        }
-    }
-
-    // Word OpenXML Table Builder
-    function buildDocxTableXml(items, totalAmount, totalAmountWords) {
+    // Generalized Word OpenXML (<w:tbl>) Table Builder for ANY table definition
+    function buildGenericDocxTableXml(tableDef, items) {
+        if (!tableDef) return "";
         if (!items || !Array.isArray(items)) items = [];
 
-        const totalFormatted = formatCurrencyVND(totalAmount);
-        const words = totalAmountWords || readVietnameseCurrency(totalAmount);
-
+        const columns = tableDef.columns || [];
         let rowsXml = "";
 
-        // 1. Header row
+        // 1. Header Row
+        let headerCellsXml = "";
+        let gridColsXml = "";
+        columns.forEach(col => {
+            const w = col.widthDx || 1500;
+            gridColsXml += `<w:gridCol w:w="${w}"/>`;
+            const jcVal = col.align === "right" ? "right" : (col.align === "center" ? "center" : "left");
+            headerCellsXml += `
+            <w:tc>
+                <w:tcPr><w:tcW w:w="${w}" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="F1F5F9"/><w:vAlign w:val="center"/></w:tcPr>
+                <w:p><w:pPr><w:jc w:val="${jcVal}"/><w:spacing w:before="60" w:after="60"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>${escapeXml(col.label)}</w:t></w:r></w:p>
+            </w:tc>`;
+        });
+
         rowsXml += `
         <w:tr>
             <w:trPr>
                 <w:tblHeader/>
                 <w:cantSplit/>
             </w:trPr>
-            <w:tc>
-                <w:tcPr><w:tcW w:w="600" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="F1F5F9"/><w:vAlign w:val="center"/></w:tcPr>
-                <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="60" w:after="60"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>STT</w:t></w:r></w:p>
-            </w:tc>
-            <w:tc>
-                <w:tcPr><w:tcW w:w="3400" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="F1F5F9"/><w:vAlign w:val="center"/></w:tcPr>
-                <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="60" w:after="60"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>Tên hàng hóa / Thiết bị / Dịch vụ</w:t></w:r></w:p>
-            </w:tc>
-            <w:tc>
-                <w:tcPr><w:tcW w:w="700" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="F1F5F9"/><w:vAlign w:val="center"/></w:tcPr>
-                <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="60" w:after="60"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>ĐVT</w:t></w:r></w:p>
-            </w:tc>
-            <w:tc>
-                <w:tcPr><w:tcW w:w="800" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="F1F5F9"/><w:vAlign w:val="center"/></w:tcPr>
-                <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="60" w:after="60"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>SL</w:t></w:r></w:p>
-            </w:tc>
-            <w:tc>
-                <w:tcPr><w:tcW w:w="1400" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="F1F5F9"/><w:vAlign w:val="center"/></w:tcPr>
-                <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="60" w:after="60"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>Đơn giá (VNĐ)</w:t></w:r></w:p>
-            </w:tc>
-            <w:tc>
-                <w:tcPr><w:tcW w:w="1500" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="F1F5F9"/><w:vAlign w:val="center"/></w:tcPr>
-                <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="60" w:after="60"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>Thành tiền (VNĐ)</w:t></w:r></w:p>
-            </w:tc>
-            <w:tc>
-                <w:tcPr><w:tcW w:w="1000" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="F1F5F9"/><w:vAlign w:val="center"/></w:tcPr>
-                <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="60" w:after="60"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>Ghi chú</w:t></w:r></w:p>
-            </w:tc>
+            ${headerCellsXml}
         </w:tr>`;
 
-        // 2. Data rows
-        items.forEach((item, idx) => {
-            const stt = item.stt || (idx + 1);
-            const name = escapeXml(item.ten_hang || "");
-            const unit = escapeXml(item.dvt || "");
-            const qty = item.so_luong !== undefined && item.so_luong !== null ? item.so_luong : 1;
-            const price = formatCurrencyVND(item.don_gia || 0);
-            const amount = formatCurrencyVND(item.thanh_tien || ((Number(item.so_luong) || 0) * (Number(item.don_gia) || 0)));
-            const note = escapeXml(item.ghi_chu || "");
+        // 2. Data Rows
+        let totalVal = 0;
+        items.forEach((item, rIdx) => {
+            let rowCellsXml = "";
+            columns.forEach(col => {
+                const w = col.widthDx || 1500;
+                const jcVal = col.align === "right" ? "right" : (col.align === "center" ? "center" : "left");
+                let cellVal = "";
+
+                if (col.key === "stt") {
+                    cellVal = String(item.stt || (rIdx + 1));
+                } else if (col.type === "currency") {
+                    const num = Number(item[col.key]) || 0;
+                    cellVal = formatCurrencyVND(num);
+                    if (tableDef.totalCol === col.key) totalVal += num;
+                } else if (col.type === "calc_amount") {
+                    const q = Number(item.so_luong) || 0;
+                    const p = Number(item.don_gia) || 0;
+                    const amount = item.thanh_tien !== undefined ? Number(item.thanh_tien) : (q * p);
+                    cellVal = formatCurrencyVND(amount);
+                    if (tableDef.totalCol === col.key) totalVal += amount;
+                } else {
+                    cellVal = escapeXml(String(item[col.key] !== undefined && item[col.key] !== null ? item[col.key] : ""));
+                }
+
+                const isBold = (col.type === "calc_amount" || col.key === "thanh_tien");
+                rowCellsXml += `
+                <w:tc>
+                    <w:tcPr><w:tcW w:w="${w}" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>
+                    <w:p><w:pPr><w:jc w:val="${jcVal}"/><w:spacing w:before="40" w:after="40"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/>${isBold ? '<w:b/>' : ''}<w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>${cellVal}</w:t></w:r></w:p>
+                </w:tc>`;
+            });
+
+            rowsXml += `
+            <w:tr>
+                <w:trPr><w:cantSplit/></w:trPr>
+                ${rowCellsXml}
+            </w:tr>`;
+        });
+
+        // 3. Total Row (if hasTotal)
+        if (tableDef.hasTotal) {
+            let totalColIdx = columns.findIndex(c => c.key === tableDef.totalCol);
+            if (totalColIdx === -1) totalColIdx = columns.length - 1;
+            const spanCols = Math.max(1, totalColIdx);
+            let spanDx = 0;
+            for (let i = 0; i < spanCols; i++) {
+                spanDx += (columns[i].widthDx || 1500);
+            }
+            const totalColDx = columns[totalColIdx].widthDx || 1500;
+            const remainingCols = columns.length - totalColIdx - 1;
+            let remainingDx = 0;
+            for (let i = totalColIdx + 1; i < columns.length; i++) {
+                remainingDx += (columns[i].widthDx || 1000);
+            }
+
+            let remainTcXml = "";
+            if (remainingCols > 0) {
+                remainTcXml = `
+                <w:tc>
+                    <w:tcPr><w:tcW w:w="${remainingDx}" w:type="dxa"/>${remainingCols > 1 ? `<w:gridSpan w:val="${remainingCols}"/>` : ''}<w:shd w:val="clear" w:color="auto" w:fill="F8FAFC"/><w:vAlign w:val="center"/></w:tcPr>
+                    <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="50" w:after="50"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>VNĐ</w:t></w:r></w:p>
+                </w:tc>`;
+            }
 
             rowsXml += `
             <w:tr>
                 <w:trPr><w:cantSplit/></w:trPr>
                 <w:tc>
-                    <w:tcPr><w:tcW w:w="600" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>
-                    <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="40" w:after="40"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>${stt}</w:t></w:r></w:p>
+                    <w:tcPr><w:tcW w:w="${spanDx}" w:type="dxa"/><w:gridSpan w:val="${spanCols}"/><w:shd w:val="clear" w:color="auto" w:fill="F8FAFC"/><w:vAlign w:val="center"/></w:tcPr>
+                    <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="50" w:after="50"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>TỔNG CỘNG:</w:t></w:r></w:p>
                 </w:tc>
                 <w:tc>
-                    <w:tcPr><w:tcW w:w="3400" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>
-                    <w:p><w:pPr><w:jc w:val="left"/><w:spacing w:before="40" w:after="40"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>${name}</w:t></w:r></w:p>
+                    <w:tcPr><w:tcW w:w="${totalColDx}" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="F8FAFC"/><w:vAlign w:val="center"/></w:tcPr>
+                    <w:p><w:pPr><w:jc w:val="right"/><w:spacing w:before="50" w:after="50"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:color w:val="047857"/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>${formatCurrencyVND(totalVal)}</w:t></w:r></w:p>
                 </w:tc>
-                <w:tc>
-                    <w:tcPr><w:tcW w:w="700" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>
-                    <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="40" w:after="40"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>${unit}</w:t></w:r></w:p>
-                </w:tc>
-                <w:tc>
-                    <w:tcPr><w:tcW w:w="800" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>
-                    <w:p><w:pPr><w:jc w:val="right"/><w:spacing w:before="40" w:after="40"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>${qty}</w:t></w:r></w:p>
-                </w:tc>
-                <w:tc>
-                    <w:tcPr><w:tcW w:w="1400" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>
-                    <w:p><w:pPr><w:jc w:val="right"/><w:spacing w:before="40" w:after="40"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>${price}</w:t></w:r></w:p>
-                </w:tc>
-                <w:tc>
-                    <w:tcPr><w:tcW w:w="1500" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>
-                    <w:p><w:pPr><w:jc w:val="right"/><w:spacing w:before="40" w:after="40"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>${amount}</w:t></w:r></w:p>
-                </w:tc>
-                <w:tc>
-                    <w:tcPr><w:tcW w:w="1000" w:type="dxa"/><w:vAlign w:val="center"/></w:tcPr>
-                    <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="40" w:after="40"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="20"/><w:szCs w:val="20"/></w:rPr><w:t>${note}</w:t></w:r></w:p>
-                </w:tc>
+                ${remainTcXml}
             </w:tr>`;
-        });
 
-        // 3. Total Row
-        rowsXml += `
-        <w:tr>
-            <w:trPr><w:cantSplit/></w:trPr>
-            <w:tc>
-                <w:tcPr><w:tcW w:w="6500" w:type="dxa"/><w:gridSpan w:val="5"/><w:shd w:val="clear" w:color="auto" w:fill="F8FAFC"/><w:vAlign w:val="center"/></w:tcPr>
-                <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="50" w:after="50"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>TỔNG CỘNG:</w:t></w:r></w:p>
-            </w:tc>
-            <w:tc>
-                <w:tcPr><w:tcW w:w="1500" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="F8FAFC"/><w:vAlign w:val="center"/></w:tcPr>
-                <w:p><w:pPr><w:jc w:val="right"/><w:spacing w:before="50" w:after="50"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:color w:val="047857"/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>${totalFormatted}</w:t></w:r></w:p>
-            </w:tc>
-            <w:tc>
-                <w:tcPr><w:tcW w:w="1000" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="F8FAFC"/><w:vAlign w:val="center"/></w:tcPr>
-                <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="50" w:after="50"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>VNĐ</w:t></w:r></w:p>
-            </w:tc>
-        </w:tr>`;
-
-        // 4. In Words Row
-        rowsXml += `
-        <w:tr>
-            <w:trPr><w:cantSplit/></w:trPr>
-            <w:tc>
-                <w:tcPr><w:tcW w:w="9000" w:type="dxa"/><w:gridSpan w:val="7"/><w:vAlign w:val="center"/></w:tcPr>
-                <w:p><w:pPr><w:jc w:val="left"/><w:spacing w:before="60" w:after="60"/></w:pPr>
-                    <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>Số tiền bằng chữ: </w:t></w:r>
-                    <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:i/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>${escapeXml(words)}.</w:t></w:r>
-                </w:p>
-            </w:tc>
-        </w:tr>`;
+            // 4. In Words Row
+            if (tableDef.currencyWord) {
+                let allDx = 0;
+                columns.forEach(c => { allDx += (c.widthDx || 1500); });
+                const totalWords = readVietnameseCurrency(totalVal);
+                rowsXml += `
+                <w:tr>
+                    <w:trPr><w:cantSplit/></w:trPr>
+                    <w:tc>
+                        <w:tcPr><w:tcW w:w="${allDx}" w:type="dxa"/><w:gridSpan w:val="${columns.length}"/><w:vAlign w:val="center"/></w:tcPr>
+                        <w:p><w:pPr><w:jc w:val="left"/><w:spacing w:before="60" w:after="60"/></w:pPr>
+                            <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:b/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>Số tiền bằng chữ: </w:t></w:r>
+                            <w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:i/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr><w:t>${escapeXml(totalWords)}.</w:t></w:r>
+                        </w:p>
+                    </w:tc>
+                </w:tr>`;
+            }
+        }
 
         return `
         <w:tbl>
@@ -3609,19 +3515,104 @@
                 </w:tblCellMar>
             </w:tblPr>
             <w:tblGrid>
-                <w:gridCol w:w="600"/>
-                <w:gridCol w:w="3400"/>
-                <w:gridCol w:w="700"/>
-                <w:gridCol w:w="800"/>
-                <w:gridCol w:w="1400"/>
-                <w:gridCol w:w="1500"/>
-                <w:gridCol w:w="1000"/>
+                ${gridColsXml}
             </w:tblGrid>
             ${rowsXml}
         </w:tbl>`;
     }
 
-    // Live Document Preview Render (Administrative Standard Format)
+    // Backward-compatible alias for buildDocxTableXml
+    function buildDocxTableXml(items, totalAmount, totalAmountWords) {
+        const def = getTableDefinitionByTag("BANG_HANG_HOA");
+        return buildGenericDocxTableXml(def, items);
+    }
+
+    // Generalized HTML Administrative Table Renderer for Live Document Preview
+    function renderGenericTableHtml(tableDef, items) {
+        if (!tableDef) return "";
+        if (!items || !Array.isArray(items)) items = [];
+
+        const columns = tableDef.columns || [];
+        let headerThs = columns.map(c => {
+            const alignClass = c.align === "right" ? "text-right" : (c.align === "center" ? "text-center" : "text-left");
+            return `<th class="py-1.5 px-2 font-bold text-slate-800 ${alignClass}" style="width: ${c.widthPct || 'auto'}">${escapeXml(c.label)}</th>`;
+        }).join("");
+
+        let rowsHtml = "";
+        let totalVal = 0;
+        items.forEach((item, rIdx) => {
+            const tds = columns.map(c => {
+                const alignClass = c.align === "right" ? "text-right" : (c.align === "center" ? "text-center" : "text-left");
+                let valStr = "";
+                if (c.key === "stt") {
+                    valStr = String(item.stt || (rIdx + 1));
+                } else if (c.type === "currency") {
+                    const num = Number(item[c.key]) || 0;
+                    valStr = formatCurrencyVND(num);
+                    if (tableDef.totalCol === c.key) totalVal += num;
+                } else if (c.type === "calc_amount") {
+                    const q = Number(item.so_luong) || 0;
+                    const p = Number(item.don_gia) || 0;
+                    const amount = item.thanh_tien !== undefined ? Number(item.thanh_tien) : (q * p);
+                    valStr = formatCurrencyVND(amount);
+                    if (tableDef.totalCol === c.key) totalVal += amount;
+                } else {
+                    valStr = escapeXml(String(item[c.key] !== undefined && item[c.key] !== null ? item[c.key] : ""));
+                }
+                const isBold = (c.type === "calc_amount" || c.key === "thanh_tien");
+                return `<td class="py-1.5 px-2 ${alignClass} ${isBold ? 'font-bold text-emerald-800' : ''}">${valStr}</td>`;
+            }).join("");
+
+            rowsHtml += `<tr class="border-b border-slate-200 hover:bg-slate-50/50">${tds}</tr>`;
+        });
+
+        let totalRowHtml = "";
+        if (tableDef.hasTotal) {
+            let totalColIdx = columns.findIndex(c => c.key === tableDef.totalCol);
+            if (totalColIdx === -1) totalColIdx = columns.length - 1;
+            const spanCols = Math.max(1, totalColIdx);
+            const remainingCols = columns.length - totalColIdx - 1;
+
+            totalRowHtml = `
+            <tr class="font-bold bg-slate-50 border-b border-slate-300">
+                <td colspan="${spanCols}" class="py-1.5 px-2 text-center uppercase tracking-wider text-slate-800">TỔNG CỘNG:</td>
+                <td class="py-1.5 px-2 text-right text-emerald-800 font-extrabold">${formatCurrencyVND(totalVal)}</td>
+                ${remainingCols > 0 ? `<td colspan="${remainingCols}" class="py-1.5 px-2 text-center text-slate-700">VNĐ</td>` : ''}
+            </tr>`;
+
+            if (tableDef.currencyWord) {
+                const words = readVietnameseCurrency(totalVal);
+                totalRowHtml += `
+                <tr class="italic text-slate-700 bg-white">
+                    <td colspan="${columns.length}" class="py-1.5 px-3">
+                        <span class="font-bold not-italic text-slate-800">Số tiền bằng chữ:</span> ${words}.
+                    </td>
+                </tr>`;
+            }
+        }
+
+        return `
+        <div class="table-var-container my-3" data-var-key="${tableDef.tag}" title="Biến bảng: {${tableDef.tag}} (Tùy chỉnh trong Từ Điển Biến Xạ -> Tab Biến dạng bảng)">
+            <table class="w-full text-left text-xs border border-slate-300 border-collapse table-var-table">
+                <thead class="bg-slate-100 border-b-2 border-slate-300">
+                    <tr>${headerThs}</tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    ${rowsHtml}
+                    ${totalRowHtml}
+                </tbody>
+            </table>
+        </div>`;
+    }
+
+    // Backward-compatible alias
+    function renderTableVariableHtml(data) {
+        const def = getTableDefinitionByTag("BANG_HANG_HOA");
+        const items = getTableRowsForPackage(appState.activePackageIndex, "BANG_HANG_HOA");
+        return renderGenericTableHtml(def, items);
+    }
+
+        // Live Document Preview Render (Administrative Standard Format)
     // -------------------------------------------------------------
     function getMergedData() {
         const currentPkg = appState.packages[appState.activePackageIndex] || { fields: {} };
@@ -3635,21 +3626,22 @@
         // Tự động link ngày tháng & số văn bản từ Tab 1: Định hướng & Tiến độ
         syncTimelineDatesAndDocNosToData(merged);
 
-        // Bổ sung dữ liệu Biến xạ dạng bảng BANG_HANG_HOA
-        const tableData = (currentPkg.tableData && Array.isArray(currentPkg.tableData.BANG_HANG_HOA))
-            ? currentPkg.tableData.BANG_HANG_HOA
-            : defaultGoodsItems;
-        let tableSum = 0;
-        tableData.forEach(it => {
-            const q = Number(it.so_luong) || 0;
-            const p = Number(it.don_gia) || 0;
-            tableSum += (it.thanh_tien !== undefined ? Number(it.thanh_tien) : (q * p));
+        // Bổ sung dữ liệu cho TẤT CẢ các Biến xạ dạng bảng ({BANG_...})
+        getAllTableDefinitions().forEach(tDef => {
+            const tRows = getTableRowsForPackage(appState.activePackageIndex, tDef.tag);
+            merged[tDef.tag] = tRows;
+            if (tDef.tag === "BANG_HANG_HOA") {
+                let tableSum = 0;
+                tRows.forEach(it => {
+                    const q = Number(it.so_luong) || 0;
+                    const p = Number(it.don_gia) || 0;
+                    tableSum += (it.thanh_tien !== undefined ? Number(it.thanh_tien) : (q * p));
+                });
+                merged["TONG_TIEN_BANG_SO"] = formatCurrencyVND(tableSum);
+                merged["TONG_TIEN_BANG_CHU"] = readVietnameseCurrency(tableSum);
+                merged["SO_LUONG_HANG_HOA"] = tRows.length;
+            }
         });
-        merged["BANG_HANG_HOA"] = tableData;
-        merged["TONG_TIEN_BANG_SO"] = formatCurrencyVND(tableSum);
-        merged["TONG_TIEN_BANG_CHU"] = readVietnameseCurrency(tableSum);
-        merged["SO_LUONG_HANG_HOA"] = tableData.length;
-
         return merged;
     }
 
@@ -3667,21 +3659,22 @@
         syncTimelineDatesAndDocNosToData(merged);
         appState.activePackageIndex = prevIdx;
 
-        // Bổ sung dữ liệu Biến xạ dạng bảng BANG_HANG_HOA
-        const tableData = (targetPkg.tableData && Array.isArray(targetPkg.tableData.BANG_HANG_HOA))
-            ? targetPkg.tableData.BANG_HANG_HOA
-            : defaultGoodsItems;
-        let tableSum = 0;
-        tableData.forEach(it => {
-            const q = Number(it.so_luong) || 0;
-            const p = Number(it.don_gia) || 0;
-            tableSum += (it.thanh_tien !== undefined ? Number(it.thanh_tien) : (q * p));
+        // Bổ sung dữ liệu cho TẤT CẢ các Biến xạ dạng bảng ({BANG_...})
+        getAllTableDefinitions().forEach(tDef => {
+            const tRows = getTableRowsForPackage(pkgIdx, tDef.tag);
+            merged[tDef.tag] = tRows;
+            if (tDef.tag === "BANG_HANG_HOA") {
+                let tableSum = 0;
+                tRows.forEach(it => {
+                    const q = Number(it.so_luong) || 0;
+                    const p = Number(it.don_gia) || 0;
+                    tableSum += (it.thanh_tien !== undefined ? Number(it.thanh_tien) : (q * p));
+                });
+                merged["TONG_TIEN_BANG_SO"] = formatCurrencyVND(tableSum);
+                merged["TONG_TIEN_BANG_CHU"] = readVietnameseCurrency(tableSum);
+                merged["SO_LUONG_HANG_HOA"] = tRows.length;
+            }
         });
-        merged["BANG_HANG_HOA"] = tableData;
-        merged["TONG_TIEN_BANG_SO"] = formatCurrencyVND(tableSum);
-        merged["TONG_TIEN_BANG_CHU"] = readVietnameseCurrency(tableSum);
-        merged["SO_LUONG_HANG_HOA"] = tableData.length;
-
         return merged;
     }
 
@@ -3889,8 +3882,12 @@
     }
 
     function valOrPlaceholder(key, data) {
-        if (key === "BANG_HANG_HOA") {
-            return renderTableVariableHtml(data);
+        const tableDef = getTableDefinitionByTag(key);
+        if (tableDef) {
+            const tableRows = (data && Array.isArray(data[key]))
+                ? data[key]
+                : getTableRowsForPackage(appState.activePackageIndex, tableDef.tag);
+            return renderGenericTableHtml(tableDef, tableRows);
         }
         const val = data[key];
         if (val && String(val).trim() !== "") {
@@ -5620,7 +5617,13 @@
             });
         }
 
-        renderVarsDictionaryTable();
+        initDictModeTabs();
+        updateDictBadgeCounts();
+        if (activeDictModalMode === "table") {
+            renderDictTableView();
+        } else {
+            renderVarsDictionaryTable();
+        }
         modal.classList.remove("hidden");
         if (varsSearchInput) {
             varsSearchInput.value = "";
@@ -6670,57 +6673,55 @@
             }
         }
 
-        // Bước 2: Thay thế biến xạ dạng bảng BANG_HANG_HOA thành bảng Word OpenXML <w:tbl>
-        const tableData = Array.isArray(replacements.BANG_HANG_HOA) 
-            ? replacements.BANG_HANG_HOA 
-            : getTableDataForActivePackage();
-        let tableSum = 0;
-        tableData.forEach(it => {
-            const q = Number(it.so_luong) || 0;
-            const p = Number(it.don_gia) || 0;
-            tableSum += (it.thanh_tien !== undefined ? Number(it.thanh_tien) : (q * p));
-        });
-        const tableXml = buildDocxTableXml(tableData, tableSum, replacements.TONG_TIEN_BANG_CHU);
+        // Bước 2: Thay thế tất cả các biến xạ dạng bảng {BANG_...} thành bảng Word OpenXML <w:tbl>
+        const allTableDefs = getAllTableDefinitions();
+        for (const tableDef of allTableDefs) {
+            const tag = tableDef.tag;
+            const tableRows = (replacements && Array.isArray(replacements[tag]))
+                ? replacements[tag]
+                : getTableRowsForPackage(appState.activePackageIndex, tag);
+            const tableXml = buildGenericDocxTableXml(tableDef, tableRows);
 
-        // 2a. Nếu văn bản mẫu có hàng lặp {#BANG_HANG_HOA}...{/BANG_HANG_HOA}
-        const regexRepeatRow = /<w:tr\b[^>]*>(?:(?!<\/w:tr>)[\s\S])*?\{#BANG_HANG_HOA\}[\s\S]*?\{\/BANG_HANG_HOA\}[\s\S]*?<\/w:tr>/gi;
-        if (regexRepeatRow.test(docXml)) {
-            docXml = docXml.replace(regexRepeatRow, (matchedTr) => {
-                let cleanTemplateTr = matchedTr.replace(/\{#BANG_HANG_HOA\}/g, "").replace(/\{\/BANG_HANG_HOA\}/g, "");
-                let generatedRows = "";
-                tableData.forEach((item, idx) => {
-                    let rowXml = cleanTemplateTr;
-                    const stt = item.stt || (idx + 1);
-                    const name = escapeXml(item.ten_hang || "");
-                    const unit = escapeXml(item.dvt || "");
-                    const qty = item.so_luong !== undefined ? item.so_luong : 1;
-                    const price = formatCurrencyVND(item.don_gia || 0);
-                    const amount = formatCurrencyVND(item.thanh_tien || ((Number(item.so_luong) || 0) * (Number(item.don_gia) || 0)));
-                    const note = escapeXml(item.ghi_chu || "");
-
-                    rowXml = rowXml.split("{STT}").join(String(stt));
-                    rowXml = rowXml.split("{TEN_HANG}").join(name);
-                    rowXml = rowXml.split("{DVT}").join(unit);
-                    rowXml = rowXml.split("{SO_LUONG}").join(String(qty));
-                    rowXml = rowXml.split("{DON_GIA}").join(price);
-                    rowXml = rowXml.split("{THANH_TIEN}").join(amount);
-                    rowXml = rowXml.split("{GHI_CHU}").join(note);
-                    generatedRows += rowXml;
+            // 2a. Nếu văn bản mẫu có hàng lặp {#BANG_...}...{/BANG_...}
+            const regexRepeatRow = new RegExp(`<w:tr\\b[^>]*>(?:(?!<\\/w:tr>)[\\s\\S])*?\\{#${tag}\\}[\\s\\S]*?\\{/${tag}\\}[\\s\\S]*?<\\/w:tr>`, 'gi');
+            if (regexRepeatRow.test(docXml)) {
+                docXml = docXml.replace(regexRepeatRow, (matchedTr) => {
+                    let cleanTemplateTr = matchedTr.replace(new RegExp(`\\{#${tag}\\}`, 'g'), '').replace(new RegExp(`\\{/${tag}\\}`, 'g'), '');
+                    let generatedRows = "";
+                    tableRows.forEach((item, idx) => {
+                        let rowXml = cleanTemplateTr;
+                        (tableDef.columns || []).forEach(col => {
+                            let cellVal = "";
+                            if (col.key === "stt") cellVal = String(item.stt || (idx + 1));
+                            else if (col.type === "currency") cellVal = formatCurrencyVND(item[col.key] || 0);
+                            else if (col.type === "calc_amount") {
+                                const q = Number(item.so_luong) || 0;
+                                const p = Number(item.don_gia) || 0;
+                                cellVal = formatCurrencyVND(item.thanh_tien !== undefined ? Number(item.thanh_tien) : (q * p));
+                            } else {
+                                cellVal = escapeXml(String(item[col.key] || ""));
+                            }
+                            const upperKey = col.key.toUpperCase();
+                            rowXml = rowXml.split(`{${upperKey}}`).join(cellVal);
+                            rowXml = rowXml.split(`{{${upperKey}}}`).join(cellVal);
+                        });
+                        generatedRows += rowXml;
+                    });
+                    return generatedRows;
                 });
-                return generatedRows;
-            });
+            }
+
+            // 2b. Nếu văn bản mẫu có tag {BANG_...} hoặc {{BANG_...}} (sinh trọn vẹn cả bảng OpenXML)
+            const regexTablePara = new RegExp(`<w:p\\b[^>]*>(?:(?!<\\/w:p>)[\\s\\S])*?\\{+(?:${tag})\\}+[\\s\\S]*?<\\/w:p>`, 'gi');
+            if (regexTablePara.test(docXml)) {
+                docXml = docXml.replace(regexTablePara, tableXml);
+            } else {
+                docXml = docXml.split(`{{${tag}}}`).join(tableXml);
+                docXml = docXml.split(`{${tag}}`).join(tableXml);
+            }
         }
 
-        // 2b. Nếu văn bản mẫu có tag {BANG_HANG_HOA} hoặc {{BANG_HANG_HOA}} (sinh trọn vẹn cả bảng OpenXML)
-        const regexTablePara = /<w:p\b[^>]*>(?:(?!<\/w:p>)[\s\S])*?\{+(?:BANG_HANG_HOA)\}+[\s\S]*?<\/w:p>/gi;
-        if (regexTablePara.test(docXml)) {
-            docXml = docXml.replace(regexTablePara, tableXml);
-        } else {
-            docXml = docXml.split("{{BANG_HANG_HOA}}").join(tableXml);
-            docXml = docXml.split("{BANG_HANG_HOA}").join(tableXml);
-        }
-
-        // Bước 3: Thay thế toàn bộ biến xạ {{KEY}} và {KEY}
+                // Bước 3: Thay thế toàn bộ biến xạ {{KEY}} và {KEY}
         for (const [key, rawVal] of Object.entries(replacements)) {
             if (key === "BANG_HANG_HOA") continue;
             const val = escapeXml(rawVal);
@@ -6774,52 +6775,50 @@
                 }
             }
 
-            // Thay thế biến xạ dạng bảng BANG_HANG_HOA thành bảng Word OpenXML <w:tbl>
-            const tableData = Array.isArray(replacements.BANG_HANG_HOA) 
-                ? replacements.BANG_HANG_HOA 
-                : getTableDataForActivePackage();
-            let tableSum = 0;
-            tableData.forEach(it => {
-                const q = Number(it.so_luong) || 0;
-                const p = Number(it.don_gia) || 0;
-                tableSum += (it.thanh_tien !== undefined ? Number(it.thanh_tien) : (q * p));
-            });
-            const tableXml = buildDocxTableXml(tableData, tableSum, replacements.TONG_TIEN_BANG_CHU);
+            // Thay thế tất cả các biến xạ dạng bảng {BANG_...} thành bảng Word OpenXML <w:tbl>
+            const allTableDefs = getAllTableDefinitions();
+            for (const tableDef of allTableDefs) {
+                const tag = tableDef.tag;
+                const tableRows = (replacements && Array.isArray(replacements[tag]))
+                    ? replacements[tag]
+                    : getTableRowsForPackage(appState.activePackageIndex, tag);
+                const tableXml = buildGenericDocxTableXml(tableDef, tableRows);
 
-            const regexRepeatRow = /<w:tr\b[^>]*>(?:(?!<\/w:tr>)[\s\S])*?\{#BANG_HANG_HOA\}[\s\S]*?\{\/BANG_HANG_HOA\}[\s\S]*?<\/w:tr>/gi;
-            if (regexRepeatRow.test(docXml)) {
-                docXml = docXml.replace(regexRepeatRow, (matchedTr) => {
-                    let cleanTemplateTr = matchedTr.replace(/\{#BANG_HANG_HOA\}/g, "").replace(/\{\/BANG_HANG_HOA\}/g, "");
-                    let generatedRows = "";
-                    tableData.forEach((item, idx) => {
-                        let rowXml = cleanTemplateTr;
-                        const stt = item.stt || (idx + 1);
-                        const name = escapeXml(item.ten_hang || "");
-                        const unit = escapeXml(item.dvt || "");
-                        const qty = item.so_luong !== undefined ? item.so_luong : 1;
-                        const price = formatCurrencyVND(item.don_gia || 0);
-                        const amount = formatCurrencyVND(item.thanh_tien || ((Number(item.so_luong) || 0) * (Number(item.don_gia) || 0)));
-                        const note = escapeXml(item.ghi_chu || "");
-
-                        rowXml = rowXml.split("{STT}").join(String(stt));
-                        rowXml = rowXml.split("{TEN_HANG}").join(name);
-                        rowXml = rowXml.split("{DVT}").join(unit);
-                        rowXml = rowXml.split("{SO_LUONG}").join(String(qty));
-                        rowXml = rowXml.split("{DON_GIA}").join(price);
-                        rowXml = rowXml.split("{THANH_TIEN}").join(amount);
-                        rowXml = rowXml.split("{GHI_CHU}").join(note);
-                        generatedRows += rowXml;
+                const regexRepeatRow = new RegExp(`<w:tr\\b[^>]*>(?:(?!<\\/w:tr>)[\\s\\S])*?\\{#${tag}\\}[\\s\\S]*?\\{/${tag}\\}[\\s\\S]*?<\\/w:tr>`, 'gi');
+                if (regexRepeatRow.test(docXml)) {
+                    docXml = docXml.replace(regexRepeatRow, (matchedTr) => {
+                        let cleanTemplateTr = matchedTr.replace(new RegExp(`\\{#${tag}\\}`, 'g'), '').replace(new RegExp(`\\{/${tag}\\}`, 'g'), '');
+                        let generatedRows = "";
+                        tableRows.forEach((item, idx) => {
+                            let rowXml = cleanTemplateTr;
+                            (tableDef.columns || []).forEach(col => {
+                                let cellVal = "";
+                                if (col.key === "stt") cellVal = String(item.stt || (idx + 1));
+                                else if (col.type === "currency") cellVal = formatCurrencyVND(item[col.key] || 0);
+                                else if (col.type === "calc_amount") {
+                                    const q = Number(item.so_luong) || 0;
+                                    const p = Number(item.don_gia) || 0;
+                                    cellVal = formatCurrencyVND(item.thanh_tien !== undefined ? Number(item.thanh_tien) : (q * p));
+                                } else {
+                                    cellVal = escapeXml(String(item[col.key] || ""));
+                                }
+                                const upperKey = col.key.toUpperCase();
+                                rowXml = rowXml.split(`{${upperKey}}`).join(cellVal);
+                                rowXml = rowXml.split(`{{${upperKey}}}`).join(cellVal);
+                            });
+                            generatedRows += rowXml;
+                        });
+                        return generatedRows;
                     });
-                    return generatedRows;
-                });
-            }
+                }
 
-            const regexTablePara = /<w:p\b[^>]*>(?:(?!<\/w:p>)[\s\S])*?\{+(?:BANG_HANG_HOA)\}+[\s\S]*?<\/w:p>/gi;
-            if (regexTablePara.test(docXml)) {
-                docXml = docXml.replace(regexTablePara, tableXml);
-            } else {
-                docXml = docXml.split("{{BANG_HANG_HOA}}").join(tableXml);
-                docXml = docXml.split("{BANG_HANG_HOA}").join(tableXml);
+                const regexTablePara = new RegExp(`<w:p\\b[^>]*>(?:(?!<\\/w:p>)[\\s\\S])*?\\{+(?:${tag})\\}+[\\s\\S]*?<\\/w:p>`, 'gi');
+                if (regexTablePara.test(docXml)) {
+                    docXml = docXml.replace(regexTablePara, tableXml);
+                } else {
+                    docXml = docXml.split(`{{${tag}}}`).join(tableXml);
+                    docXml = docXml.split(`{${tag}}`).join(tableXml);
+                }
             }
 
             // Thay thế toàn bộ biến xạ
@@ -8210,7 +8209,58 @@
         });
     }
 
-        // Expose helpers globally for testing or inline onclicks
+        // Backward-compatibility aliases for table editor
+    function renderTableEditor() {
+        if (typeof renderDictTableView === "function") renderDictTableView();
+    }
+    function addTableRow() {
+        const rows = getTableRowsForPackage(appState.activePackageIndex, "BANG_HANG_HOA");
+        rows.push({ stt: rows.length + 1, ten_hang: "", dvt: "Bộ", so_luong: 1, don_gia: 0, thanh_tien: 0, ghi_chu: "" });
+        saveState();
+        renderDocumentPreview();
+        if (typeof renderDictTableView === "function") renderDictTableView();
+    }
+    function deleteTableRow(idx) {
+        const rows = getTableRowsForPackage(appState.activePackageIndex, "BANG_HANG_HOA");
+        if (idx >= 0 && idx < rows.length) {
+            rows.splice(idx, 1);
+            rows.forEach((r, i) => { r.stt = i + 1; });
+            saveState();
+            renderDocumentPreview();
+            if (typeof renderDictTableView === "function") renderDictTableView();
+        }
+    }
+    function clearAllTableRows() {
+        const curPkg = appState.packages[appState.activePackageIndex];
+        if (curPkg && curPkg.tableData) {
+            curPkg.tableData["BANG_HANG_HOA"] = [];
+            saveState();
+            renderDocumentPreview();
+            if (typeof renderDictTableView === "function") renderDictTableView();
+        }
+    }
+    function syncTableToPrices() {
+        const rows = getTableRowsForPackage(appState.activePackageIndex, "BANG_HANG_HOA");
+        let sum = 0;
+        rows.forEach(r => {
+            const q = Number(r.so_luong) || 0;
+            const p = Number(r.don_gia) || 0;
+            sum += (r.thanh_tien !== undefined ? Number(r.thanh_tien) : (q * p));
+        });
+        const totalStr = formatCurrencyVND(sum);
+        const totalWords = readVietnameseCurrency(sum);
+        const curPkg = appState.packages[appState.activePackageIndex];
+        if (curPkg && curPkg.fields) {
+            curPkg.fields["GIA_GOI_THAU_SO"] = totalStr;
+            curPkg.fields["GIA_GOI_THAU_CHU"] = totalWords;
+            curPkg.fields["GIA_TRI_HOP_DONG_SO"] = totalStr;
+            curPkg.fields["GIA_TRI_HOP_DONG_CHU"] = totalWords;
+            saveState();
+            renderDocumentPreview();
+        }
+    }
+
+    // Expose helpers globally for testing or inline onclicks
     
     // =============================================================
     // Event Listeners for Table Variables Editor & Excel Paste Modal
@@ -8452,15 +8502,16 @@
             if (!curPkg) return;
 
             const isReplace = !chkReplaceExistingTable || chkReplaceExistingTable.checked;
+            const targetTag = currentActiveDictTableTag || "BANG_HANG_HOA";
+            if (!curPkg.tableData) curPkg.tableData = {};
+
             if (isReplace) {
-                curPkg.tableData = {
-                    BANG_HANG_HOA: parsedExcelItems
-                };
+                curPkg.tableData[targetTag] = parsedExcelItems;
             } else {
-                if (!curPkg.tableData || !Array.isArray(curPkg.tableData.BANG_HANG_HOA)) {
-                    curPkg.tableData = { BANG_HANG_HOA: [] };
+                if (!Array.isArray(curPkg.tableData[targetTag])) {
+                    curPkg.tableData[targetTag] = [];
                 }
-                const existing = curPkg.tableData.BANG_HANG_HOA;
+                const existing = curPkg.tableData[targetTag];
                 parsedExcelItems.forEach(it => {
                     it.stt = existing.length + 1;
                     existing.push(it);
@@ -8468,12 +8519,715 @@
             }
 
             saveState();
-            renderTableEditor();
+            renderDictTableView();
             renderDocumentPreview();
             closePasteExcelModal();
-            showToast(`Đã nhập thành công ${parsedExcelItems.length} mặt hàng từ Excel vào danh mục!`, "success");
+            showToast(`Đã nhập thành công ${parsedExcelItems.length} dòng từ Excel vào ${targetTag}!`, "success");
         });
     }
+
+    
+    // =============================================================
+    // CONTROLLER: TỪ ĐIỂN BIẾN XẠ - TAB BIẾN ĐƠN LẺ & TAB BIẾN DẠNG BẢNG
+    // =============================================================
+
+    let activeDictModalMode = "scalar"; // "scalar" | "table"
+    let customTableColumnsDraft = [];
+
+    function initDictModeTabs() {
+        const tabScalar = document.getElementById("tabDictScalarMode");
+        const tabTable = document.getElementById("tabDictTableMode");
+        const viewScalar = document.getElementById("dictScalarVarsView");
+        const viewTable = document.getElementById("dictTableVarsView");
+
+        if (!tabScalar || !tabTable) return;
+
+        function switchMode(mode) {
+            activeDictModalMode = mode;
+            if (mode === "scalar") {
+                tabScalar.className = "dict-nav-tab px-3 py-1.5 font-bold text-xs border-b-2 border-emerald-600 text-emerald-700 flex items-center gap-1.5 cursor-pointer transition-all bg-white rounded-t shadow-2xs";
+                tabTable.className = "dict-nav-tab px-3 py-1.5 font-medium text-xs border-b-2 border-transparent text-slate-500 hover:text-indigo-700 hover:bg-indigo-50/40 flex items-center gap-1.5 cursor-pointer transition-all rounded-t";
+                if (viewScalar) viewScalar.classList.remove("hidden");
+                if (viewTable) viewTable.classList.add("hidden");
+                renderVarsDictionaryTable();
+            } else {
+                tabTable.className = "dict-nav-tab px-3 py-1.5 font-bold text-xs border-b-2 border-indigo-600 text-indigo-700 flex items-center gap-1.5 cursor-pointer transition-all bg-white rounded-t shadow-2xs";
+                tabScalar.className = "dict-nav-tab px-3 py-1.5 font-medium text-xs border-b-2 border-transparent text-slate-500 hover:text-emerald-700 hover:bg-emerald-50/40 flex items-center gap-1.5 cursor-pointer transition-all rounded-t";
+                if (viewScalar) viewScalar.classList.add("hidden");
+                if (viewTable) viewTable.classList.remove("hidden");
+                renderDictTableView();
+            }
+        }
+
+        tabScalar.onclick = () => switchMode("scalar");
+        tabTable.onclick = () => switchMode("table");
+
+        // Update badge counts
+        updateDictBadgeCounts();
+    }
+
+    function updateDictBadgeCounts() {
+        const badgeScalar = document.getElementById("badgeDictScalarCount");
+        const badgeTable = document.getElementById("badgeDictTableCount");
+
+        if (badgeScalar) {
+            const allVars = [...MASTER_VARIABLES_CATALOG];
+            if (appState.customVariables) {
+                allVars.push(...Object.keys(appState.customVariables));
+            }
+            badgeScalar.textContent = allVars.length;
+        }
+
+        if (badgeTable) {
+            const allDefs = getAllTableDefinitions();
+            badgeTable.textContent = `${allDefs.length} loại`;
+        }
+    }
+
+    function renderDictTableView() {
+        // 1. Populate Package Selector inside Table View
+        const pkgSelect = document.getElementById("dictTablePkgSelect");
+        if (pkgSelect) {
+            pkgSelect.innerHTML = "";
+            const pkgs = appState.packages && appState.packages.length > 0 ? appState.packages : (appState.projectRoadmap?.packages || []);
+            pkgs.forEach((p, idx) => {
+                const opt = document.createElement("option");
+                opt.value = idx;
+                opt.textContent = `Gói ${idx + 1}: ${p.name || `Gói thầu số ${idx + 1}`}`;
+                if (idx === appState.activePackageIndex) opt.selected = true;
+                pkgSelect.appendChild(opt);
+            });
+            pkgSelect.onchange = () => {
+                appState.activePackageIndex = parseInt(pkgSelect.value, 10) || 0;
+                renderDictTableView();
+                renderDocumentPreview();
+            };
+        }
+
+        // 2. Render Table Type Switcher Pills
+        const pillsContainer = document.getElementById("dictTableTypePills");
+        const allDefs = getAllTableDefinitions();
+
+        // Ensure active tag exists
+        if (!allDefs.find(t => t.tag === currentActiveDictTableTag)) {
+            currentActiveDictTableTag = allDefs[0] ? allDefs[0].tag : "BANG_HANG_HOA";
+        }
+
+        if (pillsContainer) {
+            let pillsHtml = "";
+            allDefs.forEach(tDef => {
+                const isActive = tDef.tag === currentActiveDictTableTag;
+                const activeClass = isActive
+                    ? "bg-indigo-600 text-white font-bold shadow-xs border-indigo-600"
+                    : "bg-white hover:bg-indigo-50 text-slate-700 font-medium border-slate-200 hover:border-indigo-300";
+
+                const isCustom = !tDef.isSystem;
+                pillsHtml += `
+                    <div class="inline-flex items-center rounded-lg border text-xs px-2 py-1 gap-1.5 transition-all cursor-pointer ${activeClass} dict-table-pill" data-table-tag="${tDef.tag}">
+                        <span class="text-sm">${tDef.icon || '📊'}</span>
+                        <span class="font-semibold">${escapeXml(tDef.name)}</span>
+                        <code class="px-1 py-0.2 rounded text-[10px] font-mono ${isActive ? 'bg-indigo-700/80 text-white' : 'bg-slate-100 text-indigo-700 font-bold'}">{${tDef.tag}}</code>
+                        <button type="button" class="btn-copy-pill-tag ml-0.5 hover:text-emerald-400 p-0.5" data-copy-tag="{${tDef.tag}}" title="Sao chép nhanh mã {${tDef.tag}}">
+                            <i class="fa-solid fa-copy text-[10px]"></i>
+                        </button>
+                        ${isCustom ? `
+                        <button type="button" class="btn-del-custom-table ml-0.5 text-red-400 hover:text-red-700 p-0.5" data-del-tag="${tDef.tag}" title="Xóa loại bảng tự tạo này">
+                            <i class="fa-solid fa-xmark text-[11px]"></i>
+                        </button>` : ''}
+                    </div>
+                `;
+            });
+            pillsContainer.innerHTML = pillsHtml;
+
+            // Click listener for pills
+            pillsContainer.querySelectorAll(".dict-table-pill").forEach(el => {
+                el.onclick = (e) => {
+                    if (e.target.closest(".btn-copy-pill-tag") || e.target.closest(".btn-del-custom-table")) return;
+                    const tag = el.getAttribute("data-table-tag");
+                    if (tag) {
+                        currentActiveDictTableTag = tag;
+                        renderDictTableView();
+                    }
+                };
+            });
+
+            // Fast copy on pill
+            pillsContainer.querySelectorAll(".btn-copy-pill-tag").forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const tagCode = btn.getAttribute("data-copy-tag");
+                    copyTagToClipboardWithToast(tagCode);
+                };
+            });
+
+            // Delete custom table definition
+            pillsContainer.querySelectorAll(".btn-del-custom-table").forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const tag = btn.getAttribute("data-del-tag");
+                    deleteCustomTableDefinition(tag);
+                };
+            });
+        }
+
+        // 3. Render Active Table Banner
+        const activeDef = getTableDefinitionByTag(currentActiveDictTableTag) || allDefs[0];
+        const iconEl = document.getElementById("activeTableIcon");
+        const titleEl = document.getElementById("activeTableTitle");
+        const descEl = document.getElementById("activeTableDesc");
+        const tagCodeEl = document.getElementById("lblActiveTableTagCode");
+        const hintCodeEl = document.getElementById("dictTableTagHint");
+        const badgeRowsEl = document.getElementById("activeTableRowCountBadge");
+
+        const targetRows = getTableRowsForPackage(appState.activePackageIndex, activeDef.tag);
+
+        if (iconEl) iconEl.textContent = activeDef.icon || "📊";
+        if (titleEl) titleEl.textContent = `${activeDef.tag} - ${activeDef.name}`;
+        if (descEl) descEl.textContent = activeDef.desc || "Bảng biến xạ chuẩn thể thức văn bản hành chính Việt Nam.";
+        if (tagCodeEl) tagCodeEl.textContent = `{${activeDef.tag}}`;
+        if (hintCodeEl) hintCodeEl.textContent = `{${activeDef.tag}}`;
+        if (badgeRowsEl) badgeRowsEl.textContent = `${targetRows.length} dòng`;
+
+        // 4. Render Active Table Grid
+        renderDictCurrentTableGrid(activeDef, targetRows);
+
+        // 5. Setup Action Buttons
+        setupDictTableActions(activeDef);
+    }
+
+    function copyTagToClipboardWithToast(tagText) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(tagText).then(() => {
+                showToast(`Đã sao chép mã ${tagText} vào bộ nhớ tạm! Dán vào bất kỳ vị trí nào trong file Word (.docx) mẫu.`, "success");
+            }).catch(() => {
+                copyTextToClipboard(tagText);
+                showToast(`Đã sao chép mã ${tagText}!`, "success");
+            });
+        } else {
+            copyTextToClipboard(tagText);
+            showToast(`Đã sao chép mã ${tagText}!`, "success");
+        }
+    }
+
+    function renderDictCurrentTableGrid(tableDef, rows) {
+        const table = document.getElementById("dictCurrentTableGrid");
+        if (!table) return;
+
+        const columns = tableDef.columns || [];
+        let theadHtml = `<thead class="bg-slate-100 text-slate-700 font-bold sticky top-0 border-b border-slate-200 z-10 select-none"><tr>`;
+        columns.forEach(col => {
+            const alignClass = col.align === "right" ? "text-right" : (col.align === "center" ? "text-center" : "text-left");
+            theadHtml += `<th class="py-1.5 px-2 ${alignClass}" style="width: ${col.widthPct || 'auto'}">${escapeXml(col.label)}</th>`;
+        });
+        theadHtml += `<th class="py-1.5 px-1.5 w-8 text-center"></th></tr></thead>`;
+
+        let tbodyHtml = `<tbody class="divide-y divide-slate-100 bg-white">`;
+        let totalVal = 0;
+
+        rows.forEach((row, rIdx) => {
+            const stt = row.stt || (rIdx + 1);
+            row.stt = stt;
+
+            tbodyHtml += `<tr data-row-idx="${rIdx}" class="hover:bg-slate-50/70 transition-colors">`;
+            columns.forEach(col => {
+                const alignClass = col.align === "right" ? "text-right" : (col.align === "center" ? "text-center" : "text-left");
+                
+                if (col.key === "stt") {
+                    tbodyHtml += `<td class="py-1 px-1.5 text-center font-bold text-slate-500 text-[11px]">${stt}</td>`;
+                } else if (col.type === "calc_amount" || col.key === "thanh_tien") {
+                    const q = Number(row.so_luong) || 0;
+                    const p = Number(row.don_gia) || 0;
+                    const amount = row.thanh_tien !== undefined ? Number(row.thanh_tien) : (q * p);
+                    row.thanh_tien = amount;
+                    totalVal += amount;
+                    tbodyHtml += `<td class="py-1 px-2 text-right font-bold text-emerald-700 text-xs whitespace-nowrap cell-calc-amount">${formatCurrencyVND(amount)}</td>`;
+                } else if (col.type === "currency") {
+                    const num = Number(row[col.key]) || 0;
+                    if (tableDef.totalCol === col.key) totalVal += num;
+                    tbodyHtml += `
+                        <td class="py-1 px-1.5">
+                            <input type="text" data-col="${col.key}" data-row-idx="${rIdx}" data-type="currency" value="${formatCurrencyVND(num)}" class="w-full text-right font-medium">
+                        </td>
+                    `;
+                } else if (col.type === "number") {
+                    const num = Number(row[col.key]) || 0;
+                    tbodyHtml += `
+                        <td class="py-1 px-1.5">
+                            <input type="number" min="0" data-col="${col.key}" data-row-idx="${rIdx}" value="${num}" class="w-full text-right font-medium">
+                        </td>
+                    `;
+                } else {
+                    const val = escapeXml(String(row[col.key] !== undefined && row[col.key] !== null ? row[col.key] : ""));
+                    tbodyHtml += `
+                        <td class="py-1 px-1.5">
+                            <input type="text" data-col="${col.key}" data-row-idx="${rIdx}" value="${val}" placeholder="${escapeXml(col.label)}..." class="w-full ${alignClass}">
+                        </td>
+                    `;
+                }
+            });
+
+            tbodyHtml += `
+                <td class="py-1 px-1 text-center">
+                    <button type="button" data-action="delete-dict-row" data-row-idx="${rIdx}" class="text-slate-400 hover:text-red-600 transition-colors p-1 cursor-pointer" title="Xóa dòng này">
+                        <i class="fa-solid fa-trash-can text-[11px]"></i>
+                    </button>
+                </td>
+            </tr>`;
+        });
+
+        tbodyHtml += `</tbody>`;
+        table.innerHTML = theadHtml + tbodyHtml;
+
+        // Update Summary Footer
+        const totalFormattedEl = document.getElementById("dictTableTotalFormatted");
+        const inWordsEl = document.getElementById("dictTableInWords");
+        const wordsRowEl = document.getElementById("dictTableWordsRow");
+        const summaryCardEl = document.getElementById("dictTableSummaryCard");
+
+        if (tableDef.hasTotal) {
+            if (summaryCardEl) summaryCardEl.classList.remove("hidden");
+            if (totalFormattedEl) totalFormattedEl.textContent = formatCurrencyVND(totalVal) + " VNĐ";
+            if (wordsRowEl && tableDef.currencyWord) {
+                wordsRowEl.classList.remove("hidden");
+                if (inWordsEl) inWordsEl.textContent = readVietnameseCurrency(totalVal);
+            } else if (wordsRowEl) {
+                wordsRowEl.classList.add("hidden");
+            }
+        } else {
+            if (totalFormattedEl) totalFormattedEl.textContent = `${rows.length} mục`;
+            if (wordsRowEl) wordsRowEl.classList.add("hidden");
+        }
+    }
+
+    function setupDictTableActions(activeDef) {
+        const btnCopy = document.getElementById("btnCopyActiveTableTag");
+        if (btnCopy) {
+            btnCopy.onclick = () => {
+                copyTagToClipboardWithToast(`{${activeDef.tag}}`);
+            };
+        }
+
+        const btnAddRow = document.getElementById("btnAddRowInDict");
+        if (btnAddRow) {
+            btnAddRow.onclick = () => {
+                const rows = getTableRowsForPackage(appState.activePackageIndex, activeDef.tag);
+                const newRow = { stt: rows.length + 1 };
+                (activeDef.columns || []).forEach(c => {
+                    if (c.key === "stt") return;
+                    if (c.type === "number") newRow[c.key] = 1;
+                    else if (c.type === "currency") newRow[c.key] = 0;
+                    else if (c.type === "calc_amount") newRow[c.key] = 0;
+                    else newRow[c.key] = "";
+                });
+                rows.push(newRow);
+                saveState();
+                renderDictTableView();
+                renderDocumentPreview();
+
+                setTimeout(() => {
+                    const lastTr = document.querySelector(`#dictCurrentTableGrid tr[data-row-idx="${rows.length - 1}"] input`);
+                    if (lastTr) lastTr.focus();
+                }, 50);
+            };
+        }
+
+        const btnClearRows = document.getElementById("btnClearActiveTableRows");
+        if (btnClearRows) {
+            btnClearRows.onclick = () => {
+                if (confirm(`Bạn có chắc chắn muốn xóa toàn bộ dòng trong bảng "${activeDef.name}" của gói này không?`)) {
+                    const pkgs = appState.packages || [];
+                    const curPkg = pkgs[appState.activePackageIndex];
+                    if (curPkg && curPkg.tableData) {
+                        curPkg.tableData[activeDef.tag] = [];
+                        saveState();
+                        renderDictTableView();
+                        renderDocumentPreview();
+                        showToast(`Đã làm trống bảng ${activeDef.tag}.`);
+                    }
+                }
+            };
+        }
+
+        const btnSyncPrice = document.getElementById("btnSyncActiveTablePrice");
+        if (btnSyncPrice) {
+            if (activeDef.hasTotal) {
+                btnSyncPrice.classList.remove("hidden");
+                btnSyncPrice.onclick = () => {
+                    const rows = getTableRowsForPackage(appState.activePackageIndex, activeDef.tag);
+                    let sum = 0;
+                    rows.forEach(r => {
+                        if (activeDef.totalCol === "thanh_tien") {
+                            const q = Number(r.so_luong) || 0;
+                            const p = Number(r.don_gia) || 0;
+                            sum += (r.thanh_tien !== undefined ? Number(r.thanh_tien) : (q * p));
+                        } else if (activeDef.totalCol && r[activeDef.totalCol] !== undefined) {
+                            sum += Number(r[activeDef.totalCol]) || 0;
+                        }
+                    });
+
+                    const totalStr = formatCurrencyVND(sum);
+                    const totalWords = readVietnameseCurrency(sum);
+
+                    const curPkg = appState.packages[appState.activePackageIndex];
+                    if (curPkg && curPkg.fields) {
+                        curPkg.fields["GIA_GOI_THAU_SO"] = totalStr;
+                        curPkg.fields["GIA_GOI_THAU_CHU"] = totalWords;
+                        curPkg.fields["GIA_TRI_HOP_DONG_SO"] = totalStr;
+                        curPkg.fields["GIA_TRI_HOP_DONG_CHU"] = totalWords;
+
+                        // Update DOM inputs if visible
+                        const inpGiaGoi = document.querySelector('[data-field="GIA_GOI_THAU_SO"]');
+                        if (inpGiaGoi) inpGiaGoi.value = totalStr;
+                        const inpGiaGoiChu = document.querySelector('[data-field="GIA_GOI_THAU_CHU"]');
+                        if (inpGiaGoiChu) inpGiaGoiChu.value = totalWords;
+
+                        saveState();
+                        renderDocumentPreview();
+                        showToast(`Đã đồng bộ tổng (${totalStr} VNĐ) vào Giá gói thầu & Hợp đồng!`, "success");
+                    }
+                };
+            } else {
+                btnSyncPrice.classList.add("hidden");
+            }
+        }
+
+        const btnPasteExcel = document.getElementById("btnPasteExcelInDict");
+        if (btnPasteExcel) {
+            btnPasteExcel.onclick = () => {
+                openPasteExcelModal();
+            };
+        }
+
+        const btnResetDefs = document.getElementById("btnResetTableDefs");
+        if (btnResetDefs) {
+            btnResetDefs.onclick = () => {
+                if (confirm("Khôi phục danh mục bảng biến xạ về 3 bảng chuẩn ban đầu (Hàng hóa, Nhân sự, Tiến độ)? Các bảng tự tạo sẽ bị xóa.")) {
+                    localStorage.removeItem("ho_so_custom_table_defs");
+                    currentActiveDictTableTag = "BANG_HANG_HOA";
+                    updateDictBadgeCounts();
+                    renderDictTableView();
+                    showToast("Đã khôi phục các bảng chuẩn ban đầu!");
+                }
+            };
+        }
+
+        // Custom table delete button on top bar
+        const btnDeleteCustom = document.getElementById("btnDeleteCustomTableDef");
+        if (btnDeleteCustom) {
+            if (!activeDef.isSystem) {
+                btnDeleteCustom.classList.remove("hidden");
+                btnDeleteCustom.onclick = () => {
+                    deleteCustomTableDefinition(activeDef.tag);
+                };
+            } else {
+                btnDeleteCustom.classList.add("hidden");
+            }
+        }
+    }
+
+    // Interactive in-place cell editing inside table grid
+    const dictCurrentTableGrid = document.getElementById("dictCurrentTableGrid");
+    if (dictCurrentTableGrid) {
+        dictCurrentTableGrid.addEventListener("input", (e) => {
+            const input = e.target.closest("input[data-col]");
+            if (!input) return;
+            const rIdx = parseInt(input.getAttribute("data-row-idx"), 10);
+            const colKey = input.getAttribute("data-col");
+            const isCurr = input.getAttribute("data-type") === "currency";
+
+            const tableDef = getTableDefinitionByTag(currentActiveDictTableTag);
+            if (!tableDef) return;
+            const rows = getTableRowsForPackage(appState.activePackageIndex, tableDef.tag);
+            const row = rows[rIdx];
+            if (!row) return;
+
+            let val = input.value;
+            if (isCurr || colKey === "don_gia" || colKey === "so_tien") {
+                const rawNum = Number(val.replace(/[^\d.-]/g, "")) || 0;
+                row[colKey] = rawNum;
+            } else if (colKey === "so_luong" || colKey === "ty_le") {
+                row[colKey] = Number(val) || 0;
+            } else {
+                row[colKey] = val;
+            }
+
+            // Recalculate amount if BANG_HANG_HOA
+            if (tableDef.tag === "BANG_HANG_HOA") {
+                const q = Number(row.so_luong) || 0;
+                const p = Number(row.don_gia) || 0;
+                row.thanh_tien = q * p;
+                const tr = input.closest("tr");
+                if (tr) {
+                    const calcCell = tr.querySelector(".cell-calc-amount");
+                    if (calcCell) calcCell.textContent = formatCurrencyVND(row.thanh_tien);
+                }
+            }
+
+            // Update Summary
+            let overallTotal = 0;
+            rows.forEach(r => {
+                if (tableDef.totalCol === "thanh_tien") {
+                    const q = Number(r.so_luong) || 0;
+                    const p = Number(r.don_gia) || 0;
+                    overallTotal += (r.thanh_tien !== undefined ? Number(r.thanh_tien) : (q * p));
+                } else if (tableDef.totalCol && r[tableDef.totalCol] !== undefined) {
+                    overallTotal += Number(r[tableDef.totalCol]) || 0;
+                }
+            });
+
+            const totalFormattedEl = document.getElementById("dictTableTotalFormatted");
+            if (totalFormattedEl && tableDef.hasTotal) {
+                totalFormattedEl.textContent = formatCurrencyVND(overallTotal) + " VNĐ";
+            }
+            const inWordsEl = document.getElementById("dictTableInWords");
+            if (inWordsEl && tableDef.currencyWord) {
+                inWordsEl.textContent = readVietnameseCurrency(overallTotal);
+            }
+
+            saveState();
+            renderDocumentPreview();
+        });
+
+        dictCurrentTableGrid.addEventListener("blur", (e) => {
+            const input = e.target.closest('input[data-type="currency"]');
+            if (input) {
+                const rawNum = Number(input.value.replace(/[^\d.-]/g, "")) || 0;
+                input.value = formatCurrencyVND(rawNum);
+            }
+        }, true);
+
+        dictCurrentTableGrid.addEventListener("click", (e) => {
+            const btnDel = e.target.closest('button[data-action="delete-dict-row"]');
+            if (btnDel) {
+                const rIdx = parseInt(btnDel.getAttribute("data-row-idx"), 10);
+                const tableDef = getTableDefinitionByTag(currentActiveDictTableTag);
+                if (!tableDef) return;
+                const rows = getTableRowsForPackage(appState.activePackageIndex, tableDef.tag);
+                if (rIdx >= 0 && rIdx < rows.length) {
+                    rows.splice(rIdx, 1);
+                    rows.forEach((r, i) => { r.stt = i + 1; });
+                    saveState();
+                    renderDictTableView();
+                    renderDocumentPreview();
+                    showToast("Đã xóa dòng khỏi bảng.");
+                }
+            }
+        });
+    }
+
+    function deleteCustomTableDefinition(tag) {
+        if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn loại bảng "${tag}" không?`)) return;
+
+        let custom = [];
+        try {
+            const raw = localStorage.getItem("ho_so_custom_table_defs");
+            if (raw) custom = JSON.parse(raw);
+        } catch (e) {}
+
+        custom = custom.filter(t => t.tag !== tag);
+        saveCustomTableDefinitions(custom);
+
+        // Delete from all packages
+        (appState.packages || []).forEach(p => {
+            if (p.tableData && p.tableData[tag]) {
+                delete p.tableData[tag];
+            }
+        });
+
+        currentActiveDictTableTag = "BANG_HANG_HOA";
+        saveState();
+        updateDictBadgeCounts();
+        renderDictTableView();
+        renderDocumentPreview();
+        showToast(`Đã xóa loại bảng ${tag} thành công!`);
+    }
+
+    // Modal Create / Edit Custom Table Controller
+    const modalCreateCustomTable = document.getElementById("modalCreateCustomTable");
+    const btnOpenCreateCustomTableModal = document.getElementById("btnOpenCreateCustomTableModal");
+    const btnCloseCustomTableModal = document.getElementById("btnCloseCustomTableModal");
+    const btnCancelCustomTableModal = document.getElementById("btnCancelCustomTableModal");
+    const btnSaveCustomTable = document.getElementById("btnSaveCustomTable");
+    const btnAddCustomColumn = document.getElementById("btnAddCustomColumn");
+    const customColumnsList = document.getElementById("customColumnsList");
+    const inputCustomTableTag = document.getElementById("inputCustomTableTag");
+    const inputCustomTableName = document.getElementById("inputCustomTableName");
+    const inputCustomTableDesc = document.getElementById("inputCustomTableDesc");
+
+    function openCreateCustomTableModal() {
+        if (!modalCreateCustomTable) return;
+        modalCreateCustomTable.classList.remove("hidden");
+
+        if (inputCustomTableTag) inputCustomTableTag.value = "";
+        if (inputCustomTableName) inputCustomTableName.value = "";
+        if (inputCustomTableDesc) inputCustomTableDesc.value = "";
+
+        // Default columns draft: STT, Tên, Số lượng, Đơn giá, Ghi chú
+        customTableColumnsDraft = [
+            { key: "stt", label: "STT", type: "number", align: "center", widthPct: "8%" },
+            { key: "noi_dung", label: "Nội dung / Hạng mục", type: "text", align: "left", widthPct: "45%" },
+            { key: "so_luong", label: "Số lượng", type: "number", align: "right", widthPct: "15%" },
+            { key: "ghi_chu", label: "Ghi chú", type: "text", align: "left", widthPct: "32%" }
+        ];
+
+        renderCustomColumnsDraftList();
+        if (inputCustomTableTag) inputCustomTableTag.focus();
+    }
+
+    function closeCreateCustomTableModal() {
+        if (modalCreateCustomTable) modalCreateCustomTable.classList.add("hidden");
+    }
+
+    function renderCustomColumnsDraftList() {
+        if (!customColumnsList) return;
+        let html = "";
+        customTableColumnsDraft.forEach((col, idx) => {
+            html += `
+                <div class="flex items-center gap-1.5 bg-white p-1.5 rounded border border-slate-200 text-xs" data-col-idx="${idx}">
+                    <span class="font-bold text-slate-400 w-5 text-center">${idx + 1}</span>
+                    <input type="text" data-field="label" value="${escapeXml(col.label)}" placeholder="Tên cột..." class="flex-1 border border-slate-300 rounded px-1.5 py-0.5 text-xs font-medium">
+                    <select data-field="type" class="border border-slate-300 rounded px-1.5 py-0.5 text-xs bg-slate-50">
+                        <option value="text" ${col.type === 'text' ? 'selected' : ''}>Văn bản</option>
+                        <option value="number" ${col.type === 'number' ? 'selected' : ''}>Số lượng</option>
+                        <option value="currency" ${col.type === 'currency' ? 'selected' : ''}>Số tiền (VNĐ)</option>
+                    </select>
+                    <select data-field="align" class="border border-slate-300 rounded px-1.5 py-0.5 text-xs bg-slate-50">
+                        <option value="left" ${col.align === 'left' ? 'selected' : ''}>Trái</option>
+                        <option value="center" ${col.align === 'center' ? 'selected' : ''}>Giữa</option>
+                        <option value="right" ${col.align === 'right' ? 'selected' : ''}>Phải</option>
+                    </select>
+                    <button type="button" data-action="delete-col" class="text-slate-400 hover:text-red-600 p-1 cursor-pointer" title="Xóa cột này">
+                        <i class="fa-solid fa-trash-can text-[10px]"></i>
+                    </button>
+                </div>
+            `;
+        });
+        customColumnsList.innerHTML = html;
+
+        // Column delete
+        customColumnsList.querySelectorAll('button[data-action="delete-col"]').forEach(btn => {
+            btn.onclick = (e) => {
+                const tr = btn.closest('[data-col-idx]');
+                const cIdx = parseInt(tr.getAttribute("data-col-idx"), 10);
+                if (customTableColumnsDraft.length <= 1) {
+                    showToast("Bảng cần có ít nhất 1 cột!", "warning");
+                    return;
+                }
+                customTableColumnsDraft.splice(cIdx, 1);
+                renderCustomColumnsDraftList();
+            };
+        });
+
+        // Field change listener
+        customColumnsList.querySelectorAll("input, select").forEach(el => {
+            el.onchange = () => {
+                const tr = el.closest('[data-col-idx]');
+                const cIdx = parseInt(tr.getAttribute("data-col-idx"), 10);
+                const field = el.getAttribute("data-field");
+                if (customTableColumnsDraft[cIdx]) {
+                    customTableColumnsDraft[cIdx][field] = el.value;
+                }
+            };
+        });
+    }
+
+    if (btnOpenCreateCustomTableModal) btnOpenCreateCustomTableModal.onclick = openCreateCustomTableModal;
+    if (btnCloseCustomTableModal) btnCloseCustomTableModal.onclick = closeCreateCustomTableModal;
+    if (btnCancelCustomTableModal) btnCancelCustomTableModal.onclick = closeCreateCustomTableModal;
+
+    if (btnAddCustomColumn) {
+        btnAddCustomColumn.onclick = () => {
+            const nextIdx = customTableColumnsDraft.length + 1;
+            customTableColumnsDraft.push({
+                key: `col_${nextIdx}`,
+                label: `Cột ${nextIdx}`,
+                type: "text",
+                align: "left",
+                widthPct: "20%"
+            });
+            renderCustomColumnsDraftList();
+        };
+    }
+
+    if (btnSaveCustomTable) {
+        btnSaveCustomTable.onclick = () => {
+            let rawTag = (inputCustomTableTag ? inputCustomTableTag.value.trim() : "").toUpperCase();
+            rawTag = rawTag.replace(/[^A-Z0-9_]/g, "_").replace(/^_+|_+$/g, "");
+            if (!rawTag.startsWith("BANG_")) {
+                rawTag = "BANG_" + rawTag;
+            }
+
+            if (rawTag === "BANG_") {
+                showToast("Vui lòng nhập mã thẻ hợp lệ (VD: BANG_VAT_TU_PHU)!", "warning");
+                if (inputCustomTableTag) inputCustomTableTag.focus();
+                return;
+            }
+
+            const name = (inputCustomTableName ? inputCustomTableName.value.trim() : "") || rawTag;
+            const desc = inputCustomTableDesc ? inputCustomTableDesc.value.trim() : "";
+
+            // Check duplicate tag
+            const existing = getTableDefinitionByTag(rawTag);
+            if (existing) {
+                showToast(`Mã thẻ {${rawTag}} đã tồn tại! Vui lòng chọn tên mã khác.`, "error");
+                return;
+            }
+
+            // Sync columns
+            customColumnsList.querySelectorAll('[data-col-idx]').forEach(tr => {
+                const cIdx = parseInt(tr.getAttribute("data-col-idx"), 10);
+                const lbl = tr.querySelector('input[data-field="label"]').value.trim();
+                const typ = tr.querySelector('select[data-field="type"]').value;
+                const alg = tr.querySelector('select[data-field="align"]').value;
+                if (customTableColumnsDraft[cIdx]) {
+                    customTableColumnsDraft[cIdx].label = lbl || `Cột ${cIdx + 1}`;
+                    customTableColumnsDraft[cIdx].type = typ;
+                    customTableColumnsDraft[cIdx].align = alg;
+                    if (!customTableColumnsDraft[cIdx].key) {
+                        customTableColumnsDraft[cIdx].key = `col_${cIdx + 1}`;
+                    }
+                }
+            });
+
+            // Ensure unique column keys
+            customTableColumnsDraft.forEach((c, i) => {
+                if (!c.key) c.key = `col_${i + 1}`;
+                if (i === 0 && !c.key) c.key = "stt";
+            });
+
+            const hasCurrency = customTableColumnsDraft.some(c => c.type === "currency");
+            const newTableDef = {
+                tag: rawTag,
+                name: name,
+                icon: "📋",
+                desc: desc || `Bảng dữ liệu {${rawTag}} chèn vào Word mẫu.`,
+                isSystem: false,
+                hasTotal: hasCurrency,
+                totalCol: hasCurrency ? (customTableColumnsDraft.find(c => c.type === "currency")?.key || "") : "",
+                currencyWord: hasCurrency,
+                columns: customTableColumnsDraft,
+                defaultRows: [
+                    { stt: 1 }
+                ]
+            };
+
+            let customList = [];
+            try {
+                const raw = localStorage.getItem("ho_so_custom_table_defs");
+                if (raw) customList = JSON.parse(raw);
+            } catch (e) {}
+
+            customList.push(newTableDef);
+            saveCustomTableDefinitions(customList);
+
+            currentActiveDictTableTag = rawTag;
+            updateDictBadgeCounts();
+            renderDictTableView();
+            closeCreateCustomTableModal();
+            showToast(`Đã tạo thành công loại bảng {${rawTag}}! Bạn có thể copy mã Word ngay bây giờ.`, "success");
+        };
+    }
+
 
     // Expose helpers globally
     window.renderTableEditor = renderTableEditor;
@@ -8485,6 +9239,13 @@
     window.formatCurrencyVND = formatCurrencyVND;
     window.readVietnameseCurrency = readVietnameseCurrency;
     window.buildDocxTableXml = buildDocxTableXml;
+    window.getAllTableDefinitions = getAllTableDefinitions;
+    window.getTableDefinitionByTag = getTableDefinitionByTag;
+    window.buildGenericDocxTableXml = buildGenericDocxTableXml;
+    window.renderGenericTableHtml = renderGenericTableHtml;
+    window.renderDictTableView = renderDictTableView;
+    window.renderDocxBlob = renderDocxBlob;
+    window.renderMergedDocxBlob = renderMergedDocxBlob;
 
     window.appState = appState;
     window.PROCUREMENT_MATRIX = PROCUREMENT_MATRIX;

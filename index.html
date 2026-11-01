@@ -1003,79 +1003,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Section 10: Danh mục hàng hóa / Dịch vụ (Bảng lặp) -->
-                <div class="accordion-item bg-white rounded border border-slate-200 overflow-hidden shadow-xs" id="accordionSecTableVars">
-                    <button class="accordion-header w-full px-2.5 py-1 bg-slate-50 hover:bg-slate-100 flex items-center justify-between text-left text-xs font-bold text-slate-700 h-7 border-b border-slate-200">
-                        <div class="flex items-center space-x-1.5">
-                            <i class="fa-solid fa-table-list text-indigo-600"></i>
-                            <span>10. Danh mục hàng hóa / Dịch vụ (Bảng lặp)</span>
-                        </div>
-                        <div class="flex items-center space-x-1.5">
-                            <span id="tableRowsBadge" class="sec-badge text-[10px] bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded-full font-bold">0 mặt hàng</span>
-                            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 transition-transform"></i>
-                        </div>
-                    </button>
-                    <div class="accordion-content p-2 space-y-2">
-                        <!-- Action Toolbar -->
-                        <div class="flex flex-wrap items-center justify-between gap-1 pb-1 border-b border-slate-100">
-                            <div class="flex items-center gap-1">
-                                <button type="button" id="btnAddTableRow" class="px-2 py-0.5 text-[11px] font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded shadow-2xs flex items-center gap-1 transition-colors cursor-pointer" title="Thêm một hàng mới vào danh mục">
-                                    <i class="fa-solid fa-plus text-[10px]"></i>
-                                    <span>Thêm hàng</span>
-                                </button>
-                                <button type="button" id="btnOpenPasteExcel" class="px-2 py-0.5 text-[11px] font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded shadow-2xs flex items-center gap-1 transition-colors cursor-pointer" title="Dán trực tiếp các dòng từ Microsoft Excel hoặc Google Sheets">
-                                    <i class="fa-solid fa-file-excel text-emerald-600 text-[10px]"></i>
-                                    <span>Dán từ Excel</span>
-                                </button>
-                            </div>
-                            <div class="flex items-center gap-1">
-                                <button type="button" id="btnSyncTableToPrice" class="px-2 py-0.5 text-[10.5px] font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded shadow-2xs flex items-center gap-1 transition-colors cursor-pointer" title="Đồng bộ tổng thành tiền sang ô Giá gói thầu và Giá trị HĐ">
-                                    <i class="fa-solid fa-rotate text-[10px]"></i>
-                                    <span>Đồng bộ giá</span>
-                                </button>
-                                <button type="button" id="btnClearTableRows" class="px-1.5 py-0.5 text-[10px] text-slate-400 hover:text-red-600 rounded transition-colors cursor-pointer" title="Xóa toàn bộ hàng trong bảng">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Table Container (Horizontal Scroll for Responsive View) -->
-                        <div class="overflow-x-auto border border-slate-200 rounded bg-white shadow-2xs" style="max-height: 380px;">
-                            <table class="w-full text-left text-[11px] border-collapse" id="tblGoodsItemsEditor">
-                                <thead class="bg-slate-50 text-slate-700 font-bold sticky top-0 border-b border-slate-200 z-10">
-                                    <tr>
-                                        <th class="py-1 px-1.5 w-7 text-center">STT</th>
-                                        <th class="py-1 px-1.5 min-w-[140px]">Tên hàng hóa / Thiết bị / Dịch vụ</th>
-                                        <th class="py-1 px-1 w-12 text-center">ĐVT</th>
-                                        <th class="py-1 px-1 w-12 text-right">SL</th>
-                                        <th class="py-1 px-1.5 w-24 text-right">Đơn giá</th>
-                                        <th class="py-1 px-1.5 w-24 text-right">Thành tiền</th>
-                                        <th class="py-1 px-1.5 min-w-[90px]">Ghi chú</th>
-                                        <th class="py-1 px-1 w-7 text-center"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tblGoodsItemsBody" class="divide-y divide-slate-100">
-                                    <!-- Dynamic rows generated by JS -->
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Table Summary Card -->
-                        <div class="bg-indigo-50/60 border border-indigo-100 rounded p-2 text-xs space-y-1">
-                            <div class="flex items-center justify-between font-bold text-slate-800">
-                                <span class="text-indigo-900 uppercase tracking-wide text-[10.5px]">Tổng thành tiền:</span>
-                                <span id="tableSummaryTotalFormatted" class="text-sm font-extrabold text-emerald-700">0 VNĐ</span>
-                            </div>
-                            <div class="text-[11px] text-slate-600 italic">
-                                <span class="font-semibold text-slate-700 not-italic">Bằng chữ:</span>
-                                <span id="tableSummaryInWords">Không đồng</span>
-                            </div>
-                            <div class="pt-1 text-[10px] text-slate-500 border-t border-indigo-100/70 flex items-center justify-between">
-                                <span>Mã biến chèn vào Word / Mẫu: <code class="px-1 py-0.5 bg-white border border-slate-200 rounded text-indigo-700 font-bold font-mono">{BANG_HANG_HOA}</code></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Section 10 đã được chuyển thành Tab Biến dạng bảng tại Từ Điển & Tra Cứu Biến Xạ -->
 
 
 
@@ -1682,6 +1610,22 @@
                 </div>
                 <button id="btnCloseVarsModal" type="button" class="text-slate-400 hover:text-slate-600 text-base cursor-pointer px-1 py-0.5 rounded hover:bg-slate-100 leading-none">&times;</button>
             </div>
+            <!-- Top Mode Tabs: 1. Biến đơn lẻ vs 2. Biến dạng bảng -->
+            <div class="flex items-center gap-2 border-b border-slate-200 bg-slate-50/70 px-1 pt-1.5 shrink-0">
+                <button type="button" id="tabDictScalarMode" class="dict-nav-tab px-3 py-1.5 font-bold text-xs border-b-2 border-emerald-600 text-emerald-700 flex items-center gap-1.5 cursor-pointer transition-all bg-white rounded-t">
+                    <i class="fa-solid fa-file-lines text-emerald-600"></i>
+                    <span>1. Biến đơn lẻ (Văn bản &amp; Số liệu)</span>
+                    <span id="badgeDictScalarCount" class="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full font-bold">61</span>
+                </button>
+                <button type="button" id="tabDictTableMode" class="dict-nav-tab px-3 py-1.5 font-medium text-xs border-b-2 border-transparent text-slate-500 hover:text-indigo-700 hover:bg-indigo-50/40 flex items-center gap-1.5 cursor-pointer transition-all rounded-t">
+                    <i class="fa-solid fa-table-cells text-indigo-600"></i>
+                    <span>2. Các loại Biến dạng bảng ({BANG_...})</span>
+                    <span id="badgeDictTableCount" class="text-[10px] bg-indigo-100 text-indigo-800 px-1.5 py-0.2 rounded-full font-bold">3 loại</span>
+                </button>
+            </div>
+
+            <!-- TAB 1: VIEW BIẾN ĐƠN LẺ -->
+            <div id="dictScalarVarsView" class="flex flex-col flex-1 min-h-0">
 
             <!-- Search & Filters Toolbar -->
             <div class="py-1.5 border-b border-slate-100 space-y-1.5 shrink-0">
@@ -1795,6 +1739,116 @@
                 </table>
             </div>
             
+                        </div>
+            <!-- /#dictScalarVarsView -->
+
+            <!-- TAB 2: QUẢN LÝ BIẾN DẠNG BẢNG ({BANG_...}) -->
+            <div id="dictTableVarsView" class="flex flex-col flex-1 min-h-0 hidden space-y-2 pt-2">
+                <!-- Top Toolbar: Package selection & Table actions -->
+                <div class="flex flex-wrap items-center justify-between gap-1.5 pb-2 border-b border-slate-200 shrink-0">
+                    <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1 text-[11px] text-slate-600 bg-slate-100 px-2 py-1 rounded border border-slate-200">
+                            <span class="font-bold text-slate-700"><i class="fa-solid fa-box text-indigo-600"></i> Gói thầu:</span>
+                            <select id="dictTablePkgSelect" class="bg-white border border-slate-300 text-slate-800 rounded px-1.5 py-0.5 text-xs font-semibold focus:ring-1 focus:ring-indigo-500 cursor-pointer">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <span class="text-[11px] text-slate-400">|</span>
+                        <span class="text-[11px] text-slate-500 font-medium">Chọn loại bảng bên dưới để chỉnh sửa dữ liệu và sao chép mã Word:</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" id="btnOpenCreateCustomTableModal" class="px-2.5 py-1 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded shadow-xs flex items-center gap-1 cursor-pointer transition-colors" title="Tạo thêm bảng biến xạ mới theo cấu trúc tùy ý">
+                            <i class="fa-solid fa-plus text-[10px]"></i>
+                            <span>Tạo loại bảng mới</span>
+                        </button>
+                        <button type="button" id="btnResetTableDefs" class="px-2 py-1 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded flex items-center gap-1 cursor-pointer transition-colors" title="Khôi phục danh mục bảng về các bảng chuẩn ban đầu">
+                            <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                            <span>Mặc định</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table Type Switcher Pills -->
+                <div id="dictTableTypePills" class="flex flex-wrap items-center gap-1.5 shrink-0 pb-1 border-b border-slate-100 text-[11px]">
+                    <!-- Generated dynamically: BANG_HANG_HOA, BANG_NHAN_SU, BANG_TIEN_DO, plus user-defined custom tables -->
+                </div>
+
+                <!-- Active Table Banner with Prominent Copy Tag Button -->
+                <div class="bg-gradient-to-r from-indigo-50/90 via-slate-50 to-emerald-50/80 border border-indigo-200/90 rounded-lg p-2.5 shrink-0 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+                    <div class="space-y-0.5">
+                        <div class="flex items-center gap-2">
+                            <span id="activeTableIcon" class="text-base text-indigo-700">📦</span>
+                            <span id="activeTableTitle" class="font-bold text-slate-800 text-xs">BANG_HANG_HOA - Danh mục hàng hóa / Thiết bị / Dịch vụ</span>
+                            <span id="activeTableRowCountBadge" class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.2 rounded-full">0 dòng</span>
+                        </div>
+                        <p id="activeTableDesc" class="text-[10.5px] text-slate-600">
+                            Bảng danh mục chi tiết kèm quy cách, số lượng, đơn giá và tự động tính thành tiền.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" id="btnCopyActiveTableTag" class="px-3.5 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 rounded-lg shadow-sm flex items-center gap-1.5 cursor-pointer transition-all active:scale-95" title="Bấm để copy mã thẻ Word {BANG_...}">
+                            <i class="fa-solid fa-copy text-xs"></i>
+                            <span>Copy mã Word: <span id="lblActiveTableTagCode" class="font-mono underline font-extrabold">{BANG_HANG_HOA}</span></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Action Toolbar for Current Table Rows -->
+                <div class="flex flex-wrap items-center justify-between gap-1 pb-1 pt-0.5 shrink-0">
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" id="btnAddRowInDict" class="px-2.5 py-1 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded shadow-2xs flex items-center gap-1 cursor-pointer transition-colors" title="Thêm một dòng mới vào bảng">
+                            <i class="fa-solid fa-plus text-[10px]"></i>
+                            <span>Thêm dòng</span>
+                        </button>
+                        <button type="button" id="btnPasteExcelInDict" class="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded shadow-2xs flex items-center gap-1 cursor-pointer transition-colors" title="Dán trực tiếp các dòng từ Microsoft Excel hoặc Google Sheets">
+                            <i class="fa-solid fa-file-excel text-emerald-600 text-[11px]"></i>
+                            <span>Dán từ Excel (Ctrl+V)</span>
+                        </button>
+                        <button type="button" id="btnSyncActiveTablePrice" class="px-2.5 py-1 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded shadow-2xs flex items-center gap-1 cursor-pointer transition-colors" title="Đồng bộ tổng thành tiền vào trường Giá gói thầu và Hợp đồng của gói đang chọn">
+                            <i class="fa-solid fa-rotate text-[10px]"></i>
+                            <span>Đồng bộ giá vào gói</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" id="btnEditCustomTableDef" class="px-2 py-1 text-xs text-slate-600 hover:text-indigo-700 bg-slate-100 hover:bg-indigo-50 border border-slate-200 rounded transition-colors cursor-pointer hidden" title="Chỉnh sửa tên và các cột của loại bảng này">
+                            <i class="fa-solid fa-pen-to-square text-[10px]"></i>
+                            <span>Sửa cột</span>
+                        </button>
+                        <button type="button" id="btnDeleteCustomTableDef" class="px-2 py-1 text-xs text-slate-600 hover:text-red-700 bg-slate-100 hover:bg-red-50 border border-slate-200 rounded transition-colors cursor-pointer hidden" title="Xóa loại bảng tự tạo này">
+                            <i class="fa-solid fa-trash-can text-[10px]"></i>
+                            <span>Xóa loại bảng</span>
+                        </button>
+                        <button type="button" id="btnClearActiveTableRows" class="px-2 py-1 text-xs text-slate-400 hover:text-red-600 rounded transition-colors cursor-pointer" title="Làm trống toàn bộ dòng của bảng này">
+                            <i class="fa-solid fa-eraser text-[10px]"></i>
+                            <span>Xóa hết dòng</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table Container (Horizontal & Vertical Scrollable) -->
+                <div class="flex-1 overflow-auto border border-slate-200 rounded-lg bg-white shadow-2xs min-h-[220px]" id="dictTableGridContainer">
+                    <table class="w-full text-left text-xs border-collapse" id="dictCurrentTableGrid">
+                        <!-- Populated dynamically based on active table columns -->
+                    </table>
+                </div>
+
+                <!-- Table Summary Card / Footer -->
+                <div id="dictTableSummaryCard" class="bg-indigo-50/70 border border-indigo-100 rounded-lg p-2 text-xs space-y-1 shrink-0">
+                    <div class="flex items-center justify-between font-bold text-slate-800">
+                        <span class="text-indigo-900 uppercase tracking-wide text-[10.5px]">Tổng cộng:</span>
+                        <span id="dictTableTotalFormatted" class="text-sm font-extrabold text-emerald-700">0 VNĐ</span>
+                    </div>
+                    <div id="dictTableWordsRow" class="text-[11px] text-slate-600 italic">
+                        <span class="font-semibold text-slate-700 not-italic">Số tiền bằng chữ:</span>
+                        <span id="dictTableInWords">Không đồng</span>
+                    </div>
+                    <div class="pt-1 text-[10.5px] text-slate-500 border-t border-indigo-100/70 flex items-center justify-between">
+                        <span>💡 <b class="text-slate-700">Cách dùng trong Word:</b> Copy mã <code id="dictTableTagHint" class="px-1.5 py-0.2 bg-white border border-slate-300 rounded text-indigo-700 font-bold font-mono">{BANG_HANG_HOA}</code> và dán vào bất cứ đoạn nào trong file Word mẫu (.docx). Phần mềm sẽ tự động dựng bảng kẻ viền đầy đủ chuẩn thể thức hành chính tại đúng vị trí đó!</span>
+                    </div>
+                </div>
+            </div>
+            <!-- /#dictTableVarsView -->
+
             <!-- Footer -->
             <div class="pt-2 border-t border-slate-200 flex items-center justify-between shrink-0 text-[11px] text-slate-500">
                 <div class="flex items-center gap-1.5">
@@ -2512,6 +2566,77 @@
 
     
     <!-- Modal: Dán bảng dữ liệu từ Microsoft Excel / Google Sheets -->
+    
+    <!-- Modal: Tạo / Chỉnh Sửa Loại Bảng Mới -->
+    <div id="modalCreateCustomTable" class="fixed inset-0 bg-slate-900/70 z-[80] flex items-center justify-center p-3 hidden backdrop-blur-xs">
+        <div class="bg-white rounded-xl max-w-2xl w-full p-4 shadow-2xl border border-slate-200 text-xs flex flex-col max-h-[90vh] space-y-3">
+            <div class="flex items-center justify-between border-b pb-2 border-slate-200 shrink-0">
+                <div class="flex items-center space-x-2">
+                    <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm shadow-2xs">
+                        <i class="fa-solid fa-table-cells"></i>
+                    </div>
+                    <div>
+                        <h3 id="modalCustomTableTitle" class="font-bold text-slate-900 text-sm">Tạo Loại Biến Dạng Bảng Mới</h3>
+                        <p class="text-[10px] text-slate-500">Định nghĩa bảng và các cột. Sau khi tạo, bạn có thể copy mã {TAG} dán vào bất kỳ file Word nào.</p>
+                    </div>
+                </div>
+                <button id="btnCloseCustomTableModal" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer px-1.5 py-0.5 rounded hover:bg-slate-100 leading-none">&times;</button>
+            </div>
+
+            <div class="space-y-3 overflow-y-auto flex-1 pr-1">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-0.5">Mã thẻ chèn vào Word <span class="text-red-500">*</span>:</label>
+                        <div class="flex items-center">
+                            <span class="px-2 py-1.5 bg-slate-100 border border-r-0 border-slate-300 rounded-l text-slate-500 font-mono font-bold text-xs">{</span>
+                            <input id="inputCustomTableTag" type="text" placeholder="BANG_TEN_BANG" class="w-full border border-slate-300 p-1.5 text-xs font-mono font-bold uppercase text-indigo-700 focus:ring-1 focus:ring-indigo-500">
+                            <span class="px-2 py-1.5 bg-slate-100 border border-l-0 border-slate-300 rounded-r text-slate-500 font-mono font-bold text-xs">}</span>
+                        </div>
+                        <p class="text-[9.5px] text-slate-400 mt-0.5">Gợi ý: Viết hoa không dấu, bắt đầu bằng BANG_</p>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-0.5">Tên hiển thị của bảng <span class="text-red-500">*</span>:</label>
+                        <input id="inputCustomTableName" type="text" placeholder="VD: Bảng thông số kỹ thuật thiết bị" class="w-full border border-slate-300 rounded p-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-0.5">Mô tả / Mục đích sử dụng:</label>
+                    <input id="inputCustomTableDesc" type="text" placeholder="VD: Danh sách các linh kiện, thông số kỹ thuật yêu cầu..." class="w-full border border-slate-300 rounded p-1.5 text-xs text-slate-800 focus:ring-1 focus:ring-indigo-500">
+                </div>
+
+                <!-- Columns Configuration -->
+                <div class="border border-slate-200 rounded-lg p-2.5 bg-slate-50/70 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-800 flex items-center gap-1.5">
+                            <i class="fa-solid fa-table-columns text-indigo-600"></i>
+                            <span>Cấu hình các cột trong bảng:</span>
+                        </span>
+                        <button type="button" id="btnAddCustomColumn" class="px-2 py-0.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded cursor-pointer transition-colors flex items-center gap-1">
+                            <i class="fa-solid fa-plus text-[9px]"></i>
+                            <span>Thêm cột</span>
+                        </button>
+                    </div>
+
+                    <div class="max-h-48 overflow-y-auto space-y-1.5" id="customColumnsList">
+                        <!-- Dynamic list of columns -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-200 flex items-center justify-between shrink-0">
+                <span class="text-[10px] text-slate-500">Hỗ trợ các loại cột: Văn bản, Số lượng, Số tiền (VNĐ).</span>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btnCancelCustomTableModal" class="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded cursor-pointer">Hủy</button>
+                    <button type="button" id="btnSaveCustomTable" class="px-4 py-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded shadow-xs cursor-pointer flex items-center gap-1">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Lưu loại bảng</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="modalPasteExcelTable" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 hidden">
         <div class="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-2xl w-full overflow-hidden flex flex-col max-h-[90vh]">
             <div class="px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex items-center justify-between">
@@ -2579,7 +2704,7 @@
     </div>
 
     <!-- Script RBAC & Xác thực tài khoản -->
-    <script src="app.js?v=20261101_v9"></script>
+    <script src="app.js?v=20261101_v10"></script>
     <script src="auth.js"></script>
 
 </body>
