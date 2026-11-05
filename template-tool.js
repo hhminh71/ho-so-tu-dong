@@ -280,7 +280,7 @@
     // -------------------------------------------------------------
     // View Switcher (Batch Mode vs Single Doc Editor)
     // -------------------------------------------------------------
-    function switchViewMode(mode) {
+    async function switchViewMode(mode) {
         state.viewMode = mode;
         if (mode === "batch") {
             batchWorkspace.classList.remove("hidden");
@@ -293,9 +293,11 @@
             singleWorkspace.classList.remove("hidden");
             btnViewSingleMode.className = "px-2.5 py-0.5 rounded bg-white text-emerald-900 shadow-2xs flex items-center gap-1 cursor-pointer transition-all";
             btnViewBatchMode.className = "px-2.5 py-0.5 rounded text-slate-600 hover:text-slate-900 flex items-center gap-1 cursor-pointer transition-all";
-            renderSingleView();
+            await renderSingleView();
         }
     }
+    window.switchViewMode = switchViewMode;
+    window.studioState = state;
 
     if (btnViewBatchMode) btnViewBatchMode.onclick = () => switchViewMode("batch");
     if (btnViewSingleMode) btnViewSingleMode.onclick = () => {
@@ -564,20 +566,42 @@
 
         batchDocumentsTableBody.innerHTML = wf.documents.map((doc, idx) => {
             const batchItem = state.batchFiles[doc.id];
-            if (batchItem) filledCount++;
+            const hasCustomSaved = !!localStorage.getItem("ho_so_custom_template_" + doc.id);
+            const hasBuiltin = (typeof BUILTIN_DOCX_FILE_MAP !== "undefined") && !!BUILTIN_DOCX_FILE_MAP[doc.id];
+            const hasAnyTemplate = !!batchItem || hasCustomSaved || hasBuiltin;
+            if (hasAnyTemplate) filledCount++;
 
-            const fileCell = batchItem ? `
-                <div class="flex items-center space-x-1.5 font-medium text-slate-800 text-[10.5px]">
-                    <i class="fa-solid fa-file-word text-blue-600 text-xs shrink-0"></i>
-                    <span class="truncate max-w-[200px]" title="${batchItem.name}">${batchItem.name}</span>
-                    <span class="text-[9px] text-slate-400 font-mono shrink-0">(${(batchItem.size/1024).toFixed(0)}KB)</span>
-                </div>
-            ` : `
-                <div class="text-slate-400 italic text-[10px] flex items-center gap-1">
-                    <i class="fa-regular fa-circle-xmark text-slate-300 text-[9px]"></i>
-                    <span>Chưa có file</span>
-                </div>
-            `;
+            let fileCell = "";
+            if (batchItem) {
+                fileCell = `
+                    <div class="flex items-center space-x-1.5 font-medium text-slate-800 text-[10.5px]">
+                        <i class="fa-solid fa-file-word text-blue-600 text-xs shrink-0"></i>
+                        <span class="truncate max-w-[200px]" title="${batchItem.name}">${batchItem.name}</span>
+                        ${batchItem.size ? `<span class="text-[9px] text-slate-400 font-mono shrink-0">(${(batchItem.size/1024).toFixed(0)}KB)</span>` : ""}
+                    </div>
+                `;
+            } else if (hasCustomSaved) {
+                fileCell = `
+                    <div class="flex items-center space-x-1.5 font-medium text-amber-800 text-[10.5px]">
+                        <i class="fa-solid fa-star text-amber-500 text-xs shrink-0"></i>
+                        <span class="truncate max-w-[200px]" title="Mẫu đã chỉnh sửa và áp dụng làm chuẩn">Mẫu chuẩn tùy biến</span>
+                    </div>
+                `;
+            } else if (hasBuiltin) {
+                fileCell = `
+                    <div class="flex items-center space-x-1.5 font-medium text-slate-700 text-[10.5px]">
+                        <i class="fa-solid fa-file-word text-blue-500 text-xs shrink-0"></i>
+                        <span class="truncate max-w-[200px]" title="Mẫu Word tích hợp sẵn trong hệ thống">Mẫu gốc có sẵn</span>
+                    </div>
+                `;
+            } else {
+                fileCell = `
+                    <div class="text-slate-400 italic text-[10px] flex items-center gap-1">
+                        <i class="fa-regular fa-circle-xmark text-slate-300 text-[9px]"></i>
+                        <span>Chưa có file</span>
+                    </div>
+                `;
+            }
 
             // Tier distribution pills
             let tagsSummary = `<span class="text-slate-300 text-[10px]">—</span>`;
@@ -597,9 +621,16 @@
                 `;
             }
 
-            const statusBadge = batchItem 
-                ? `<span class="bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold px-1.5 py-0.2 rounded text-[9.5px] inline-flex items-center gap-1"><i class="fa-solid fa-check text-[8.5px]"></i> Đã khớp</span>`
-                : `<span class="bg-slate-50 text-slate-400 border border-slate-200 font-medium px-1.5 py-0.2 rounded text-[9.5px] inline-flex items-center gap-1">Chờ file</span>`;
+            let statusBadge = "";
+            if (hasCustomSaved) {
+                statusBadge = `<span class="bg-amber-50 text-amber-800 border border-amber-300 font-bold px-1.5 py-0.2 rounded text-[9.5px] inline-flex items-center gap-1"><i class="fa-solid fa-star text-amber-500 text-[8.5px]"></i> Mẫu tùy biến</span>`;
+            } else if (batchItem) {
+                statusBadge = `<span class="bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold px-1.5 py-0.2 rounded text-[9.5px] inline-flex items-center gap-1"><i class="fa-solid fa-check text-[8.5px]"></i> Đã khớp</span>`;
+            } else if (hasBuiltin) {
+                statusBadge = `<span class="bg-blue-50 text-blue-700 border border-blue-200 font-semibold px-1.5 py-0.2 rounded text-[9.5px] inline-flex items-center gap-1"><i class="fa-solid fa-cube text-blue-500 text-[8.5px]"></i> Mẫu có sẵn</span>`;
+            } else {
+                statusBadge = `<span class="bg-slate-50 text-slate-400 border border-slate-200 font-medium px-1.5 py-0.2 rounded text-[9.5px] inline-flex items-center gap-1">Chờ file</span>`;
+            }
 
             return `
                 <tr class="hover:bg-slate-50/80 transition-colors">
@@ -613,10 +644,10 @@
                     <td class="py-1 px-1.5 text-center border-r border-slate-100">${statusBadge}</td>
                     <td class="py-1 px-1.5 text-center">
                         <div class="flex items-center justify-center space-x-1">
-                            ${batchItem ? `
-                                <button type="button" class="btn-edit-doc-detail px-2 py-0.5 text-[9.5px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded cursor-pointer transition-colors flex items-center gap-1" data-id="${doc.id}" title="Soát chi tiết biến và xem trước văn bản">
+                            ${hasAnyTemplate ? `
+                                <button type="button" class="btn-edit-doc-detail px-2 py-0.5 text-[9.5px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded cursor-pointer transition-colors flex items-center gap-1" data-id="${doc.id}" title="Chỉnh sửa mẫu văn bản trực quan trong Template Studio">
                                     <i class="fa-solid fa-pen-to-square text-[8.5px]"></i>
-                                    <span>Sửa chi tiết</span>
+                                    <span>Chỉnh sửa mẫu</span>
                                 </button>
                                 <button type="button" class="btn-download-doc-single px-1.5 py-0.5 text-[9.5px] font-semibold text-indigo-700 hover:text-indigo-900 bg-indigo-50 border border-indigo-200 rounded cursor-pointer transition-colors" data-id="${doc.id}" title="Tải riêng template này">
                                     <i class="fa-solid fa-download text-[8.5px]"></i>
@@ -811,59 +842,686 @@
     }
 
     // -------------------------------------------------------------
-    // Single Document Deep Editor Controller
+    // Single Document Deep Editor Controller (Template Studio 2.0)
     // -------------------------------------------------------------
-    function renderSingleView() {
-        const wf = getCurrentWorkflow();
-        const docObj = wf.documents.find(d => d.id === state.activeDocId) || wf.documents[0];
-        const item = state.batchFiles[docObj.id];
+    const BUILTIN_DOCX_FILE_MAP = {
+        "cdtrg_1": "templates/01_To_trinh_KHLCNT.docx",
+        "cdtrg_2": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "cdtrg_3": "templates/1_Giay_moi_tham_gia.docx",
+        "cdtrg_4": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "cdtrg_5": "templates/3_To_trinh_chi_dinh_thau.docx",
+        "cdtrg_6": "templates/4_Quyet_dinh_chi_dinh_thau.docx",
+        "cdtrg_7": "templates/07_Hop_dong_kinh_te.docx",
+        "tk_sc_1": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_sc_2": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "tk_sc_3": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_sc_4": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_sc_5": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "tk_sc_6": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_sc_7": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_sc_8": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_sc_9": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "tk_sc_10": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "tk_sc_11": "templates/07_Hop_dong_kinh_te.docx"
+    };
 
-        if (singleDocTitle) singleDocTitle.textContent = `${docObj.code} - ${docObj.name}`;
-        if (singleDocFileNameBadge) {
-            singleDocFileNameBadge.textContent = item ? item.name : "(Chưa có file nạp)";
+    function base64ToArrayBuffer(base64) {
+        const binaryString = window.atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes.buffer;
+    }
+
+    function arrayBufferToBase64(buffer) {
+        let binary = "";
+        const bytes = new Uint8Array(buffer);
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return window.btoa(binary);
+    }
+
+    // Pre-built Table Definitions Catalog
+    const STUDIO_BUILTIN_TABLE_VARS = [
+        {
+            tag: "BANG_HANG_HOA",
+            name: "Bảng Danh mục Hàng hóa / Thiết bị",
+            desc: "Dành cho Hợp đồng, Phụ lục hoặc Báo cáo mua sắm",
+            columns: ["STT", "Tên hàng hóa / thiết bị", "ĐVT", "Khối lượng", "Đơn giá (VNĐ)", "Thành tiền (VNĐ)", "Xuất xứ / Ghi chú"],
+            sampleRows: [
+                { stt: 1, name: "Máy chủ lưu trữ dữ liệu chuyên dụng", unit: "Bộ", qty: 2, price: "35.000.000", total: "70.000.000", note: "Dell PowerEdge" },
+                { stt: 2, name: "Bộ lưu điện UPS Online 3kVA", unit: "Chiếc", qty: 2, price: "15.000.000", total: "30.000.000", note: "APC Smart-UPS" }
+            ]
+        },
+        {
+            tag: "BANG_NHAN_SU",
+            name: "Bảng Bố trí Nhân sự Thực hiện",
+            desc: "Bảng danh sách chuyên gia, kỹ sư và cán bộ chủ chốt",
+            columns: ["STT", "Họ và tên", "Chức vụ", "Trình độ chuyên môn", "Vị trí đảm nhiệm", "Ghi chú"],
+            sampleRows: [
+                { stt: 1, name: "Nguyễn Văn Tuấn", role: "Chủ nhiệm dự án", deg: "Thạc sĩ CNTT", pos: "Chỉ đạo chung kỹ thuật", note: "15 năm kinh nghiệm" },
+                { stt: 2, name: "Trần Minh Quang", role: "Kỹ sư trưởng", deg: "Kỹ sư Điện - Điện tử", pos: "Giám sát lắp đặt", note: "Chứng chỉ hành nghề Hạng I" }
+            ]
+        },
+        {
+            tag: "BANG_TIEN_DO",
+            name: "Bảng Kế hoạch Tiến độ Thực hiện",
+            desc: "Bảng chi tiết các mốc triển khai và bàn giao công việc",
+            columns: ["STT", "Nội dung công việc", "Thời gian (Ngày)", "Ngày bắt đầu", "Ngày hoàn thành", "Đơn vị thực hiện"],
+            sampleRows: [
+                { stt: 1, task: "Khảo sát hiện trạng và chuẩn bị mặt bằng", days: 3, start: "10/02/2027", end: "12/02/2027", unit: "Nhà thầu" },
+                { stt: 2, task: "Cung cấp, vận chuyển và lắp đặt thiết bị", days: 15, start: "13/02/2027", end: "27/02/2027", unit: "Nhà thầu & CĐT" },
+                { stt: 3, task: "Chạy thử, kiểm định và nghiệm thu bàn giao", days: 7, start: "28/02/2027", end: "06/03/2027", unit: "Hội đồng nghiệm thu" }
+            ]
+        }
+    ];
+
+    function getAllStudioTableVars() {
+        let customTables = [];
+        try {
+            const raw = localStorage.getItem("ho_so_custom_tables");
+            if (raw) customTables = JSON.parse(raw);
+        } catch (e) {
+            console.warn("Lỗi đọc custom tables:", e);
+        }
+        return [...STUDIO_BUILTIN_TABLE_VARS, ...customTables];
+    }
+
+    // Auto-load template buffer for any document
+    async function getOrLoadBufferForDocument(docId) {
+        if (state.batchFiles[docId] && state.batchFiles[docId].arrayBuffer) {
+            return state.batchFiles[docId];
         }
 
-        if (!item) {
-            if (singleMappingRowsContainer) {
-                singleMappingRowsContainer.innerHTML = `
-                    <div class="p-6 text-center text-slate-400 italic">
-                        Văn bản này chưa có file Word. Vui lòng quay lại danh sách bộ để nạp file.
-                    </div>
-                `;
+        // 1. Kiểm tra mẫu tùy biến đã lưu trong localStorage
+        const customB64 = localStorage.getItem("ho_so_custom_template_" + docId);
+        let arrayBuffer = null;
+        let fileName = "";
+        let isCustom = false;
+
+        if (customB64) {
+            try {
+                arrayBuffer = base64ToArrayBuffer(customB64);
+                fileName = `${docId}_custom.docx`;
+                isCustom = true;
+            } catch (e) {
+                console.warn("Lỗi giải mã template tùy biến từ localStorage:", e);
             }
-            if (documentContentDisplay) {
-                documentContentDisplay.innerHTML = `
-                    <div class="p-12 text-center text-slate-400 italic">
-                        Chưa có nội dung văn bản.
-                    </div>
-                `;
+        }
+
+        // 2. Nếu chưa có, nạp từ bộ mẫu nhúng sẵn BUILTIN_DOCX_TEMPLATES
+        if (!arrayBuffer && window.BUILTIN_DOCX_TEMPLATES) {
+            const tPath = BUILTIN_DOCX_FILE_MAP[docId] || "templates/01_To_trinh_KHLCNT.docx";
+            let b64 = window.BUILTIN_DOCX_TEMPLATES[tPath];
+            if (!b64) {
+                const baseName = tPath.split("/").pop();
+                const matchedKey = Object.keys(window.BUILTIN_DOCX_TEMPLATES).find(k => k.endsWith(baseName));
+                if (matchedKey) b64 = window.BUILTIN_DOCX_TEMPLATES[matchedKey];
             }
+            if (!b64) {
+                b64 = window.BUILTIN_DOCX_TEMPLATES["templates/01_To_trinh_KHLCNT.docx"] || Object.values(window.BUILTIN_DOCX_TEMPLATES)[0];
+            }
+            if (b64) {
+                arrayBuffer = base64ToArrayBuffer(b64);
+                fileName = tPath.split("/").pop();
+                isCustom = false;
+            }
+        }
+
+        if (!arrayBuffer) return null;
+
+        const paragraphs = await extractParagraphsFromBuffer(arrayBuffer);
+        const wf = getCurrentWorkflow();
+        const docObj = wf.documents.find(d => d.id === docId) || { id: docId, name: docId };
+        const mappings = detectEntitiesForDocument(docObj, paragraphs);
+
+        const item = {
+            name: fileName,
+            arrayBuffer: arrayBuffer,
+            paragraphs: paragraphs,
+            mappings: mappings,
+            isCustom: isCustom
+        };
+
+        state.batchFiles[docId] = item;
+        return item;
+    }
+
+    // State for Studio
+    let currentPaletteCat = "all";
+    let savedCursorRange = null;
+    let studioViewMode = "edit";
+    let workingDraftHtml = {}; // "edit" (Khung Mẫu) | "sample" (Xem thử dữ liệu thật)
+
+    // Save Selection in Canvas on any interaction
+    function saveCanvasSelection() {
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0 && documentContentDisplay) {
+            const range = sel.getRangeAt(0);
+            if (documentContentDisplay.contains(range.commonAncestorContainer)) {
+                savedCursorRange = range.cloneRange();
+            }
+        }
+    }
+
+    // Insert Tag or Table at Cursor Position
+    function insertTagAtCursor(tagString) {
+        if (!documentContentDisplay) return;
+
+        // Nếu đang ở chế độ xem thử mẫu, tự động chuyển về chế độ chỉnh sửa
+        if (studioViewMode === "sample") {
+            const btnEdit = document.getElementById("btnViewModeTemplateEdit");
+            if (btnEdit) btnEdit.click();
+        }
+
+        documentContentDisplay.focus();
+        const sel = window.getSelection();
+        let range = savedCursorRange;
+
+        const isTable = tagString.startsWith("{BANG_") || tagString.startsWith("BANG_");
+        const cleanTag = tagString.replace(/[{}]/g, "");
+        const formattedTag = `{${cleanTag}}`;
+
+        if (!range || !documentContentDisplay.contains(range.commonAncestorContainer)) {
+            // Chèn vào cuối canvas
+            const p = document.createElement("p");
+            p.className = "mb-2 leading-relaxed text-slate-800";
+            p.innerHTML = isTable 
+                ? `<span class="tag-table-badge" contenteditable="false">${formattedTag}</span>&nbsp;`
+                : `<span class="tag-badge" contenteditable="false">${formattedTag}</span>&nbsp;`;
+            documentContentDisplay.appendChild(p);
+            showToast(`Đã chèn thẻ ${formattedTag} vào cuối văn bản!`);
             return;
         }
 
-        renderSingleMappingRows(item);
-        renderSingleDocumentPreview(item);
+        sel.removeAllRanges();
+        sel.addRange(range);
+
+        const badge = document.createElement("span");
+        badge.className = isTable ? "tag-table-badge" : "tag-badge";
+        badge.textContent = formattedTag;
+        badge.setAttribute("contenteditable", "false");
+
+        range.deleteContents();
+        range.insertNode(badge);
+
+        const spacer = document.createTextNode(" ");
+        range.setStartAfter(badge);
+        range.insertNode(spacer);
+        range.setStartAfter(spacer);
+        range.collapse(true);
+
+        sel.removeAllRanges();
+        sel.addRange(range);
+        savedCursorRange = range.cloneRange();
+
+        showToast(`Đã chèn ${formattedTag} tại vị trí con trỏ!`);
     }
 
+    // Render Single Document View
+    async function renderSingleView() {
+        window.renderSingleView = renderSingleView;
+        const wf = getCurrentWorkflow();
+        if (!state.activeDocId) {
+            state.activeDocId = wf.documents[0].id;
+        }
+
+        const docObj = wf.documents.find(d => d.id === state.activeDocId) || wf.documents[0];
+        const item = await getOrLoadBufferForDocument(docObj.id);
+
+        if (singleDocTitle) singleDocTitle.textContent = `${docObj.code} - ${docObj.name}`;
+        if (singleDocFileNameBadge) {
+            singleDocFileNameBadge.textContent = item ? item.name : "(Không tìm thấy file mẫu)";
+        }
+
+        const singleDocSourceBadge = document.getElementById("singleDocSourceBadge");
+        if (singleDocSourceBadge) {
+            if (item && item.isCustom) {
+                singleDocSourceBadge.className = "text-[10px] bg-amber-50 text-amber-800 font-semibold px-2 py-0.5 rounded border border-amber-300 flex items-center gap-1";
+                singleDocSourceBadge.innerHTML = `<i class="fa-solid fa-star text-amber-500 text-[9px]"></i> Mẫu tùy biến (Đang dùng)`;
+            } else {
+                singleDocSourceBadge.className = "text-[10px] bg-blue-50 text-blue-700 font-semibold px-2 py-0.5 rounded border border-blue-200 flex items-center gap-1";
+                singleDocSourceBadge.innerHTML = `<i class="fa-solid fa-cube text-blue-500 text-[9px]"></i> Mẫu gốc hệ thống`;
+            }
+        }
+
+        // Render Left Palette Tabs
+        renderPaletteTextVars();
+        renderPaletteTableVars();
+        renderSingleMappingRows(item);
+
+        // Render A4 Canvas
+        renderCanvasContent(item);
+    }
+
+    function escapeHtml(str) {
+        return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // Render Canvas Content based on View Mode
+    function renderCanvasContent(item) {
+        if (!documentContentDisplay) return;
+
+        if (!item) {
+            documentContentDisplay.innerHTML = `
+                <div class="p-12 text-center text-slate-400 italic">
+                    Chưa nạp được nội dung văn bản mẫu. Vui lòng thử lại hoặc tải file Word lên.
+                </div>
+            `;
+            return;
+        }
+
+        const docId = state.activeDocId;
+        const currentDraft = workingDraftHtml[docId] || localStorage.getItem("ho_so_custom_template_html_" + docId);
+
+        if (studioViewMode === "edit") {
+            documentContentDisplay.contentEditable = "true";
+            documentContentDisplay.classList.remove("bg-amber-50/20");
+
+            if (currentDraft && currentDraft.trim() !== "") {
+                // Hiển thị nội dung tùy biến từ bản thảo hoặc đã lưu
+                documentContentDisplay.innerHTML = formatTemplateHtmlWithBadges(currentDraft);
+            } else {
+                // Hiển thị từ các đoạn văn bản trong file docx kèm highlight các thẻ biến
+                const paragraphs = item.paragraphs || [];
+                documentContentDisplay.innerHTML = paragraphs.map(p => {
+                    let text = escapeHtml(p);
+                    (item.mappings || []).forEach(m => {
+                        if (m.originalText && text.includes(m.originalText)) {
+                            text = text.split(m.originalText).join(`<span class="tag-badge" contenteditable="false">{${m.tag}}</span>`);
+                        }
+                    });
+                    // Thay thế {TAG} và {BANG_...} đã có sẵn trong file Word
+                    text = text.replace(/\{([A-Z0-9_]+)\}/g, (match, tag) => {
+                        const isTable = tag.startsWith("BANG_");
+                        return `<span class="${isTable ? 'tag-table-badge' : 'tag-badge'}" contenteditable="false">{${tag}}</span>`;
+                    });
+                    return `<p class="mb-2 leading-relaxed text-slate-800">${text}</p>`;
+                }).join("");
+            }
+        } else {
+            // Chế độ "Xem Thử Dữ Liệu Thật"
+            documentContentDisplay.contentEditable = "false";
+            documentContentDisplay.classList.add("bg-amber-50/20");
+
+            let currentRawText = currentDraft || documentContentDisplay.innerHTML;
+
+            const sampleHtml = renderSampleDataPreview(currentRawText, item);
+            documentContentDisplay.innerHTML = `
+                <div class="mb-4 p-2.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg text-amber-900 text-xs flex items-center justify-between">
+                    <span class="flex items-center gap-1.5 font-bold">
+                        <i class="fa-solid fa-eye text-amber-600"></i>
+                        <span>Đang xem thử với dữ liệu thực tế mẫu. Bấm nút [Khung Mẫu ({TAG})] bên trên để tiếp tục chỉnh sửa.</span>
+                    </span>
+                    <span class="bg-amber-200/80 px-2 py-0.5 rounded text-[10px] font-mono font-bold">SAMPLE MODE</span>
+                </div>
+                ${sampleHtml}
+            `;
+        }
+    }
+
+    // Convert raw HTML template tags into visible badges
+    function formatTemplateHtmlWithBadges(htmlStr) {
+        if (!htmlStr) return "";
+        return htmlStr.replace(/\{([A-Z0-9_]+)\}/g, (match, tag) => {
+            const isTable = tag.startsWith("BANG_");
+            return `<span class="${isTable ? 'tag-table-badge' : 'tag-badge'}" contenteditable="false">{${tag}}</span>`;
+        });
+    }
+
+    // Clean canvas HTML back into {TAG} format for storage
+    function cleanCanvasHtmlForStorage() {
+        if (!documentContentDisplay) return "";
+        const clone = documentContentDisplay.cloneNode(true);
+
+        // Remove any floating sample alert banners
+        const alertBanner = clone.querySelector(".bg-gradient-to-r");
+        if (alertBanner) alertBanner.remove();
+
+        // Convert badge spans back to raw {TAG}
+        clone.querySelectorAll(".tag-badge, .tag-table-badge").forEach(el => {
+            const rawTag = el.textContent.trim();
+            const textNode = document.createTextNode(rawTag);
+            el.parentNode.replaceChild(textNode, el);
+        });
+
+        return clone.innerHTML;
+    }
+
+    // Sample Data Provider for realistic preview
+    const SAMPLE_ADMIN_DATA = {
+        "TEN_CHU_DAU_TU": "Cảng Hàng không Quốc tế Cần Thơ",
+        "TEN_CHU_DAU_TU_VIET_HOA": "CẢNG HÀNG KHÔNG QUỐC TẾ CẦN THƠ",
+        "TEN_BAN_QUAN_LY_DU_AN": "BAN QUẢN LÝ DỰ ÁN & BẢO TRÌ",
+        "CO_QUAN_TRINH": "Trưởng ban Quản lý Dự án",
+        "CAP_QUYET_DINH_DAU_TU": "Tổng công ty Cảng hàng không Việt Nam - CTCP (ACV)",
+        "DIA_DANH": "Cần Thơ",
+        "TINH_THANH_PHO": "TP. Cần Thơ",
+        "DIA_CHI_TRU_SO": "179B Lê Hồng Phong, P. Trà An, Q. Bình Thủy, TP. Cần Thơ",
+        "NGUOI_KY_CDT": "Nguyễn Văn Admin",
+        "CHUC_VU_NGUOI_KY": "Giám đốc Cảng HKQT Cần Thơ",
+        "TRUONG_BAN_DHDA": "Trần Văn Quản Lý",
+        "CHUC_VU_TRUONG_BAN": "Trưởng phòng Kỹ thuật hạ tầng",
+        "KE_TOAN_TRUONG": "Lê Thị Tài Chính",
+        "CHUC_VU_KE_TOAN": "Kế toán trưởng",
+        "TEN_DU_AN": "Sửa chữa góc cua đường khẩn nguy chữa cháy và nâng cấp hệ thống an ninh hàng không",
+        "TEN_CONG_TRINH": "Cảng Hàng không Quốc tế Cần Thơ",
+        "NGUON_VON": "Quỹ đầu tư phát triển ACV năm 2027",
+        "TEN_GOI_THAU": "Gói thầu số 4: Mua sắm trang thiết bị & dịch vụ sửa chữa khẩn nguy",
+        "HINH_THUC_LCNT": "Chỉ định thầu rút gọn",
+        "LOAI_HOP_DONG": "Trọn gói",
+        "THOI_GIAN_THUC_HIEN_GOI_THAU": "30 ngày",
+        "GIA_GOI_THAU_SO": "100.000.000 VNĐ",
+        "GIA_GOI_THAU_CHU": "Một trăm triệu đồng chẵn",
+        "GIA_DU_TOAN_SO": "100.000.000 VNĐ",
+        "GIA_TRI_HOP_DONG_SO": "100.000.000 VNĐ",
+        "GIA_TRI_HOP_DONG_CHU": "Một trăm triệu đồng chẵn",
+        "GIA_TRI_TIET_KIEM_SO": "2.500.000 VNĐ",
+        "TY_LE_TIET_KIEM": "2.5%",
+        "TEN_NHA_THAU": "Công ty TNHH Kỹ thuật & Công nghệ Hàng không Tân Tiến",
+        "TEN_NHA_THAU_VIET_HOA": "CÔNG TY TNHH KỸ THUẬT & CÔNG NGHỆ HÀNG KHÔNG TÂN TIẾN",
+        "DIA_CHI_NHA_THAU": "Số 45 Đại lộ Hòa Bình, P. An Lạc, Q. Ninh Kiều, TP. Cần Thơ",
+        "MA_SO_THUE": "1801234567",
+        "SO_TAI_KHOAN": "1028889999 tại Vietcombank - CN Cần Thơ",
+        "NGUOI_DAI_DIEN_PHAP_LUAT": "Trần Văn Giám Đốc",
+        "CHUC_VU_DAI_DIEN": "Tổng Giám đốc",
+        "SO_TO_TRINH": "04/ĐKNCC/TTr-KTHT",
+        "SO_QUYET_DINH": "968/QĐ-CHKQTCT",
+        "SO_GIAY_MOI": "GM-BQLDA",
+        "SO_BIEN_BAN": "04/BB-HTHĐ",
+        "SO_HOP_DONG": "26076/HĐKT-CHKQTCT",
+        "SO_BAO_CAO": "05/BC-HĐTĐ-KQTĐ",
+        "NGAY_TO_TRINH": "ngày 29 tháng 07 năm 2026",
+        "NGAY_QUYET_DINH": "ngày 31 tháng 07 năm 2026",
+        "NGAY_GIAY_MOI": "ngày 01 tháng 08 năm 2026",
+        "NGAY_BIEN_BAN": "ngày 03 tháng 08 năm 2026",
+        "NGAY_HOP_DONG": "ngày 05 tháng 08 năm 2026",
+        "NGAY_KY_HOP_DONG": "ngày 05 tháng 08 năm 2026",
+        "NGAY_BAO_CAO": "ngày 30 tháng 07 năm 2026"
+    };
+
+    function renderSampleDataPreview(rawHtml, item) {
+        let text = rawHtml || cleanCanvasHtmlForStorage();
+        if (!text) {
+            text = (item.paragraphs || []).map(p => `<p class="mb-2 leading-relaxed text-slate-800">${escapeHtml(p)}</p>`).join("");
+        }
+
+        // Strip badge wrappers if present so tags are pure {TAG}
+        text = text.replace(/<span[^>]*class="[^"]*tag(?:-table)?-badge[^"]*"[^>]*>\{([A-Z0-9_]+)\}\s*<\/span>/gi, '{$1}');
+
+        // Replace all {TAG} with sample data
+        text = text.replace(/\{([A-Z0-9_]+)\}/g, (match, tag) => {
+            if (tag.startsWith("BANG_")) {
+                return renderSampleTableHtml(tag);
+            }
+            const sampleVal = SAMPLE_ADMIN_DATA[tag];
+            if (sampleVal) {
+                return `<span class="bg-emerald-50 text-emerald-950 font-semibold px-1 rounded border-b border-emerald-300" title="Biến: {${tag}}">${sampleVal}</span>`;
+            }
+            return `<span class="bg-amber-100 text-amber-900 px-1 rounded font-mono text-xs">{${tag}}</span>`;
+        });
+
+        return text;
+    }
+
+    function renderSampleTableHtml(tableTag) {
+        const allTables = getAllStudioTableVars();
+        const tDef = allTables.find(t => t.tag === tableTag) || {
+            tag: tableTag,
+            name: tableTag,
+            columns: ["STT", "Nội dung", "Ghi chú"],
+            sampleRows: [{ stt: 1, c1: "Dữ liệu mẫu hàng 1", c2: "Ghi chú mẫu" }]
+        };
+
+        const headers = (tDef.columns || []).map(c => {
+            const colName = typeof c === "string" ? c : (c.label || c.key || "");
+            return `<th class="border border-slate-600 p-2 font-bold bg-slate-100 text-slate-900 text-center">${colName}</th>`;
+        }).join("");
+
+        let rowsHtml = "";
+        if (tDef.tag === "BANG_HANG_HOA") {
+            rowsHtml = `
+                <tr>
+                    <td class="border border-slate-600 p-1.5 text-center">1</td>
+                    <td class="border border-slate-600 p-1.5 font-medium">Máy bơm chữa cháy động cơ Diesel áp lực cao</td>
+                    <td class="border border-slate-600 p-1.5 text-center">Bộ</td>
+                    <td class="border border-slate-600 p-1.5 text-right font-mono">01</td>
+                    <td class="border border-slate-600 p-1.5 text-right font-mono">65.000.000</td>
+                    <td class="border border-slate-600 p-1.5 text-right font-mono font-bold">65.000.000</td>
+                    <td class="border border-slate-600 p-1.5 text-center">Nhật Bản / Mới 100%</td>
+                </tr>
+                <tr>
+                    <td class="border border-slate-600 p-1.5 text-center">2</td>
+                    <td class="border border-slate-600 p-1.5 font-medium">Cuộn vòi chữa cháy chuyên dụng D65 chịu áp</td>
+                    <td class="border border-slate-600 p-1.5 text-center">Cuộn</td>
+                    <td class="border border-slate-600 p-1.5 text-right font-mono">10</td>
+                    <td class="border border-slate-600 p-1.5 text-right font-mono">3.500.000</td>
+                    <td class="border border-slate-600 p-1.5 text-right font-mono font-bold">35.000.000</td>
+                    <td class="border border-slate-600 p-1.5 text-center">Đức / Mới 100%</td>
+                </tr>
+                <tr class="font-bold bg-slate-50">
+                    <td colspan="5" class="border border-slate-600 p-2 text-center uppercase">Tổng cộng giá trị (Đã bao gồm thuế GTGT)</td>
+                    <td class="border border-slate-600 p-2 text-right font-mono text-emerald-800">100.000.000</td>
+                    <td class="border border-slate-600 p-2 text-center italic text-xs">VNĐ</td>
+                </tr>
+            `;
+        } else if (tDef.tag === "BANG_NHAN_SU") {
+            rowsHtml = `
+                <tr>
+                    <td class="border border-slate-600 p-1.5 text-center">1</td>
+                    <td class="border border-slate-600 p-1.5 font-bold">Nguyễn Văn Tuấn</td>
+                    <td class="border border-slate-600 p-1.5 text-center">Chủ nhiệm dự án</td>
+                    <td class="border border-slate-600 p-1.5 text-center">Thạc sĩ Kỹ thuật Hàng không</td>
+                    <td class="border border-slate-600 p-1.5">Chỉ huy trưởng thi công tại hiện trường</td>
+                    <td class="border border-slate-600 p-1.5 text-center">CCHN Hạng I</td>
+                </tr>
+                <tr>
+                    <td class="border border-slate-600 p-1.5 text-center">2</td>
+                    <td class="border border-slate-600 p-1.5 font-bold">Trần Minh Quang</td>
+                    <td class="border border-slate-600 p-1.5 text-center">Kỹ sư Trưởng</td>
+                    <td class="border border-slate-600 p-1.5 text-center">Kỹ sư Điện &amp; Tự động hóa</td>
+                    <td class="border border-slate-600 p-1.5">Phụ trách kiểm tra, đấu nối kỹ thuật</td>
+                    <td class="border border-slate-600 p-1.5 text-center">10 năm kinh nghiệm</td>
+                </tr>
+            `;
+        } else if (tDef.tag === "BANG_TIEN_DO") {
+            rowsHtml = `
+                <tr>
+                    <td class="border border-slate-600 p-1.5 text-center">1</td>
+                    <td class="border border-slate-600 p-1.5 font-medium">Chuẩn bị hồ sơ, vật tư và tiếp nhận mặt bằng thi công</td>
+                    <td class="border border-slate-600 p-1.5 text-center font-mono">03</td>
+                    <td class="border border-slate-600 p-1.5 text-center">05/08/2026</td>
+                    <td class="border border-slate-600 p-1.5 text-center">08/08/2026</td>
+                    <td class="border border-slate-600 p-1.5 text-center">Nhà thầu</td>
+                </tr>
+                <tr>
+                    <td class="border border-slate-600 p-1.5 text-center">2</td>
+                    <td class="border border-slate-600 p-1.5 font-medium">Giao hàng, vận chuyển và lắp đặt hoàn thiện thiết bị</td>
+                    <td class="border border-slate-600 p-1.5 text-center font-mono">20</td>
+                    <td class="border border-slate-600 p-1.5 text-center">09/08/2026</td>
+                    <td class="border border-slate-600 p-1.5 text-center">28/08/2026</td>
+                    <td class="border border-slate-600 p-1.5 text-center">Nhà thầu &amp; CĐT</td>
+                </tr>
+                <tr>
+                    <td class="border border-slate-600 p-1.5 text-center">3</td>
+                    <td class="border border-slate-600 p-1.5 font-medium">Chạy thử tải, kiểm định an toàn và nghiệm thu bàn giao</td>
+                    <td class="border border-slate-600 p-1.5 text-center font-mono">07</td>
+                    <td class="border border-slate-600 p-1.5 text-center">29/08/2026</td>
+                    <td class="border border-slate-600 p-1.5 text-center">04/09/2026</td>
+                    <td class="border border-slate-600 p-1.5 text-center">Hội đồng bàn giao</td>
+                </tr>
+            `;
+        } else {
+            rowsHtml = (tDef.sampleRows || []).map((r, i) => `
+                <tr>
+                    <td class="border border-slate-600 p-1.5 text-center">${i + 1}</td>
+                    <td class="border border-slate-600 p-1.5">${r.name || r.c1 || "Dữ liệu mẫu"}</td>
+                    <td class="border border-slate-600 p-1.5 text-center">${r.note || r.c2 || ""}</td>
+                </tr>
+            `).join("");
+        }
+
+        return `
+            <div class="my-4 overflow-x-auto not-italic">
+                <table class="w-full border-collapse border border-slate-600 text-xs">
+                    <thead>
+                        <tr>${headers}</tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    // Palette Tab 1: Render Text Variables
+    function renderPaletteTextVars() {
+        const container = document.getElementById("paletteVarsListContainer");
+        if (!container) return;
+
+        const search = (document.getElementById("paletteVarsSearchInput")?.value || "").toLowerCase().trim();
+        const filtered = MASTER_VARIABLES_CATALOG.filter(v => {
+            const matchesCat = (currentPaletteCat === "all") || (v.groupKey === currentPaletteCat);
+            const matchesSearch = !search || 
+                v.tag.toLowerCase().includes(search) || 
+                v.label.toLowerCase().includes(search) || 
+                (v.example && v.example.toLowerCase().includes(search));
+            return matchesCat && matchesSearch;
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div class="p-6 text-center text-slate-400 italic text-xs">
+                    Không tìm thấy biến phù hợp với từ khóa "${search}".
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = filtered.map(v => `
+            <div class="palette-var-item p-2 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-between gap-2 transition-all">
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5 mb-0.5">
+                        <span class="font-mono font-bold text-emerald-800 text-xs bg-emerald-100/70 border border-emerald-300 px-1.5 py-0.2 rounded select-all cursor-pointer" title="Click để sao chép" onclick="navigator.clipboard.writeText('{${v.tag}}'); alert('Đã sao chép: {${v.tag}}');">{${v.tag}}</span>
+                        <span class="text-[9.5px] text-slate-500 font-semibold truncate">${v.group}</span>
+                    </div>
+                    <div class="text-[11px] font-medium text-slate-800 truncate" title="${v.label}">${v.label}</div>
+                    <div class="text-[10px] text-slate-500 italic truncate" title="Mẫu: ${v.example || ''}">Mẫu: ${v.example || '---'}</div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                    <button type="button" class="btn-insert-tag-cursor h-6 px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10.5px] rounded shadow-2xs flex items-center gap-1 cursor-pointer transition-colors" data-tag="{${v.tag}}" title="Chèn vào vị trí con trỏ trong văn bản">
+                        <i class="fa-solid fa-plus text-[9px]"></i>
+                        <span>Chèn</span>
+                    </button>
+                    <button type="button" class="btn-copy-tag h-6 w-6 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded border border-slate-300 flex items-center justify-center cursor-pointer transition-colors" data-tag="{${v.tag}}" title="Sao chép mã {${v.tag}}">
+                        <i class="fa-regular fa-copy text-[11px]"></i>
+                    </button>
+                </div>
+            </div>
+        `).join("");
+
+        // Attach event listeners for insert & copy
+        container.querySelectorAll(".btn-insert-tag-cursor").forEach(btn => {
+            btn.onclick = () => {
+                const tag = btn.getAttribute("data-tag");
+                insertTagAtCursor(tag);
+            };
+        });
+
+        container.querySelectorAll(".btn-copy-tag").forEach(btn => {
+            btn.onclick = () => {
+                const tag = btn.getAttribute("data-tag");
+                navigator.clipboard.writeText(tag).then(() => {
+                    showToast(`Đã sao chép ${tag} vào Clipboard!`);
+                });
+            };
+        });
+    }
+
+    // Palette Tab 2: Render Table Variables
+    function renderPaletteTableVars() {
+        const container = document.getElementById("paletteTableVarsListContainer");
+        if (!container) return;
+
+        const tables = getAllStudioTableVars();
+        container.innerHTML = tables.map(t => {
+            const colsPreview = (t.columns || []).map(c => typeof c === "string" ? c : (c.label || c.key)).join(" • ");
+            return `
+                <div class="p-2.5 bg-indigo-50/50 border border-indigo-200 rounded-lg space-y-2 hover:border-indigo-400 transition-all">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <div class="flex items-center gap-1.5 mb-1">
+                                <span class="font-mono font-bold text-indigo-900 text-xs bg-indigo-100 border border-indigo-300 px-2 py-0.5 rounded select-all">{${t.tag}}</span>
+                                <span class="text-[10px] bg-indigo-600 text-white font-bold px-1.5 py-0.2 rounded">BẢNG KẺ VIỀN</span>
+                            </div>
+                            <h4 class="font-bold text-xs text-slate-900">${t.name}</h4>
+                            <p class="text-[10.5px] text-slate-600">${t.desc || ""}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-1.5 rounded border border-slate-200 text-[10px] text-slate-600">
+                        <span class="font-bold text-slate-700">Các cột:</span> ${colsPreview}
+                    </div>
+
+                    <div class="flex items-center justify-between pt-1 border-t border-indigo-100 gap-1.5">
+                        <button type="button" class="btn-copy-table-tag h-6 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs border border-slate-300 font-medium flex items-center gap-1 cursor-pointer transition-colors" data-tag="{${t.tag}}">
+                            <i class="fa-regular fa-copy text-[10px]"></i>
+                            <span>Copy mã</span>
+                        </button>
+                        <button type="button" class="btn-insert-table-cursor flex-1 h-6 px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors" data-tag="{${t.tag}}">
+                            <i class="fa-solid fa-plus text-[10px]"></i>
+                            <span>+ Chèn bảng vào văn bản</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join("");
+
+        container.querySelectorAll(".btn-insert-table-cursor").forEach(btn => {
+            btn.onclick = () => {
+                const tag = btn.getAttribute("data-tag");
+                insertTagAtCursor(tag);
+            };
+        });
+
+        container.querySelectorAll(".btn-copy-table-tag").forEach(btn => {
+            btn.onclick = () => {
+                const tag = btn.getAttribute("data-tag");
+                navigator.clipboard.writeText(tag).then(() => {
+                    showToast(`Đã sao chép mã bảng ${tag}!`);
+                });
+            };
+        });
+    }
+
+    // Palette Tab 3: Render Assigned Mappings List
     function renderSingleMappingRows(item) {
         if (!singleMappingRowsContainer) return;
-        const mappings = item.mappings || [];
+        const mappings = (item && item.mappings) ? item.mappings : [];
         if (singleDetectedCountBadge) singleDetectedCountBadge.textContent = `${mappings.length} biến`;
+
+        const paletteDetectedCountBadge = document.getElementById("paletteDetectedCountBadge");
+        if (paletteDetectedCountBadge) paletteDetectedCountBadge.textContent = String(mappings.length);
 
         if (mappings.length === 0) {
             singleMappingRowsContainer.innerHTML = `
-                <div class="p-4 text-center text-slate-400 italic">
-                    Chưa có biến nào được gắn thẻ cho văn bản này. Bôi đen văn bản bên phải để gán thẻ nhanh!
+                <div class="p-4 text-center text-slate-400 italic text-xs">
+                    Chưa có biến nào được gắn thẻ tự động. Bạn có thể bôi đen chữ trên trang văn bản hoặc chèn từ Tab 1 &amp; Tab 2!
                 </div>
             `;
             return;
         }
 
         const tierBadges = {
-            1: `<span class="bg-emerald-100 text-emerald-800 text-[9.5px] font-bold px-1.5 py-0.2 rounded">Tầng 1 (Chung CĐT/DA)</span>`,
-            2: `<span class="bg-blue-100 text-blue-800 text-[9.5px] font-bold px-1.5 py-0.2 rounded">Tầng 2 (Gói thầu)</span>`,
-            3: `<span class="bg-amber-100 text-amber-800 text-[9.5px] font-bold px-1.5 py-0.2 rounded">Tầng 3 (Riêng số VB)</span>`,
-            4: `<span class="bg-purple-100 text-purple-800 text-[9.5px] font-bold px-1.5 py-0.2 rounded">Tầng 4 (Căn cứ chéo)</span>`
+            1: `<span class="bg-emerald-100 text-emerald-800 text-[9.5px] font-bold px-1.5 py-0.2 rounded">Tầng 1 (Chung)</span>`,
+            2: `<span class="bg-blue-100 text-blue-800 text-[9.5px] font-bold px-1.5 py-0.2 rounded">Tầng 2 (Gói)</span>`,
+            3: `<span class="bg-amber-100 text-amber-800 text-[9.5px] font-bold px-1.5 py-0.2 rounded">Tầng 3 (Số VB)</span>`,
+            4: `<span class="bg-purple-100 text-purple-800 text-[9.5px] font-bold px-1.5 py-0.2 rounded">Tầng 4 (Căn cứ)</span>`
         };
 
         singleMappingRowsContainer.innerHTML = mappings.map((m, idx) => `
@@ -872,7 +1530,10 @@
                     <span class="font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-1.5 py-0.2 rounded text-[11px]">{${m.tag}}</span>
                     ${tierBadges[m.tier] || ""}
                     <div class="flex items-center space-x-1">
-                        <button type="button" class="btn-edit-single-mapping text-indigo-600 hover:text-indigo-800 px-1 py-0.5 rounded hover:bg-indigo-50 cursor-pointer" data-idx="${idx}" title="Chỉnh sửa mã TAG hoặc chuỗi gốc">
+                        <button type="button" class="btn-insert-existing-tag text-emerald-600 hover:text-emerald-800 px-1 py-0.5 rounded hover:bg-emerald-50 cursor-pointer" data-tag="{${m.tag}}" title="Chèn biến này vào văn bản">
+                            <i class="fa-solid fa-plus text-[10px]"></i>
+                        </button>
+                        <button type="button" class="btn-edit-single-mapping text-indigo-600 hover:text-indigo-800 px-1 py-0.5 rounded hover:bg-indigo-50 cursor-pointer" data-idx="${idx}" title="Chỉnh sửa biến">
                             <i class="fa-solid fa-pen-to-square text-[10px]"></i>
                         </button>
                         <button type="button" class="btn-remove-single-mapping text-slate-400 hover:text-rose-600 px-1 cursor-pointer" data-idx="${idx}">&times;</button>
@@ -880,10 +1541,6 @@
                 </div>
                 <div class="text-[11px] text-slate-600 truncate" title="${m.originalText}">
                     <span class="font-semibold text-slate-500">Chuỗi gốc:</span> "${m.originalText}"
-                </div>
-                <div class="flex items-center justify-between text-[10px] text-slate-400">
-                    <span>${m.reason || ""}</span>
-                    <span>Xuất hiện: <b>${m.count || 1}</b> lần</span>
                 </div>
             </div>
         `).join("");
@@ -893,8 +1550,15 @@
                 const idx = parseInt(btn.getAttribute("data-idx"), 10);
                 item.mappings.splice(idx, 1);
                 renderSingleMappingRows(item);
-                renderSingleDocumentPreview(item);
+                renderCanvasContent(item);
                 renderBatchTable();
+            };
+        });
+
+        singleMappingRowsContainer.querySelectorAll(".btn-insert-existing-tag").forEach(btn => {
+            btn.onclick = () => {
+                const tag = btn.getAttribute("data-tag");
+                insertTagAtCursor(tag);
             };
         });
 
@@ -902,78 +1566,191 @@
             btn.onclick = () => {
                 const idx = parseInt(btn.getAttribute("data-idx"), 10);
                 const m = item.mappings[idx];
-                if (m) {
-                    openEditVariableModal(m.tag, idx);
-                }
+                if (m) openEditVariableModal(m.tag, idx);
             };
         });
     }
 
-    function renderSingleDocumentPreview(item) {
-        if (!documentContentDisplay) return;
-        const paragraphs = item.paragraphs || [];
+    // Save modified template as System Default
+    async function applyAsSystemDefaultTemplate() {
+        const docId = state.activeDocId;
+        const item = state.batchFiles[docId];
+        if (!item || !documentContentDisplay) return;
 
-        if (state.currentTaggingView === "original") {
-            documentContentDisplay.innerHTML = paragraphs.map(p => `<p class="mb-2 leading-relaxed text-slate-800">${escapeHtml(p)}</p>`).join("");
-        } else {
-            // Tagged view: highlight placeholders
-            documentContentDisplay.innerHTML = paragraphs.map(p => {
-                let text = escapeHtml(p);
-                (item.mappings || []).forEach(m => {
-                    if (m.originalText && text.includes(m.originalText)) {
-                        text = text.split(m.originalText).join(`<span class="tag-badge">{${m.tag}}</span>`);
-                    }
-                });
-                return `<p class="mb-2 leading-relaxed text-slate-800">${text}</p>`;
-            }).join("");
+        try {
+            showToast("Đang đóng gói và lưu mẫu chuẩn...", "info");
+
+            // 1. Lưu nội dung HTML đã chỉnh sửa
+            const cleanHtml = cleanCanvasHtmlForStorage();
+            workingDraftHtml[docId] = cleanHtml;
+            localStorage.setItem("ho_so_custom_template_html_" + docId, cleanHtml);
+            localStorage.setItem("ho_so_custom_template_time_" + docId, new Date().toISOString());
+
+            // 2. Tạo file Word .docx từ buffer hiện tại với các mappings và chèn các thẻ
+            const taggedBlob = await createTaggedDocxBlob(item.arrayBuffer, item.mappings || []);
+            const taggedBuffer = await taggedBlob.arrayBuffer();
+            const b64 = arrayBufferToBase64(taggedBuffer);
+            localStorage.setItem("ho_so_custom_template_" + docId, b64);
+
+            item.isCustom = true;
+            item.arrayBuffer = taggedBuffer;
+
+            // Cập nhật giao diện
+            const singleDocSourceBadge = document.getElementById("singleDocSourceBadge");
+            if (singleDocSourceBadge) {
+                singleDocSourceBadge.className = "text-[10px] bg-amber-50 text-amber-800 font-semibold px-2 py-0.5 rounded border border-amber-300 flex items-center gap-1";
+                singleDocSourceBadge.innerHTML = `<i class="fa-solid fa-star text-amber-500 text-[9px]"></i> Mẫu tùy biến (Đang dùng)`;
+            }
+
+            renderBatchTable();
+            showToast("⚡ Đã lưu làm Mẫu Chuẩn Hệ Thống! Trang Tạo Hồ Sơ sẽ lập tức dùng mẫu này.", "success");
+        } catch (err) {
+            console.error("Lỗi khi lưu mẫu chuẩn:", err);
+            showToast("Lỗi khi lưu: " + err.message, "error");
         }
     }
 
-    function escapeHtml(str) {
-        return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    // Reset Template to Factory Original
+    function resetSingleTemplate() {
+        const docId = state.activeDocId;
+        if (!confirm("Bạn có chắc chắn muốn khôi phục về mẫu gốc ban đầu của hệ thống? Tất cả các chỉnh sửa tùy biến của văn bản này sẽ được đặt lại.")) {
+            return;
+        }
+
+        delete workingDraftHtml[docId];
+        localStorage.removeItem("ho_so_custom_template_" + docId);
+        localStorage.removeItem("ho_so_custom_template_html_" + docId);
+        localStorage.removeItem("ho_so_custom_template_time_" + docId);
+
+        delete state.batchFiles[docId];
+        renderSingleView();
+        renderBatchTable();
+        showToast("Đã khôi phục về Mẫu gốc hệ thống thành công!");
     }
 
-    if (viewModeOriginal) {
-        viewModeOriginal.onclick = () => {
-            state.currentTaggingView = "original";
-            viewModeOriginal.className = "px-2 py-0.2 rounded font-bold bg-white text-slate-800 shadow-xs cursor-pointer";
-            viewModeTagged.className = "px-2 py-0.2 rounded text-slate-600 hover:text-slate-900 cursor-pointer";
-            const item = state.batchFiles[state.activeDocId];
-            if (item) renderSingleDocumentPreview(item);
-        };
-    }
+    // Attach Studio Toolbar Actions
+    const btnSaveAsSystemDefault = document.getElementById("btnSaveAsSystemDefault");
+    if (btnSaveAsSystemDefault) btnSaveAsSystemDefault.onclick = applyAsSystemDefaultTemplate;
 
-    if (viewModeTagged) {
-        viewModeTagged.onclick = () => {
-            state.currentTaggingView = "tagged";
-            viewModeTagged.className = "px-2 py-0.2 rounded font-bold bg-white text-slate-800 shadow-xs cursor-pointer";
-            viewModeOriginal.className = "px-2 py-0.2 rounded text-slate-600 hover:text-slate-900 cursor-pointer";
-            const item = state.batchFiles[state.activeDocId];
-            if (item) renderSingleDocumentPreview(item);
-        };
-    }
-
-    if (btnApplySingleTags) {
-        btnApplySingleTags.onclick = () => {
-            const item = state.batchFiles[state.activeDocId];
-            if (!item) return;
-            state.currentTaggingView = "tagged";
-            if (viewModeTagged) viewModeTagged.click();
-            showToast("Đã áp dụng các thẻ vào văn bản xem trước!");
-        };
-    }
+    const btnResetSingleTemplate = document.getElementById("btnResetSingleTemplate");
+    if (btnResetSingleTemplate) btnResetSingleTemplate.onclick = resetSingleTemplate;
 
     if (btnDownloadSingleDocx) {
         btnDownloadSingleDocx.onclick = async () => {
-            if (state.activeDocId) await exportSingleDocument(state.activeDocId);
+            const docId = state.activeDocId;
+            const item = state.batchFiles[docId];
+            if (!item) return;
+            const wf = getCurrentWorkflow();
+            const docObj = wf.documents.find(d => d.id === docId);
+
+            try {
+                const blob = await createTaggedDocxBlob(item.arrayBuffer, item.mappings || []);
+                const fileName = `${docObj.code}_${docObj.name.replace(/[^a-zA-Z0-9_À-ỹ]+/g, "_")}.docx`;
+                saveAs(blob, fileName);
+                showToast(`Đã xuất template: ${fileName}`);
+            } catch (err) {
+                console.error("Single doc export error:", err);
+                showToast("Lỗi xuất file: " + err.message, "error");
+            }
         };
     }
+
+    // View Mode Toggle (Template Edit vs Sample Data)
+    const btnViewModeTemplateEdit = document.getElementById("btnViewModeTemplateEdit");
+    const btnViewModeSamplePreview = document.getElementById("btnViewModeSamplePreview");
+
+    if (btnViewModeTemplateEdit && btnViewModeSamplePreview) {
+        btnViewModeTemplateEdit.onclick = () => {
+            studioViewMode = "edit";
+            btnViewModeTemplateEdit.className = "px-3 py-1 rounded bg-white text-emerald-900 shadow-2xs flex items-center gap-1.5 cursor-pointer transition-all";
+            btnViewModeSamplePreview.className = "px-3 py-1 rounded text-slate-600 hover:text-indigo-800 flex items-center gap-1.5 cursor-pointer transition-all";
+            const item = state.batchFiles[state.activeDocId];
+            if (item) renderCanvasContent(item);
+        };
+
+        btnViewModeSamplePreview.onclick = () => {
+            if (state.activeDocId && studioViewMode === "edit") {
+                workingDraftHtml[state.activeDocId] = cleanCanvasHtmlForStorage();
+            }
+            studioViewMode = "sample";
+            btnViewModeSamplePreview.className = "px-3 py-1 rounded bg-white text-indigo-900 shadow-2xs flex items-center gap-1.5 cursor-pointer transition-all";
+            btnViewModeTemplateEdit.className = "px-3 py-1 rounded text-slate-600 hover:text-emerald-800 flex items-center gap-1.5 cursor-pointer transition-all";
+            const item = state.batchFiles[state.activeDocId];
+            if (item) renderCanvasContent(item);
+        };
+    }
+
+    // Palette Tab Switchers
+    const tabPaletteTextVars = document.getElementById("tabPaletteTextVars");
+    const tabPaletteTableVars = document.getElementById("tabPaletteTableVars");
+    const tabPaletteDetectedVars = document.getElementById("tabPaletteDetectedVars");
+
+    const viewPaletteTextVars = document.getElementById("viewPaletteTextVars");
+    const viewPaletteTableVars = document.getElementById("viewPaletteTableVars");
+    const viewPaletteDetectedVars = document.getElementById("viewPaletteDetectedVars");
+
+    function setPaletteTabActive(tabName) {
+        if (!tabPaletteTextVars || !tabPaletteTableVars || !tabPaletteDetectedVars) return;
+
+        tabPaletteTextVars.className = "palette-tab flex-1 py-1.5 px-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded flex items-center justify-center gap-1.5 cursor-pointer transition-all";
+        tabPaletteTableVars.className = "palette-tab flex-1 py-1.5 px-2 text-xs font-medium text-slate-600 hover:text-indigo-800 hover:bg-indigo-50/50 rounded flex items-center justify-center gap-1.5 cursor-pointer transition-all";
+        tabPaletteDetectedVars.className = "palette-tab flex-1 py-1.5 px-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded flex items-center justify-center gap-1.5 cursor-pointer transition-all";
+
+        if (viewPaletteTextVars) viewPaletteTextVars.classList.add("hidden");
+        if (viewPaletteTableVars) viewPaletteTableVars.classList.add("hidden");
+        if (viewPaletteDetectedVars) viewPaletteDetectedVars.classList.add("hidden");
+
+        if (tabName === "text") {
+            tabPaletteTextVars.className = "palette-tab flex-1 py-1.5 px-2 text-xs font-bold text-emerald-800 bg-white border border-slate-200 rounded shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-all";
+            if (viewPaletteTextVars) viewPaletteTextVars.classList.remove("hidden");
+        } else if (tabName === "table") {
+            tabPaletteTableVars.className = "palette-tab flex-1 py-1.5 px-2 text-xs font-bold text-indigo-900 bg-white border border-slate-200 rounded shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-all";
+            if (viewPaletteTableVars) viewPaletteTableVars.classList.remove("hidden");
+        } else if (tabName === "detected") {
+            tabPaletteDetectedVars.className = "palette-tab flex-1 py-1.5 px-2 text-xs font-bold text-slate-800 bg-white border border-slate-200 rounded shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer transition-all";
+            if (viewPaletteDetectedVars) viewPaletteDetectedVars.classList.remove("hidden");
+        }
+    }
+
+    if (tabPaletteTextVars) tabPaletteTextVars.onclick = () => setPaletteTabActive("text");
+    if (tabPaletteTableVars) tabPaletteTableVars.onclick = () => setPaletteTabActive("table");
+    if (tabPaletteDetectedVars) tabPaletteDetectedVars.onclick = () => setPaletteTabActive("detected");
+
+    // Palette Search & Filters
+    const paletteVarsSearchInput = document.getElementById("paletteVarsSearchInput");
+    if (paletteVarsSearchInput) {
+        paletteVarsSearchInput.oninput = () => renderPaletteTextVars();
+    }
+
+    const paletteCatChips = document.querySelectorAll(".palette-cat-chip");
+    paletteCatChips.forEach(chip => {
+        chip.onclick = () => {
+            currentPaletteCat = chip.getAttribute("data-cat") || "all";
+            paletteCatChips.forEach(c => {
+                c.className = "palette-cat-chip px-1.5 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer";
+            });
+            chip.className = "palette-cat-chip px-2 py-0.5 rounded-full font-bold bg-slate-800 text-white cursor-pointer";
+            renderPaletteTextVars();
+        };
+    });
+
+    // Save Selection in Canvas on any keyup/mouseup/selectionchange
+    if (documentContentDisplay) {
+        documentContentDisplay.addEventListener("input", () => {
+            if (state.activeDocId && studioViewMode === "edit") {
+                workingDraftHtml[state.activeDocId] = cleanCanvasHtmlForStorage();
+            }
+        });
+        documentContentDisplay.addEventListener("keyup", saveCanvasSelection);
+        documentContentDisplay.addEventListener("mouseup", saveCanvasSelection);
+    }
+    document.addEventListener("selectionchange", saveCanvasSelection);
 
     // Text selection & floating menu for quick tagging in Single View
     let selectedTextToTag = "";
     document.addEventListener("selectionchange", () => {
         const sel = window.getSelection();
-        if (!sel || sel.isCollapsed || !documentContentDisplay.contains(sel.anchorNode)) {
+        if (!sel || sel.isCollapsed || !documentContentDisplay || !documentContentDisplay.contains(sel.anchorNode)) {
             if (selectionMenu && !selectionMenu.contains(document.activeElement)) {
                 selectionMenu.classList.add("hidden");
             }
@@ -985,9 +1762,11 @@
             selectedTextToTag = text;
             const range = sel.getRangeAt(0);
             const rect = range.getBoundingClientRect();
-            const wrapperRect = document.getElementById("docViewerWrapper").getBoundingClientRect();
+            const wrapper = document.getElementById("docViewerWrapper");
+            if (!wrapper) return;
+            const wrapperRect = wrapper.getBoundingClientRect();
 
-            selectionMenu.style.top = `${rect.top - wrapperRect.top + document.getElementById("docViewerWrapper").scrollTop - 35}px`;
+            selectionMenu.style.top = `${rect.top - wrapperRect.top + wrapper.scrollTop - 38}px`;
             selectionMenu.style.left = `${Math.max(10, rect.left - wrapperRect.left)}px`;
             selectionMenu.classList.remove("hidden");
         }
@@ -1010,7 +1789,7 @@
 
             selectionMenu.classList.add("hidden");
             renderSingleMappingRows(item);
-            renderSingleDocumentPreview(item);
+            renderCanvasContent(item);
             renderBatchTable();
             showToast(`Đã gán {${tag}} cho chuỗi "${selectedTextToTag}"!`);
         };
@@ -1034,7 +1813,7 @@
             });
             selectionMenu.classList.add("hidden");
             renderSingleMappingRows(item);
-            renderSingleDocumentPreview(item);
+            renderCanvasContent(item);
             renderBatchTable();
             showToast(`Đã gán thẻ {${cleanTag}} thành công!`);
         };
@@ -1062,13 +1841,12 @@
                 count: 1
             });
             renderSingleMappingRows(item);
-            renderSingleDocumentPreview(item);
+            renderCanvasContent(item);
             renderBatchTable();
             showToast(`Đã thêm biến {${cleanTag}}!`);
         };
     }
 
-    // -------------------------------------------------------------
     // Master Dictionary Modal Controller
     // -------------------------------------------------------------
     let currentDictCatFilter = "all";

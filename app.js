@@ -4409,6 +4409,23 @@
             `;
         }
 
+        // 0. Nếu có template tùy biến từ Template Studio (chuẩn hóa nguồn), áp dụng làm khung mẫu
+        const savedStudioHtml = localStorage.getItem("ho_so_custom_template_html_" + docId);
+        const savedStudioTime = localStorage.getItem("ho_so_custom_template_time_" + docId) || "v1";
+        if (savedStudioHtml && savedStudioHtml.trim() !== "") {
+            if (!appState._appliedStudioTimes) appState._appliedStudioTimes = {};
+            if (appState._appliedStudioTimes[docId] !== savedStudioTime) {
+                if (appState.customDocumentHtml) {
+                    delete appState.customDocumentHtml[docId];
+                }
+                appState._appliedStudioTimes[docId] = savedStudioTime;
+            }
+
+            html = savedStudioHtml.replace(/\{([A-Z0-9_]+)\}/g, (match, tag) => {
+                return valOrPlaceholder(tag, data);
+            });
+        }
+
         // Kiểm tra xem văn bản này đã có bản chỉnh sửa tùy biến trực tiếp hay chưa
         if (!appState.customDocumentHtml) appState.customDocumentHtml = {};
         const btnResetPreviewDoc = document.getElementById("btnResetPreviewDoc");
@@ -6608,6 +6625,20 @@
         if (!templateUrl) templateUrl = "templates/01_To_trinh_KHLCNT.docx";
 
         let arrayBuffer = null;
+
+        // 0. Kiểm tra mẫu tùy biến đã được chuẩn hóa & lưu từ Template Studio
+        const docIdForCustom = docObj ? (docObj.id || docObj.code) : "";
+        const customStudioB64 = docIdForCustom 
+            ? (localStorage.getItem("ho_so_custom_template_" + docIdForCustom) || localStorage.getItem("ho_so_custom_template_" + templateUrl)) 
+            : null;
+        if (customStudioB64) {
+            try {
+                const bytes = base64ToUint8Array(customStudioB64);
+                arrayBuffer = bytes.buffer;
+            } catch (e) {
+                console.warn("Lỗi giải mã template tùy biến từ localStorage:", e);
+            }
+        }
 
         // 1. Kiểm tra file mẫu tùy biến do người dùng upload trực tiếp
         if (window.customUploadedDocx && window.customUploadedDocx[templateUrl]) {
@@ -11678,6 +11709,8 @@
     window.exportProjectBundle = exportProjectBundle;
     window.importProjectBundle = importProjectBundle;
     window.createNewBlankProject = createNewBlankProject;
+    window.selectDocumentById = selectDocumentById;
+    window.renderDocumentPreview = renderDocumentPreview;
 
     switchMainTab(initialTab, false);
 
