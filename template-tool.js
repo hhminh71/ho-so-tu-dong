@@ -1267,15 +1267,25 @@
                 ${sampleHtml}
             `;
         }
+
+        // Apply active zoom and update page counts
+        if (documentContentDisplay) {
+            documentContentDisplay.style.zoom = studioZoomLevel;
+        }
+        setTimeout(updateStudioPagination, 100);
     }
 
-    // Convert raw HTML template tags into visible badges
+    // Convert raw HTML template tags into visible badges & page breaks
     function formatTemplateHtmlWithBadges(htmlStr) {
         if (!htmlStr) return "";
-        return htmlStr.replace(/\{([A-Z0-9_]+)\}/g, (match, tag) => {
+        let res = htmlStr.replace(/\{([A-Z0-9_]+)\}/g, (match, tag) => {
+            if (tag === "PAGE_BREAK") {
+                return `<div class="a4-page-break" contenteditable="false"><i class="fa-solid fa-file-invoice text-indigo-600 mr-1"></i> DẤU NGẮT TRANG A4 (Hết trang • Bắt đầu trang tiếp theo)</div>`;
+            }
             const isTable = tag.startsWith("BANG_");
             return `<span class="${isTable ? 'tag-table-badge' : 'tag-badge'}" contenteditable="false">{${tag}}</span>`;
         });
+        return res;
     }
 
     // Clean canvas HTML back into {TAG} format for storage
@@ -1286,6 +1296,12 @@
         // Remove any floating sample alert banners
         const alertBanner = clone.querySelector(".bg-gradient-to-r");
         if (alertBanner) alertBanner.remove();
+
+        // Convert page break divs back to {PAGE_BREAK}
+        clone.querySelectorAll(".a4-page-break").forEach(el => {
+            const textNode = document.createTextNode("\n{PAGE_BREAK}\n");
+            el.parentNode.replaceChild(textNode, el);
+        });
 
         // Convert badge spans back to raw {TAG}
         clone.querySelectorAll(".tag-badge, .tag-table-badge").forEach(el => {
@@ -1360,6 +1376,9 @@
 
         // Replace all {TAG} with sample data
         text = text.replace(/\{([A-Z0-9_]+)\}/g, (match, tag) => {
+            if (tag === "PAGE_BREAK") {
+                return `<div class="a4-page-break" contenteditable="false"><i class="fa-solid fa-file-invoice text-indigo-600 mr-1"></i> DẤU NGẮT TRANG A4 (Hết trang • Bắt đầu trang tiếp theo)</div>`;
+            }
             if (tag.startsWith("BANG_")) {
                 return renderSampleTableHtml(tag);
             }
@@ -1495,6 +1514,281 @@
             </div>
         `;
     }
+
+    // =============================================================
+    // STUDIO A4 CANVAS ZOOM & MULTI-PAGE PAGINATION CONTROLLER
+    // =============================================================
+    const A4_PAGE_HEIGHT_PX = 1050; // Chuẩn chiều cao 1 trang A4 (96 DPI)
+    let studioZoomLevel = parseFloat(localStorage.getItem("ho_so_studio_zoom")) || 1.0;
+    let studioCurrentPage = 1;
+    let studioTotalPages = 1;
+    let isScrollingFromNavigation = false;
+
+    function setStudioZoom(newZoom) {
+        studioZoomLevel = Math.max(0.5, Math.min(1.75, Math.round(newZoom * 100) / 100));
+        try {
+            localStorage.setItem("ho_so_studio_zoom", String(studioZoomLevel));
+        } catch (e) {}
+
+        if (documentContentDisplay) {
+            documentContentDisplay.style.zoom = studioZoomLevel;
+        }
+
+        const lblZoom = document.getElementById("lblStudioZoomLevel");
+        if (lblZoom) lblZoom.textContent = Math.round(studioZoomLevel * 100) + "%";
+
+        const btnReset = document.getElementById("btnStudioZoomReset");
+        if (btnReset) {
+            if (Math.abs(studioZoomLevel - 1.0) < 0.01) {
+                btnReset.classList.remove("text-indigo-600", "bg-white", "shadow-xs");
+                btnReset.classList.add("text-slate-700");
+            } else {
+                btnReset.classList.add("text-indigo-600", "bg-white", "shadow-xs");
+                btnReset.classList.remove("text-slate-700");
+            }
+        }
+
+        updateStudioPagination();
+    }
+
+    function studioZoomIn() {
+        setStudioZoom(studioZoomLevel + 0.1);
+    }
+
+    function studioZoomOut() {
+        setStudioZoom(studioZoomLevel - 0.1);
+    }
+
+    function studioZoomReset() {
+        setStudioZoom(1.0);
+    }
+
+    function updateStudioPagination() {
+        if (!documentContentDisplay || !docViewerWrapper) return;
+
+        // Content height
+        const contentHeight = documentContentDisplay.scrollHeight || documentContentDisplay.offsetHeight || A4_PAGE_HEIGHT_PX;
+        
+        // Manual breaks
+        const manualBreaks = Array.from(documentContentDisplay.querySelectorAll(".a4-page-break"));
+        let calculatedPages = Math.max(1, Math.ceil(contentHeight / A4_PAGE_HEIGHT_PX));
+        if (manualBreaks.length > 0) {
+            calculatedPages = Math.max(calculatedPages, manualBreaks.length + 1);
+        }
+        studioTotalPages = calculatedPages;
+
+        if (!isScrollingFromNavigation) {
+            const currentScrollTop = docViewerWrapper.scrollTop;
+            if (manualBreaks.length > 0) {
+                // If document has manual page breaks, calculate page by break element positions
+                const wrapperRect = docViewerWrapper.getBoundingClientRect();
+                let pageIndex = 1;
+                manualBreaks.forEach((brk, idx) => {
+                    const rect = brk.getBoundingClientRect();
+                    // If page break top is above 35% of the viewport height, user has crossed into next page
+                    if (rect.top <= wrapperRect.top + (wrapperRect.height * 0.35)) {
+                        pageIndex = idx + 2;
+                    }
+                });
+                studioCurrentPage = Math.min(studioTotalPages, Math.max(1, pageIndex));
+            } else {
+                const effectivePageHeight = A4_PAGE_HEIGHT_PX * studioZoomLevel;
+                studioCurrentPage = Math.min(studioTotalPages, Math.max(1, Math.floor((currentScrollTop + (A4_PAGE_HEIGHT_PX * 0.3)) / effectivePageHeight) + 1));
+            }
+        }
+
+        // Update indicators
+        const lblTotal = document.getElementById("lblStudioTotalPages");
+        if (lblTotal) lblTotal.textContent = String(studioTotalPages);
+
+        const lblFloatTotal = document.getElementById("lblFloatingTotalPages");
+        if (lblFloatTotal) lblFloatTotal.textContent = String(studioTotalPages);
+
+        const inputPage = document.getElementById("inputStudioCurrentPage");
+        if (inputPage) {
+            inputPage.max = String(studioTotalPages);
+            inputPage.value = String(studioCurrentPage);
+        }
+
+        const lblFloatCur = document.getElementById("lblFloatingCurrentPage");
+        if (lblFloatCur) lblFloatCur.textContent = String(studioCurrentPage);
+
+        // Update button disabled state
+        const btnPrev = document.getElementById("btnStudioPrevPage");
+        const btnNext = document.getElementById("btnStudioNextPage");
+        const btnFloatPrev = document.getElementById("btnFloatingPrevPage");
+        const btnFloatNext = document.getElementById("btnFloatingNextPage");
+
+        if (btnPrev) btnPrev.disabled = studioCurrentPage <= 1;
+        if (btnFloatPrev) btnFloatPrev.disabled = studioCurrentPage <= 1;
+        if (btnNext) btnNext.disabled = studioCurrentPage >= studioTotalPages;
+        if (btnFloatNext) btnFloatNext.disabled = studioCurrentPage >= studioTotalPages;
+
+        // Floating pill visibility
+        const floatingPill = document.getElementById("studioFloatingPagePill");
+        if (floatingPill) {
+            if (studioTotalPages > 1 || docViewerWrapper.scrollTop > 50) {
+                floatingPill.classList.remove("opacity-0", "pointer-events-none");
+                floatingPill.classList.add("opacity-100");
+            } else {
+                floatingPill.classList.remove("opacity-100");
+                floatingPill.classList.add("opacity-0", "pointer-events-none");
+            }
+        }
+    }
+
+    function goToStudioPage(pageNum) {
+        const targetPage = Math.max(1, Math.min(studioTotalPages, pageNum));
+        if (!docViewerWrapper) return;
+
+        isScrollingFromNavigation = true;
+        studioCurrentPage = targetPage;
+
+        const manualBreaks = documentContentDisplay ? Array.from(documentContentDisplay.querySelectorAll(".a4-page-break")) : [];
+        if (targetPage === 1) {
+            docViewerWrapper.scrollTo({ top: 0, behavior: "smooth" });
+        } else if (manualBreaks.length >= targetPage - 1 && manualBreaks[targetPage - 2]) {
+            const breakEl = manualBreaks[targetPage - 2];
+            const wrapperRect = docViewerWrapper.getBoundingClientRect();
+            const breakRect = breakEl.getBoundingClientRect();
+            const targetScrollTop = docViewerWrapper.scrollTop + (breakRect.top - wrapperRect.top) - 10;
+            docViewerWrapper.scrollTo({ top: Math.max(0, targetScrollTop), behavior: "smooth" });
+        } else {
+            const effectivePageHeight = A4_PAGE_HEIGHT_PX * studioZoomLevel;
+            const targetScrollTop = (targetPage - 1) * effectivePageHeight;
+            docViewerWrapper.scrollTo({ top: targetScrollTop, behavior: "smooth" });
+        }
+
+        const inputPage = document.getElementById("inputStudioCurrentPage");
+        if (inputPage) inputPage.value = String(targetPage);
+        const lblFloatCur = document.getElementById("lblFloatingCurrentPage");
+        if (lblFloatCur) lblFloatCur.textContent = String(targetPage);
+
+        // Update button disabled state
+        const btnPrev = document.getElementById("btnStudioPrevPage");
+        const btnNext = document.getElementById("btnStudioNextPage");
+        const btnFloatPrev = document.getElementById("btnFloatingPrevPage");
+        const btnFloatNext = document.getElementById("btnFloatingNextPage");
+
+        if (btnPrev) btnPrev.disabled = targetPage <= 1;
+        if (btnFloatPrev) btnFloatPrev.disabled = targetPage <= 1;
+        if (btnNext) btnNext.disabled = targetPage >= studioTotalPages;
+        if (btnFloatNext) btnFloatNext.disabled = targetPage >= studioTotalPages;
+
+        setTimeout(() => {
+            isScrollingFromNavigation = false;
+            updateStudioPagination();
+        }, 600);
+    }
+
+    function insertPageBreakAtCursor() {
+        if (!documentContentDisplay) return;
+
+        if (studioViewMode === "sample") {
+            const btnEdit = document.getElementById("btnViewModeTemplateEdit");
+            if (btnEdit) btnEdit.click();
+        }
+
+        documentContentDisplay.focus();
+        const breakHtml = `
+            <div class="a4-page-break my-6 py-2 border-y-2 border-dashed border-indigo-300 bg-indigo-50/60 rounded text-center text-xs font-bold text-indigo-800 select-none not-italic" contenteditable="false">
+                <span class="inline-flex items-center gap-1.5 px-3 py-0.5 bg-white border border-indigo-200 rounded-full shadow-2xs">
+                    <i class="fa-solid fa-file-invoice text-indigo-600"></i>
+                    <span>DẤU NGẮT TRANG A4 (Hết trang • Bắt đầu trang tiếp theo)</span>
+                </span>
+            </div>
+            <p class="mb-2 leading-relaxed text-slate-800"><br></p>
+        `;
+
+        document.execCommand("insertHTML", false, breakHtml);
+        documentContentDisplay.dispatchEvent(new Event("input", { bubbles: true }));
+        updateStudioPagination();
+        showToast("Đã chèn dấu ngắt trang A4 vào văn bản!", "success");
+    }
+
+    // Wiring Zoom and Pagination buttons
+    const btnStudioZoomIn = document.getElementById("btnStudioZoomIn");
+    if (btnStudioZoomIn) btnStudioZoomIn.onclick = studioZoomIn;
+
+    const btnStudioZoomOut = document.getElementById("btnStudioZoomOut");
+    if (btnStudioZoomOut) btnStudioZoomOut.onclick = studioZoomOut;
+
+    const btnStudioZoomReset = document.getElementById("btnStudioZoomReset");
+    if (btnStudioZoomReset) btnStudioZoomReset.onclick = studioZoomReset;
+
+    const btnStudioPrevPage = document.getElementById("btnStudioPrevPage");
+    if (btnStudioPrevPage) btnStudioPrevPage.onclick = () => goToStudioPage(studioCurrentPage - 1);
+
+    const btnStudioNextPage = document.getElementById("btnStudioNextPage");
+    if (btnStudioNextPage) btnStudioNextPage.onclick = () => goToStudioPage(studioCurrentPage + 1);
+
+    const btnFloatingPrevPage = document.getElementById("btnFloatingPrevPage");
+    if (btnFloatingPrevPage) btnFloatingPrevPage.onclick = () => goToStudioPage(studioCurrentPage - 1);
+
+    const btnFloatingNextPage = document.getElementById("btnFloatingNextPage");
+    if (btnFloatingNextPage) btnFloatingNextPage.onclick = () => goToStudioPage(studioCurrentPage + 1);
+
+    const btnStudioInsertPageBreak = document.getElementById("btnStudioInsertPageBreak");
+    if (btnStudioInsertPageBreak) btnStudioInsertPageBreak.onclick = insertPageBreakAtCursor;
+
+    const inputStudioCurrentPage = document.getElementById("inputStudioCurrentPage");
+    if (inputStudioCurrentPage) {
+        inputStudioCurrentPage.onchange = (e) => goToStudioPage(parseInt(e.target.value, 10));
+        inputStudioCurrentPage.onkeydown = (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                goToStudioPage(parseInt(inputStudioCurrentPage.value, 10));
+            }
+        };
+    }
+
+    // Scroll listener on viewport
+    if (docViewerWrapper) {
+        let scrollTimeout;
+        docViewerWrapper.addEventListener("scroll", () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(updateStudioPagination, 60);
+        }, { passive: true });
+
+        // Ctrl + Mouse Wheel to zoom
+        docViewerWrapper.addEventListener("wheel", (e) => {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                if (e.deltaY < 0) studioZoomIn();
+                else studioZoomOut();
+            }
+        }, { passive: false });
+    }
+
+    // Window resize recalculation
+    window.addEventListener("resize", () => {
+        updateStudioPagination();
+    }, { passive: true });
+
+    // Keyboard Shortcuts for Page navigation & Zoom
+    document.addEventListener("keydown", (e) => {
+        const modalOpen = document.getElementById("modalStudioVars") && !document.getElementById("modalStudioVars").classList.contains("hidden");
+        const isEditingInput = ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement?.tagName);
+        if (modalOpen || isEditingInput) return;
+
+        if (e.key === "PageDown") {
+            e.preventDefault();
+            goToStudioPage(studioCurrentPage + 1);
+        } else if (e.key === "PageUp") {
+            e.preventDefault();
+            goToStudioPage(studioCurrentPage - 1);
+        } else if (e.ctrlKey && (e.key === "=" || e.key === "+")) {
+            e.preventDefault();
+            studioZoomIn();
+        } else if (e.ctrlKey && e.key === "-") {
+            e.preventDefault();
+            studioZoomOut();
+        } else if (e.ctrlKey && e.key === "0") {
+            e.preventDefault();
+            studioZoomReset();
+        }
+    });
+
 
     // Palette Tab 1: Render Text Variables
     function renderPaletteTextVars() {
@@ -2374,6 +2668,13 @@
         deleteCustomStudioTable,
         renderPaletteTableVars,
         renderStudioDictTableView,
+        setStudioZoom,
+        studioZoomIn,
+        studioZoomOut,
+        studioZoomReset,
+        goToStudioPage,
+        updateStudioPagination,
+        insertPageBreakAtCursor,
         detectEntitiesForDocument,
         processIncomingFiles,
         createTaggedDocxBlob,
