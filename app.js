@@ -9260,6 +9260,20 @@
     }
 
 
+
+    // Listen for storage events across tabs (e.g. custom tables created/deleted in Template Studio)
+    window.addEventListener("storage", (e) => {
+        if (e.key === "ho_so_custom_table_defs") {
+            try {
+                if (typeof updateDictBadgeCounts === "function") updateDictBadgeCounts();
+                if (typeof renderDictTableView === "function") renderDictTableView();
+                if (typeof renderDocumentPreview === "function") renderDocumentPreview();
+            } catch (err) {
+                console.warn("Storage sync error in app.js:", err);
+            }
+        }
+    });
+
     // Expose helpers globally
     window.renderTableEditor = renderTableEditor;
     window.addTableRow = addTableRow;

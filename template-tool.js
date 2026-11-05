@@ -885,13 +885,31 @@
         return window.btoa(binary);
     }
 
-    // Pre-built Table Definitions Catalog
+    // Pre-built Table Definitions Catalog (Unified with app.js)
     const STUDIO_BUILTIN_TABLE_VARS = [
         {
             tag: "BANG_HANG_HOA",
-            name: "Bảng Danh mục Hàng hóa / Thiết bị",
-            desc: "Dành cho Hợp đồng, Phụ lục hoặc Báo cáo mua sắm",
-            columns: ["STT", "Tên hàng hóa / thiết bị", "ĐVT", "Khối lượng", "Đơn giá (VNĐ)", "Thành tiền (VNĐ)", "Xuất xứ / Ghi chú"],
+            name: "Danh mục Hàng hóa / Thiết bị / Dịch vụ",
+            icon: "📦",
+            desc: "Bảng chi tiết tên hàng hóa, quy cách phẩm chất, đơn vị tính, số lượng, đơn giá và tự động tính thành tiền.",
+            isSystem: true,
+            hasTotal: true,
+            totalCol: "thanh_tien",
+            currencyWord: true,
+            columns: [
+                { key: "stt", label: "STT", type: "number", align: "center", widthDx: 600, widthPct: "5%" },
+                { key: "ten_hang", label: "Tên hàng hóa / Thiết bị / Dịch vụ", type: "text", align: "left", widthDx: 3400, widthPct: "36%" },
+                { key: "dvt", label: "ĐVT", type: "text", align: "center", widthDx: 700, widthPct: "8%" },
+                { key: "so_luong", label: "SL", type: "number", align: "right", widthDx: 800, widthPct: "8%" },
+                { key: "don_gia", label: "Đơn giá (VNĐ)", type: "currency", align: "right", widthDx: 1400, widthPct: "16%" },
+                { key: "thanh_tien", label: "Thành tiền (VNĐ)", type: "calc_amount", align: "right", widthDx: 1500, widthPct: "17%" },
+                { key: "ghi_chu", label: "Ghi chú", type: "text", align: "left", widthDx: 1000, widthPct: "10%" }
+            ],
+            defaultRows: [
+                { stt: 1, ten_hang: "Máy bơm ly tâm cánh hở trục đứng chuyên dụng", dvt: "Bộ", so_luong: 2, don_gia: 25000000, thanh_tien: 50000000, ghi_chu: "Mới 100%, CO/CQ" },
+                { stt: 2, ten_hang: "Đầu vòi phun chữa cháy tạo bọt phân nhánh đa góc", dvt: "Chiếc", so_luong: 4, don_gia: 6000000, thanh_tien: 24000000, ghi_chu: "Chống gỉ sét" },
+                { stt: 3, ten_hang: "Van khóa áp lực cao chuyên dụng mặt bích DN100", dvt: "Bộ", so_luong: 2, don_gia: 13000000, thanh_tien: 26000000, ghi_chu: "Bảo hành 24 tháng" }
+            ],
             sampleRows: [
                 { stt: 1, name: "Máy chủ lưu trữ dữ liệu chuyên dụng", unit: "Bộ", qty: 2, price: "35.000.000", total: "70.000.000", note: "Dell PowerEdge" },
                 { stt: 2, name: "Bộ lưu điện UPS Online 3kVA", unit: "Chiếc", qty: 2, price: "15.000.000", total: "30.000.000", note: "APC Smart-UPS" }
@@ -899,9 +917,23 @@
         },
         {
             tag: "BANG_NHAN_SU",
-            name: "Bảng Bố trí Nhân sự Thực hiện",
-            desc: "Bảng danh sách chuyên gia, kỹ sư và cán bộ chủ chốt",
-            columns: ["STT", "Họ và tên", "Chức vụ", "Trình độ chuyên môn", "Vị trí đảm nhiệm", "Ghi chú"],
+            name: "Danh sách Nhân sự / Tổ chuyên gia / Tổ thẩm định",
+            icon: "👥",
+            desc: "Danh sách phân công nhân sự, cơ quan công tác, chức vụ, trình độ chuyên môn và vai trò trong tổ chuyên gia hoặc tổ thẩm định.",
+            isSystem: true,
+            hasTotal: false,
+            columns: [
+                { key: "stt", label: "STT", type: "number", align: "center", widthDx: 600, widthPct: "6%" },
+                { key: "ho_ten", label: "Họ và tên", type: "text", align: "left", widthDx: 2800, widthPct: "26%" },
+                { key: "don_vi", label: "Đơn vị / Chức vụ", type: "text", align: "left", widthDx: 2600, widthPct: "26%" },
+                { key: "trinh_do", label: "Trình độ chuyên môn", type: "text", align: "left", widthDx: 2000, widthPct: "22%" },
+                { key: "vai_tro", label: "Vai trò trong tổ", type: "text", align: "left", widthDx: 1800, widthPct: "20%" }
+            ],
+            defaultRows: [
+                { stt: 1, ho_ten: "Nguyễn Văn Admin", don_vi: "Trưởng phòng Kỹ thuật hạ tầng", trinh_do: "Kỹ sư Xây dựng / Cảng HK", vai_tro: "Tổ trưởng" },
+                { stt: 2, ho_ten: "Trần Thị Bích", don_vi: "Chuyên viên Phòng Kế hoạch - Kế toán", trinh_do: "Cử nhân Kinh tế", vai_tro: "Tổ phó" },
+                { stt: 3, ho_ten: "Lê Văn Hùng", don_vi: "Kỹ sư Ban QLDA Cảng HKQT Cần Thơ", trinh_do: "Kỹ sư Điện lực & PCCC", vai_tro: "Thành viên" }
+            ],
             sampleRows: [
                 { stt: 1, name: "Nguyễn Văn Tuấn", role: "Chủ nhiệm dự án", deg: "Thạc sĩ CNTT", pos: "Chỉ đạo chung kỹ thuật", note: "15 năm kinh nghiệm" },
                 { stt: 2, name: "Trần Minh Quang", role: "Kỹ sư trưởng", deg: "Kỹ sư Điện - Điện tử", pos: "Giám sát lắp đặt", note: "Chứng chỉ hành nghề Hạng I" }
@@ -909,9 +941,25 @@
         },
         {
             tag: "BANG_TIEN_DO",
-            name: "Bảng Kế hoạch Tiến độ Thực hiện",
-            desc: "Bảng chi tiết các mốc triển khai và bàn giao công việc",
-            columns: ["STT", "Nội dung công việc", "Thời gian (Ngày)", "Ngày bắt đầu", "Ngày hoàn thành", "Đơn vị thực hiện"],
+            name: "Kế hoạch Tiến độ & Giải ngân thanh toán",
+            icon: "📅",
+            desc: "Kế hoạch phân kỳ tiến độ thực hiện các giai đoạn công việc và giải ngân thanh toán hợp đồng.",
+            isSystem: true,
+            hasTotal: true,
+            totalCol: "so_tien",
+            currencyWord: true,
+            columns: [
+                { key: "stt", label: "Đợt", type: "number", align: "center", widthDx: 600, widthPct: "6%" },
+                { key: "noi_dung", label: "Giai đoạn / Nội dung thực hiện", type: "text", align: "left", widthDx: 3400, widthPct: "34%" },
+                { key: "thoi_han", label: "Thời hạn hoàn thành", type: "text", align: "center", widthDx: 1800, widthPct: "18%" },
+                { key: "ty_le", label: "Tỷ lệ (%)", type: "number", align: "right", widthDx: 1000, widthPct: "12%" },
+                { key: "so_tien", label: "Số tiền (VNĐ)", type: "currency", align: "right", widthDx: 2200, widthPct: "30%" }
+            ],
+            defaultRows: [
+                { stt: 1, noi_dung: "Tạm ứng hợp đồng sau khi ký kết và nhận bảo lãnh tạm ứng", thoi_han: "Trong 07 ngày", ty_le: 30, so_tien: 30000000 },
+                { stt: 2, noi_dung: "Thanh toán đợt 2 sau khi giao hàng & nghiệm thu kỹ thuật tại công trình", thoi_han: "Trong 15 ngày", ty_le: 40, so_tien: 40000000 },
+                { stt: 3, noi_dung: "Thanh toán quyết toán đợt cuối sau khi nghiệm thu bàn giao và thanh lý hợp đồng", thoi_han: "Trong 10 ngày", ty_le: 30, so_tien: 30000000 }
+            ],
             sampleRows: [
                 { stt: 1, task: "Khảo sát hiện trạng và chuẩn bị mặt bằng", days: 3, start: "10/02/2027", end: "12/02/2027", unit: "Nhà thầu" },
                 { stt: 2, task: "Cung cấp, vận chuyển và lắp đặt thiết bị", days: 15, start: "13/02/2027", end: "27/02/2027", unit: "Nhà thầu & CĐT" },
@@ -920,15 +968,72 @@
         }
     ];
 
+    // Standardized Storage Key: ho_so_custom_table_defs (shared across index.html & template-tool.html)
     function getAllStudioTableVars() {
         let customTables = [];
         try {
-            const raw = localStorage.getItem("ho_so_custom_tables");
-            if (raw) customTables = JSON.parse(raw);
+            const raw = localStorage.getItem("ho_so_custom_table_defs");
+            if (raw) {
+                customTables = JSON.parse(raw);
+            } else {
+                // Fallback to legacy key if exists and migrate
+                const legacyRaw = localStorage.getItem("ho_so_custom_tables");
+                if (legacyRaw) {
+                    customTables = JSON.parse(legacyRaw);
+                    localStorage.setItem("ho_so_custom_table_defs", JSON.stringify(customTables));
+                }
+            }
         } catch (e) {
-            console.warn("Lỗi đọc custom tables:", e);
+            console.warn("Lỗi đọc custom tables trong Studio:", e);
         }
-        return [...STUDIO_BUILTIN_TABLE_VARS, ...customTables];
+        if (!Array.isArray(customTables)) customTables = [];
+
+        // Combine built-in with custom tables avoiding duplicates
+        const combined = [...STUDIO_BUILTIN_TABLE_VARS];
+        customTables.forEach(ct => {
+            if (!combined.some(t => t.tag === ct.tag)) {
+                combined.push(ct);
+            }
+        });
+        return combined;
+    }
+
+    function saveCustomStudioTableDefinitions(customList) {
+        try {
+            localStorage.setItem("ho_so_custom_table_defs", JSON.stringify(customList));
+        } catch (e) {
+            console.error("Error saving ho_so_custom_table_defs in Studio:", e);
+        }
+    }
+
+    function deleteCustomStudioTable(tag) {
+        const table = getAllStudioTableVars().find(t => t.tag === tag);
+        if (!table) return;
+        if (table.isSystem) {
+            alert("Không thể xóa 3 bảng chuẩn mực mặc định của hệ thống!");
+            return;
+        }
+        if (!confirm(`Bạn có chắc chắn muốn xóa loại bảng {${tag}} - "${table.name}"?\nThao tác này sẽ xóa trên cả trang Tạo hồ sơ và Xưởng Studio.`)) {
+            return;
+        }
+
+        let customList = [];
+        try {
+            const raw = localStorage.getItem("ho_so_custom_table_defs");
+            if (raw) customList = JSON.parse(raw);
+        } catch (e) {}
+
+        customList = customList.filter(t => t.tag !== tag);
+        saveCustomStudioTableDefinitions(customList);
+
+        if (currentStudioActiveDictTableTag === tag) {
+            currentStudioActiveDictTableTag = "BANG_HANG_HOA";
+        }
+
+        renderPaletteTableVars();
+        updateStudioDictBadgeCounts();
+        renderStudioDictTableView();
+        showToast(`Đã xóa loại bảng {${tag}} thành công!`, "success");
     }
 
     // Auto-load template buffer for any document
@@ -1356,13 +1461,25 @@
                 </tr>
             `;
         } else {
-            rowsHtml = (tDef.sampleRows || []).map((r, i) => `
-                <tr>
-                    <td class="border border-slate-600 p-1.5 text-center">${i + 1}</td>
-                    <td class="border border-slate-600 p-1.5">${r.name || r.c1 || "Dữ liệu mẫu"}</td>
-                    <td class="border border-slate-600 p-1.5 text-center">${r.note || r.c2 || ""}</td>
-                </tr>
-            `).join("");
+            // Dynamic rendering for ANY custom table!
+            const rows = (tDef.defaultRows && tDef.defaultRows.length > 0) ? tDef.defaultRows :
+                         (tDef.sampleRows && tDef.sampleRows.length > 0) ? tDef.sampleRows :
+                         [ { stt: 1 }, { stt: 2 } ];
+            const cols = tDef.columns || [];
+            rowsHtml = rows.map((r, i) => {
+                const cells = cols.map((c, colIdx) => {
+                    const key = typeof c === "string" ? `col_${colIdx}` : (c.key || `col_${colIdx}`);
+                    const align = (typeof c === "object" && c.align) ? c.align : (colIdx === 0 ? "center" : "left");
+                    const type = (typeof c === "object" && c.type) ? c.type : "text";
+                    let val = r[key] !== undefined ? r[key] : (colIdx === 0 ? (i + 1) : `Dữ liệu mẫu hàng ${i + 1}`);
+                    if (type === "currency" && typeof val === "number") {
+                        val = val.toLocaleString("vi-VN");
+                    }
+                    const alignClass = align === "center" ? "text-center" : align === "right" ? "text-right font-mono" : "text-left";
+                    return `<td class="border border-slate-600 p-1.5 ${alignClass}">${escapeHtml(String(val))}</td>`;
+                }).join("");
+                return `<tr>${cells}</tr>`;
+            }).join("");
         }
 
         return `
@@ -1443,29 +1560,42 @@
         });
     }
 
-    // Palette Tab 2: Render Table Variables
+    // Palette Tab 2: Render Table Variables (Supports Built-in & Custom Tables)
     function renderPaletteTableVars() {
         const container = document.getElementById("paletteTableVarsListContainer");
         if (!container) return;
 
         const tables = getAllStudioTableVars();
         container.innerHTML = tables.map(t => {
+            const isSystem = !!t.isSystem;
+            const badge = isSystem 
+                ? `<span class="text-[9.5px] bg-indigo-600 text-white font-bold px-1.5 py-0.2 rounded shadow-2xs">HỆ THỐNG</span>`
+                : `<span class="text-[9.5px] bg-amber-500 text-white font-bold px-1.5 py-0.2 rounded shadow-2xs">⭐ TÙY BIẾN</span>`;
+            
             const colsPreview = (t.columns || []).map(c => typeof c === "string" ? c : (c.label || c.key)).join(" • ");
+            
+            const deleteBtn = !isSystem ? `
+                <button type="button" class="btn-delete-palette-table text-slate-400 hover:text-red-600 p-1 cursor-pointer transition-colors" data-tag="${t.tag}" title="Xóa loại bảng tùy biến này">
+                    <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+            ` : '';
+
             return `
                 <div class="p-2.5 bg-indigo-50/50 border border-indigo-200 rounded-lg space-y-2 hover:border-indigo-400 transition-all">
                     <div class="flex items-start justify-between gap-2">
-                        <div>
-                            <div class="flex items-center gap-1.5 mb-1">
-                                <span class="font-mono font-bold text-indigo-900 text-xs bg-indigo-100 border border-indigo-300 px-2 py-0.5 rounded select-all">{${t.tag}}</span>
-                                <span class="text-[10px] bg-indigo-600 text-white font-bold px-1.5 py-0.2 rounded">BẢNG KẺ VIỀN</span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-1.5 mb-1 flex-wrap">
+                                <span class="font-mono font-bold text-indigo-900 text-xs bg-indigo-100 border border-indigo-300 px-2 py-0.5 rounded select-all cursor-pointer" onclick="navigator.clipboard.writeText('{${t.tag}}'); window.TemplateStudio?.showToast('Đã sao chép: {${t.tag}}');">{${t.tag}}</span>
+                                ${badge}
                             </div>
-                            <h4 class="font-bold text-xs text-slate-900">${t.name}</h4>
-                            <p class="text-[10.5px] text-slate-600">${t.desc || ""}</p>
+                            <h4 class="font-bold text-xs text-slate-900 truncate" title="${escapeHtml(t.name)}">${escapeHtml(t.name)}</h4>
+                            <p class="text-[10.5px] text-slate-600 line-clamp-2">${escapeHtml(t.desc || "")}</p>
                         </div>
+                        ${deleteBtn}
                     </div>
                     
                     <div class="bg-white p-1.5 rounded border border-slate-200 text-[10px] text-slate-600">
-                        <span class="font-bold text-slate-700">Các cột:</span> ${colsPreview}
+                        <span class="font-bold text-slate-700">Các cột:</span> ${escapeHtml(colsPreview)}
                     </div>
 
                     <div class="flex items-center justify-between pt-1 border-t border-indigo-100 gap-1.5">
@@ -1497,6 +1627,21 @@
                 });
             };
         });
+
+        container.querySelectorAll(".btn-delete-palette-table").forEach(btn => {
+            btn.onclick = () => {
+                const tag = btn.getAttribute("data-tag");
+                deleteCustomStudioTable(tag);
+            };
+        });
+
+        // Wire Add Table button at top of Palette Tab 2
+        const btnStudioAddNewTableVar = document.getElementById("btnStudioAddNewTableVar");
+        if (btnStudioAddNewTableVar) {
+            btnStudioAddNewTableVar.onclick = () => {
+                openCreateCustomTableModal();
+            };
+        }
     }
 
     // Palette Tab 3: Render Assigned Mappings List
@@ -1847,15 +1992,224 @@
         };
     }
 
-    // Master Dictionary Modal Controller
+    // -------------------------------------------------------------
+    // Master Dictionary Modal Controller (2 Tabs: 1. Biến chữ | 2. Biến dạng bảng)
     // -------------------------------------------------------------
     let currentDictCatFilter = "all";
+    let studioDictCurrentMode = "scalar"; // "scalar" or "table"
+    let currentStudioActiveDictTableTag = "BANG_HANG_HOA";
+
+    function switchStudioDictMode(mode) {
+        studioDictCurrentMode = mode;
+        const tabScalar = document.getElementById("tabStudioDictScalarMode");
+        const tabTable = document.getElementById("tabStudioDictTableMode");
+        const viewScalar = document.getElementById("studioDictScalarVarsView");
+        const viewTable = document.getElementById("studioDictTableVarsView");
+
+        if (mode === "scalar") {
+            if (tabScalar) {
+                tabScalar.className = "studio-dict-nav-tab px-3 py-1.5 font-bold text-xs border-b-2 border-emerald-600 text-emerald-700 flex items-center gap-1.5 cursor-pointer transition-all bg-white rounded-t";
+            }
+            if (tabTable) {
+                tabTable.className = "studio-dict-nav-tab px-3 py-1.5 font-medium text-xs border-b-2 border-transparent text-slate-500 hover:text-indigo-700 hover:bg-indigo-50/40 flex items-center gap-1.5 cursor-pointer transition-all rounded-t";
+            }
+            if (viewScalar) viewScalar.classList.remove("hidden");
+            if (viewTable) viewTable.classList.add("hidden");
+            renderStudioVarsTable();
+        } else {
+            if (tabTable) {
+                tabTable.className = "studio-dict-nav-tab px-3 py-1.5 font-bold text-xs border-b-2 border-indigo-600 text-indigo-700 flex items-center gap-1.5 cursor-pointer transition-all bg-white rounded-t";
+            }
+            if (tabScalar) {
+                tabScalar.className = "studio-dict-nav-tab px-3 py-1.5 font-medium text-xs border-b-2 border-transparent text-slate-500 hover:text-emerald-700 hover:bg-emerald-50/40 flex items-center gap-1.5 cursor-pointer transition-all rounded-t";
+            }
+            if (viewScalar) viewScalar.classList.add("hidden");
+            if (viewTable) viewTable.classList.remove("hidden");
+            renderStudioDictTableView();
+        }
+        updateStudioDictBadgeCounts();
+    }
+
+    function updateStudioDictBadgeCounts() {
+        const badgeScalar = document.getElementById("badgeStudioDictScalarCount");
+        if (badgeScalar) badgeScalar.textContent = String(MASTER_VARIABLES_CATALOG.length);
+
+        const badgeTable = document.getElementById("badgeStudioDictTableCount");
+        if (badgeTable) {
+            const allDefs = getAllStudioTableVars();
+            badgeTable.textContent = `${allDefs.length} loại`;
+        }
+    }
+
+    function renderStudioDictTableView() {
+        const allDefs = getAllStudioTableVars();
+        if (!allDefs.find(t => t.tag === currentStudioActiveDictTableTag)) {
+            currentStudioActiveDictTableTag = allDefs[0] ? allDefs[0].tag : "BANG_HANG_HOA";
+        }
+
+        // 1. Render pills
+        const pillsContainer = document.getElementById("studioDictTableTypePills");
+        if (pillsContainer) {
+            pillsContainer.innerHTML = allDefs.map(tDef => {
+                const isActive = tDef.tag === currentStudioActiveDictTableTag;
+                const activeClass = isActive
+                    ? "bg-indigo-600 text-white font-bold shadow-xs border-indigo-600"
+                    : "bg-white hover:bg-indigo-50 text-slate-700 font-medium border-slate-200 hover:border-indigo-300";
+                const isCustom = !tDef.isSystem;
+                return `
+                    <button type="button" class="btn-studio-dict-table-pill px-2.5 py-1 rounded-lg border text-xs cursor-pointer transition-all flex items-center gap-1.5 ${activeClass}" data-table-tag="${tDef.tag}">
+                        <span>${tDef.icon || "📋"}</span>
+                        <span>{${tDef.tag}}</span>
+                        ${isCustom ? '<span class="text-[9.5px] text-amber-500 font-bold" title="Bảng do bạn tự định nghĩa">⭐</span>' : ''}
+                    </button>
+                `;
+            }).join("");
+
+            pillsContainer.querySelectorAll(".btn-studio-dict-table-pill").forEach(btn => {
+                btn.onclick = () => {
+                    currentStudioActiveDictTableTag = btn.getAttribute("data-table-tag");
+                    renderStudioDictTableView();
+                };
+            });
+        }
+
+        // 2. Active table details
+        const activeDef = allDefs.find(t => t.tag === currentStudioActiveDictTableTag) || allDefs[0];
+        if (!activeDef) return;
+
+        const iconEl = document.getElementById("studioActiveTableIcon");
+        const titleEl = document.getElementById("studioActiveTableTitle");
+        const colCountBadge = document.getElementById("studioActiveTableColCountBadge");
+        const typeBadge = document.getElementById("studioActiveTableTypeBadge");
+        const descEl = document.getElementById("studioActiveTableDesc");
+        const lblCode = document.getElementById("lblStudioActiveTableTagCode");
+        const hintCode = document.getElementById("studioDictTableTagHint");
+        const btnDelete = document.getElementById("btnStudioDictDeleteTable");
+
+        if (iconEl) iconEl.textContent = activeDef.icon || "📋";
+        if (titleEl) titleEl.textContent = `${activeDef.tag} - ${activeDef.name}`;
+        if (colCountBadge) colCountBadge.textContent = `${(activeDef.columns || []).length} cột`;
+        if (typeBadge) {
+            typeBadge.textContent = activeDef.isSystem ? "HỆ THỐNG" : "⭐ TÙY BIẾN";
+            typeBadge.className = activeDef.isSystem
+                ? "text-[9.5px] bg-indigo-600 text-white font-bold px-1.5 py-0.2 rounded shadow-2xs"
+                : "text-[9.5px] bg-amber-500 text-white font-bold px-1.5 py-0.2 rounded shadow-2xs";
+        }
+        if (descEl) descEl.textContent = activeDef.desc || "Bảng tự động kẻ viền chuẩn Nghị định 30/2020/NĐ-CP.";
+        if (lblCode) lblCode.textContent = `{${activeDef.tag}}`;
+        if (hintCode) hintCode.textContent = `{${activeDef.tag}}`;
+
+        if (btnDelete) {
+            if (activeDef.isSystem) {
+                btnDelete.classList.add("hidden");
+            } else {
+                btnDelete.classList.remove("hidden");
+                btnDelete.onclick = () => {
+                    deleteCustomStudioTable(activeDef.tag);
+                };
+            }
+        }
+
+        // 3. Render Columns Preview & Sample Visual Grid
+        const gridContainer = document.getElementById("studioDictTableGridContainer");
+        if (gridContainer) {
+            const cols = activeDef.columns || [];
+            
+            // Sub-table 1: Columns configuration overview
+            const colsRowsHtml = cols.map((c, idx) => {
+                const key = typeof c === "string" ? `col_${idx + 1}` : (c.key || `col_${idx + 1}`);
+                const label = typeof c === "string" ? c : (c.label || key);
+                const type = (typeof c === "object" && c.type) ? c.type : "text";
+                const align = (typeof c === "object" && c.align) ? c.align : "left";
+                const width = (typeof c === "object" && c.widthPct) ? c.widthPct : "auto";
+                const typeLabel = type === "currency" ? "Số tiền (VNĐ)" : type === "number" ? "Số lượng" : type === "calc_amount" ? "Thành tiền tự tính" : "Văn bản";
+
+                return `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="border border-slate-200 px-2 py-1 text-center font-mono text-slate-500">${idx + 1}</td>
+                        <td class="border border-slate-200 px-2 py-1 font-mono text-indigo-700 font-bold">${escapeHtml(key)}</td>
+                        <td class="border border-slate-200 px-2 py-1 font-semibold text-slate-900">${escapeHtml(label)}</td>
+                        <td class="border border-slate-200 px-2 py-1 text-slate-600">${typeLabel}</td>
+                        <td class="border border-slate-200 px-2 py-1 text-center font-mono text-slate-600">${align}</td>
+                        <td class="border border-slate-200 px-2 py-1 text-center font-mono text-slate-500">${width}</td>
+                    </tr>
+                `;
+            }).join("");
+
+            // Sub-table 2: Live Visual Sample
+            const sampleHtml = renderSampleTableHtml(activeDef.tag);
+
+            gridContainer.innerHTML = `
+                <div class="p-3 space-y-4">
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                                <i class="fa-solid fa-list-check text-indigo-600"></i>
+                                <span>Cấu trúc chi tiết các cột:</span>
+                            </span>
+                        </div>
+                        <table class="w-full border-collapse border border-slate-200 text-xs">
+                            <thead class="bg-slate-100 text-slate-700 font-bold">
+                                <tr>
+                                    <th class="border border-slate-200 px-2 py-1 w-10 text-center">STT</th>
+                                    <th class="border border-slate-200 px-2 py-1 w-28">Mã cột</th>
+                                    <th class="border border-slate-200 px-2 py-1">Tiêu đề cột</th>
+                                    <th class="border border-slate-200 px-2 py-1 w-32">Loại dữ liệu</th>
+                                    <th class="border border-slate-200 px-2 py-1 w-20 text-center">Căn lề</th>
+                                    <th class="border border-slate-200 px-2 py-1 w-20 text-center">Độ rộng</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${colsRowsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <span class="font-bold text-xs text-slate-800 flex items-center gap-1.5">
+                                <i class="fa-solid fa-eye text-emerald-600"></i>
+                                <span>Hình ảnh mô phỏng bảng khi xuất file Word:</span>
+                            </span>
+                            <span class="text-[10px] text-slate-500 italic">Bảng tự động kẻ viền đầy đủ, phông Times New Roman 13pt</span>
+                        </div>
+                        ${sampleHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Wire Copy Tag button
+        const btnCopyTag = document.getElementById("btnStudioDictCopyTableTag");
+        if (btnCopyTag) {
+            btnCopyTag.onclick = () => {
+                navigator.clipboard.writeText(`{${activeDef.tag}}`).then(() => {
+                    showToast(`Đã sao chép mã {${activeDef.tag}} vào clipboard!`, "success");
+                });
+            };
+        }
+
+        // Wire Insert Tag button
+        const btnInsertTag = document.getElementById("btnStudioDictInsertTable");
+        if (btnInsertTag) {
+            btnInsertTag.onclick = () => {
+                insertTagAtCursor(`{${activeDef.tag}}`);
+                closeStudioVarsModal();
+                showToast(`Đã chèn {${activeDef.tag}} vào văn bản!`, "success");
+            };
+        }
+    }
 
     function openStudioVarsModal() {
         if (!modalStudioVars) return;
-        renderStudioVarsTable();
+        updateStudioDictBadgeCounts();
+        if (studioDictCurrentMode === "scalar") {
+            renderStudioVarsTable();
+        } else {
+            renderStudioDictTableView();
+        }
         modalStudioVars.classList.remove("hidden");
-        if (studioVarsSearchInput) {
+        if (studioVarsSearchInput && studioDictCurrentMode === "scalar") {
             studioVarsSearchInput.value = "";
             setTimeout(() => studioVarsSearchInput.focus(), 100);
         }
@@ -1863,6 +2217,32 @@
 
     function closeStudioVarsModal() {
         if (modalStudioVars) modalStudioVars.classList.add("hidden");
+    }
+
+    // Modal navigation tabs wiring
+    const tabStudioDictScalarMode = document.getElementById("tabStudioDictScalarMode");
+    const tabStudioDictTableMode = document.getElementById("tabStudioDictTableMode");
+    if (tabStudioDictScalarMode) tabStudioDictScalarMode.onclick = () => switchStudioDictMode("scalar");
+    if (tabStudioDictTableMode) tabStudioDictTableMode.onclick = () => switchStudioDictMode("table");
+
+    const btnStudioDictAddTableVar = document.getElementById("btnStudioDictAddTableVar");
+    if (btnStudioDictAddTableVar) {
+        btnStudioDictAddTableVar.onclick = () => openCreateCustomTableModal();
+    }
+
+    const btnStudioDictResetTableDefs = document.getElementById("btnStudioDictResetTableDefs");
+    if (btnStudioDictResetTableDefs) {
+        btnStudioDictResetTableDefs.onclick = () => {
+            if (confirm("Khôi phục danh mục bảng biến xạ về 3 bảng chuẩn ban đầu (Hàng hóa, Nhân sự, Tiến độ)? Các bảng tự tạo sẽ bị xóa.")) {
+                localStorage.removeItem("ho_so_custom_table_defs");
+                localStorage.removeItem("ho_so_custom_tables");
+                currentStudioActiveDictTableTag = "BANG_HANG_HOA";
+                renderPaletteTableVars();
+                updateStudioDictBadgeCounts();
+                renderStudioDictTableView();
+                showToast("Đã khôi phục danh mục bảng về mặc định!");
+            }
+        };
     }
 
     function renderStudioVarsTable() {
@@ -1988,6 +2368,12 @@
         state,
         STUDIO_WORKFLOWS,
         MASTER_VARIABLES_CATALOG,
+        getAllStudioTableVars,
+        openCreateCustomTableModal,
+        openStudioVarsModal,
+        deleteCustomStudioTable,
+        renderPaletteTableVars,
+        renderStudioDictTableView,
         detectEntitiesForDocument,
         processIncomingFiles,
         createTaggedDocxBlob,
@@ -2435,6 +2821,215 @@
     if (modalEditVariable) {
         setupSafeModalBackdropClose(modalEditVariable, closeEditVariableModal);
     }
+
+
+    // -------------------------------------------------------------
+    // Custom Table Creation Modal Controller
+    // -------------------------------------------------------------
+    const modalCreateCustomTable = document.getElementById("modalCreateCustomTable");
+    const btnCloseCustomTableModal = document.getElementById("btnCloseCustomTableModal");
+    const btnCancelCustomTableModal = document.getElementById("btnCancelCustomTableModal");
+    const btnSaveCustomTable = document.getElementById("btnSaveCustomTable");
+    const btnAddCustomColumn = document.getElementById("btnAddCustomColumn");
+    const customColumnsList = document.getElementById("customColumnsList");
+    const inputCustomTableTag = document.getElementById("inputCustomTableTag");
+    const inputCustomTableName = document.getElementById("inputCustomTableName");
+    const inputCustomTableDesc = document.getElementById("inputCustomTableDesc");
+
+    let customStudioTableColumnsDraft = [];
+
+    function openCreateCustomTableModal() {
+        if (!modalCreateCustomTable) return;
+        modalCreateCustomTable.classList.remove("hidden");
+
+        if (inputCustomTableTag) inputCustomTableTag.value = "";
+        if (inputCustomTableName) inputCustomTableName.value = "";
+        if (inputCustomTableDesc) inputCustomTableDesc.value = "";
+
+        // Default columns draft
+        customStudioTableColumnsDraft = [
+            { key: "stt", label: "STT", type: "number", align: "center", widthPct: "8%" },
+            { key: "noi_dung", label: "Nội dung / Hạng mục", type: "text", align: "left", widthPct: "45%" },
+            { key: "so_luong", label: "Số lượng", type: "number", align: "right", widthPct: "15%" },
+            { key: "ghi_chu", label: "Ghi chú", type: "text", align: "left", widthPct: "32%" }
+        ];
+
+        renderStudioCustomColumnsDraftList();
+        if (inputCustomTableTag) inputCustomTableTag.focus();
+    }
+
+    function closeCreateCustomTableModal() {
+        if (modalCreateCustomTable) modalCreateCustomTable.classList.add("hidden");
+    }
+
+    function renderStudioCustomColumnsDraftList() {
+        if (!customColumnsList) return;
+        let html = "";
+        customStudioTableColumnsDraft.forEach((col, idx) => {
+            html += `
+                <div class="flex items-center gap-1.5 bg-white p-1.5 rounded border border-slate-200 text-xs" data-col-idx="${idx}">
+                    <span class="font-bold text-slate-400 w-5 text-center">${idx + 1}</span>
+                    <input type="text" data-field="label" value="${escapeHtml(col.label)}" placeholder="Tên cột..." class="flex-1 border border-slate-300 rounded px-1.5 py-0.5 text-xs font-medium">
+                    <select data-field="type" class="border border-slate-300 rounded px-1.5 py-0.5 text-xs bg-slate-50">
+                        <option value="text" ${col.type === 'text' ? 'selected' : ''}>Văn bản</option>
+                        <option value="number" ${col.type === 'number' ? 'selected' : ''}>Số lượng</option>
+                        <option value="currency" ${col.type === 'currency' ? 'selected' : ''}>Số tiền (VNĐ)</option>
+                    </select>
+                    <select data-field="align" class="border border-slate-300 rounded px-1.5 py-0.5 text-xs bg-slate-50">
+                        <option value="left" ${col.align === 'left' ? 'selected' : ''}>Trái</option>
+                        <option value="center" ${col.align === 'center' ? 'selected' : ''}>Giữa</option>
+                        <option value="right" ${col.align === 'right' ? 'selected' : ''}>Phải</option>
+                    </select>
+                    <button type="button" data-action="delete-col" class="text-slate-400 hover:text-red-600 p-1 cursor-pointer" title="Xóa cột này">
+                        <i class="fa-solid fa-trash-can text-[10px]"></i>
+                    </button>
+                </div>
+            `;
+        });
+        customColumnsList.innerHTML = html;
+
+        // Column delete
+        customColumnsList.querySelectorAll('button[data-action="delete-col"]').forEach(btn => {
+            btn.onclick = () => {
+                const tr = btn.closest('[data-col-idx]');
+                const cIdx = parseInt(tr.getAttribute("data-col-idx"), 10);
+                if (customStudioTableColumnsDraft.length <= 1) {
+                    showToast("Bảng cần tối thiểu ít nhất 1 cột!", "warning");
+                    return;
+                }
+                customStudioTableColumnsDraft.splice(cIdx, 1);
+                renderStudioCustomColumnsDraftList();
+            };
+        });
+
+        // Field change sync
+        customColumnsList.querySelectorAll('input, select').forEach(el => {
+            el.onchange = () => {
+                const tr = el.closest('[data-col-idx]');
+                const cIdx = parseInt(tr.getAttribute("data-col-idx"), 10);
+                const field = el.getAttribute("data-field");
+                if (customStudioTableColumnsDraft[cIdx]) {
+                    customStudioTableColumnsDraft[cIdx][field] = el.value;
+                }
+            };
+        });
+    }
+
+    if (btnCloseCustomTableModal) btnCloseCustomTableModal.onclick = closeCreateCustomTableModal;
+    if (btnCancelCustomTableModal) btnCancelCustomTableModal.onclick = closeCreateCustomTableModal;
+
+    if (btnAddCustomColumn) {
+        btnAddCustomColumn.onclick = () => {
+            const nextIdx = customStudioTableColumnsDraft.length + 1;
+            customStudioTableColumnsDraft.push({
+                key: `col_${nextIdx}`,
+                label: `Cột ${nextIdx}`,
+                type: "text",
+                align: "left",
+                widthPct: "20%"
+            });
+            renderStudioCustomColumnsDraftList();
+        };
+    }
+
+    if (btnSaveCustomTable) {
+        btnSaveCustomTable.onclick = () => {
+            let rawTag = (inputCustomTableTag ? inputCustomTableTag.value.trim() : "").toUpperCase();
+            rawTag = rawTag.replace(/[^A-Z0-9_]/g, "_").replace(/^_+|_+$/g, "");
+            if (!rawTag.startsWith("BANG_")) {
+                rawTag = "BANG_" + rawTag;
+            }
+
+            if (rawTag === "BANG_") {
+                showToast("Vui lòng nhập mã thẻ hợp lệ (VD: BANG_VAT_TU_PHU)!", "warning");
+                if (inputCustomTableTag) inputCustomTableTag.focus();
+                return;
+            }
+
+            const name = (inputCustomTableName ? inputCustomTableName.value.trim() : "") || rawTag;
+            const desc = inputCustomTableDesc ? inputCustomTableDesc.value.trim() : "";
+
+            // Check duplicate tag
+            const existing = getAllStudioTableVars().find(t => t.tag === rawTag);
+            if (existing) {
+                showToast(`Mã thẻ {${rawTag}} đã tồn tại! Vui lòng chọn tên mã khác.`, "error");
+                return;
+            }
+
+            // Sync columns
+            customColumnsList.querySelectorAll('[data-col-idx]').forEach(tr => {
+                const cIdx = parseInt(tr.getAttribute("data-col-idx"), 10);
+                const lbl = tr.querySelector('input[data-field="label"]').value.trim();
+                const typ = tr.querySelector('select[data-field="type"]').value;
+                const alg = tr.querySelector('select[data-field="align"]').value;
+                if (customStudioTableColumnsDraft[cIdx]) {
+                    customStudioTableColumnsDraft[cIdx].label = lbl || `Cột ${cIdx + 1}`;
+                    customStudioTableColumnsDraft[cIdx].type = typ;
+                    customStudioTableColumnsDraft[cIdx].align = alg;
+                    if (!customStudioTableColumnsDraft[cIdx].key) {
+                        customStudioTableColumnsDraft[cIdx].key = `col_${cIdx + 1}`;
+                    }
+                }
+            });
+
+            // Ensure unique column keys
+            customStudioTableColumnsDraft.forEach((c, i) => {
+                if (!c.key) c.key = `col_${i + 1}`;
+                if (i === 0 && !c.key) c.key = "stt";
+            });
+
+            const hasCurrency = customStudioTableColumnsDraft.some(c => c.type === "currency");
+            const newTableDef = {
+                tag: rawTag,
+                name: name,
+                icon: "📋",
+                desc: desc || `Bảng dữ liệu {${rawTag}} chèn vào Word mẫu.`,
+                isSystem: false,
+                hasTotal: hasCurrency,
+                totalCol: hasCurrency ? (customStudioTableColumnsDraft.find(c => c.type === "currency")?.key || "") : "",
+                currencyWord: hasCurrency,
+                columns: customStudioTableColumnsDraft,
+                defaultRows: [
+                    { stt: 1 }
+                ]
+            };
+
+            let customList = [];
+            try {
+                const raw = localStorage.getItem("ho_so_custom_table_defs");
+                if (raw) customList = JSON.parse(raw);
+            } catch (e) {}
+
+            customList.push(newTableDef);
+            saveCustomStudioTableDefinitions(customList);
+
+            currentStudioActiveDictTableTag = rawTag;
+            renderPaletteTableVars();
+            updateStudioDictBadgeCounts();
+            renderStudioDictTableView();
+            closeCreateCustomTableModal();
+            showToast(`Đã tạo thành công loại bảng {${rawTag}}! Có thể copy mã Word hoặc chèn ngay bây giờ.`, "success");
+        };
+    }
+
+    if (modalCreateCustomTable) {
+        setupSafeModalBackdropClose(modalCreateCustomTable, closeCreateCustomTableModal);
+    }
+
+    // Cross-tab synchronization listener
+    window.addEventListener("storage", (e) => {
+        if (e.key === "ho_so_custom_table_defs") {
+            renderPaletteTableVars();
+            updateStudioDictBadgeCounts();
+            if (studioDictCurrentMode === "table") {
+                renderStudioDictTableView();
+            }
+            if (studioViewMode === "sample") {
+                const item = state.batchFiles[state.activeDocId];
+                if (item) renderCanvasContent(item);
+            }
+        }
+    });
 
     // Initialize on page load
     initWorkflowSelector();
