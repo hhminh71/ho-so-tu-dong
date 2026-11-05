@@ -89,92 +89,102 @@
     ];
 
     // -------------------------------------------------------------
-    // Standard Workflows Matrix Catalog
     // -------------------------------------------------------------
-    const STUDIO_WORKFLOWS = {
-        "chi_dinh_thau_rut_gon": {
-            id: "chi_dinh_thau_rut_gon",
-            name: "Chỉ định thầu rút gọn (Tư vấn < 500tr; XL/HH < 1 tỷ)",
-            category: "LCNT",
-            documents: [
-                { id: "cdtrg_1", code: "01.TTr-KHLCNT", name: "01. Tờ trình phê duyệt Kế hoạch LCNT", keywords: ["tờ trình", "kế hoạch", "khlcnt", "01."] },
-                { id: "cdtrg_2", code: "02.QD-KHLCNT", name: "02. Quyết định phê duyệt Kế hoạch LCNT", keywords: ["quyết định", "kế hoạch", "khlcnt", "02."] },
-                { id: "cdtrg_3", code: "03.GM-TT", name: "03. Giấy mời tham gia hoàn thiện hợp đồng", keywords: ["giấy mời", "thư mời", "tham gia", "03."] },
-                { id: "cdtrg_4", code: "04.BB-HT", name: "04. Biên bản hoàn thiện / thương thảo hợp đồng", keywords: ["biên bản", "hoàn thiện", "thương thảo", "04."] },
-                { id: "cdtrg_5", code: "05.TTr-KQLCNT", name: "05. Tờ trình phê duyệt Kết quả LCNT", keywords: ["tờ trình", "kết quả", "kqlcnt", "05."] },
-                { id: "cdtrg_6", code: "06.QD-KQLCNT", name: "06. Quyết định phê duyệt Kết quả LCNT", keywords: ["quyết định", "kết quả", "kqlcnt", "06."] },
-                { id: "cdtrg_7", code: "07.HD-KT", name: "07. Hợp đồng kinh tế", keywords: ["hợp đồng", "kinh tế", "hd-kt", "07."] }
-            ]
-        },
-        "trien_khai_sua_chua": {
-            id: "trien_khai_sua_chua",
-            name: "Triển khai: Hồ sơ sửa chữa, bảo trì",
-            category: "Triển khai",
-            documents: [
-                { id: "tk_sc_1", code: "110.QĐ", name: "01. QĐ giao kế hoạch sửa chữa", keywords: ["giao kế hoạch", "110", "qđ giao"] },
-                { id: "tk_sc_2", code: "BB-KT", name: "02. Biên bản kiểm tra đột xuất / hiện trạng", keywords: ["biên bản kiểm tra", "đột xuất", "hiện trạng"] },
-                { id: "tk_sc_3", code: "01.TTr", name: "03. [TRIỂN KHAI] Tờ trình phê duyệt chủ trương", keywords: ["chủ trương", "triển khai", "tờ trình"] },
-                { id: "tk_sc_4", code: "02.TTr", name: "04. [TL TỔ THẨM ĐỊNH] Tờ trình thành lập tổ", keywords: ["tổ thẩm định", "thành lập", "tờ trình"] },
-                { id: "tk_sc_5", code: "930a.QĐ", name: "05. [TL TỔ THẨM ĐỊNH] Quyết định thành lập", keywords: ["quyết định thành lập", "tổ thẩm định"] },
-                { id: "tk_sc_6", code: "03.BC", name: "06. Báo cáo bảo trì / Báo cáo KTKT", keywords: ["báo cáo bảo trì", "báo cáo ktkt"] },
-                { id: "tk_sc_7", code: "04.TTr", name: "07. [KH LCNT] Tờ trình Kế hoạch LCNT", keywords: ["kh lcnt", "tờ trình"] },
-                { id: "tk_sc_8", code: "05.BC", name: "08. [KH LCNT] Báo cáo thẩm định KHLCNT", keywords: ["thẩm định khlcnt", "báo cáo thẩm định"] },
-                { id: "tk_sc_9", code: "968.QĐ", name: "09. [KH LCNT] Quyết định phê duyệt KHLCNT", keywords: ["phê duyệt khlcnt", "quyết định"] },
-                { id: "tk_sc_10", code: "1125.QĐ", name: "10. [THIẾT KẾ & DỰ TOÁN] Quyết định phê duyệt", keywords: ["thiết kế", "dự toán", "quyết định"] },
-                { id: "tk_sc_11", code: "06.HD", name: "11. Hợp đồng triển khai thực hiện", keywords: ["hợp đồng", "triển khai", "thực hiện"] }
-            ]
-        },
-        "chao_gia_han_che": {
-            id: "chao_gia_han_che",
-            name: "Chào giá cạnh tranh hạn chế (Nội bộ)",
-            category: "LCNT",
-            documents: [
-                { id: "cghc_1", code: "01.TTr-CT", name: "01. Tờ trình phê duyệt chủ trương chào giá", keywords: ["chủ trương", "chào giá"] },
-                { id: "cghc_2", code: "02.BC-MS", name: "02. Báo cáo đề xuất phương án chào giá hạn chế", keywords: ["phương án", "đề xuất"] },
-                { id: "cghc_3", code: "03.TM-CG", name: "03. Thư mời chào giá cạnh tranh", keywords: ["thư mời chào giá"] },
-                { id: "cghc_4", code: "04.BB-MCG", name: "04. Biên bản mở báo giá và đối chiếu năng lực", keywords: ["mở báo giá", "đối chiếu"] },
-                { id: "cghc_5", code: "05.BC-TH", name: "05. Báo cáo tổng hợp kết quả chào giá", keywords: ["báo cáo tổng hợp"] },
-                { id: "cghc_6", code: "06.QD-PD", name: "06. Quyết định phê duyệt kết quả lựa chọn", keywords: ["quyết định phê duyệt", "kết quả"] },
-                { id: "cghc_7", code: "07.HD-KT", name: "07. Hợp đồng mua bán / cung cấp dịch vụ", keywords: ["hợp đồng"] }
-            ]
-        },
-        "duoi_100_trieu": {
-            id: "duoi_100_trieu",
-            name: "Mua sắm thường xuyên 50tr - 100tr (Khoản 4 Điều 23)",
-            category: "LCNT",
-            documents: [
-                { id: "d100_1", code: "01.TTr-KHLCNT", name: "01. Tờ trình phê duyệt Kế hoạch LCNT", keywords: ["tờ trình", "kế hoạch"] },
-                { id: "d100_2", code: "02.QD-KHLCNT", name: "02. Quyết định phê duyệt Kế hoạch LCNT", keywords: ["quyết định", "kế hoạch"] },
-                { id: "d100_3", code: "03.BB-TT", name: "03. Biên bản thương thảo hoàn thiện đơn hàng", keywords: ["biên bản thương thảo"] },
-                { id: "d100_4", code: "04.HD-KT", name: "04. Hợp đồng kinh tế và biên bản giao nhận", keywords: ["hợp đồng"] }
-            ]
-        },
-        "duoi_50_trieu": {
-            id: "duoi_50_trieu",
-            name: "Mua sắm siêu rút gọn (Dưới 50 triệu)",
-            category: "LCNT",
-            documents: [
-                { id: "d50_1", code: "01.TTr-MS", name: "01. Tờ trình phê duyệt chủ trương và dự toán", keywords: ["chủ trương", "dự toán"] },
-                { id: "d50_2", code: "02.BC-MS", name: "02. Báo cáo thẩm định & phê duyệt mua sắm", keywords: ["báo cáo", "thẩm định"] },
-                { id: "d50_3", code: "03.HD-KT", name: "03. Hợp đồng kinh tế / Đơn đặt hàng", keywords: ["hợp đồng", "đơn đặt hàng"] },
-                { id: "d50_4", code: "04.BB-NT", name: "04. Biên bản nghiệm thu bàn giao và thanh lý", keywords: ["nghiệm thu", "thanh lý"] }
-            ]
-        },
-        "trien_khai_mua_sam": {
-            id: "trien_khai_mua_sam",
-            name: "Triển khai: Hồ sơ mua sắm thiết bị",
-            category: "Triển khai",
-            documents: [
-                { id: "tk_ms_1", code: "01.TTr-NCS", name: "01. Tờ trình nhu cầu mua sắm trang thiết bị", keywords: ["nhu cầu", "tờ trình"] },
-                { id: "tk_ms_2", code: "02.QD-TC", name: "02. Quyết định phê duyệt chủ trương mua sắm", keywords: ["chủ trương", "quyết định"] },
-                { id: "tk_ms_3", code: "03.BB-KTHS", name: "03. Biên bản kiểm tra cấu hình & thông số kỹ thuật", keywords: ["cấu hình", "thông số"] },
-                { id: "tk_ms_4", code: "04.TTr-KHLCNT", name: "04. Tờ trình phê duyệt KHLCNT mua sắm", keywords: ["tờ trình khlcnt"] },
-                { id: "tk_ms_5", code: "05.QD-KHLCNT", name: "05. Quyết định phê duyệt KHLCNT mua sắm", keywords: ["quyết định khlcnt"] }
-            ]
-        }
-    };
+    // Master Procurement Matrix & Implementation Matrix Defaults (Synced with app.js)
+    // -------------------------------------------------------------
+    const DEFAULT_PROCUREMENT_MATRIX = JSON.parse("{\"system\": \"Hệ thống Quản lý & Tự động xuất Hồ sơ Mua sắm, Xây lắp\", \"version\": \"3.0\", \"legalBases\": [\"Luật Đấu thầu số 22/2023/QH15 ngày 23/06/2023\", \"Nghị định số 24/2024/NĐ-CP ngày 27/02/2024 của Chính phủ\", \"Nghị định số 30/2020/NĐ-CP ngày 05/03/2020 về công tác văn thư\"], \"procurementTypes\": [{\"id\": \"duoi_50_trieu\", \"code\": \"D50\", \"name\": \"1. Mua sắm siêu rút gọn (Dưới 50 triệu)\", \"badge\": \"< 50 triệu\", \"badgeColor\": \"emerald\", \"description\": \"Áp dụng mua sắm tài sản, thiết bị, sửa chữa thường xuyên dưới 50 triệu đồng theo dự toán nội bộ.\", \"threshold\": 50000000, \"phases\": [{\"phaseId\": \"chuan_bi\", \"phaseName\": \"Giai đoạn Chuẩn bị\", \"documents\": [{\"id\": \"d50_1\", \"code\": \"01.TTr-MS\", \"name\": \"01. Tờ trình phê duyệt chủ trương và dự toán\", \"desc\": \"Tờ trình đơn vị đề xuất mua sắm hàng hóa / sửa chữa\", \"requiredVars\": [\"TEN_DON_VI\", \"SO_TO_TRINH\", \"NGAY_TO_TRINH\", \"TEN_HANG_MUC\", \"LY_DO_MUA_SAM\", \"TONG_MUC_DAU_TU\", \"NGUON_VON\", \"TRUONG_DON_VI\"]}, {\"id\": \"d50_2\", \"code\": \"02.BC-MS\", \"name\": \"02. Báo cáo thẩm định & phê duyệt mua sắm\", \"desc\": \"Báo cáo phê duyệt kết quả mua sắm dưới 50 triệu\", \"requiredVars\": [\"TEN_DON_VI\", \"SO_BAO_CAO\", \"NGAY_BAO_CAO\", \"TEN_HANG_MUC\", \"TEN_NHA_THAU\", \"MA_SO_THUE\", \"GIA_TRI_MUA_SAM\", \"NGUOI_PHE_DUYET\"]}]}, {\"phaseId\": \"thuc_hien\", \"phaseName\": \"Giai đoạn Ký kết & Nghiệm thu\", \"documents\": [{\"id\": \"d50_3\", \"code\": \"03.HD-KT\", \"name\": \"03. Hợp đồng kinh tế / Đơn đặt hàng\", \"desc\": \"Hợp đồng mua bán hoặc sửa chữa\", \"requiredVars\": [\"TEN_DON_VI\", \"DAI_DIEN_BEN_A\", \"TEN_NHA_THAU\", \"DAI_DIEN_BEN_B\", \"GIA_TRI_HOP_DONG\", \"THOI_GIAN_THUC_HIEN\"]}, {\"id\": \"d50_4\", \"code\": \"04.BB-NT\", \"name\": \"04. Biên bản nghiệm thu bàn giao và thanh lý\", \"desc\": \"Biên bản bàn giao thiết bị / hoàn thành sửa chữa\", \"requiredVars\": [\"TEN_DON_VI\", \"TEN_NHA_THAU\", \"NGAY_NGHIEM_THU\", \"NOI_DUNG_CONG_VIEC\", \"GIA_TRI_QUYET_TOAN\"]}]}]}, {\"id\": \"duoi_100_trieu\", \"code\": \"D100\", \"name\": \"2. Mua sắm thường xuyên 50tr - 100tr (Khoản 4 Điều 23)\", \"badge\": \"50tr - 100tr\", \"badgeColor\": \"teal\", \"description\": \"Áp dụng chỉ định thầu siêu nhỏ không qua mạng theo Khoản 4 Điều 23 Luật Đấu thầu 2023.\", \"threshold\": 100000000, \"phases\": [{\"phaseId\": \"chuan_bi\", \"phaseName\": \"Giai đoạn Chuẩn bị\", \"documents\": [{\"id\": \"d100_1\", \"code\": \"01.TTr-KHLCNT\", \"name\": \"01. Tờ trình phê duyệt Kế hoạch LCNT\", \"desc\": \"Tờ trình phê duyệt KHLCNT gói mua sắm thường xuyên\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"TEN_GOI_THAU\", \"GIA_GOI_THAU\", \"HINH_THUC_LCNT\", \"NGUOI_TRINH\"]}, {\"id\": \"d100_2\", \"code\": \"02.QD-KHLCNT\", \"name\": \"02. Quyết định phê duyệt Kế hoạch LCNT\", \"desc\": \"Quyết định phê duyệt của Người có thẩm quyền\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"SO_QUYET_DINH\", \"NGAY_QUYET_DINH\", \"TEN_GOI_THAU\", \"NGUOI_KY_CDT\"]}]}, {\"phaseId\": \"thuc_hien\", \"phaseName\": \"Giai đoạn Ký kết & Thanh lý\", \"documents\": [{\"id\": \"d100_3\", \"code\": \"03.BB-TT\", \"name\": \"03. Biên bản thương thảo hoàn thiện đơn hàng\", \"desc\": \"Biên bản thống nhất giá và tiến độ giao hàng\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"TEN_NHA_THAU\", \"GIA_THUONG_THAO\", \"THOI_GIAN_GIAO_HANG\"]}, {\"id\": \"d100_4\", \"code\": \"04.HD-KT\", \"name\": \"04. Hợp đồng kinh tế và biên bản giao nhận\", \"desc\": \"Hợp đồng kinh tế trọn gói\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"TEN_NHA_THAU\", \"GIA_TRI_HOP_DONG\", \"KHO_BAC_NHA_NUOC\"]}]}]}, {\"id\": \"chao_gia_han_che\", \"code\": \"CGHC\", \"name\": \"3. Chào giá cạnh tranh hạn chế (Nội bộ)\", \"badge\": \"Chào giá NB\", \"badgeColor\": \"cyan\", \"description\": \"Gửi thư mời chào giá đến ít nhất 3 nhà thầu có năng lực để so sánh giá cạnh tranh.\", \"threshold\": 500000000, \"phases\": [{\"phaseId\": \"chuan_bi\", \"phaseName\": \"Giai đoạn Chuẩn bị\", \"documents\": [{\"id\": \"cghc_1\", \"code\": \"01.TTr-CT\", \"name\": \"01. Tờ trình phê duyệt chủ trương chào giá\", \"desc\": \"Tờ trình chủ trương mua sắm cạnh tranh\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"TEN_GOI_THAU\", \"GIA_GOI_THAU\"]}, {\"id\": \"cghc_2\", \"code\": \"02.BC-MS\", \"name\": \"02. Báo cáo đề xuất phương án chào giá hạn chế\", \"desc\": \"Đề xuất danh sách ít nhất 3 nhà thầu\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"DANH_SACH_3_NHA_THAU\"]}, {\"id\": \"cghc_3\", \"code\": \"03.TB-CG\", \"name\": \"03. Thư mời chào giá kèm bảng yêu cầu kỹ thuật\", \"desc\": \"Gửi các nhà thầu nộp thư báo giá\", \"requiredVars\": [\"TEN_NHA_THAU\", \"HAN_NOP_BAO_GIA\", \"YEU_CAU_KY_THUAT\"]}]}, {\"phaseId\": \"thuc_hien\", \"phaseName\": \"Giai đoạn Đánh giá & Trao thầu\", \"documents\": [{\"id\": \"cghc_4\", \"code\": \"04.BB-MT\", \"name\": \"04. Biên bản mở thư chào giá\", \"desc\": \"Biên bản mở niêm phong các báo giá\", \"requiredVars\": [\"THOI_GIAN_MO_THAU\", \"DANH_SACH_GIA_CHAO\"]}, {\"id\": \"cghc_5\", \"code\": \"05.BB-DG\", \"name\": \"05. Biên bản họp đánh giá so sánh báo giá\", \"desc\": \"So sánh kỹ thuật và đơn giá\", \"requiredVars\": [\"TO_CHUYEN_GIA\", \"DON_VI_GIA_THAP_NHAT\"]}, {\"id\": \"cghc_6\", \"code\": \"06.BB-TT\", \"name\": \"06. Biên bản thương thảo hợp đồng\", \"desc\": \"Thương thảo với đơn vị có giá tốt nhất\", \"requiredVars\": [\"TEN_NHA_THAU_TRUNG\", \"GIA_THUONG_THAO\"]}, {\"id\": \"cghc_7\", \"code\": \"07.BC-DG\", \"name\": \"07. Báo cáo đánh giá kết quả chào giá\", \"desc\": \"Báo cáo trình lãnh đạo phê duyệt\", \"requiredVars\": [\"TEN_NHA_THAU_TRUNG\", \"GIA_DE_NGHI\"]}, {\"id\": \"cghc_8\", \"code\": \"08.TB-KQ\", \"name\": \"08. Thông báo kết quả chào giá\", \"desc\": \"Thông báo gửi các đơn vị tham gia\", \"requiredVars\": [\"TEN_NHA_THAU_TRUNG\", \"GIA_TRUNG_THAU\"]}, {\"id\": \"cghc_9\", \"code\": \"09.HD-KT\", \"name\": \"09. Hợp đồng kinh tế\", \"desc\": \"Hợp đồng kinh tế ký kết\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"TEN_NHA_THAU_TRUNG\", \"GIA_TRI_HOP_DONG\"]}]}]}, {\"id\": \"chi_dinh_thau_rut_gon\", \"code\": \"CDTRG\", \"name\": \"4. Chỉ định thầu rút gọn (Tư vấn < 500tr; XL/HH < 1 tỷ)\", \"badge\": \"CĐT Rút Gọn\", \"badgeColor\": \"emerald\", \"description\": \"Quy trình chuẩn theo Điều 78 Nghị định 24/2024/NĐ-CP (Tư vấn, Xây lắp, Hàng hóa).\", \"threshold\": 1000000000, \"phases\": [{\"phaseId\": \"chuan_bi\", \"phaseName\": \"Giai đoạn Chuẩn bị\", \"documents\": [{\"id\": \"cdtrg_1\", \"code\": \"01.TTr-KHLCNT\", \"name\": \"01. Tờ trình phê duyệt Kế hoạch LCNT\", \"desc\": \"Trình cấp thẩm quyền phê duyệt KHLCNT\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"TEN_DU_AN\", \"TEN_GOI_THAU\", \"GIA_GOI_THAU_SO\"]}, {\"id\": \"cdtrg_2\", \"code\": \"02.QD-KHLCNT\", \"name\": \"02. Quyết định phê duyệt Kế hoạch LCNT\", \"desc\": \"Quyết định phê duyệt KHLCNT\", \"requiredVars\": [\"SO_QUYET_DINH_KHLCNT\", \"NGAY_QUYET_DINH\", \"NGUOI_KY_CDT\"]}, {\"id\": \"cdtrg_3\", \"code\": \"03.GM-TT\", \"name\": \"03. Giấy mời tham gia hoàn thiện hợp đồng\", \"desc\": \"Gửi nhà thầu được chỉ định\", \"requiredVars\": [\"TEN_BAN_QUAN_LY_DU_AN\", \"TEN_NHA_THAU\", \"THOI_GIAN_HOP\", \"DIA_DIEM_HOP\"]}]}, {\"phaseId\": \"thuc_hien\", \"phaseName\": \"Giai đoạn Hoàn thiện & Phê duyệt\", \"documents\": [{\"id\": \"cdtrg_4\", \"code\": \"04.BB-HT\", \"name\": \"04. Biên bản hoàn thiện hợp đồng\", \"desc\": \"Biên bản hoàn thiện điều khoản hợp đồng\", \"requiredVars\": [\"SO_BIEN_BAN_HOAN_THIEN\", \"GIA_TRI_HOP_DONG_SO\", \"GIA_TRI_HOP_DONG_CHU\", \"DAI_DIEN_NHA_THAU\"]}, {\"id\": \"cdtrg_5\", \"code\": \"05.TTr-KQLCNT\", \"name\": \"05. Tờ trình phê duyệt kết quả chỉ định thầu\", \"desc\": \"Trình phê duyệt chỉ định thầu\", \"requiredVars\": [\"SO_TO_TRINH\", \"CO_QUAN_TRINH\", \"TRUONG_BAN_DHDA\", \"TEN_NHA_THAU\"]}, {\"id\": \"cdtrg_6\", \"code\": \"06.QD-KQLCNT\", \"name\": \"06. Quyết định phê duyệt kết quả chỉ định thầu\", \"desc\": \"Quyết định phê duyệt trúng thầu\", \"requiredVars\": [\"SO_QUYET_DINH\", \"NGUOI_KY_CDT\", \"GIA_TRI_HOP_DONG_SO\", \"THOI_GIAN_THUC_HIEN\"]}, {\"id\": \"cdtrg_7\", \"code\": \"07.HD-KT\", \"name\": \"07. Hợp đồng kinh tế\", \"desc\": \"Hợp đồng kinh tế chính thức\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"TEN_NHA_THAU\", \"GIA_TRI_HOP_DONG_SO\", \"KHO_BAC_NHA_NUOC\"]}]}]}, {\"id\": \"chi_dinh_thau_thong_thuong\", \"code\": \"CDTTT\", \"name\": \"5. Chỉ định thầu quy trình thông thường (HSYC & HSĐX)\", \"badge\": \"CĐT Thông Thường\", \"badgeColor\": \"indigo\", \"description\": \"Áp dụng gói thầu cần lập Hồ sơ yêu cầu, đánh giá Hồ sơ đề xuất và thẩm định kết quả.\", \"threshold\": 5000000000, \"phases\": [{\"phaseId\": \"chuan_bi_hsyc\", \"phaseName\": \"Giai đoạn Chuẩn bị Hồ sơ yêu cầu\", \"documents\": [{\"id\": \"cdttt_1\", \"code\": \"01.QD-TCG\", \"name\": \"01. Quyết định thành lập Tổ chuyên gia & Tổ thẩm định\", \"desc\": \"Thành lập ban bệ tổ chức chỉ định thầu\", \"requiredVars\": [\"TO_TRUONG_CHUYEN_GIA\", \"TO_TRUONG_THAM_DINH\"]}, {\"id\": \"cdttt_2\", \"code\": \"02.TTr-HSYC\", \"name\": \"02. Tờ trình đề nghị phê duyệt Hồ sơ yêu cầu (E-HSYC)\", \"desc\": \"Trình duyệt E-HSYC\", \"requiredVars\": [\"TEN_GOI_THAU\", \"TIEU_CHUAN_DANH_GIA\"]}, {\"id\": \"cdttt_3\", \"code\": \"03.BC-TD-HSYC\", \"name\": \"03. Báo cáo thẩm định Hồ sơ yêu cầu\", \"desc\": \"Tổ thẩm định kiểm tra HSYC\", \"requiredVars\": [\"KET_QUA_THAM_DINH_HSYC\"]}, {\"id\": \"cdttt_4\", \"code\": \"04.QD-PD-HSYC\", \"name\": \"04. Quyết định phê duyệt Hồ sơ yêu cầu\", \"desc\": \"Ban hành HSYC chính thức\", \"requiredVars\": [\"SO_QD_HSYC\", \"NGAY_BAN_HANH\"]}, {\"id\": \"cdttt_5\", \"code\": \"05.TM-HSDX\", \"name\": \"05. Thư mời nộp Hồ sơ đề xuất\", \"desc\": \"Gửi đơn vị dự kiến chỉ định\", \"requiredVars\": [\"TEN_NHA_THAU\", \"HAN_NOP_HSDX\"]}]}, {\"phaseId\": \"danh_gia_trao_thau\", \"phaseName\": \"Giai đoạn Đánh giá & Phê duyệt kết quả\", \"documents\": [{\"id\": \"cdttt_6\", \"code\": \"06.BB-M-HSDX\", \"name\": \"06. Biên bản mở Hồ sơ đề xuất\", \"desc\": \"Mở hồ sơ đề xuất\", \"requiredVars\": [\"THOI_GIAN_MO_THAU\"]}, {\"id\": \"cdttt_7\", \"code\": \"07.BC-DG-HSDX\", \"name\": \"07. Báo cáo đánh giá Hồ sơ đề xuất\", \"desc\": \"Đánh giá năng lực, kinh nghiệm, tài chính\", \"requiredVars\": [\"KET_QUA_DANH_GIA\"]}, {\"id\": \"cdttt_8\", \"code\": \"08.BB-TT\", \"name\": \"08. Biên bản thương thảo hợp đồng\", \"desc\": \"Thương thảo hoàn thiện\", \"requiredVars\": [\"GIA_THUONG_THAO\"]}, {\"id\": \"cdttt_9\", \"code\": \"09.TTr-KQLCNT\", \"name\": \"09. Tờ trình đề nghị phê duyệt Kết quả chỉ định thầu\", \"desc\": \"Trình kết quả LCNT\", \"requiredVars\": [\"GIA_TRUNG_THAU_SO\"]}, {\"id\": \"cdttt_10\", \"code\": \"10.BC-TD-KQ\", \"name\": \"10. Báo cáo thẩm định Kết quả lựa chọn nhà thầu\", \"desc\": \"Thẩm định trước khi ký duyệt\", \"requiredVars\": [\"Y_KIEN_THAM_DINH\"]}, {\"id\": \"cdttt_11\", \"code\": \"11.QD-PD-KQ\", \"name\": \"11. Quyết định phê duyệt Kết quả chỉ định thầu\", \"desc\": \"Quyết định phê duyệt chính thức\", \"requiredVars\": [\"SO_QUYET_DINH\"]}, {\"id\": \"cdttt_12\", \"code\": \"12.HD-KT\", \"name\": \"12. Hợp đồng kinh tế\", \"desc\": \"Hợp đồng kinh tế\", \"requiredVars\": [\"GIA_TRI_HOP_DONG_SO\"]}]}]}, {\"id\": \"dau_thau_rong_rai_hh_xl\", \"code\": \"DTRR\", \"name\": \"6. Đấu thầu rộng rãi qua mạng (E-HSMT Xây lắp & Mua sắm)\", \"badge\": \"Đấu Thầu Rộng Rãi\", \"badgeColor\": \"rose\", \"description\": \"Đầy đủ 23 biểu mẫu theo chuẩn Hệ thống Mạng Đấu thầu Quốc gia qua 6 giai đoạn (từ chuẩn bị đến ký HĐ).\", \"threshold\": 100000000000, \"phases\": [{\"phaseId\": \"giai_doan_1_hsmt\", \"phaseName\": \"GĐ 1: Chuẩn bị Hồ sơ mời thầu (E-HSMT)\", \"documents\": [{\"id\": \"dtrr_1\", \"code\": \"01.QD-TL\", \"name\": \"01. Quyết định thành lập Tổ chuyên gia và Tổ thẩm định\", \"desc\": \"Thành lập tổ chấm thầu\", \"requiredVars\": [\"TO_TRUONG_CHUYEN_GIA\", \"TO_TRUONG_THAM_DINH\"]}, {\"id\": \"dtrr_2\", \"code\": \"02.BB-HOP-TCG\", \"name\": \"02. Biên bản họp Tổ chuyên gia thông qua dự thảo E-HSMT\", \"desc\": \"Họp rà soát tiêu chuẩn mời thầu\", \"requiredVars\": [\"NOI_DUNG_DU_THAO\"]}, {\"id\": \"dtrr_3\", \"code\": \"03.TTr-HSMT\", \"name\": \"03. Tờ trình đề nghị thẩm định, phê duyệt E-HSMT\", \"desc\": \"Trình thẩm định E-HSMT\", \"requiredVars\": [\"TEN_GOI_THAU\", \"GIA_GOI_THAU\"]}, {\"id\": \"dtrr_4\", \"code\": \"04.BB-HOP-TTD\", \"name\": \"04. Biên bản họp Tổ thẩm định E-HSMT\", \"desc\": \"Họp thẩm định E-HSMT\", \"requiredVars\": [\"KET_QUA_HOP_THAM_DINH\"]}, {\"id\": \"dtrr_5\", \"code\": \"05.BC-TD-HSMT\", \"name\": \"05. Báo cáo thẩm định E-HSMT\", \"desc\": \"Báo cáo thẩm định đạt yêu cầu\", \"requiredVars\": [\"KET_LUAN_THAM_DINH\"]}, {\"id\": \"dtrr_6\", \"code\": \"06.QD-PD-HSMT\", \"name\": \"06. Quyết định phê duyệt E-HSMT\", \"desc\": \"Phê duyệt để đăng tải mạng\", \"requiredVars\": [\"SO_QD_HSMT\", \"NGAY_KY\"]}]}, {\"phaseId\": \"giai_doan_2_to_chuc\", \"phaseName\": \"GĐ 2: Tổ chức Lựa chọn nhà thầu & Mở thầu\", \"documents\": [{\"id\": \"dtrr_7\", \"code\": \"07.TB-MT\", \"name\": \"07. Thông báo mời thầu (E-TBMT)\", \"desc\": \"Thông báo phát hành hồ sơ mời thầu\", \"requiredVars\": [\"SO_E_TBMT\", \"THOI_DIEM_DONG_THAU\"]}, {\"id\": \"dtrr_8\", \"code\": \"08.VB-LAM-RO\", \"name\": \"08. Văn bản làm rõ E-HSMT (nếu có)\", \"desc\": \"Giải đáp thắc mắc của nhà thầu\", \"requiredVars\": [\"NOI_DUNG_LAM_RO\"]}, {\"id\": \"dtrr_9\", \"code\": \"09.QD-SUA-DOI\", \"name\": \"09. Quyết định sửa đổi E-HSMT (nếu có)\", \"desc\": \"Điều chỉnh hồ sơ mời thầu\", \"requiredVars\": [\"NOI_DUNG_SUA_DOI\"]}, {\"id\": \"dtrr_10\", \"code\": \"10.BB-MO-THAU\", \"name\": \"10. Biên bản mở thầu điện tử\", \"desc\": \"Trích xuất danh sách nhà thầu dự thầu\", \"requiredVars\": [\"DANH_SACH_NHA_THAU_DU_THAU\"]}]}, {\"phaseId\": \"giai_doan_3_danh_gia\", \"phaseName\": \"GĐ 3: Đánh giá Hồ sơ dự thầu (E-HSDT)\", \"documents\": [{\"id\": \"dtrr_11\", \"code\": \"11.BB-HOP-PC\", \"name\": \"11. Biên bản họp Tổ chuyên gia phân công nhiệm vụ\", \"desc\": \"Phân công tổ viên chấm điểm\", \"requiredVars\": [\"PHAN_CONG_CHAM_THAU\"]}, {\"id\": \"dtrr_12\", \"code\": \"12.VB-LR-HSDT\", \"name\": \"12. Văn bản yêu cầu làm rõ E-HSDT (nếu có)\", \"desc\": \"Làm rõ hồ sơ dự thầu\", \"requiredVars\": [\"YEU_CAU_LAM_RO_HSDT\"]}, {\"id\": \"dtrr_13\", \"code\": \"13.BB-HOP-KQ\", \"name\": \"13. Biên bản họp Tổ chuyên gia thông qua kết quả chấm thầu\", \"desc\": \"Thống nhất xếp hạng nhà thầu\", \"requiredVars\": [\"XEP_HANG_NHA_THAU\"]}, {\"id\": \"dtrr_14\", \"code\": \"14.BC-DG-HSDT\", \"name\": \"14. Báo cáo đánh giá Hồ sơ dự thầu (E-HSDT)\", \"desc\": \"Báo cáo chấm thầu chính thức\", \"requiredVars\": [\"NHA_THAU_XEP_HANG_1\"]}]}, {\"phaseId\": \"giai_doan_4_thuong_thao\", \"phaseName\": \"GĐ 4: Thương thảo và Hoàn thiện hợp đồng\", \"documents\": [{\"id\": \"dtrr_15\", \"code\": \"15.GM-TT\", \"name\": \"15. Văn bản mời nhà thầu xếp hạng nhất vào thương thảo\", \"desc\": \"Mời thương thảo\", \"requiredVars\": [\"TEN_NHA_THAU_HANG_1\", \"LICH_THUONG_THAO\"]}, {\"id\": \"dtrr_16\", \"code\": \"16.BB-TT\", \"name\": \"16. Biên bản thương thảo hợp đồng\", \"desc\": \"Thương thảo các điều khoản\", \"requiredVars\": [\"GIA_THUONG_THAO_CUOI_CUNG\"]}, {\"id\": \"dtrr_17\", \"code\": \"17.BB-HT\", \"name\": \"17. Biên bản hoàn thiện hợp đồng\", \"desc\": \"Rà soát điều kiện hợp đồng\", \"requiredVars\": [\"GIA_TRI_HOP_DONG_THONG_NHAT\"]}]}, {\"phaseId\": \"giai_doan_5_phe_duyet\", \"phaseName\": \"GĐ 5: Thẩm định và Phê duyệt Kết quả LCNT\", \"documents\": [{\"id\": \"dtrr_18\", \"code\": \"18.TTr-KQLCNT\", \"name\": \"18. Tờ trình đề nghị thẩm định, phê duyệt Kết quả LCNT\", \"desc\": \"Trình phê duyệt trúng thầu\", \"requiredVars\": [\"TEN_DON_VI_TRUNG_THAU\", \"GIA_TRUNG_THAU\"]}, {\"id\": \"dtrr_19\", \"code\": \"19.BB-HOP-TTD\", \"name\": \"19. Biên bản họp Tổ thẩm định Kết quả LCNT\", \"desc\": \"Họp thẩm định kết quả\", \"requiredVars\": [\"Y_KIEN_TO_THAM_DINH\"]}, {\"id\": \"dtrr_20\", \"code\": \"20.BC-TD-KQ\", \"name\": \"20. Báo cáo thẩm định Kết quả LCNT\", \"desc\": \"Báo cáo thẩm định\", \"requiredVars\": [\"KET_LUAN_THAM_DINH_KQLCNT\"]}, {\"id\": \"dtrr_21\", \"code\": \"21.QD-PD-KQ\", \"name\": \"21. Quyết định phê duyệt Kết quả lựa chọn nhà thầu\", \"desc\": \"Quyết định phê duyệt trúng thầu chính thức\", \"requiredVars\": [\"SO_QUYET_DINH\", \"GIA_TRUNG_THAU_SO\"]}]}, {\"phaseId\": \"giai_doan_6_hop_dong\", \"phaseName\": \"GĐ 6: Công khai Kết quả & Ký kết Hợp đồng\", \"documents\": [{\"id\": \"dtrr_22\", \"code\": \"22.TB-KQ\", \"name\": \"22. Thông báo Kết quả lựa chọn nhà thầu\", \"desc\": \"Đăng tải kết quả trên mạng đấu thầu\", \"requiredVars\": [\"TEN_NHA_THAU_TRUNG_THAU\"]}, {\"id\": \"dtrr_23\", \"code\": \"23.HD-KT\", \"name\": \"23. Hợp đồng kinh tế chính thức (kèm phụ lục)\", \"desc\": \"Hợp đồng kinh tế xây lắp/mua sắm\", \"requiredVars\": [\"GIA_TRI_HOP_DONG\", \"BAO_DAM_THUC_HIEN_HD\"]}]}]}]}");
+    const DEFAULT_IMPLEMENTATION_MATRIX = JSON.parse("{\"version\": \"1.0\", \"implementationTypes\": [{\"id\": \"trien_khai_sua_chua\", \"name\": \"1. Triển khai hồ sơ sửa chữa\", \"code\": \"TK-SC\", \"description\": \"Áp dụng cho các dự án sửa chữa, bảo trì, khắc phục hư hỏng\", \"documents\": [{\"id\": \"tk_sc_1\", \"code\": \"110.QĐ\", \"name\": \"QĐ giao kế hoạch\", \"signer\": \"TCT\", \"duration\": 2, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-01-12\", \"docNo\": \"110/QĐ-TCTCHKVN\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_2\", \"code\": \"BB-KT\", \"name\": \"Biên bản kiểm tra đột xuất\", \"signer\": \"Các phòng VCA\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-04-04\", \"docNo\": \"\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_3\", \"code\": \"01.TTr\", \"name\": \"[TRIỂN KHAI] Tờ trình\", \"signer\": \"PKTHT\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-07-21\", \"docNo\": \"01/ĐKNCC/TTr-KTHT\", \"templateFile\": \"templates/01_To_trinh_KHLCNT.docx\"}, {\"id\": \"tk_sc_4\", \"code\": \"02.TTr\", \"name\": \"[TL TỔ THẨM ĐỊNH] Tờ Trình\", \"signer\": \"PKTHT\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"2026-07-22\", \"docNo\": \"02/ĐKNCC/TTr-KTHT\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_5\", \"code\": \"930a.QĐ\", \"name\": \"[TL TỔ THẨM ĐỊNH] Quyết định\", \"signer\": \"GĐ\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-07-28\", \"docNo\": \"930a/QĐ-CHKQTCT\", \"templateFile\": \"templates/02_Quyet_dinh_KHLCNT.docx\"}, {\"id\": \"tk_sc_6\", \"code\": \"03.BC\", \"name\": \"BÁO CÁO BẢO TRÌ\", \"signer\": \"PKTHT\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"2026-07-29\", \"docNo\": \"03/BCTHBT-KTHT\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_7\", \"code\": \"QĐ-DT\", \"name\": \"Phê duyệt dự toán G1\", \"signer\": \"GĐ\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"\", \"docNo\": \"\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_8\", \"code\": \"04.TTr\", \"name\": \"[KH LCNT] Tờ trình\", \"signer\": \"PKTHT\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-07-29\", \"docNo\": \"04/ĐKNCC/TTr-KTHT\", \"templateFile\": \"templates/01_To_trinh_KHLCNT.docx\"}, {\"id\": \"tk_sc_9\", \"code\": \"BB-TĐ\", \"name\": \"[KH LCNT] BB Thẩm định\", \"signer\": \"Tổ thẩm định\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-07-30\", \"docNo\": \"\", \"templateFile\": \"templates/2_Bien_ban_hoan_thien_hop_dong.docx\"}, {\"id\": \"tk_sc_10\", \"code\": \"05.BC\", \"name\": \"[KH LCNT] BC Thẩm định\", \"signer\": \"Tổ thẩm định\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-07-30\", \"docNo\": \"05/BC-HĐTĐ-KQTĐ\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_11\", \"code\": \"968.QĐ\", \"name\": \"[KH LCNT] QĐ Phê Duyệt\", \"signer\": \"GĐ\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"2026-07-31\", \"docNo\": \"968/QĐ-CHKQTCT\", \"templateFile\": \"templates/02_Quyet_dinh_KHLCNT.docx\"}]}, {\"id\": \"trien_khai_mua_sam\", \"name\": \"2. Triển khai hồ sơ mua sắm\", \"code\": \"TK-MS\", \"description\": \"Áp dụng cho mua sắm hàng hóa, tài sản, trang thiết bị thường xuyên\", \"documents\": [{\"id\": \"tk_ms_1\", \"code\": \"01.DX-NS\", \"name\": \"Báo cáo đề xuất nhu cầu mua sắm\", \"signer\": \"Đơn vị sử dụng\", \"duration\": 2, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-01-12\", \"docNo\": \"01/BC-DXMS\", \"templateFile\": \"\"}, {\"id\": \"tk_ms_2\", \"code\": \"02.BB-HOP\", \"name\": \"Biên bản họp thống nhất danh mục mua sắm\", \"signer\": \"Hội đồng mua sắm\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"02/BB-HOP\", \"templateFile\": \"templates/2_Bien_ban_hoan_thien_hop_dong.docx\"}, {\"id\": \"tk_ms_3\", \"code\": \"03.TM-BG\", \"name\": \"Thư mời báo giá / Biên bản thu thập 03 báo giá\", \"signer\": \"Tổ mua sắm\", \"duration\": 3, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"03/TM-BG\", \"templateFile\": \"templates/1_Giay_moi_tham_gia.docx\"}, {\"id\": \"tk_ms_4\", \"code\": \"04.TTr-CTMS\", \"name\": \"Tờ trình phê duyệt chủ trương và dự toán mua sắm\", \"signer\": \"Phòng Kế hoạch\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"04/TTr-CTMS\", \"templateFile\": \"templates/01_To_trinh_KHLCNT.docx\"}, {\"id\": \"tk_ms_5\", \"code\": \"05.QĐ-CTMS\", \"name\": \"Quyết định phê duyệt chủ trương mua sắm\", \"signer\": \"Lãnh đạo đơn vị\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"05/QĐ-CTMS\", \"templateFile\": \"templates/02_Quyet_dinh_KHLCNT.docx\"}, {\"id\": \"tk_ms_6\", \"code\": \"06.TTr-KHLCNT\", \"name\": \"Tờ trình đề nghị phê duyệt Kế hoạch LCNT\", \"signer\": \"Tổ mua sắm\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"06/TTr-KHLCNT\", \"templateFile\": \"templates/01_To_trinh_KHLCNT.docx\"}, {\"id\": \"tk_ms_7\", \"code\": \"07.QĐ-KHLCNT\", \"name\": \"Quyết định phê duyệt Kế hoạch LCNT mua sắm\", \"signer\": \"Cấp thẩm quyền\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"07/QĐ-KHLCNT\", \"templateFile\": \"templates/02_Quyet_dinh_KHLCNT.docx\"}]}, {\"id\": \"trien_khai_dau_tu\", \"name\": \"3. Triển khai hồ sơ đầu tư\", \"code\": \"TK-ĐT\", \"description\": \"Áp dụng cho dự án đầu tư xây dựng, cải tạo nâng cấp quy mô lớn\", \"documents\": [{\"id\": \"tk_dt_1\", \"code\": \"01.TTr-CTDT\", \"name\": \"Tờ trình đề xuất chủ trương đầu tư\", \"signer\": \"Ban QLDA\", \"duration\": 3, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-01-12\", \"docNo\": \"01/TTr-CTDT\", \"templateFile\": \"templates/01_To_trinh_KHLCNT.docx\"}, {\"id\": \"tk_dt_2\", \"code\": \"02.QĐ-CTDT\", \"name\": \"Quyết định phê duyệt chủ trương đầu tư\", \"signer\": \"Cấp quyết định ĐT\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"02/QĐ-CTDT\", \"templateFile\": \"templates/02_Quyet_dinh_KHLCNT.docx\"}, {\"id\": \"tk_dt_3\", \"code\": \"03.NV-KS\", \"name\": \"Đề cương nhiệm vụ khảo sát, lập Báo cáo KT-KT\", \"signer\": \"Đơn vị tư vấn\", \"duration\": 5, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"03/NV-KS\", \"templateFile\": \"\"}, {\"id\": \"tk_dt_4\", \"code\": \"04.TTr-BCKTKT\", \"name\": \"Tờ trình thẩm định Báo cáo KT-KT\", \"signer\": \"Ban QLDA\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"04/TTr-BCKTKT\", \"templateFile\": \"\"}, {\"id\": \"tk_dt_5\", \"code\": \"05.BC-TT\", \"name\": \"Báo cáo kết quả thẩm tra Báo cáo KT-KT\", \"signer\": \"Đơn vị thẩm tra\", \"duration\": 5, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"05/BC-TT\", \"templateFile\": \"\"}, {\"id\": \"tk_dt_6\", \"code\": \"06.QĐ-PD-DA\", \"name\": \"Quyết định phê duyệt dự án đầu tư xây dựng\", \"signer\": \"Người có thẩm quyền\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"06/QĐ-PDDA\", \"templateFile\": \"templates/02_Quyet_dinh_KHLCNT.docx\"}, {\"id\": \"tk_dt_7\", \"code\": \"07.TTr-KHLCNT\", \"name\": \"Tờ trình phê duyệt Kế hoạch LCNT tổng thể\", \"signer\": \"Chủ đầu tư\", \"duration\": 3, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"07/TTr-KHLCNT\", \"templateFile\": \"templates/01_To_trinh_KHLCNT.docx\"}, {\"id\": \"tk_dt_8\", \"code\": \"08.QĐ-KHLCNT\", \"name\": \"Quyết định phê duyệt Kế hoạch LCNT tổng thể\", \"signer\": \"Cấp quyết định ĐT\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"08/QĐ-KHLCNT\", \"templateFile\": \"templates/02_Quyet_dinh_KHLCNT.docx\"}]}]}");
 
-    // -------------------------------------------------------------
+    let STUDIO_WORKFLOWS = {};
+
+    function loadAllStudioWorkflows() {
+        let pMatrix = DEFAULT_PROCUREMENT_MATRIX;
+        let iMatrix = DEFAULT_IMPLEMENTATION_MATRIX;
+
+        try {
+            const customP = localStorage.getItem("ho_so_tu_dong_matrix_custom");
+            if (customP) {
+                const parsedP = JSON.parse(customP);
+                if (parsedP.procurementTypes && parsedP.procurementTypes.length > 0) {
+                    pMatrix = parsedP;
+                }
+            }
+        } catch (e) {
+            console.warn("Could not load custom procurement matrix in Studio:", e);
+        }
+
+        try {
+            const customI = localStorage.getItem("ho_so_tu_dong_implementation_matrix");
+            if (customI) {
+                const parsedI = JSON.parse(customI);
+                if (parsedI.implementationTypes && parsedI.implementationTypes.length > 0) {
+                    iMatrix = parsedI;
+                }
+            }
+        } catch (e) {
+            console.warn("Could not load custom implementation matrix in Studio:", e);
+        }
+
+        const workflows = {};
+
+        // 1. Hình thức Lựa chọn Nhà thầu (LCNT)
+        (pMatrix.procurementTypes || []).forEach(pt => {
+            const docs = [];
+            (pt.phases || []).forEach(ph => {
+                (ph.documents || []).forEach(d => {
+                    docs.push({
+                        id: d.id,
+                        code: d.code,
+                        name: d.name,
+                        desc: d.desc || "",
+                        phaseName: ph.phaseName || "",
+                        requiredVars: d.requiredVars || [],
+                        keywords: [d.code.toLowerCase(), d.name.toLowerCase()]
+                    });
+                });
+            });
+
+            workflows[pt.id] = {
+                id: pt.id,
+                name: pt.name,
+                category: "LCNT",
+                badge: pt.badge || "",
+                badgeColor: pt.badgeColor || "emerald",
+                description: pt.description || "",
+                threshold: pt.threshold || 0,
+                documents: docs
+            };
+        });
+
+        // 2. Quy trình Triển khai dự án
+        (iMatrix.implementationTypes || []).forEach(it => {
+            const docs = (it.documents || []).map(d => ({
+                id: d.id,
+                code: d.code,
+                name: d.name,
+                desc: d.desc || "",
+                signer: d.signer || "",
+                templateFile: d.templateFile || "",
+                keywords: [d.code.toLowerCase(), d.name.toLowerCase()]
+            }));
+
+            workflows[it.id] = {
+                id: it.id,
+                name: it.name,
+                category: "Triển khai",
+                code: it.code || "",
+                description: it.description || "",
+                documents: docs
+            };
+        });
+
+        STUDIO_WORKFLOWS = workflows;
+        return workflows;
+    }
+
+    // Load workflows immediately
+    loadAllStudioWorkflows();
+
     // Application State
     // -------------------------------------------------------------
     let state = {
@@ -250,36 +260,107 @@
     // -------------------------------------------------------------
     // Workflow Initialization
     // -------------------------------------------------------------
+    // -------------------------------------------------------------
+    // Workflow Initialization & Cross-Page Context Resolution
+    // -------------------------------------------------------------
+    function resolveInitialStudioContext() {
+        const params = new URLSearchParams(window.location.search);
+        const wfParam = params.get("workflow");
+        const docParam = params.get("doc");
+        const modeParam = params.get("mode");
+
+        // 1. Check URL parameters
+        if (wfParam && STUDIO_WORKFLOWS[wfParam]) {
+            state.activeWorkflowId = wfParam;
+        } else {
+            // 2. Check appState from index.html (app.js)
+            try {
+                const appStateRaw = localStorage.getItem("ho_so_tu_dong_state_v3");
+                if (appStateRaw) {
+                    const parsedApp = JSON.parse(appStateRaw);
+                    if (parsedApp.selectedProcurementTypeId && STUDIO_WORKFLOWS[parsedApp.selectedProcurementTypeId]) {
+                        state.activeWorkflowId = parsedApp.selectedProcurementTypeId;
+                    }
+                    if (!docParam && parsedApp.activeDocId) {
+                        state.activeDocId = parsedApp.activeDocId;
+                    }
+                }
+            } catch (e) {}
+
+            // 3. Fallback to ho_so_studio_active_workflow
+            if (!state.activeWorkflowId || !STUDIO_WORKFLOWS[state.activeWorkflowId]) {
+                const savedStudioWf = localStorage.getItem("ho_so_studio_active_workflow");
+                if (savedStudioWf && STUDIO_WORKFLOWS[savedStudioWf]) {
+                    state.activeWorkflowId = savedStudioWf;
+                }
+            }
+        }
+
+        if (!state.activeWorkflowId || !STUDIO_WORKFLOWS[state.activeWorkflowId]) {
+            state.activeWorkflowId = "chi_dinh_thau_rut_gon";
+        }
+
+        const curWf = getCurrentWorkflow();
+        if (docParam && curWf.documents.some(d => d.id === docParam)) {
+            state.activeDocId = docParam;
+        } else if (!state.activeDocId || !curWf.documents.some(d => d.id === state.activeDocId)) {
+            state.activeDocId = curWf.documents[0] ? curWf.documents[0].id : null;
+        }
+
+        if (modeParam === "single" || docParam) {
+            setTimeout(() => {
+                switchViewMode("single");
+            }, 80);
+        }
+    }
+
     function initWorkflowSelector() {
         if (!studioWorkflowSelect) return;
-        studioWorkflowSelect.innerHTML = Object.values(STUDIO_WORKFLOWS).map(wf => 
-            `<option value="${wf.id}" ${wf.id === state.activeWorkflowId ? "selected" : ""}>[${wf.category}] ${wf.name}</option>`
-        ).join("");
+        const allWfs = Object.values(STUDIO_WORKFLOWS);
+        const lcntWfs = allWfs.filter(w => w.category === "LCNT");
+        const trienKhaiWfs = allWfs.filter(w => w.category === "Triển khai");
+
+        let html = "";
+        if (lcntWfs.length > 0) {
+            html += `<optgroup label="📋 Hình thức Lựa chọn Nhà thầu (LCNT)">`;
+            html += lcntWfs.map(wf => `<option value="${wf.id}" ${wf.id === state.activeWorkflowId ? "selected" : ""}>${wf.name}</option>`).join("");
+            html += `</optgroup>`;
+        }
+        if (trienKhaiWfs.length > 0) {
+            html += `<optgroup label="🛠️ Quy trình Triển khai dự án">`;
+            html += trienKhaiWfs.map(wf => `<option value="${wf.id}" ${wf.id === state.activeWorkflowId ? "selected" : ""}>${wf.name}</option>`).join("");
+            html += `</optgroup>`;
+        }
+
+        studioWorkflowSelect.innerHTML = html;
+        studioWorkflowSelect.value = state.activeWorkflowId;
 
         studioWorkflowSelect.onchange = (e) => {
             state.activeWorkflowId = e.target.value;
             state.batchFiles = {};
+            const curWf = getCurrentWorkflow();
+            state.activeDocId = curWf.documents[0] ? curWf.documents[0].id : null;
+            try {
+                localStorage.setItem("ho_so_studio_active_workflow", state.activeWorkflowId);
+            } catch (err) {}
             updateWorkflowBadge();
             renderBatchTable();
-            showToast(`Đã chuyển sang: ${getCurrentWorkflow().name}`);
+            showToast(`Đã chuyển sang: ${curWf.name}`);
         };
         updateWorkflowBadge();
     }
 
     function getCurrentWorkflow() {
-        return STUDIO_WORKFLOWS[state.activeWorkflowId] || STUDIO_WORKFLOWS["chi_dinh_thau_rut_gon"];
+        return STUDIO_WORKFLOWS[state.activeWorkflowId] || STUDIO_WORKFLOWS["chi_dinh_thau_rut_gon"] || Object.values(STUDIO_WORKFLOWS)[0];
     }
 
     function updateWorkflowBadge() {
         const wf = getCurrentWorkflow();
-        if (workflowBadgeInfo) {
+        if (workflowBadgeInfo && wf) {
             workflowBadgeInfo.textContent = `${wf.documents.length} văn bản chuẩn`;
         }
     }
 
-    // -------------------------------------------------------------
-    // View Switcher (Batch Mode vs Single Doc Editor)
-    // -------------------------------------------------------------
     async function switchViewMode(mode) {
         state.viewMode = mode;
         if (mode === "batch") {
@@ -310,6 +391,15 @@
         switchViewMode("single");
     };
     if (btnBackToBatch) btnBackToBatch.onclick = () => switchViewMode("batch");
+    const btnBackToApp = document.querySelector('a[href="index.html"]');
+    if (btnBackToApp) {
+        btnBackToApp.onclick = (e) => {
+            e.preventDefault();
+            const wfId = state.activeWorkflowId || "";
+            const docId = state.activeDocId || "";
+            window.location.href = `index.html?workflow=${encodeURIComponent(wfId)}&doc=${encodeURIComponent(docId)}`;
+        };
+    }
 
     // -------------------------------------------------------------
     // Batch Files Processing & Smart Matching
@@ -567,7 +657,7 @@
         batchDocumentsTableBody.innerHTML = wf.documents.map((doc, idx) => {
             const batchItem = state.batchFiles[doc.id];
             const hasCustomSaved = !!localStorage.getItem("ho_so_custom_template_" + doc.id);
-            const hasBuiltin = (typeof BUILTIN_DOCX_FILE_MAP !== "undefined") && !!BUILTIN_DOCX_FILE_MAP[doc.id];
+            const hasBuiltin = !!getBuiltinTemplateForDoc(doc.id, doc);
             const hasAnyTemplate = !!batchItem || hasCustomSaved || hasBuiltin;
             if (hasAnyTemplate) filledCount++;
 
@@ -852,18 +942,110 @@
         "cdtrg_5": "templates/3_To_trinh_chi_dinh_thau.docx",
         "cdtrg_6": "templates/4_Quyet_dinh_chi_dinh_thau.docx",
         "cdtrg_7": "templates/07_Hop_dong_kinh_te.docx",
-        "tk_sc_1": "templates/01_To_trinh_KHLCNT.docx",
+        "d50_1": "templates/01_To_trinh_KHLCNT.docx",
+        "d50_2": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "d50_3": "templates/07_Hop_dong_kinh_te.docx",
+        "d50_4": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "d100_1": "templates/01_To_trinh_KHLCNT.docx",
+        "d100_2": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "d100_3": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "d100_4": "templates/07_Hop_dong_kinh_te.docx",
+        "cghc_1": "templates/01_To_trinh_KHLCNT.docx",
+        "cghc_2": "templates/01_To_trinh_KHLCNT.docx",
+        "cghc_3": "templates/1_Giay_moi_tham_gia.docx",
+        "cghc_4": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "cghc_5": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "cghc_6": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "cghc_7": "templates/01_To_trinh_KHLCNT.docx",
+        "cghc_8": "templates/1_Giay_moi_tham_gia.docx",
+        "cghc_9": "templates/07_Hop_dong_kinh_te.docx",
+        "cdttt_1": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "cdttt_2": "templates/01_To_trinh_KHLCNT.docx",
+        "cdttt_3": "templates/01_To_trinh_KHLCNT.docx",
+        "cdttt_4": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "cdttt_5": "templates/1_Giay_moi_tham_gia.docx",
+        "cdttt_6": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "cdttt_7": "templates/01_To_trinh_KHLCNT.docx",
+        "cdttt_8": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "cdttt_9": "templates/3_To_trinh_chi_dinh_thau.docx",
+        "cdttt_10": "templates/01_To_trinh_KHLCNT.docx",
+        "cdttt_11": "templates/4_Quyet_dinh_chi_dinh_thau.docx",
+        "cdttt_12": "templates/07_Hop_dong_kinh_te.docx",
+        "dtrr_1": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "dtrr_2": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "dtrr_3": "templates/01_To_trinh_KHLCNT.docx",
+        "dtrr_4": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "dtrr_5": "templates/01_To_trinh_KHLCNT.docx",
+        "dtrr_6": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "dtrr_7": "templates/1_Giay_moi_tham_gia.docx",
+        "dtrr_8": "templates/1_Giay_moi_tham_gia.docx",
+        "dtrr_9": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "dtrr_10": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "dtrr_11": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "dtrr_12": "templates/1_Giay_moi_tham_gia.docx",
+        "dtrr_13": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "dtrr_14": "templates/01_To_trinh_KHLCNT.docx",
+        "dtrr_15": "templates/1_Giay_moi_tham_gia.docx",
+        "dtrr_16": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "dtrr_17": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "dtrr_18": "templates/3_To_trinh_chi_dinh_thau.docx",
+        "dtrr_19": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "dtrr_20": "templates/01_To_trinh_KHLCNT.docx",
+        "dtrr_21": "templates/4_Quyet_dinh_chi_dinh_thau.docx",
+        "dtrr_22": "templates/1_Giay_moi_tham_gia.docx",
+        "dtrr_23": "templates/07_Hop_dong_kinh_te.docx",
+        "tk_sc_1": "templates/02_Quyet_dinh_KHLCNT.docx",
         "tk_sc_2": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
         "tk_sc_3": "templates/01_To_trinh_KHLCNT.docx",
         "tk_sc_4": "templates/01_To_trinh_KHLCNT.docx",
         "tk_sc_5": "templates/02_Quyet_dinh_KHLCNT.docx",
         "tk_sc_6": "templates/01_To_trinh_KHLCNT.docx",
-        "tk_sc_7": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_sc_7": "templates/02_Quyet_dinh_KHLCNT.docx",
         "tk_sc_8": "templates/01_To_trinh_KHLCNT.docx",
-        "tk_sc_9": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "tk_sc_10": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "tk_sc_11": "templates/07_Hop_dong_kinh_te.docx"
+        "tk_sc_9": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "tk_sc_10": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_sc_11": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "tk_ms_1": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_ms_2": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "tk_ms_3": "templates/1_Giay_moi_tham_gia.docx",
+        "tk_ms_4": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_ms_5": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "tk_ms_6": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_ms_7": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "tk_dt_1": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_dt_2": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "tk_dt_3": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_dt_4": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_dt_5": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_dt_6": "templates/02_Quyet_dinh_KHLCNT.docx",
+        "tk_dt_7": "templates/01_To_trinh_KHLCNT.docx",
+        "tk_dt_8": "templates/02_Quyet_dinh_KHLCNT.docx"
     };
+
+    function getBuiltinTemplateForDoc(docId, docObj) {
+        if (BUILTIN_DOCX_FILE_MAP[docId]) return BUILTIN_DOCX_FILE_MAP[docId];
+        if (docObj && docObj.templateFile) return docObj.templateFile;
+        const nameLower = ((docObj ? (docObj.name + " " + docObj.code) : docId) || "").toLowerCase();
+        if (nameLower.includes("quyết định") || nameLower.includes("qd-") || nameLower.includes(".qđ")) {
+            return "templates/02_Quyet_dinh_KHLCNT.docx";
+        }
+        if (nameLower.includes("giấy mời") || nameLower.includes("thư mời") || nameLower.includes("gm-") || nameLower.includes("tm-") || nameLower.includes("thông báo")) {
+            return "templates/1_Giay_moi_tham_gia.docx";
+        }
+        if (nameLower.includes("biên bản") || nameLower.includes("bb-")) {
+            return "templates/2_Bien_ban_hoan_thien_hop_dong.docx";
+        }
+        if (nameLower.includes("hợp đồng") || nameLower.includes("hd-")) {
+            return "templates/07_Hop_dong_kinh_te.docx";
+        }
+        if (nameLower.includes("kết quả") && (nameLower.includes("quyết định") || nameLower.includes("qd"))) {
+            return "templates/4_Quyet_dinh_chi_dinh_thau.docx";
+        }
+        if (nameLower.includes("kết quả") && (nameLower.includes("tờ trình") || nameLower.includes("ttr"))) {
+            return "templates/3_To_trinh_chi_dinh_thau.docx";
+        }
+        return "templates/01_To_trinh_KHLCNT.docx";
+    }
 
     function base64ToArrayBuffer(base64) {
         const binaryString = window.atob(base64);
@@ -1060,7 +1242,7 @@
 
         // 2. Nếu chưa có, nạp từ bộ mẫu nhúng sẵn BUILTIN_DOCX_TEMPLATES
         if (!arrayBuffer && window.BUILTIN_DOCX_TEMPLATES) {
-            const tPath = BUILTIN_DOCX_FILE_MAP[docId] || "templates/01_To_trinh_KHLCNT.docx";
+            const tPath = getBuiltinTemplateForDoc(docId, docObj);
             let b64 = window.BUILTIN_DOCX_TEMPLATES[tPath];
             if (!b64) {
                 const baseName = tPath.split("/").pop();
@@ -1171,14 +1353,26 @@
     async function renderSingleView() {
         window.renderSingleView = renderSingleView;
         const wf = getCurrentWorkflow();
-        if (!state.activeDocId) {
-            state.activeDocId = wf.documents[0].id;
+        if (!state.activeDocId || !wf.documents.some(d => d.id === state.activeDocId)) {
+            state.activeDocId = wf.documents[0] ? wf.documents[0].id : null;
         }
 
         const docObj = wf.documents.find(d => d.id === state.activeDocId) || wf.documents[0];
-        const item = await getOrLoadBufferForDocument(docObj.id);
+        if (!docObj) return;
 
         if (singleDocTitle) singleDocTitle.textContent = `${docObj.code} - ${docObj.name}`;
+        const selectSingleDocSwitch = document.getElementById("selectSingleDocSwitch");
+        if (selectSingleDocSwitch) {
+            selectSingleDocSwitch.innerHTML = wf.documents.map(d => 
+                `<option value="${d.id}" ${d.id === docObj.id ? "selected" : ""}>${d.code} - ${d.name}</option>`
+            ).join("");
+            selectSingleDocSwitch.onchange = async (e) => {
+                state.activeDocId = e.target.value;
+                await renderSingleView();
+            };
+        }
+
+        const item = await getOrLoadBufferForDocument(docObj.id);
         if (singleDocFileNameBadge) {
             singleDocFileNameBadge.textContent = item ? item.name : "(Không tìm thấy file mẫu)";
         }
@@ -3332,7 +3526,33 @@
         }
     });
 
+    // Cross-tab synchronization listener
+    window.addEventListener("storage", (e) => {
+        if (e.key === "ho_so_custom_table_defs") {
+            renderPaletteTableVars();
+            updateStudioDictBadgeCounts();
+            if (studioDictCurrentMode === "table") {
+                renderStudioDictTableView();
+            }
+            if (studioViewMode === "sample") {
+                const item = state.batchFiles[state.activeDocId];
+                if (item) renderCanvasContent(item);
+            }
+        }
+        if (e.key === "ho_so_tu_dong_matrix_custom" || e.key === "ho_so_tu_dong_implementation_matrix") {
+            loadAllStudioWorkflows();
+            initWorkflowSelector();
+            renderBatchTable();
+            if (state.viewMode === "single") {
+                renderSingleView();
+            }
+            showToast("Đã đồng bộ Ma trận LCNT từ cấu hình hệ thống!", "info");
+        }
+    });
+
     // Initialize on page load
+    loadAllStudioWorkflows();
+    resolveInitialStudioContext();
     initWorkflowSelector();
     renderBatchTable();
 

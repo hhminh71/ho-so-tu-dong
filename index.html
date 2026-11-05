@@ -241,7 +241,7 @@
                                     <div class="text-[9.5px] text-slate-500 font-normal">Tra cứu mã {TAG} chèn vào văn bản Word</div>
                                 </div>
                             </button>
-                            <a href="template-tool.html" class="w-full text-left px-3.5 py-2 hover:bg-amber-50 hover:text-amber-900 flex items-center gap-2.5 transition-colors cursor-pointer group">
+                            <a href="template-tool.html" id="linkOpenStudioMenu" class="w-full text-left px-3.5 py-2 hover:bg-amber-50 hover:text-amber-900 flex items-center gap-2.5 transition-colors cursor-pointer group">
                                 <i class="fa-solid fa-wand-magic-sparkles text-amber-500 w-4 text-center text-sm group-hover:scale-110 transition-transform"></i>
                                 <div>
                                     <div class="font-bold text-[11.5px] text-slate-800">Chuẩn hóa Template (Studio)</div>
@@ -1101,6 +1101,11 @@
                                 <button id="btnTogglePreviewEdit" type="button" class="text-[10px] bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 font-bold px-2 py-0.5 rounded border border-slate-300 shadow-2xs flex items-center space-x-1 h-6 transition-all cursor-pointer whitespace-nowrap" title="Bật/Tắt chế độ chỉnh sửa trực tiếp nội dung văn bản trên trang Preview">
                                     <i class="fa-solid fa-pen-to-square text-emerald-600 text-[10px]"></i>
                                     <span id="btnTogglePreviewEditText">Sửa trực tiếp</span>
+                                </button>
+                                <!-- Open in Template Studio Button -->
+                                <button id="btnOpenStudioFromPreview" type="button" class="text-[10px] bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-800 font-bold px-2 py-0.5 rounded border border-slate-300 shadow-2xs flex items-center space-x-1 h-6 transition-all cursor-pointer whitespace-nowrap" title="Mở văn bản này trong Template Studio để chuẩn hóa mã thẻ Word và bảng">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-amber-500 text-[10px]"></i>
+                                    <span>Sửa mẫu Studio</span>
                                 </button>
                                 <!-- Reset Document Content Button -->
                                 <button id="btnResetPreviewDoc" type="button" class="hidden text-[10px] bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-700 font-medium px-1.5 py-0.5 rounded border border-slate-200 h-6 transition-all cursor-pointer whitespace-nowrap" title="Khôi phục lại nội dung mẫu mặc định ban đầu của văn bản này">

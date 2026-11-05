@@ -320,6 +320,19 @@
         onlyUnfilled: false
     };
 
+    // Check if URL parameters specify workflow or doc
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const qWf = urlParams.get("workflow");
+        const qDoc = urlParams.get("doc");
+        if (qWf && PROCUREMENT_MATRIX.procurementTypes.some(pt => pt.id === qWf)) {
+            appState.selectedProcurementTypeId = qWf;
+        }
+        if (qDoc) {
+            appState.activeDocId = qDoc;
+        }
+    } catch (e) {}
+
     // Load from localStorage if present
     try {
         const saved = localStorage.getItem("ho_so_tu_dong_state_v3");
@@ -9456,6 +9469,27 @@
     const btnTogglePreviewEdit = document.getElementById("btnTogglePreviewEdit");
     const btnTogglePreviewEditText = document.getElementById("btnTogglePreviewEditText");
     const btnResetPreviewDoc = document.getElementById("btnResetPreviewDoc");
+    const btnOpenStudioFromPreview = document.getElementById("btnOpenStudioFromPreview");
+    const linkOpenStudioMenu = document.getElementById("linkOpenStudioMenu");
+
+    if (btnOpenStudioFromPreview) {
+        btnOpenStudioFromPreview.addEventListener("click", () => {
+            const curDoc = getCurrentActiveDoc();
+            const wfId = appState.selectedProcurementTypeId || "chi_dinh_thau_rut_gon";
+            const docId = curDoc ? curDoc.id : (appState.activeDocId || "");
+            window.open(`template-tool.html?workflow=${encodeURIComponent(wfId)}&doc=${encodeURIComponent(docId)}&mode=single`, "_blank");
+        });
+    }
+
+    if (linkOpenStudioMenu) {
+        linkOpenStudioMenu.addEventListener("click", (e) => {
+            e.preventDefault();
+            const curDoc = getCurrentActiveDoc();
+            const wfId = appState.selectedProcurementTypeId || "chi_dinh_thau_rut_gon";
+            const docId = curDoc ? curDoc.id : (appState.activeDocId || "");
+            window.location.href = `template-tool.html?workflow=${encodeURIComponent(wfId)}&doc=${encodeURIComponent(docId)}`;
+        });
+    }
 
     if (btnTogglePreviewEdit) {
         btnTogglePreviewEdit.addEventListener("click", () => {
