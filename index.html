@@ -1409,10 +1409,16 @@
                 <!-- Col 1: Danh sách các Hình thức LCNT (4 cols) -->
                 <div class="md:col-span-4 p-2.5 bg-slate-50/50 flex flex-col overflow-y-auto">
                     <div class="flex items-center justify-between pb-1.5 mb-1.5 border-b border-slate-200">
-                        <span id="adminCol1ListTitle" class="font-bold text-slate-700 text-[11px] uppercase">Danh sách hình thức LCNT</span>
-                        <button id="btnAddNewProcurementType" type="button" class="px-1.5 py-0.2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded font-bold text-[10px]">
-                            <i class="fa-solid fa-plus text-[9px]"></i> Thêm mới
-                        </button>
+                        <span id="adminCol1ListTitle" class="font-bold text-slate-700 text-[11px] uppercase">Danh sách quy trình</span>
+                        <div class="flex items-center space-x-1">
+                            <button id="btnOpenSmartWorkflowModal" type="button" class="px-2 py-0.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded font-bold text-[9.5px] shadow-2xs flex items-center gap-1 cursor-pointer transition-all" title="Kéo thả hoặc chọn chùm file Word (.docx) để tự động tạo quy trình mới">
+                                <i class="fa-solid fa-wand-magic-sparkles text-[9px]"></i>
+                                <span>⚡ Tạo từ file Word</span>
+                            </button>
+                            <button id="btnAddNewProcurementType" type="button" class="px-1.5 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded font-bold text-[9.5px] cursor-pointer" title="Thêm quy trình thủ công">
+                                <i class="fa-solid fa-plus text-[9px]"></i> Thêm
+                            </button>
+                        </div>
                     </div>
                     <div id="matrixTypesList" class="space-y-1 flex-1 overflow-y-auto pr-0.5">
                         <!-- Populated dynamically -->
@@ -1498,6 +1504,113 @@
     </div>
 
     
+    <!-- ============================================================= -->
+    <!-- MODAL: TẠO NHANH QUY TRÌNH TỪ CHÙM FILE WORD (.DOCX) -->
+    <!-- ============================================================= -->
+    <div id="modalSmartWorkflowFromFiles" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-3 hidden">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-2xl max-w-3xl w-full overflow-hidden text-xs flex flex-col max-h-[92vh]">
+            <!-- Header -->
+            <div class="px-4 py-3 bg-gradient-to-r from-indigo-700 via-indigo-800 to-purple-800 text-white flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center text-amber-300 font-bold text-sm shadow-inner">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-sm leading-tight text-white">Tạo Nhanh Quy Trình Mới Từ File Word (.docx)</h2>
+                        <p class="text-[10.5px] text-indigo-200 leading-tight">Kéo thả chùm file Word mẫu. Hệ thống tự động bóc tách mã hiệu, tên văn bản và nạp sẵn mẫu chuẩn.</p>
+                    </div>
+                </div>
+                <button id="btnCloseSmartWfModal" type="button" class="text-white/70 hover:text-white text-lg w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors cursor-pointer">&times;</button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-4 overflow-y-auto space-y-3 flex-1 bg-slate-50/60">
+                <!-- Group & Workflow basic info -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-2.5 bg-white p-3 rounded-lg border border-slate-200 shadow-2xs">
+                    <div class="md:col-span-4">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Phân loại quy trình *</label>
+                        <select id="smartWfCategory" class="w-full bg-slate-50 border border-slate-300 rounded px-2.5 py-1 text-xs font-bold text-slate-800 focus:ring-1 focus:ring-indigo-500">
+                            <option value="procurement">📋 Hình thức Lựa chọn Nhà thầu (LCNT)</option>
+                            <option value="implementation">🛠️ Quy trình Triển khai dự án</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-8">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tên quy trình mới *</label>
+                        <input id="smartWfNameInput" type="text" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1 text-xs font-bold text-slate-800 focus:ring-1 focus:ring-indigo-500" placeholder="Ví dụ: Quy trình Mua sắm máy móc thiết bị CNTT & Bản quyền">
+                    </div>
+                    <div class="md:col-span-4">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Mã hiệu quy trình</label>
+                        <input id="smartWfCodeInput" type="text" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1 text-xs font-mono text-slate-700" placeholder="Ví dụ: MS-CNTT">
+                    </div>
+                    <div class="md:col-span-8">
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Căn cứ pháp lý / Ghi chú</label>
+                        <input id="smartWfDescInput" type="text" class="w-full bg-white border border-slate-300 rounded px-2.5 py-1 text-xs text-slate-700" placeholder="Ví dụ: Luật Đấu thầu 22/2023 & Dự toán nội bộ">
+                    </div>
+                </div>
+
+                <!-- Dropzone Area -->
+                <div id="smartWfDropZone" class="border-2 border-dashed border-indigo-300 hover:border-indigo-500 bg-indigo-50/40 hover:bg-indigo-50/70 rounded-xl p-4 text-center transition-all cursor-pointer group">
+                    <input type="file" id="inputSmartWorkflowFiles" accept=".docx" multiple class="hidden">
+                    <div class="w-10 h-10 mx-auto rounded-full bg-indigo-100 group-hover:bg-indigo-200 text-indigo-600 flex items-center justify-center text-lg mb-1.5 transition-transform group-hover:scale-110">
+                        <i class="fa-solid fa-file-arrow-up"></i>
+                    </div>
+                    <p class="font-bold text-indigo-950 text-xs mb-0.5">Kéo thả các file Word (.docx) của quy trình vào đây</p>
+                    <p class="text-[10px] text-slate-500">hoặc <span class="text-indigo-600 font-bold underline">bấm vào đây để chọn từ máy tính</span> (hỗ trợ chọn cùng lúc nhiều file Word)</p>
+                    <p class="text-[9.5px] text-slate-400 mt-1 italic">Hệ thống sẽ tự nhận diện số thứ tự và tên văn bản từ tên file</p>
+                </div>
+
+                <!-- Detected Documents Table Preview -->
+                <div class="bg-white rounded-lg border border-slate-200 shadow-2xs overflow-hidden">
+                    <div class="px-3 py-1.5 bg-slate-100/80 border-b border-slate-200 flex items-center justify-between">
+                        <div class="flex items-center gap-1.5 font-bold text-slate-800 text-[11px]">
+                            <i class="fa-solid fa-list-check text-indigo-600"></i>
+                            <span>Danh mục văn bản được bóc tách:</span>
+                            <span id="smartWfDocCountBadge" class="bg-indigo-100 text-indigo-800 font-bold px-1.5 py-0.2 rounded text-[9.5px]">0 file</span>
+                        </div>
+                        <button id="btnClearSmartWfList" type="button" class="text-[10px] text-slate-500 hover:text-rose-600 font-medium cursor-pointer flex items-center gap-1">
+                            <i class="fa-regular fa-trash-can text-[9px]"></i>
+                            <span>Xóa danh sách</span>
+                        </button>
+                    </div>
+
+                    <div class="max-h-52 overflow-y-auto">
+                        <table class="w-full text-left border-collapse text-[11px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold text-[9.5px] uppercase h-6">
+                                    <th class="py-1 px-2 w-10 text-center">STT</th>
+                                    <th class="py-1 px-2 w-28">Mã hiệu</th>
+                                    <th class="py-1 px-2">Tên văn bản hiển thị</th>
+                                    <th class="py-1 px-2 w-44">File Word gốc</th>
+                                    <th class="py-1 px-2 w-10 text-center">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="smartWfDocsTableBody" class="divide-y divide-slate-100">
+                                <tr>
+                                    <td colspan="5" class="p-3 text-center text-slate-400 italic text-[11px]">Chưa có file nào. Hãy kéo thả hoặc chọn file Word ở trên để hệ thống tự động bóc tách.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-4 py-2 bg-slate-100 border-t border-slate-200 flex items-center justify-between">
+                <div class="text-[10.5px] text-slate-500 flex items-center gap-1.5">
+                    <i class="fa-solid fa-bolt text-amber-500"></i>
+                    <span>Tạo xong có thể mở ngay trong Template Studio để gán thẻ {TAG} hoặc dùng ngay.</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button id="btnCancelSmartWfModal" type="button" class="px-3 py-1.5 text-xs font-bold text-slate-600 bg-white hover:bg-slate-100 border border-slate-300 rounded cursor-pointer transition-colors">Hủy bỏ</button>
+                    <button id="btnSubmitSmartWorkflow" type="button" class="px-4 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 rounded shadow-xs flex items-center space-x-1.5 cursor-pointer transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i>
+                        <span>⚡ Tạo &amp; Áp Dụng Quy Trình Ngay</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ============================================================= -->
     <!-- MODAL: CÀI ĐẶT CÔNG THỨC TÍNH NGÀY VĂN BẢN (FORMULA CONFIG) -->
     <!-- ============================================================= -->

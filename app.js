@@ -7612,6 +7612,16 @@
             || PROCUREMENT_MATRIX.procurementTypes[0];
     }
 
+    function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     function renderAdminMatrixModal() {
         const matrixTypesList = document.getElementById("matrixTypesList");
         const adminTabProcurement = document.getElementById("adminTabProcurement");
@@ -7659,16 +7669,16 @@
         if (!matrixTypesList) return;
         matrixTypesList.innerHTML = "";
 
-        // 1. Render Left Column List
+        // 1. Render Left Column List with 1-Click Clone & Safe Delete
         if (activeAdminCategory === "procurement") {
             PROCUREMENT_MATRIX.procurementTypes.forEach((pt) => {
-                const btn = document.createElement("button");
-                btn.type = "button";
+                const card = document.createElement("div");
                 const isActive = pt.id === activeAdminTypeId;
+                const isDefault = DEFAULT_PROCUREMENT_MATRIX.procurementTypes.some(d => d.id === pt.id);
 
-                btn.className = isActive 
-                    ? "w-full text-left p-2 rounded bg-emerald-100/70 border border-emerald-400 font-bold text-emerald-950 text-[11px] shadow-2xs transition-all flex items-start justify-between"
-                    : "w-full text-left p-2 rounded bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-[11px] transition-all flex items-start justify-between";
+                card.className = isActive 
+                    ? "w-full rounded-lg bg-emerald-50/90 border-2 border-emerald-500 font-bold text-emerald-950 text-[11px] shadow-2xs transition-all overflow-hidden"
+                    : "w-full rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-[11px] transition-all overflow-hidden";
 
                 const allTypeDocs = [];
                 (pt.phases || []).forEach(ph => (ph.documents || []).forEach(d => allTypeDocs.push(d)));
@@ -7678,63 +7688,115 @@
                     return Boolean(t && t.trim() !== "");
                 }).length;
 
-                btn.innerHTML = `
-                    <div class="min-w-0 pr-1">
-                        <div class="truncate">${pt.name}</div>
-                        <div class="text-[9.5px] text-slate-500 font-normal flex items-center gap-1.5 mt-0.5">
-                            <span>${docsCount} mẫu văn bản</span>
-                            <span>•</span>
-                            <span class="${tplsCount === docsCount ? 'text-emerald-700 font-bold' : (tplsCount > 0 ? 'text-teal-700' : 'text-amber-700 font-bold')}">
-                                ${tplsCount}/${docsCount} có mẫu
-                            </span>
+                card.innerHTML = `
+                    <div class="p-2 cursor-pointer flex items-start justify-between select-none" data-action="select">
+                        <div class="min-w-0 pr-1">
+                            <div class="truncate font-bold">${escapeHtml(pt.name)}</div>
+                            <div class="text-[9.5px] text-slate-500 font-normal flex items-center gap-1.5 mt-0.5">
+                                <span>${docsCount} mẫu văn bản</span>
+                                <span>•</span>
+                                <span class="${tplsCount === docsCount ? 'text-emerald-700 font-bold' : (tplsCount > 0 ? 'text-teal-700' : 'text-amber-700 font-bold')}">
+                                    ${tplsCount}/${docsCount} có mẫu
+                                </span>
+                            </div>
                         </div>
+                        ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[10px] mt-1 shrink-0"></i>' : ''}
                     </div>
-                    ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[10px] mt-1 shrink-0"></i>' : ''}
+                    <div class="px-2 py-1 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[10px]">
+                        <button type="button" class="btn-clone-matrix-type text-slate-600 hover:text-indigo-600 font-semibold flex items-center gap-1 cursor-pointer transition-colors" title="Nhân bản quy trình này để tạo bản biến thể mới">
+                            <i class="fa-regular fa-copy text-[9.5px]"></i>
+                            <span>Nhân bản</span>
+                        </button>
+                        ${!isDefault ? `
+                            <button type="button" class="btn-delete-matrix-type text-slate-400 hover:text-rose-600 font-semibold flex items-center gap-1 cursor-pointer transition-colors" title="Xóa quy trình tự tạo này">
+                                <i class="fa-regular fa-trash-can text-[9.5px]"></i>
+                                <span>Xóa</span>
+                            </button>
+                        ` : `
+                            <span class="text-[9px] text-slate-400 italic">Mặc định gốc</span>
+                        `}
+                    </div>
                 `;
 
-                btn.addEventListener("click", () => {
+                card.querySelector('[data-action="select"]')?.addEventListener("click", () => {
                     saveCurrentAdminInputs();
                     activeAdminTypeId = pt.id;
                     renderAdminMatrixModal();
                 });
 
-                matrixTypesList.appendChild(btn);
+                card.querySelector('.btn-clone-matrix-type')?.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    cloneProcurementWorkflow(pt.id);
+                });
+
+                card.querySelector('.btn-delete-matrix-type')?.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    deleteProcurementWorkflow(pt.id);
+                });
+
+                matrixTypesList.appendChild(card);
             });
         } else {
             // Implementation Types
             IMPLEMENTATION_MATRIX.implementationTypes.forEach((it) => {
-                const btn = document.createElement("button");
-                btn.type = "button";
+                const card = document.createElement("div");
                 const isActive = it.id === activeAdminImplTypeId;
+                const isDefault = DEFAULT_IMPLEMENTATION_MATRIX.implementationTypes.some(d => d.id === it.id);
 
-                btn.className = isActive 
-                    ? "w-full text-left p-2 rounded bg-emerald-100/70 border border-emerald-400 font-bold text-emerald-950 text-[11px] shadow-2xs transition-all flex items-start justify-between"
-                    : "w-full text-left p-2 rounded bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 text-[11px] transition-all flex items-start justify-between";
+                card.className = isActive 
+                    ? "w-full rounded-lg bg-emerald-50/90 border-2 border-emerald-500 font-bold text-emerald-950 text-[11px] shadow-2xs transition-all overflow-hidden"
+                    : "w-full rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-[11px] transition-all overflow-hidden";
 
                 const docsCount = (it.documents || []).length;
                 const tplsCount = (it.documents || []).filter(d => Boolean(d.templateFile && d.templateFile.trim() !== "")).length;
 
-                btn.innerHTML = `
-                    <div class="min-w-0 pr-1">
-                        <div class="truncate">${it.name}</div>
-                        <div class="text-[9.5px] text-slate-500 font-normal flex items-center gap-1.5 mt-0.5">
-                            <span>${docsCount} mẫu văn bản</span>
-                            <span>•</span>
-                            <span class="${tplsCount === docsCount ? 'text-emerald-700 font-bold' : (tplsCount > 0 ? 'text-teal-700' : 'text-amber-700 font-bold')}">
-                                ${tplsCount}/${docsCount} có mẫu
-                            </span>
+                card.innerHTML = `
+                    <div class="p-2 cursor-pointer flex items-start justify-between select-none" data-action="select">
+                        <div class="min-w-0 pr-1">
+                            <div class="truncate font-bold">${escapeHtml(it.name)}</div>
+                            <div class="text-[9.5px] text-slate-500 font-normal flex items-center gap-1.5 mt-0.5">
+                                <span>${docsCount} mẫu văn bản</span>
+                                <span>•</span>
+                                <span class="${tplsCount === docsCount ? 'text-emerald-700 font-bold' : (tplsCount > 0 ? 'text-teal-700' : 'text-amber-700 font-bold')}">
+                                    ${tplsCount}/${docsCount} có mẫu
+                                </span>
+                            </div>
                         </div>
+                        ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[10px] mt-1 shrink-0"></i>' : ''}
                     </div>
-                    ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[10px] mt-1 shrink-0"></i>' : ''}
+                    <div class="px-2 py-1 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[10px]">
+                        <button type="button" class="btn-clone-matrix-type text-slate-600 hover:text-indigo-600 font-semibold flex items-center gap-1 cursor-pointer transition-colors" title="Nhân bản quy trình này để tạo bản biến thể mới">
+                            <i class="fa-regular fa-copy text-[9.5px]"></i>
+                            <span>Nhân bản</span>
+                        </button>
+                        ${!isDefault ? `
+                            <button type="button" class="btn-delete-matrix-type text-slate-400 hover:text-rose-600 font-semibold flex items-center gap-1 cursor-pointer transition-colors" title="Xóa quy trình tự tạo này">
+                                <i class="fa-regular fa-trash-can text-[9.5px]"></i>
+                                <span>Xóa</span>
+                            </button>
+                        ` : `
+                            <span class="text-[9px] text-slate-400 italic">Mặc định gốc</span>
+                        `}
+                    </div>
                 `;
 
-                btn.addEventListener("click", () => {
+                card.querySelector('[data-action="select"]')?.addEventListener("click", () => {
                     saveCurrentAdminInputs();
                     activeAdminImplTypeId = it.id;
                     renderAdminMatrixModal();
                 });
 
-                matrixTypesList.appendChild(btn);
+                card.querySelector('.btn-clone-matrix-type')?.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    cloneImplementationWorkflow(it.id);
+                });
+
+                card.querySelector('.btn-delete-matrix-type')?.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    deleteImplementationWorkflow(it.id);
+                });
+
+                matrixTypesList.appendChild(card);
             });
         }
 
@@ -8193,6 +8255,485 @@
             }
         });
     }
+
+    // =============================================================
+    // WORKFLOW CLONE & DELETE CONTROLLERS (1-CLICK & SAFE REMOVAL)
+    // =============================================================
+    function cloneProcurementWorkflow(typeId) {
+        saveCurrentAdminInputs();
+        const src = PROCUREMENT_MATRIX.procurementTypes.find(t => t.id === typeId);
+        if (!src) return;
+        const newId = `hinh_thuc_clone_${Date.now()}`;
+        const cloned = JSON.parse(JSON.stringify(src));
+        cloned.id = newId;
+        cloned.name = `${cloned.name} (Bản sao)`;
+        cloned.code = `${cloned.code || 'CLONE'}_COPY`;
+        // Generate distinct IDs for documents so templates don't conflict
+        (cloned.phases || []).forEach((ph, pIdx) => {
+            ph.phaseId = `ph_clone_${Date.now()}_${pIdx}`;
+            (ph.documents || []).forEach((doc, dIdx) => {
+                const oldDocId = doc.id;
+                const newDocId = `doc_clone_${Date.now()}_${pIdx}_${dIdx}`;
+                doc.id = newDocId;
+                // Copy custom template if present
+                try {
+                    const customTpl = localStorage.getItem(`ho_so_custom_template_${oldDocId}`);
+                    if (customTpl) {
+                        localStorage.setItem(`ho_so_custom_template_${newDocId}`, customTpl);
+                    }
+                } catch(e) {}
+            });
+        });
+        PROCUREMENT_MATRIX.procurementTypes.push(cloned);
+        try {
+            localStorage.setItem("ho_so_tu_dong_matrix_custom", JSON.stringify(PROCUREMENT_MATRIX));
+            window.dispatchEvent(new Event("storage"));
+        } catch(e) {}
+        activeAdminTypeId = newId;
+        initProcurementTypeSelector();
+        renderAdminMatrixModal();
+        showToast(`Đã nhân bản quy trình thành "${cloned.name}"!`, "success");
+    }
+
+    function deleteProcurementWorkflow(typeId) {
+        const idx = PROCUREMENT_MATRIX.procurementTypes.findIndex(t => t.id === typeId);
+        if (idx === -1) return;
+        const target = PROCUREMENT_MATRIX.procurementTypes[idx];
+        if (!confirm(`Bạn có chắc chắn muốn xóa quy trình "${target.name}" không?`)) return;
+        PROCUREMENT_MATRIX.procurementTypes.splice(idx, 1);
+        try {
+            localStorage.setItem("ho_so_tu_dong_matrix_custom", JSON.stringify(PROCUREMENT_MATRIX));
+            window.dispatchEvent(new Event("storage"));
+        } catch(e) {}
+        activeAdminTypeId = PROCUREMENT_MATRIX.procurementTypes[0]?.id || "";
+        initProcurementTypeSelector();
+        renderAdminMatrixModal();
+        showToast(`Đã xóa quy trình "${target.name}"!`, "info");
+    }
+
+    function cloneImplementationWorkflow(typeId) {
+        saveCurrentAdminInputs();
+        const src = IMPLEMENTATION_MATRIX.implementationTypes.find(t => t.id === typeId);
+        if (!src) return;
+        const newId = `trien_khai_clone_${Date.now()}`;
+        const cloned = JSON.parse(JSON.stringify(src));
+        cloned.id = newId;
+        cloned.name = `${cloned.name} (Bản sao)`;
+        cloned.code = `${cloned.code || 'TK'}_COPY`;
+        (cloned.documents || []).forEach((doc, dIdx) => {
+            const oldDocId = doc.id;
+            const newDocId = `tk_clone_${Date.now()}_${dIdx}`;
+            doc.id = newDocId;
+            try {
+                const customTpl = localStorage.getItem(`ho_so_custom_template_${oldDocId}`);
+                if (customTpl) {
+                    localStorage.setItem(`ho_so_custom_template_${newDocId}`, customTpl);
+                }
+            } catch(e) {}
+        });
+        IMPLEMENTATION_MATRIX.implementationTypes.push(cloned);
+        try {
+            localStorage.setItem("ho_so_tu_dong_implementation_matrix", JSON.stringify(IMPLEMENTATION_MATRIX));
+            window.dispatchEvent(new Event("storage"));
+        } catch(e) {}
+        activeAdminImplTypeId = newId;
+        renderAdminMatrixModal();
+        showToast(`Đã nhân bản quy trình triển khai thành "${cloned.name}"!`, "success");
+    }
+
+    function deleteImplementationWorkflow(typeId) {
+        const idx = IMPLEMENTATION_MATRIX.implementationTypes.findIndex(t => t.id === typeId);
+        if (idx === -1) return;
+        const target = IMPLEMENTATION_MATRIX.implementationTypes[idx];
+        if (!confirm(`Bạn có chắc chắn muốn xóa quy trình "${target.name}" không?`)) return;
+        IMPLEMENTATION_MATRIX.implementationTypes.splice(idx, 1);
+        try {
+            localStorage.setItem("ho_so_tu_dong_implementation_matrix", JSON.stringify(IMPLEMENTATION_MATRIX));
+            window.dispatchEvent(new Event("storage"));
+        } catch(e) {}
+        activeAdminImplTypeId = IMPLEMENTATION_MATRIX.implementationTypes[0]?.id || "";
+        renderAdminMatrixModal();
+        showToast(`Đã xóa quy trình "${target.name}"!`, "info");
+    }
+
+    // =============================================================
+    // SMART WORKFLOW GENERATOR CONTROLLER (DROP-TO-WORKFLOW)
+    // =============================================================
+    function smartParseDocFileName(filename, index = 0) {
+        let clean = (filename || "").replace(/\.(docx|doc)$/i, "").trim();
+        let numStr = "";
+        let rest = clean;
+        const numMatch = clean.match(/^([0-9]{1,2})[\.\s_\-]+(.*)$/);
+        if (numMatch) {
+            numStr = numMatch[1].padStart(2, '0');
+            rest = numMatch[2].trim();
+        } else {
+            numStr = String(index + 1).padStart(2, '0');
+        }
+
+        let words = rest.replace(/[\_\-]+/g, ' ').trim();
+        const lower = words.toLowerCase();
+        let codeType = "VB";
+        if (lower.includes("to trinh") || lower.includes("tờ trình") || lower.startsWith("ttr")) {
+            codeType = "TTr";
+        } else if (lower.includes("quyet dinh") || lower.includes("quyết định") || lower.startsWith("qd") || lower.startsWith("qđ")) {
+            codeType = "QĐ";
+        } else if (lower.includes("bien ban") || lower.includes("biên bản") || lower.startsWith("bb")) {
+            codeType = "BB";
+        } else if (lower.includes("hop dong") || lower.includes("hợp đồng") || lower.startsWith("hd") || lower.startsWith("hđ")) {
+            codeType = "HĐ";
+        } else if (lower.includes("bao cao") || lower.includes("báo cáo") || lower.startsWith("bc")) {
+            codeType = "BC";
+        } else if (lower.includes("thong bao") || lower.includes("thông báo") || lower.startsWith("tb")) {
+            codeType = "TB";
+        } else if (lower.includes("giay moi") || lower.includes("giấy mời") || lower.startsWith("gm")) {
+            codeType = "GM";
+        } else if (lower.includes("thu moi") || lower.includes("thư mời")) {
+            codeType = "TM";
+        }
+
+        let displayName = words;
+        if (displayName.length > 0) {
+            displayName = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+        }
+        if (!displayName.startsWith(numStr)) {
+            displayName = `${numStr}. ${displayName}`;
+        }
+
+        const docCode = `${numStr}.${codeType}`;
+        return {
+            order: parseInt(numStr, 10) || (index + 1),
+            numStr: numStr,
+            code: docCode,
+            name: displayName
+        };
+    }
+
+    let smartWorkflowFilesDraft = [];
+
+    const modalSmartWorkflowFromFiles = document.getElementById("modalSmartWorkflowFromFiles");
+    const btnOpenSmartWorkflowModal = document.getElementById("btnOpenSmartWorkflowModal");
+    const btnCloseSmartWfModal = document.getElementById("btnCloseSmartWfModal");
+    const btnCancelSmartWfModal = document.getElementById("btnCancelSmartWfModal");
+    const smartWfDropZone = document.getElementById("smartWfDropZone");
+    const inputSmartWorkflowFiles = document.getElementById("inputSmartWorkflowFiles");
+    const smartWfCategory = document.getElementById("smartWfCategory");
+    const smartWfNameInput = document.getElementById("smartWfNameInput");
+    const smartWfCodeInput = document.getElementById("smartWfCodeInput");
+    const smartWfDescInput = document.getElementById("smartWfDescInput");
+    const smartWfDocCountBadge = document.getElementById("smartWfDocCountBadge");
+    const btnClearSmartWfList = document.getElementById("btnClearSmartWfList");
+    const smartWfDocsTableBody = document.getElementById("smartWfDocsTableBody");
+    const btnSubmitSmartWorkflow = document.getElementById("btnSubmitSmartWorkflow");
+
+    function openSmartWorkflowModal() {
+        smartWorkflowFilesDraft = [];
+        if (smartWfNameInput) smartWfNameInput.value = "";
+        if (smartWfCodeInput) smartWfCodeInput.value = "";
+        if (smartWfDescInput) smartWfDescInput.value = "";
+        if (smartWfCategory) smartWfCategory.value = activeAdminCategory || "procurement";
+        renderSmartWfDraftTable();
+        if (modalSmartWorkflowFromFiles) modalSmartWorkflowFromFiles.classList.remove("hidden");
+    }
+
+    function closeSmartWorkflowModal() {
+        if (modalSmartWorkflowFromFiles) modalSmartWorkflowFromFiles.classList.add("hidden");
+        smartWorkflowFilesDraft = [];
+    }
+
+    function renderSmartWfDraftTable() {
+        if (!smartWfDocsTableBody) return;
+        smartWfDocsTableBody.innerHTML = "";
+
+        if (smartWfDocCountBadge) {
+            smartWfDocCountBadge.textContent = `${smartWorkflowFilesDraft.length} file`;
+        }
+
+        if (btnSubmitSmartWorkflow) {
+            btnSubmitSmartWorkflow.disabled = smartWorkflowFilesDraft.length === 0;
+        }
+
+        if (smartWorkflowFilesDraft.length === 0) {
+            smartWfDocsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="p-4 text-center text-slate-400 italic text-[11px]">
+                        Chưa có file nào. Hãy kéo thả hoặc bấm vào ô trên để nạp các file Word (.docx) vào hệ thống.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        smartWorkflowFilesDraft.forEach((item, idx) => {
+            const tr = document.createElement("tr");
+            tr.className = "hover:bg-slate-50 border-b border-slate-100 transition-colors";
+            tr.innerHTML = `
+                <td class="py-1 px-2 text-center font-bold text-slate-500 font-mono">${idx + 1}</td>
+                <td class="py-1 px-2">
+                    <input type="text" class="w-full text-xs font-bold font-mono text-indigo-900 bg-white border border-slate-300 rounded px-1.5 py-0.5 focus:ring-1 focus:ring-indigo-500 doc-draft-code" value="${escapeHtml(item.code)}">
+                </td>
+                <td class="py-1 px-2">
+                    <input type="text" class="w-full text-xs font-semibold text-slate-800 bg-white border border-slate-300 rounded px-1.5 py-0.5 focus:ring-1 focus:ring-indigo-500 doc-draft-name" value="${escapeHtml(item.name)}">
+                </td>
+                <td class="py-1 px-2">
+                    <div class="flex items-center gap-1.5 text-slate-600 truncate" title="${escapeHtml(item.fileName)}">
+                        <i class="fa-regular fa-file-word text-blue-600 text-xs"></i>
+                        <span class="truncate font-mono text-[10.5px]">${escapeHtml(item.fileName)}</span>
+                        <span class="text-[9.5px] text-slate-400 shrink-0">(${Math.round(item.fileSize / 1024)} KB)</span>
+                    </div>
+                </td>
+                <td class="py-1 px-2 text-center">
+                    <button type="button" class="btn-remove-draft text-slate-400 hover:text-rose-600 cursor-pointer p-1" title="Xóa file này khỏi danh sách">
+                        <i class="fa-regular fa-trash-can text-xs"></i>
+                    </button>
+                </td>
+            `;
+
+            tr.querySelector(".doc-draft-code")?.addEventListener("input", (e) => {
+                item.code = e.target.value;
+            });
+            tr.querySelector(".doc-draft-name")?.addEventListener("input", (e) => {
+                item.name = e.target.value;
+            });
+            tr.querySelector(".btn-remove-draft")?.addEventListener("click", () => {
+                smartWorkflowFilesDraft.splice(idx, 1);
+                renderSmartWfDraftTable();
+            });
+
+            smartWfDocsTableBody.appendChild(tr);
+        });
+    }
+
+    async function handleSmartWfFilesAdded(files) {
+        if (!files || files.length === 0) return;
+        const validFiles = Array.from(files).filter(f => /\.(docx|doc)$/i.test(f.name));
+        if (validFiles.length === 0) {
+            alert("Vui lòng chọn các file định dạng Word (.docx hoặc .doc)!");
+            return;
+        }
+
+        // Sort files naturally by filename so 01, 02, 03... are ordered correctly
+        validFiles.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+
+        for (let i = 0; i < validFiles.length; i++) {
+            const f = validFiles[i];
+            const parsed = smartParseDocFileName(f.name, smartWorkflowFilesDraft.length);
+            
+            // Read file as Base64 DataURL
+            const base64Promise = new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = () => resolve(null);
+                reader.readAsDataURL(f);
+            });
+
+            const base64 = await base64Promise;
+
+            smartWorkflowFilesDraft.push({
+                file: f,
+                fileName: f.name,
+                fileSize: f.size,
+                code: parsed.code,
+                name: parsed.name,
+                order: parsed.order,
+                base64: base64
+            });
+        }
+
+        // Auto suggest workflow name if still empty
+        if (smartWfNameInput && !smartWfNameInput.value.trim() && smartWorkflowFilesDraft.length > 0) {
+            smartWfNameInput.value = `Quy trình ${smartWorkflowFilesDraft.length} bước (${smartWorkflowFilesDraft[0].name.replace(/^[0-9\.\s]+/, '')})`;
+        }
+        if (smartWfCodeInput && !smartWfCodeInput.value.trim()) {
+            smartWfCodeInput.value = `QT_${Date.now().toString().slice(-4)}`;
+        }
+
+        renderSmartWfDraftTable();
+    }
+
+    if (btnOpenSmartWorkflowModal) {
+        btnOpenSmartWorkflowModal.addEventListener("click", openSmartWorkflowModal);
+    }
+    if (btnCloseSmartWfModal) {
+        btnCloseSmartWfModal.addEventListener("click", closeSmartWorkflowModal);
+    }
+    if (btnCancelSmartWfModal) {
+        btnCancelSmartWfModal.addEventListener("click", closeSmartWorkflowModal);
+    }
+    if (btnClearSmartWfList) {
+        btnClearSmartWfList.addEventListener("click", () => {
+            smartWorkflowFilesDraft = [];
+            renderSmartWfDraftTable();
+        });
+    }
+
+    if (smartWfDropZone) {
+        smartWfDropZone.addEventListener("click", () => {
+            if (inputSmartWorkflowFiles) inputSmartWorkflowFiles.click();
+        });
+
+        smartWfDropZone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            smartWfDropZone.classList.add("border-indigo-500", "bg-indigo-100/60");
+        });
+        smartWfDropZone.addEventListener("dragleave", (e) => {
+            e.preventDefault();
+            smartWfDropZone.classList.remove("border-indigo-500", "bg-indigo-100/60");
+        });
+        smartWfDropZone.addEventListener("drop", async (e) => {
+            e.preventDefault();
+            smartWfDropZone.classList.remove("border-indigo-500", "bg-indigo-100/60");
+            if (e.dataTransfer && e.dataTransfer.files) {
+                await handleSmartWfFilesAdded(e.dataTransfer.files);
+            }
+        });
+    }
+
+    if (inputSmartWorkflowFiles) {
+        inputSmartWorkflowFiles.addEventListener("change", async (e) => {
+            if (e.target.files) {
+                await handleSmartWfFilesAdded(e.target.files);
+                e.target.value = "";
+            }
+        });
+    }
+
+    if (btnSubmitSmartWorkflow) {
+        btnSubmitSmartWorkflow.addEventListener("click", () => {
+            const wfName = (smartWfNameInput?.value || "").trim();
+            if (!wfName) {
+                alert("Vui lòng nhập tên quy trình!");
+                smartWfNameInput?.focus();
+                return;
+            }
+            if (smartWorkflowFilesDraft.length === 0) {
+                alert("Vui lòng nạp ít nhất 1 file Word mẫu!");
+                return;
+            }
+
+            const category = smartWfCategory?.value || "procurement";
+            const wfCode = (smartWfCodeInput?.value || "").trim() || "QT_MOI";
+            const wfDesc = (smartWfDescInput?.value || "").trim() || "Quy trình thiết lập tự động từ chùm file Word mẫu";
+            const timestamp = Date.now();
+
+            if (category === "procurement") {
+                const newId = `hinh_thuc_auto_${timestamp}`;
+                const newWf = {
+                    id: newId,
+                    name: wfName,
+                    code: wfCode,
+                    badge: `${smartWorkflowFilesDraft.length} văn bản`,
+                    badgeColor: "indigo",
+                    legalBasis: wfDesc,
+                    desc: wfDesc,
+                    phases: [
+                        {
+                            phaseId: `phase_auto_${timestamp}`,
+                            phaseName: "Danh mục hồ sơ quy trình",
+                            documents: smartWorkflowFilesDraft.map((item, idx) => ({
+                                id: `doc_auto_${timestamp}_${idx}`,
+                                code: item.code,
+                                name: item.name,
+                                desc: `Mẫu văn bản tải từ ${item.fileName}`,
+                                templateFile: item.fileName
+                            }))
+                        }
+                    ]
+                };
+
+                // Store uploaded Word base64 into localStorage
+                smartWorkflowFilesDraft.forEach((item, idx) => {
+                    const docId = newWf.phases[0].documents[idx].id;
+                    if (item.base64) {
+                        try {
+                            localStorage.setItem(`ho_so_custom_template_${docId}`, item.base64);
+                        } catch(e) {
+                            console.error("Storage error:", e);
+                        }
+                    }
+                });
+
+                PROCUREMENT_MATRIX.procurementTypes.push(newWf);
+                try {
+                    localStorage.setItem("ho_so_tu_dong_matrix_custom", JSON.stringify(PROCUREMENT_MATRIX));
+                    window.dispatchEvent(new Event("storage"));
+                } catch(e) {}
+
+                activeAdminCategory = "procurement";
+                activeAdminTypeId = newId;
+                if (typeof appState !== "undefined") {
+                    appState.selectedProcurementTypeId = newId;
+                }
+            } else {
+                const newId = `trien_khai_auto_${timestamp}`;
+                const newWf = {
+                    id: newId,
+                    name: wfName,
+                    code: wfCode,
+                    description: wfDesc,
+                    documents: smartWorkflowFilesDraft.map((item, idx) => ({
+                        id: `tk_auto_${timestamp}_${idx}`,
+                        code: item.code,
+                        name: item.name,
+                        signer: "Đơn vị thực hiện",
+                        duration: 1,
+                        dateFormula: { type: idx === 0 ? "manual" : "default" },
+                        defaultDate: idx === 0 ? "2026-01-12" : "",
+                        docNo: `${item.code}/VB`,
+                        templateFile: item.fileName
+                    }))
+                };
+
+                smartWorkflowFilesDraft.forEach((item, idx) => {
+                    const docId = newWf.documents[idx].id;
+                    if (item.base64) {
+                        try {
+                            localStorage.setItem(`ho_so_custom_template_${docId}`, item.base64);
+                        } catch(e) {
+                            console.error("Storage error:", e);
+                        }
+                    }
+                });
+
+                IMPLEMENTATION_MATRIX.implementationTypes.push(newWf);
+                try {
+                    localStorage.setItem("ho_so_tu_dong_implementation_matrix", JSON.stringify(IMPLEMENTATION_MATRIX));
+                    window.dispatchEvent(new Event("storage"));
+                } catch(e) {}
+
+                activeAdminCategory = "implementation";
+                activeAdminImplTypeId = newId;
+                if (typeof appState !== "undefined" && appState.projectRoadmap) {
+                    appState.projectRoadmap.implementationTypeId = newId;
+                    applyImplementationTypeToRoadmap(newId, false);
+                    recalculateAllTaskDates(false, true);
+                }
+            }
+
+            closeSmartWorkflowModal();
+            initProcurementTypeSelector();
+            renderRoadmapUI();
+            renderDocTabs();
+            renderDocumentPreview();
+            renderAdminMatrixModal();
+
+            showToast(`⚡ Đã thiết lập xong quy trình "${wfName}" gồm ${smartWorkflowFilesDraft.length} mẫu văn bản!`, "success");
+        });
+    }
+
+    // Expose helpers for automation & testing
+    window.smartParseDocFileName = smartParseDocFileName;
+    window.cloneProcurementWorkflow = cloneProcurementWorkflow;
+    window.deleteProcurementWorkflow = deleteProcurementWorkflow;
+    window.cloneImplementationWorkflow = cloneImplementationWorkflow;
+    window.deleteImplementationWorkflow = deleteImplementationWorkflow;
+    window.openSmartWorkflowModal = openSmartWorkflowModal;
+    window.closeSmartWorkflowModal = closeSmartWorkflowModal;
+    window.renderSmartWfDraftTable = renderSmartWfDraftTable;
+    window.getSmartWorkflowFilesDraft = () => smartWorkflowFilesDraft;
+    window.setSmartWorkflowFilesDraft = (files) => { smartWorkflowFilesDraft = files; };
+    window.handleSmartWfFilesAdded = handleSmartWfFilesAdded;
+
 
     // -------------------------------------------------------------
     // -------------------------------------------------------------
