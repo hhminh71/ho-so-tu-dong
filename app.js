@@ -2695,6 +2695,7 @@
     // Populate Form Inputs from Current State
     // -------------------------------------------------------------
     function populateFormInputs() {
+        syncFormLabelsFromDictionary();
         const currentPkg = appState.packages[appState.activePackageIndex] || { fields: {} };
         const inputs = document.querySelectorAll("[data-field]");
         const mergedData = getMergedData();
@@ -4679,9 +4680,9 @@
             const catItem = catMap[upperTag];
             if (!catItem) return;
 
-            const wrapper = input.closest(".field-item");
+            const wrapper = input.closest(".field-item") || input.parentElement;
             if (!wrapper) return;
-            const labelEl = wrapper.querySelector(".field-label");
+            const labelEl = wrapper.querySelector(".field-label") || wrapper.querySelector("label");
             if (!labelEl) return;
 
             let labelText = catItem.label || upperTag;
@@ -4694,7 +4695,11 @@
                 labelEl.textContent = labelText;
             }
 
-            labelEl.setAttribute("title", `Mã thẻ Word: {${upperTag}} • Đồng bộ với Từ điển`);
+            if (catItem.example) {
+                input.setAttribute("placeholder", "VD: " + catItem.example);
+            }
+
+            labelEl.setAttribute("title", `Mã thẻ Word: {${upperTag}} để đồng bộ với Từ điển`);
             input.setAttribute("title", `Mã thẻ Word: {${upperTag}}`);
         });
     }
@@ -5944,6 +5949,10 @@
             // Mutate MASTER_VARIABLES_CATALOG in-place
             MASTER_VARIABLES_CATALOG.length = 0;
             reordered.forEach(item => MASTER_VARIABLES_CATALOG.push(item));
+
+            if (typeof syncFormLabelsFromDictionary === "function") {
+                syncFormLabelsFromDictionary();
+            }
         } catch (e) {
             console.warn("Error loading catalog customizations:", e);
         }
@@ -6426,10 +6435,12 @@
         showToast(`Đã lưu biến "${label}" với mã thẻ {${newTag}} thành công!`, "success");
     }
 
+    const LS_VARS_CUSTOMIZATIONS_TS = "ho_so_vars_catalog_customizations_ts";
+
     function saveCatalogCustomizations() {
         try {
-            const customizations = MASTER_VARIABLES_CATALOG.map(v => ({
-                stt: v.stt,
+            const customizations = MASTER_VARIABLES_CATALOG.map((v, i) => ({
+                stt: i + 1,
                 groupKey: v.groupKey,
                 group: v.group,
                 label: v.label,
@@ -6438,22 +6449,76 @@
                 example: v.example,
                 isCustom: !!v.isCustom
             }));
+            const ts = Date.now().toString();
             localStorage.setItem(LS_VARS_CUSTOMIZATIONS, JSON.stringify(customizations));
+            localStorage.setItem(LS_VARS_CUSTOMIZATIONS_TS, ts);
+
+            // 1. In-tab custom event
             window.dispatchEvent(new Event("storage"));
+
+            // 2. BroadcastChannel cross-tab/cross-window
+            if (typeof BroadcastChannel !== "undefined") {
+                try {
+                    const bc = new BroadcastChannel("ho_so_catalog_channel");
+                    bc.postMessage({ type: "CATALOG_UPDATED", ts: ts });
+                    bc.close();
+                } catch(e) {}
+            }
         } catch (e) {
             console.warn("Could not save catalog customizations:", e);
         }
     }
 
-    // Cross-tab synchronization for Variable Catalog
+    // 4-Tier Cross-Tab & Cross-Window Synchronization (Fully supports file:/// protocol)
+    let lastCatalogSyncTs = localStorage.getItem(LS_VARS_CUSTOMIZATIONS_TS) || "";
+
+    function syncCatalogIfUpdated() {
+        try {
+            const currentTs = localStorage.getItem(LS_VARS_CUSTOMIZATIONS_TS) || "";
+            if (currentTs && currentTs !== lastCatalogSyncTs) {
+                lastCatalogSyncTs = currentTs;
+                loadCatalogCustomizations();
+                if (typeof syncFormLabelsFromDictionary === "function") syncFormLabelsFromDictionary();
+                if (typeof renderVarsDictionaryTable === "function") renderVarsDictionaryTable();
+                if (typeof renderDocumentPreview === "function") renderDocumentPreview();
+            }
+        } catch(e) {}
+    }
+
+    // Tier 1: Storage event
     window.addEventListener("storage", (e) => {
-        if (!e.key || e.key === LS_VARS_CUSTOMIZATIONS) {
+        if (!e.key || e.key === LS_VARS_CUSTOMIZATIONS || e.key === LS_VARS_CUSTOMIZATIONS_TS) {
             loadCatalogCustomizations();
             if (typeof syncFormLabelsFromDictionary === "function") syncFormLabelsFromDictionary();
             if (typeof renderVarsDictionaryTable === "function") renderVarsDictionaryTable();
             if (typeof renderDocumentPreview === "function") renderDocumentPreview();
         }
     });
+
+    // Tier 2: BroadcastChannel
+    if (typeof BroadcastChannel !== "undefined") {
+        try {
+            const catalogBC = new BroadcastChannel("ho_so_catalog_channel");
+            catalogBC.onmessage = (msg) => {
+                if (msg.data && msg.data.type === "CATALOG_UPDATED") {
+                    lastCatalogSyncTs = String(msg.data.ts || "");
+                    loadCatalogCustomizations();
+                    if (typeof syncFormLabelsFromDictionary === "function") syncFormLabelsFromDictionary();
+                    if (typeof renderVarsDictionaryTable === "function") renderVarsDictionaryTable();
+                    if (typeof renderDocumentPreview === "function") renderDocumentPreview();
+                }
+            };
+        } catch(e) {}
+    }
+
+    // Tier 3: Window Focus & Visibility Change
+    window.addEventListener("focus", syncCatalogIfUpdated);
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) syncCatalogIfUpdated();
+    });
+
+    // Tier 4: Background Polling (every 800ms) for file:/// isolation
+    setInterval(syncCatalogIfUpdated, 800);
 
     function resetCatalogToDefault() {
         showToast("Chức năng khôi phục mặc định đã được tắt để bảo vệ dữ liệu đang thiết lập!", "warning");

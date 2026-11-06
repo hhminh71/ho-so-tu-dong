@@ -3424,10 +3424,12 @@
         showToast(`Đã lưu biến "${label}" với mã thẻ {${newTag}} thành công!`, "success");
     }
 
+    const LS_VARS_CUSTOMIZATIONS_TS = "ho_so_vars_catalog_customizations_ts";
+
     function saveCatalogCustomizations() {
         try {
-            const customizations = MASTER_VARIABLES_CATALOG.map(v => ({
-                stt: v.stt,
+            const customizations = MASTER_VARIABLES_CATALOG.map((v, i) => ({
+                stt: i + 1,
                 groupKey: v.groupKey,
                 group: v.group,
                 label: v.label,
@@ -3436,8 +3438,19 @@
                 example: v.example,
                 isCustom: !!v.isCustom
             }));
+            const ts = Date.now().toString();
             localStorage.setItem(LS_VARS_CUSTOMIZATIONS, JSON.stringify(customizations));
+            localStorage.setItem(LS_VARS_CUSTOMIZATIONS_TS, ts);
+
             window.dispatchEvent(new Event("storage"));
+
+            if (typeof BroadcastChannel !== "undefined") {
+                try {
+                    const bc = new BroadcastChannel("ho_so_catalog_channel");
+                    bc.postMessage({ type: "CATALOG_UPDATED", ts: ts });
+                    bc.close();
+                } catch(e) {}
+            }
         } catch (e) {
             console.warn("Could not save catalog customizations:", e);
         }
@@ -3704,7 +3717,7 @@
                 if (item) renderCanvasContent(item);
             }
         }
-        if (!e.key || e.key === "ho_so_vars_catalog_customizations") {
+        if (!e.key || e.key === "ho_so_vars_catalog_customizations" || e.key === "ho_so_vars_catalog_customizations_ts") {
             loadCatalogCustomizations();
             renderPaletteTextVars();
             if (typeof renderStudioVarsTable === "function") renderStudioVarsTable();
@@ -3730,4 +3743,46 @@
     initWorkflowSelector();
     renderBatchTable();
 
+    // 4-Tier Sync listeners for Studio
+    let lastStudioSyncTs = localStorage.getItem("ho_so_vars_catalog_customizations_ts") || "";
+
+    function syncStudioIfUpdated() {
+        try {
+            const currentTs = localStorage.getItem("ho_so_vars_catalog_customizations_ts") || "";
+            if (currentTs && currentTs !== lastStudioSyncTs) {
+                lastStudioSyncTs = currentTs;
+                loadCatalogCustomizations();
+                renderPaletteTextVars();
+                if (typeof renderStudioVarsTable === "function") renderStudioVarsTable();
+                if (studioViewMode === "sample") {
+                    const item = state.batchFiles[state.activeDocId];
+                    if (item) renderCanvasContent(item);
+                }
+            }
+        } catch(e) {}
+    }
+
+    if (typeof BroadcastChannel !== "undefined") {
+        try {
+            const studioBC = new BroadcastChannel("ho_so_catalog_channel");
+            studioBC.onmessage = (msg) => {
+                if (msg.data && msg.data.type === "CATALOG_UPDATED") {
+                    lastStudioSyncTs = String(msg.data.ts || "");
+                    loadCatalogCustomizations();
+                    renderPaletteTextVars();
+                    if (typeof renderStudioVarsTable === "function") renderStudioVarsTable();
+                    if (studioViewMode === "sample") {
+                        const item = state.batchFiles[state.activeDocId];
+                        if (item) renderCanvasContent(item);
+                    }
+                }
+            };
+        } catch(e) {}
+    }
+
+    window.addEventListener("focus", syncStudioIfUpdated);
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) syncStudioIfUpdated();
+    });
+    setInterval(syncStudioIfUpdated, 800);
 })();
