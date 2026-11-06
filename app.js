@@ -13002,6 +13002,30 @@ window.APP_CONFIG = {
     if (btnDictGSheetSync) btnDictGSheetSync.onclick = openGoogleSheetSyncModal;
     if (btnCloseGSheetSync) btnCloseGSheetSync.onclick = closeGoogleSheetSyncModal;
 
+    
+    const btnCopyIncognitoLink = document.getElementById("btnCopyIncognitoLink");
+    if (btnCopyIncognitoLink) {
+        btnCopyIncognitoLink.onclick = () => {
+            const url = (document.getElementById("gsheetApiUrlInput")?.value || "").trim();
+            if (!url) {
+                showToast("Vui lòng nhập đường link Google Apps Script trước!", "warning");
+                return;
+            }
+            const cleanBase = window.location.href.split("#")[0].split("?")[0];
+            const incognitoUrl = `${cleanBase}#gsheet=${encodeURIComponent(url)}`;
+            
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(incognitoUrl).then(() => {
+                    showToast("Đã sao chép link Tab Ẩn Danh! Hãy mở Cửa sổ Ẩn danh và dán (Ctrl+V) vào thanh địa chỉ.", "success");
+                }).catch(() => {
+                    prompt("Sao chép link mở Tab Ẩn danh dưới đây:", incognitoUrl);
+                });
+            } else {
+                prompt("Sao chép link mở Tab Ẩn danh dưới đây:", incognitoUrl);
+            }
+        };
+    }
+
     const btnDownloadConfigJs = document.getElementById("btnDownloadConfigJs");
     if (btnDownloadConfigJs) {
         btnDownloadConfigJs.onclick = () => {
