@@ -6470,6 +6470,18 @@
 
         document.getElementById("modalEditVariable")?.classList.add("hidden");
         showToast(`Đã lưu biến "${label}" với mã thẻ {${newTag}} thành công!`, "success");
+
+        // Tự động đẩy lên Google Sheets nếu đã cấu hình (Auto-Push)
+        try {
+            if (typeof pushDataToGoogleSheet === "function" && isUserAdmin()) {
+                const cfg = getGSheetConfig();
+                if (cfg && cfg.url) {
+                    pushDataToGoogleSheet(false).then(ok => {
+                        if (ok) showToast("Đã tự động đồng bộ biến lên Google Sheets Cloud!", "info");
+                    });
+                }
+            }
+        } catch(e) {}
     }
 
     const LS_VARS_CUSTOMIZATIONS_TS = "ho_so_vars_catalog_customizations_ts";
@@ -12906,6 +12918,31 @@
     window.pullDataFromGoogleSheet = pullDataFromGoogleSheet;
     window.pushDataToGoogleSheet = pushDataToGoogleSheet;
 
+    
+    // Tự động nhận link Google Sheets từ URL (Hỗ trợ 100% cho Tab Ẩn danh hoặc máy khác)
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        let gsheetParam = urlParams.get("gsheet");
+        if (!gsheetParam && window.location.hash.includes("gsheet=")) {
+            const hMatch = window.location.hash.match(/gsheet=([^&]+)/);
+            if (hMatch) gsheetParam = decodeURIComponent(hMatch[1]);
+        }
+        if (gsheetParam) {
+            saveGSheetConfig(gsheetParam, "admin123");
+        }
+    } catch(e) {}
+
+    // Tự động tải dữ liệu từ Google Sheets về khi mở Web App (Auto-Pull)
+    setTimeout(() => {
+        const cfg = getGSheetConfig();
+        if (cfg && cfg.url) {
+            pullDataFromGoogleSheet(false).then(ok => {
+                if (ok) console.log("Google Sheets Auto-Pull on load successful");
+            });
+        }
+    }, 600);
+
     switchMainTab(initialTab, false);
+
 
 })();

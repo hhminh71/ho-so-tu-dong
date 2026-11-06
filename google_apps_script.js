@@ -215,23 +215,48 @@ function parseRoadmapSheet(sheet) {
 }
 
 function updateInfoSheet(sheet, catalogList, packagesList) {
-  if (!sheet || !Array.isArray(catalogList)) return;
+  if (!sheet || !Array.isArray(catalogList) || catalogList.length === 0) return;
 
   const startRow = 5;
   const numRows = catalogList.length;
+  const lastCol = Math.max(sheet.getLastColumn(), 5);
+
+  // Đọc header để xác định các cột gói thầu
+  const headerRow = sheet.getRange(4, 1, 1, lastCol).getValues()[0];
+  const pkgCols = [];
+  for (let c = 5; c < headerRow.length; c++) {
+    const colName = String(headerRow[c] || "").trim();
+    if (colName) {
+      pkgCols.push(c);
+    }
+  }
+
+  // Đọc toàn bộ khối dữ liệu hiện có để bảo toàn các cột khác nếu không thay đổi
+  const existingValues = sheet.getRange(startRow, 1, numRows, lastCol).getValues();
 
   for (let i = 0; i < numRows; i++) {
     const item = catalogList[i];
-    const r = startRow + i;
+    existingValues[i][0] = item.stt || (i + 1);
+    existingValues[i][1] = item.group || "";
+    existingValues[i][2] = item.label || "";
+    existingValues[i][3] = item.tag ? String(item.tag).replace(/[{}]/g, "") : "";
+    if (item.example !== undefined && item.example !== "") {
+      existingValues[i][4] = item.example;
+    }
 
-    sheet.getRange(r, 1).setValue(item.stt || (i + 1));
-    sheet.getRange(r, 2).setValue(item.group || "");
-    sheet.getRange(r, 3).setValue(item.label || "");
-    sheet.getRange(r, 4).setValue(item.tag || "");
-    if (item.example) {
-      sheet.getRange(r, 5).setValue(item.example);
+    // Nếu có danh sách các gói thầu, đồng bộ giá trị tương ứng từng cột gói
+    if (Array.isArray(packagesList) && item.tag) {
+      const cleanTag = String(item.tag).replace(/[{}]/g, "").toUpperCase();
+      pkgCols.forEach((colIdx, pIdx) => {
+        if (packagesList[pIdx] && packagesList[pIdx].fields && packagesList[pIdx].fields[cleanTag] !== undefined) {
+          existingValues[i][colIdx] = packagesList[pIdx].fields[cleanTag];
+        }
+      });
     }
   }
+
+  // Ghi toàn bộ dữ liệu chỉ với 1 lệnh setValues (cực nhanh, không bao giờ bị nghẽn hay timeout)
+  sheet.getRange(startRow, 1, numRows, lastCol).setValues(existingValues);
 }
 
 function updateRoadmapSheet(sheet, generalInfo, packages) {
