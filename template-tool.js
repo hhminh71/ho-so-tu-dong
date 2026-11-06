@@ -1226,6 +1226,9 @@
             return state.batchFiles[docId];
         }
 
+        const wf = getCurrentWorkflow();
+        const docObj = (wf && wf.documents) ? (wf.documents.find(d => d.id === docId) || { id: docId, name: docId }) : { id: docId, name: docId };
+
         // 1. Kiểm tra mẫu tùy biến đã lưu trong localStorage
         const customB64 = localStorage.getItem("ho_so_custom_template_" + docId);
         let arrayBuffer = null;
@@ -1264,12 +1267,12 @@
         if (!arrayBuffer) return null;
 
         const paragraphs = await extractParagraphsFromBuffer(arrayBuffer);
-        const wf = getCurrentWorkflow();
-        const docObj = wf.documents.find(d => d.id === docId) || { id: docId, name: docId };
         const mappings = detectEntitiesForDocument(docObj, paragraphs);
 
         const item = {
+            id: docId,
             name: fileName,
+            size: arrayBuffer.byteLength,
             arrayBuffer: arrayBuffer,
             paragraphs: paragraphs,
             mappings: mappings,
@@ -1374,7 +1377,7 @@
             };
         }
 
-        const item = await getOrLoadBufferForDocument(docObj.id);
+        const item = await getOrLoadBufferForDocument(docObj.id, docObj);
         if (singleDocFileNameBadge) {
             singleDocFileNameBadge.textContent = item ? item.name : "(Không tìm thấy file mẫu)";
         }
@@ -2506,6 +2509,7 @@
             if (viewScalar) viewScalar.classList.remove("hidden");
             if (viewTable) viewTable.classList.add("hidden");
             renderStudioVarsTable();
+        renderPaletteTextVars();
         } else {
             if (tabTable) {
                 tabTable.className = "studio-dict-nav-tab px-3 py-1.5 font-bold text-xs border-b-2 border-indigo-600 text-indigo-700 flex items-center gap-1.5 cursor-pointer transition-all bg-white rounded-t";
@@ -2854,6 +2858,11 @@
     });
 
     // Expose for external calls and debugging
+    window.openEditVariableModal = openEditVariableModal;
+    window.renderPaletteTextVars = renderPaletteTextVars;
+    window.renderStudioVarsTable = renderStudioVarsTable;
+    window.openStudioVarsModal = openStudioVarsModal;
+
     window.TemplateStudio = {
         state,
         STUDIO_WORKFLOWS,
@@ -2894,7 +2903,7 @@
             if (!Array.isArray(savedList)) return;
 
             savedList.forEach(savedVar => {
-                const existing = MASTER_VARIABLES_CATALOG.find(v => v.stt === savedVar.stt || v.tag === savedVar.origTag || v.tag === savedVar.tag);
+                const existing = MASTER_VARIABLES_CATALOG.find(v => (savedVar.origTag && v.tag === savedVar.origTag) || v.tag === savedVar.tag || (savedVar.stt && v.stt === savedVar.stt));
                 if (existing) {
                     existing.label = savedVar.label;
                     existing.tag = savedVar.tag;
@@ -2912,6 +2921,7 @@
     }
 
     loadCatalogCustomizations();
+    window.MASTER_VARIABLES_CATALOG = MASTER_VARIABLES_CATALOG;
 
     // (slugifyToUpperSnake declared below)
 
@@ -3277,6 +3287,7 @@
                 isCustom: !!v.isCustom
             }));
             localStorage.setItem(LS_VARS_CUSTOMIZATIONS, JSON.stringify(customizations));
+            window.dispatchEvent(new Event("storage"));
         } catch (e) {
             console.warn("Could not save catalog customizations:", e);
         }
@@ -3536,6 +3547,15 @@
             if (studioDictCurrentMode === "table") {
                 renderStudioDictTableView();
             }
+            if (studioViewMode === "sample") {
+                const item = state.batchFiles[state.activeDocId];
+                if (item) renderCanvasContent(item);
+            }
+        }
+        if (!e.key || e.key === "ho_so_vars_catalog_customizations") {
+            loadCatalogCustomizations();
+            renderPaletteTextVars();
+            if (typeof renderStudioVarsTable === "function") renderStudioVarsTable();
             if (studioViewMode === "sample") {
                 const item = state.batchFiles[state.activeDocId];
                 if (item) renderCanvasContent(item);

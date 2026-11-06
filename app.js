@@ -5843,7 +5843,7 @@
             if (!Array.isArray(savedList)) return;
 
             savedList.forEach(savedVar => {
-                const existing = MASTER_VARIABLES_CATALOG.find(v => v.stt === savedVar.stt || v.tag === savedVar.origTag || v.tag === savedVar.tag);
+                const existing = MASTER_VARIABLES_CATALOG.find(v => (savedVar.origTag && v.tag === savedVar.origTag) || v.tag === savedVar.tag || (savedVar.stt && v.stt === savedVar.stt));
                 if (existing) {
                     existing.label = savedVar.label;
                     existing.tag = savedVar.tag;
@@ -6289,10 +6289,21 @@
                 isCustom: !!v.isCustom
             }));
             localStorage.setItem(LS_VARS_CUSTOMIZATIONS, JSON.stringify(customizations));
+            window.dispatchEvent(new Event("storage"));
         } catch (e) {
             console.warn("Could not save catalog customizations:", e);
         }
     }
+
+    // Cross-tab synchronization for Variable Catalog
+    window.addEventListener("storage", (e) => {
+        if (!e.key || e.key === LS_VARS_CUSTOMIZATIONS) {
+            loadCatalogCustomizations();
+            if (typeof syncFormLabelsFromDictionary === "function") syncFormLabelsFromDictionary();
+            if (typeof renderVarsDictionaryTable === "function") renderVarsDictionaryTable();
+            if (typeof renderDocumentPreview === "function") renderDocumentPreview();
+        }
+    });
 
     function resetCatalogToDefault() {
         if (confirm("Bạn có chắc chắn muốn khôi phục toàn bộ Danh mục Biến xạ về cấu hình chuẩn ban đầu? Mọi tùy chỉnh tên hoặc mã thẻ sẽ được đặt lại.")) {
