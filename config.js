@@ -10,9 +10,8 @@
  * =========================================================================
  */
 window.APP_CONFIG = {
-    // 1. Dán đường link Google Apps Script Web App (URL kết thúc bằng /exec) vào đây:
-    // Ví dụ: "https://script.google.com/macros/s/AKfycb.../exec"
-    GSHEET_API_URL: "",
+    // 1. Đường link Google Apps Script Web App (URL kết thúc bằng /exec)
+    GSHEET_API_URL: "https://script.google.com/macros/s/AKfycbybkIhpHZA15Abwpn5MAtZgXyX52gKxACvpmUZpiFa7rIjeYfjc5Yne4uGoGa5bnpcz/exec",
 
     // 2. Mật mã Quản trị viên Admin (mặc định: admin123)
     GSHEET_ADMIN_KEY: "admin123",
