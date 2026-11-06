@@ -2508,6 +2508,7 @@
         });
 
         // Cập nhật lại thanh tiến độ và các badge
+        syncFormLabelsFromDictionary();
         updateProgress();
     }
 
@@ -4609,7 +4610,7 @@
         { stt: 32, groupKey: "D", group: "D. Nhà thầu", label: "Tên nhà thầu (viết tắt)", tag: "TEN_NHA_THAU_VIET_TAT", isGeneral: false, example: "MT-CONS" },
         { stt: 33, groupKey: "D", group: "D. Nhà thầu", label: "Người đại diện nhà thầu", tag: "DAI_DIEN_NHA_THAU", isGeneral: false, example: "Lê Hoàng E" },
         { stt: 34, groupKey: "D", group: "D. Nhà thầu", label: "Chức vụ đại diện nhà thầu", tag: "CHUC_VU_DAI_DIEN", isGeneral: false, example: "Tổng Giám đốc" },
-        { stt: 35, groupKey: "D", group: "D. Nhà thầu", label: "Địa chỉ nhà thầu", tag: "DIA_CHI_NHA_THAU", isGeneral: false, example: "Số 45 đường CMT8, Bình Thủy, Cần Thơ" },
+        { stt: 35, groupKey: "D", group: "D. Nhà thầu", label: "Địa chỉ trụ sở nhà thầu", tag: "DIA_CHI_NHA_THAU", isGeneral: false, example: "Số 45 đường CMT8, Bình Thủy, Cần Thơ" },
         { stt: 36, groupKey: "D", group: "D. Nhà thầu", label: "Mã số thuế nhà thầu", tag: "MA_SO_THUE", isGeneral: false, example: "1807654321" },
 
         // E. Số hiệu VB
@@ -4619,6 +4620,8 @@
         { stt: 40, groupKey: "E", group: "E. Số hiệu VB", label: "Số biên bản hoàn thiện", tag: "SO_BIEN_BAN_HOAN_THIEN", isGeneral: false, example: "04/BB-HT" },
         { stt: 41, groupKey: "E", group: "E. Số hiệu VB", label: "Số hợp đồng kinh tế", tag: "SO_HOP_DONG", isGeneral: false, example: "26076" },
         { stt: 42, groupKey: "E", group: "E. Số hiệu VB", label: "Số công văn tham gia", tag: "SO_CONG_VAN_THAM_GIA", isGeneral: false, example: "315/CV-HT" },
+        { stt: 42.1, groupKey: "E", group: "E. Số hiệu VB", label: "Thời gian họp hoàn thiện HĐ", tag: "THOI_GIAN_HOP", isGeneral: false, example: "08 giờ 30 phút, ngày 15/07/2025" },
+        { stt: 42.2, groupKey: "E", group: "E. Số hiệu VB", label: "Địa điểm họp hoàn thiện HĐ", tag: "DIA_DIEM_HOP", isGeneral: false, example: "Văn phòng Ban Quản lý dự án" },
 
         // F. Ngày tháng (ngắn)
         { stt: 43, groupKey: "F", group: "F. Ngày (dd/mm/yyyy)", label: "Ngày Tờ trình (dd/mm/yyyy)", tag: "NGAY_TO_TRINH", isGeneral: false, example: "10/02/2027" },
@@ -4644,6 +4647,58 @@
         // I. Căn cứ pháp lý
         { stt: 58, groupKey: "I", group: "I. Căn cứ pháp lý", label: "Căn cứ pháp lý chung (*)", tag: "CAN_CU_PHAP_LY_CHUNG", isGeneral: true, example: "Căn cứ Luật Đấu thầu số 22/2023/QH15..." }
     ];
+
+    // -------------------------------------------------------------
+    // Dynamic Form Label Synchronization with Dictionary
+    // Ensures 100% label consistency between Form and Catalog
+    // -------------------------------------------------------------
+    function syncFormLabelsFromDictionary() {
+        if (typeof MASTER_VARIABLES_CATALOG === "undefined" || !Array.isArray(MASTER_VARIABLES_CATALOG)) return;
+
+        const catMap = {};
+        MASTER_VARIABLES_CATALOG.forEach(item => {
+            if (item.tag) catMap[item.tag.toUpperCase()] = item;
+        });
+
+        if (window.appState && window.appState.customVariables) {
+            for (const k in window.appState.customVariables) {
+                const cv = window.appState.customVariables[k];
+                catMap[k.toUpperCase()] = {
+                    tag: k,
+                    label: cv.label || k,
+                    isGeneral: false
+                };
+            }
+        }
+
+        const fieldInputs = document.querySelectorAll("[data-field]");
+        fieldInputs.forEach(input => {
+            const tag = input.getAttribute("data-field");
+            if (!tag) return;
+            const upperTag = tag.trim().toUpperCase();
+            const catItem = catMap[upperTag];
+            if (!catItem) return;
+
+            const wrapper = input.closest(".field-item");
+            if (!wrapper) return;
+            const labelEl = wrapper.querySelector(".field-label");
+            if (!labelEl) return;
+
+            let labelText = catItem.label || upperTag;
+            const isRequired = labelText.includes("(*)") || labelEl.querySelector(".text-red-500") !== null;
+            labelText = labelText.replace(/\s*\(\*\)\s*/g, "").trim();
+
+            if (isRequired) {
+                labelEl.innerHTML = `${escapeHtml(labelText)} <span class="text-red-500">*</span>`;
+            } else {
+                labelEl.textContent = labelText;
+            }
+
+            labelEl.setAttribute("title", `Mã thẻ Word: {${upperTag}} • Đồng bộ với Từ điển`);
+            input.setAttribute("title", `Mã thẻ Word: {${upperTag}}`);
+        });
+    }
+
 
     // Export entire application state to 2-Sheet Excel file (Định hướng & Thông tin)
     // -------------------------------------------------------------
@@ -6211,6 +6266,7 @@
 
         saveCatalogCustomizations();
 
+        if (typeof syncFormLabelsFromDictionary === "function") syncFormLabelsFromDictionary();
         if (typeof renderVarsDictionaryTable === "function") renderVarsDictionaryTable();
         if (typeof populateFormInputs === "function") populateFormInputs();
         if (typeof renderDocumentPreview === "function") renderDocumentPreview();
@@ -8722,6 +8778,7 @@
     }
 
     // Expose helpers for automation & testing
+    window.syncFormLabelsFromDictionary = syncFormLabelsFromDictionary;
     window.smartParseDocFileName = smartParseDocFileName;
     window.cloneProcurementWorkflow = cloneProcurementWorkflow;
     window.deleteProcurementWorkflow = deleteProcurementWorkflow;

@@ -48,7 +48,7 @@
         { stt: 32, tier: 2, groupKey: "D", group: "D. Nhà thầu", label: "Tên nhà thầu (viết tắt)", tag: "TEN_NHA_THAU_VIET_TAT", isGeneral: false, example: "MT-CONS" },
         { stt: 33, tier: 2, groupKey: "D", group: "D. Nhà thầu", label: "Người đại diện nhà thầu", tag: "DAI_DIEN_NHA_THAU", isGeneral: false, example: "Lê Hoàng E" },
         { stt: 34, tier: 2, groupKey: "D", group: "D. Nhà thầu", label: "Chức vụ đại diện nhà thầu", tag: "CHUC_VU_DAI_DIEN", isGeneral: false, example: "Tổng Giám đốc" },
-        { stt: 35, tier: 2, groupKey: "D", group: "D. Nhà thầu", label: "Địa chỉ nhà thầu", tag: "DIA_CHI_NHA_THAU", isGeneral: false, example: "Số 45 đường CMT8, Bình Thủy, Cần Thơ" },
+        { stt: 35, tier: 2, groupKey: "D", group: "D. Nhà thầu", label: "Địa chỉ trụ sở nhà thầu", tag: "DIA_CHI_NHA_THAU", isGeneral: false, example: "Số 45 đường CMT8, Bình Thủy, Cần Thơ" },
         { stt: 36, tier: 2, groupKey: "D", group: "D. Nhà thầu", label: "Mã số thuế nhà thầu", tag: "MA_SO_THUE", isGeneral: false, example: "1807654321" },
 
         // E. Số hiệu VB (Tầng 3 - Định danh từng văn bản riêng biệt để chống chồng chéo)
@@ -60,6 +60,8 @@
         { stt: 42, tier: 3, groupKey: "E", group: "E. Số hiệu VB", label: "Số quyết định KQLCNT", tag: "SO_QUYET_DINH_KQLCNT", isGeneral: false, example: "1143/QĐ-CHKQTCT" },
         { stt: 43, tier: 3, groupKey: "E", group: "E. Số hiệu VB", label: "Số hợp đồng kinh tế", tag: "SO_HOP_DONG", isGeneral: false, example: "26076" },
         { stt: 44, tier: 3, groupKey: "E", group: "E. Số hiệu VB", label: "Số công văn tham gia", tag: "SO_CONG_VAN_THAM_GIA", isGeneral: false, example: "315/CV-HT" },
+        { stt: 44.1, tier: 3, groupKey: "E", group: "E. Số hiệu VB", label: "Thời gian họp hoàn thiện HĐ", tag: "THOI_GIAN_HOP", isGeneral: false, example: "08 giờ 30 phút, ngày 15/07/2025" },
+        { stt: 44.2, tier: 3, groupKey: "E", group: "E. Số hiệu VB", label: "Địa điểm họp hoàn thiện HĐ", tag: "DIA_DIEM_HOP", isGeneral: false, example: "Văn phòng Ban Quản lý dự án" },
 
         // F. Ngày tháng ngắn dd/mm/yyyy (Tầng 3)
         { stt: 45, tier: 3, groupKey: "F", group: "F. Ngày (ngắn)", label: "Ngày Tờ trình KHLCNT", tag: "NGAY_TO_TRINH", isGeneral: false, example: "10/02/2027" },
