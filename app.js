@@ -5732,6 +5732,18 @@
     function renderVarsDictionaryTable() {
         if (!varsDictionaryTableBody) return;
 
+        const isAdmin = isUserAdmin();
+        const dictReadOnlyBadge = document.getElementById("dictReadOnlyBadge");
+        if (dictReadOnlyBadge) {
+            dictReadOnlyBadge.classList.toggle("hidden", isAdmin);
+        }
+        if (btnAddNewVarFromDict) {
+            btnAddNewVarFromDict.classList.toggle("hidden", !isAdmin);
+        }
+        if (btnManageCategories) {
+            btnManageCategories.classList.toggle("hidden", !isAdmin);
+        }
+
         const query = varsSearchInput ? varsSearchInput.value.trim().toLowerCase() : "";
         const selectedPkgIdx = varsPackageSelect ? parseInt(varsPackageSelect.value, 10) || 0 : 0;
         const mergedData = getMergedDataForPackage(selectedPkgIdx);
@@ -5787,10 +5799,10 @@
             const isLast = filteredIdx === filtered.length - 1;
 
             return `
-                <tr class="dict-var-row hover:bg-slate-50/80 transition-colors select-none" draggable="true" data-tag="${v.tag}">
-                    <td class="col-stt py-0.5 px-1 text-center text-slate-400 font-mono text-[9.5px] border-r border-slate-100 cursor-grab active:cursor-grabbing hover:bg-slate-100" title="Kéo thả để sắp xếp vị trí">
+                <tr class="dict-var-row hover:bg-slate-50/80 transition-colors select-none" draggable="${isAdmin ? "true" : "false"}" data-tag="${v.tag}">
+                    <td class="col-stt py-0.5 px-1 text-center text-slate-400 font-mono text-[9.5px] border-r border-slate-100 ${isAdmin ? "cursor-grab active:cursor-grabbing hover:bg-slate-100" : "cursor-default"}" title="${isAdmin ? "Kéo thả để sắp xếp vị trí" : "Số thứ tự"}">
                         <div class="flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-grip-vertical text-[8px] text-slate-300"></i>
+                            ${isAdmin ? '<i class="fa-solid fa-grip-vertical text-[8px] text-slate-300"></i>' : ''}
                             <span>${v.stt}</span>
                         </div>
                     </td>
@@ -5813,19 +5825,26 @@
                     <td class="col-val py-0.5 px-2 text-[10.5px] border-r border-slate-100 truncate" title="${val}">${valDisplay}</td>
                     <td class="col-actions py-0.5 px-1 text-center">
                         <div class="flex items-center justify-center space-x-0.5">
-                            <button type="button" class="btn-move-var-up text-[9px] font-bold text-slate-600 hover:text-indigo-700 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 w-5 h-5 rounded flex items-center justify-center cursor-pointer transition-all ${isFirst ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" data-tag="${v.tag}" title="Di chuyển lên trên (▲)">
-                                <i class="fa-solid fa-arrow-up"></i>
-                            </button>
-                            <button type="button" class="btn-move-var-down text-[9px] font-bold text-slate-600 hover:text-indigo-700 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 w-5 h-5 rounded flex items-center justify-center cursor-pointer transition-all ${isLast ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" data-tag="${v.tag}" title="Di chuyển xuống dưới (▼)">
-                                <i class="fa-solid fa-arrow-down"></i>
-                            </button>
-                            <button type="button" class="btn-copy-tag text-[9.5px] font-bold text-emerald-700 hover:text-emerald-900 bg-white hover:bg-emerald-50 border border-slate-200 w-5 h-5 rounded flex items-center justify-center cursor-pointer transition-all" data-tag="{${v.tag}}" title="Sao chép {${v.tag}}">
-                                <i class="fa-regular fa-copy"></i>
-                            </button>
-                            <button type="button" class="btn-edit-var text-[9.5px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-1.5 h-5 rounded cursor-pointer transition-all flex items-center gap-0.5" data-tag="${v.tag}" title="Điều chỉnh tên biến và mã TAG">
-                                <i class="fa-solid fa-pen-to-square text-[8.5px]"></i>
-                                <span>Sửa</span>
-                            </button>
+                            ${isAdmin ? `
+                                <button type="button" class="btn-move-var-up text-[9px] font-bold text-slate-600 hover:text-indigo-700 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 w-5 h-5 rounded flex items-center justify-center cursor-pointer transition-all ${isFirst ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" data-tag="${v.tag}" title="Di chuyển lên trên (▲)">
+                                    <i class="fa-solid fa-arrow-up"></i>
+                                </button>
+                                <button type="button" class="btn-move-var-down text-[9px] font-bold text-slate-600 hover:text-indigo-700 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 w-5 h-5 rounded flex items-center justify-center cursor-pointer transition-all ${isLast ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" data-tag="${v.tag}" title="Di chuyển xuống dưới (▼)">
+                                    <i class="fa-solid fa-arrow-down"></i>
+                                </button>
+                                <button type="button" class="btn-copy-tag text-[9.5px] font-bold text-emerald-700 hover:text-emerald-900 bg-white hover:bg-emerald-50 border border-slate-200 w-5 h-5 rounded flex items-center justify-center cursor-pointer transition-all" data-tag="{${v.tag}}" title="Sao chép {${v.tag}}">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                                <button type="button" class="btn-edit-var text-[9.5px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-1.5 h-5 rounded cursor-pointer transition-all flex items-center gap-0.5" data-tag="${v.tag}" title="Điều chỉnh tên biến và mã TAG">
+                                    <i class="fa-solid fa-pen-to-square text-[8.5px]"></i>
+                                    <span>Sửa</span>
+                                </button>
+                            ` : `
+                                <button type="button" class="btn-copy-tag text-[9.5px] font-bold text-emerald-700 hover:text-emerald-900 bg-white hover:bg-emerald-50 border border-slate-200 px-2 h-5 rounded flex items-center gap-1 cursor-pointer transition-all" data-tag="{${v.tag}}" title="Sao chép mã thẻ {${v.tag}}">
+                                    <i class="fa-regular fa-copy text-[8.5px]"></i>
+                                    <span>Sao chép</span>
+                                </button>
+                            `}
                         </div>
                     </td>
                 </tr>
@@ -6353,6 +6372,10 @@
     }
 
     function saveVariableChanges() {
+        if (!isUserAdmin()) {
+            showToast("Chỉ Quản trị viên (Admin) mới có quyền chỉnh sửa Từ điển biến!", "warning");
+            return;
+        }
         const origTag = (document.getElementById("editVarOriginalTag")?.value || "").trim().toUpperCase();
         const label = (document.getElementById("editVarLabelInput")?.value || "").trim();
         const newTag = (document.getElementById("editVarTagInput")?.value || "").trim().toUpperCase();
@@ -12601,6 +12624,287 @@
     window.createNewBlankProject = createNewBlankProject;
     window.selectDocumentById = selectDocumentById;
     window.renderDocumentPreview = renderDocumentPreview;
+
+    
+    function isUserAdmin() {
+        if (window.authApp && typeof window.authApp.isAdmin === "function") {
+            return window.authApp.isAdmin();
+        }
+        try {
+            const raw = localStorage.getItem("hstd_current_user_v1");
+            if (raw) {
+                const u = JSON.parse(raw);
+                return u && u.role === "ADMIN";
+            }
+        } catch(e) {}
+        return true; // Default admin if auth not initialized
+    }
+
+
+    // =============================================================
+    // GOOGLE SHEETS CLOUD SYNCHRONIZATION MODULE (2-WAY REALTIME)
+    // =============================================================
+    const LS_GSHEET_URL = "ho_so_gsheet_api_url";
+    const LS_GSHEET_KEY = "ho_so_gsheet_admin_key";
+
+    function getGSheetConfig() {
+        return {
+            url: (localStorage.getItem(LS_GSHEET_URL) || "").trim(),
+            adminKey: (localStorage.getItem(LS_GSHEET_KEY) || "admin123").trim()
+        };
+    }
+
+    function saveGSheetConfig(url, key) {
+        localStorage.setItem(LS_GSHEET_URL, (url || "").trim());
+        localStorage.setItem(LS_GSHEET_KEY, (key || "").trim());
+    }
+
+    function openGoogleSheetSyncModal() {
+        const modal = document.getElementById("modalGoogleSheetSync");
+        if (!modal) return;
+        const config = getGSheetConfig();
+        const inpUrl = document.getElementById("gsheetApiUrlInput");
+        const inpKey = document.getElementById("gsheetAdminKeyInput");
+        const btnPush = document.getElementById("btnGSheetPush");
+        const statusBox = document.getElementById("gsheetSyncStatusBox");
+
+        if (inpUrl) inpUrl.value = config.url;
+        if (inpKey) inpKey.value = config.adminKey;
+        if (statusBox) statusBox.classList.add("hidden");
+
+        const isAdmin = isUserAdmin();
+        if (btnPush) {
+            btnPush.disabled = !isAdmin;
+            btnPush.classList.toggle("opacity-50", !isAdmin);
+            btnPush.classList.toggle("cursor-not-allowed", !isAdmin);
+            btnPush.title = isAdmin ? "Lưu từ điển và dữ liệu lên Google Sheet" : "Chỉ Admin mới có quyền cập nhật lên Google Sheet";
+        }
+
+        modal.classList.remove("hidden");
+    }
+
+    function closeGoogleSheetSyncModal() {
+        const modal = document.getElementById("modalGoogleSheetSync");
+        if (modal) modal.classList.add("hidden");
+    }
+
+    async function pullDataFromGoogleSheet(showToasts = true) {
+        const config = getGSheetConfig();
+        const statusBox = document.getElementById("gsheetSyncStatusBox");
+
+        if (!config.url) {
+            if (showToasts) showToast("Vui lòng cấu hình đường link Google Apps Script Web App trước!", "warning");
+            openGoogleSheetSyncModal();
+            return false;
+        }
+
+        try {
+            if (showToasts) showToast("Đang kết nối tải dữ liệu từ Google Sheets...", "info");
+            if (statusBox) {
+                statusBox.className = "p-2.5 rounded-lg text-xs bg-blue-50 border border-blue-200 text-blue-800";
+                statusBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang tải dữ liệu từ Google Sheets...';
+                statusBox.classList.remove("hidden");
+            }
+
+            const fetchUrl = config.url + (config.url.includes("?") ? "&" : "?") + "action=getData&t=" + Date.now();
+            const resp = await fetch(fetchUrl);
+            if (!resp.ok) throw new Error("Mã phản hồi HTTP: " + resp.status);
+            const data = await resp.json();
+
+            if (!data || !data.success) {
+                throw new Error(data?.error || "Không nhận được dữ liệu hợp lệ từ Google Sheet");
+            }
+
+            // 1. Cập nhật Từ điển biến
+            if (Array.isArray(data.catalog) && data.catalog.length > 0) {
+                MASTER_VARIABLES_CATALOG.length = 0;
+                data.catalog.forEach((item, idx) => {
+                    MASTER_VARIABLES_CATALOG.push({
+                        stt: item.stt || (idx + 1),
+                        groupKey: item.groupKey || (item.group ? item.group.charAt(0) : "A"),
+                        group: item.group || "A. Chủ đầu tư",
+                        label: item.label,
+                        tag: (item.tag || "").toUpperCase(),
+                        isGeneral: !!item.isGeneral,
+                        example: item.example || ""
+                    });
+                });
+                saveCatalogCustomizations();
+                syncFormLabelsFromDictionary();
+            }
+
+            // 2. Cập nhật Thông tin chung dự án
+            if (data.generalInfo) {
+                appState.generalInfo = Object.assign(appState.generalInfo || {}, data.generalInfo);
+            }
+
+            // 3. Cập nhật các gói thầu
+            if (Array.isArray(data.packages) && data.packages.length > 0) {
+                data.packages.forEach((pkg, idx) => {
+                    if (!appState.packages[idx]) {
+                        appState.packages[idx] = { name: pkg.name, fields: {} };
+                    }
+                    if (pkg.name) appState.packages[idx].name = pkg.name;
+                    appState.packages[idx].fields = Object.assign(appState.packages[idx].fields || {}, pkg.fields || {});
+                });
+            }
+
+            // 4. Cập nhật tiến độ Roadmap
+            if (Array.isArray(data.timelinePhases) && data.timelinePhases.length > 0) {
+                if (appState.projectRoadmap) {
+                    appState.projectRoadmap.timelinePhases = data.timelinePhases;
+                }
+            }
+
+            saveState();
+
+            // Re-render UI components
+            populateFormInputs();
+            renderPackageDropdown();
+            renderDocTabs();
+            renderRoadmapUI();
+            renderTimelineTable();
+            renderVarsDictionaryTable();
+            renderDocumentPreview();
+
+            if (statusBox) {
+                statusBox.className = "p-2.5 rounded-lg text-xs bg-emerald-50 border border-emerald-200 text-emerald-800";
+                statusBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> Đồng bộ thành công ${data.catalog ? data.catalog.length : 0} biến từ Google Sheet "${data.sheetTitle || ''}"!`;
+            }
+
+            if (showToasts) showToast(`Đã đồng bộ thành công dữ liệu từ Google Sheets!`, "success");
+            return true;
+        } catch (err) {
+            console.error("GSheet Pull Error:", err);
+            if (statusBox) {
+                statusBox.className = "p-2.5 rounded-lg text-xs bg-rose-50 border border-rose-200 text-rose-800";
+                statusBox.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 mr-1"></i> Lỗi đồng bộ: ${err.message}`;
+            }
+            if (showToasts) showToast("Lỗi đồng bộ Google Sheets: " + err.message, "error");
+            return false;
+        }
+    }
+
+    async function pushDataToGoogleSheet(showToasts = true) {
+        if (!isUserAdmin()) {
+            if (showToasts) showToast("Chỉ tài khoản Quản trị viên (Admin) mới có quyền lưu lên Google Sheet!", "warning");
+            return false;
+        }
+
+        const config = getGSheetConfig();
+        const statusBox = document.getElementById("gsheetSyncStatusBox");
+
+        if (!config.url) {
+            if (showToasts) showToast("Vui lòng cấu hình đường link Google Apps Script Web App trước!", "warning");
+            openGoogleSheetSyncModal();
+            return false;
+        }
+
+        try {
+            if (showToasts) showToast("Đang lưu Từ điển & Dữ liệu lên Google Sheets...", "info");
+            if (statusBox) {
+                statusBox.className = "p-2.5 rounded-lg text-xs bg-blue-50 border border-blue-200 text-blue-800";
+                statusBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang ghi dữ liệu lên Google Sheets...';
+                statusBox.classList.remove("hidden");
+            }
+
+            const payload = {
+                action: "syncFromWeb",
+                adminKey: config.adminKey,
+                catalog: MASTER_VARIABLES_CATALOG.map((v, i) => ({
+                    stt: v.stt || (i + 1),
+                    group: v.group,
+                    groupKey: v.groupKey,
+                    label: v.label,
+                    tag: v.tag,
+                    isGeneral: v.isGeneral,
+                    example: v.example
+                })),
+                generalInfo: appState.generalInfo || {},
+                packages: (appState.packages || []).map((p, i) => ({
+                    id: p.id || `pkg_${i+1}`,
+                    name: p.name,
+                    fields: p.fields || {}
+                }))
+            };
+
+            const resp = await fetch(config.url, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload)
+            });
+
+            if (!resp.ok) throw new Error("Mã phản hồi HTTP: " + resp.status);
+            const res = await resp.json();
+
+            if (!res || !res.success) {
+                throw new Error(res?.error || "Không thể ghi dữ liệu lên Google Sheet");
+            }
+
+            if (statusBox) {
+                statusBox.className = "p-2.5 rounded-lg text-xs bg-emerald-50 border border-emerald-200 text-emerald-800";
+                statusBox.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> ${res.message || 'Đã lưu lên Google Sheets thành công!'}`;
+            }
+
+            if (showToasts) showToast(res.message || "Đã lưu lên Google Sheets thành công!", "success");
+            return true;
+        } catch(err) {
+            console.error("GSheet Push Error:", err);
+            if (statusBox) {
+                statusBox.className = "p-2.5 rounded-lg text-xs bg-rose-50 border border-rose-200 text-rose-800";
+                statusBox.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 mr-1"></i> Lỗi ghi: ${err.message}`;
+            }
+            if (showToasts) showToast("Lỗi khi lưu lên Google Sheets: " + err.message, "error");
+            return false;
+        }
+    }
+
+    // Attach UI Event Listeners for Google Sheets Sync
+    const btnOpenGSheetSyncModal = document.getElementById("btnOpenGSheetSyncModal");
+    const btnDropdownGSheetSync = document.getElementById("btnDropdownGSheetSync");
+    const btnDictGSheetSync = document.getElementById("btnDictGSheetSync");
+    const btnCloseGSheetSync = document.getElementById("btnCloseGSheetSync");
+    const btnSaveGSheetConfig = document.getElementById("btnSaveGSheetConfig");
+    const btnGSheetPull = document.getElementById("btnGSheetPull");
+    const btnGSheetPush = document.getElementById("btnGSheetPush");
+    const btnToggleAdminKey = document.getElementById("btnToggleAdminKeyVisibility");
+
+    if (btnOpenGSheetSyncModal) btnOpenGSheetSyncModal.onclick = openGoogleSheetSyncModal;
+    if (btnDropdownGSheetSync) btnDropdownGSheetSync.onclick = () => {
+        const dd = document.getElementById("userAccountDropdown");
+        if (dd) dd.classList.add("hidden");
+        openGoogleSheetSyncModal();
+    };
+    if (btnDictGSheetSync) btnDictGSheetSync.onclick = openGoogleSheetSyncModal;
+    if (btnCloseGSheetSync) btnCloseGSheetSync.onclick = closeGoogleSheetSyncModal;
+
+    if (btnSaveGSheetConfig) {
+        btnSaveGSheetConfig.onclick = () => {
+            const url = document.getElementById("gsheetApiUrlInput")?.value || "";
+            const key = document.getElementById("gsheetAdminKeyInput")?.value || "";
+            saveGSheetConfig(url, key);
+            showToast("Đã lưu cấu hình Google Sheets thành công!", "success");
+            closeGoogleSheetSyncModal();
+        };
+    }
+
+    if (btnGSheetPull) btnGSheetPull.onclick = () => pullDataFromGoogleSheet(true);
+    if (btnGSheetPush) btnGSheetPush.onclick = () => pushDataToGoogleSheet(true);
+
+    if (btnToggleAdminKey) {
+        btnToggleAdminKey.onclick = () => {
+            const inp = document.getElementById("gsheetAdminKeyInput");
+            if (inp) {
+                inp.type = inp.type === "password" ? "text" : "password";
+            }
+        };
+    }
+
+    // Expose helpers globally
+    window.isUserAdmin = isUserAdmin;
+    window.openGoogleSheetSyncModal = openGoogleSheetSyncModal;
+    window.pullDataFromGoogleSheet = pullDataFromGoogleSheet;
+    window.pushDataToGoogleSheet = pushDataToGoogleSheet;
 
     switchMainTab(initialTab, false);
 

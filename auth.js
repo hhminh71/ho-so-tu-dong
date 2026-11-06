@@ -308,6 +308,7 @@ class AuthManager {
 
 // Khởi tạo Singleton
 const authApp = new AuthManager();
+window.authApp = authApp;
 
 // -------------------------------------------------------------
 // 3. XỬ LÝ SỰ KIỆN GIAO DIỆN (LOGIN, MODAL PHÂN QUYỀN)
