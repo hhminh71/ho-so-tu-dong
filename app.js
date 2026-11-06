@@ -6391,12 +6391,25 @@
                         }
                     });
                 }
-                document.querySelectorAll(`[data-field="${origTag}"]`).forEach(el => {
-                    el.setAttribute("data-field", newTag);
-                    const labelSibling = el.parentElement?.querySelector("label");
-                    if (labelSibling) labelSibling.textContent = label;
-                });
             }
+
+            // Always update matching DOM input labels immediately
+            document.querySelectorAll(`[data-field="${origTag}"], [data-field="${newTag}"]`).forEach(el => {
+                if (origTag !== newTag) el.setAttribute("data-field", newTag);
+                const wrapper = el.closest(".field-item") || el.parentElement;
+                const labelSibling = wrapper?.querySelector(".field-label") || wrapper?.querySelector("label");
+                if (labelSibling) {
+                    const isRequired = label.includes("(*)") || labelSibling.querySelector(".text-red-500") !== null;
+                    const cleanLabel = label.replace(/\s*\(\*\)\s*/g, "").trim();
+                    if (isRequired) {
+                        labelSibling.innerHTML = `${escapeHtml(cleanLabel)} <span class="text-red-500">*</span>`;
+                    } else {
+                        labelSibling.textContent = cleanLabel;
+                    }
+                    labelSibling.setAttribute("title", `Mã thẻ Word: {${newTag}} để đồng bộ với Từ điển`);
+                }
+                if (example) el.setAttribute("placeholder", "VD: " + example);
+            });
         } else {
             const newStt = MASTER_VARIABLES_CATALOG.length + 1;
             MASTER_VARIABLES_CATALOG.push({
