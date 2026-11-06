@@ -12744,6 +12744,32 @@ window.APP_CONFIG = {
         localStorage.setItem(LS_GSHEET_KEY, (key || "").trim());
     }
 
+    
+    function validateGSheetApiUrl(rawUrl) {
+        const valDiv = document.getElementById("gsheetUrlValidationMsg");
+        if (!valDiv) return;
+        const url = (rawUrl || "").trim();
+
+        if (!url) {
+            valDiv.classList.add("hidden");
+            return;
+        }
+
+        if (url.includes("/macros/library/")) {
+            valDiv.className = "mt-1.5 p-2 rounded bg-amber-50 border border-amber-300 text-amber-900 text-[11px] font-normal leading-relaxed";
+            valDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1 text-xs"></i> <strong>Lưu ý:</strong> Link bạn vừa dán là loại <em>"Thư viện" (Library)</em>, không thể truyền dữ liệu API. Vui lòng vào Google Sheet &rarr; Apps Script &rarr; Triển khai &rarr; Tùy chọn triển khai mới &rarr; Chọn loại <strong>"Ứng dụng web" (Web app)</strong> để lấy link kết thúc bằng <strong>/exec</strong>.';
+            valDiv.classList.remove("hidden");
+        } else if (url.includes("/exec")) {
+            valDiv.className = "mt-1.5 p-2 rounded bg-emerald-50 border border-emerald-300 text-emerald-900 text-[11px] font-normal";
+            valDiv.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> <strong>Chính xác:</strong> Đây là đường link Ứng dụng web (Web App API) hợp lệ!';
+            valDiv.classList.remove("hidden");
+        } else {
+            valDiv.className = "mt-1.5 p-2 rounded bg-blue-50 border border-blue-200 text-blue-900 text-[11px] font-normal";
+            valDiv.innerHTML = '<i class="fa-solid fa-circle-info text-blue-600 mr-1"></i> Đường link Web App thường có dạng: <code>https://script.google.com/macros/s/.../exec</code>';
+            valDiv.classList.remove("hidden");
+        }
+    }
+
     function openGoogleSheetSyncModal() {
         const modal = document.getElementById("modalGoogleSheetSync");
         if (!modal) return;
@@ -12753,7 +12779,11 @@ window.APP_CONFIG = {
         const btnPush = document.getElementById("btnGSheetPush");
         const statusBox = document.getElementById("gsheetSyncStatusBox");
 
-        if (inpUrl) inpUrl.value = config.url;
+        if (inpUrl) {
+            inpUrl.value = config.url;
+            validateGSheetApiUrl(config.url);
+            inpUrl.oninput = (e) => validateGSheetApiUrl(e.target.value);
+        }
         if (inpKey) inpKey.value = config.adminKey;
         if (statusBox) statusBox.classList.add("hidden");
         const originBadge = document.getElementById("gsheetConfigOriginBadge");
