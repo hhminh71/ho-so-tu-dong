@@ -12689,11 +12689,55 @@
     const LS_GSHEET_KEY = "ho_so_gsheet_admin_key";
 
     function getGSheetConfig() {
+        const appCfg = (window.APP_CONFIG && typeof window.APP_CONFIG === "object") ? window.APP_CONFIG : {};
+        const globalUrl = (appCfg.GSHEET_API_URL || "").trim();
+        const globalKey = (appCfg.GSHEET_ADMIN_KEY || "admin123").trim();
+
+        const localUrl = (localStorage.getItem(LS_GSHEET_URL) || "").trim();
+        const localKey = (localStorage.getItem(LS_GSHEET_KEY) || "").trim();
+
         return {
-            url: (localStorage.getItem(LS_GSHEET_URL) || "").trim(),
-            adminKey: (localStorage.getItem(LS_GSHEET_KEY) || "admin123").trim()
+            url: localUrl || globalUrl || "",
+            adminKey: localKey || globalKey || "admin123",
+            globalUrl: globalUrl,
+            isFromConfigFile: !localUrl && !!globalUrl
         };
     }
+
+    
+    function downloadConfigFile(url, key) {
+        const content = `/**
+ * =========================================================================
+ * FILE CẤU HÌNH TOÀN CỤC — DỰ ÁN TẠO HỒ SƠ TỰ ĐỘNG
+ * =========================================================================
+ * Cấu hình tại file này sẽ tự động áp dụng vĩnh viễn cho TẤT CẢ các trình duyệt:
+ * Cốc Cốc, Google Chrome, Microsoft Edge, Firefox... và KỂ CẢ CHẾ ĐỘ ẨN DANH (Incognito)!
+ * =========================================================================
+ */
+window.APP_CONFIG = {
+    // 1. Đường link Google Apps Script Web App (URL kết thúc bằng /exec)
+    GSHEET_API_URL: "${(url || '').trim()}",
+
+    // 2. Mật mã Quản trị viên Admin (mặc định: admin123)
+    GSHEET_ADMIN_KEY: "${(key || 'admin123').trim()}",
+
+    // 3. Tự động tải dữ liệu từ Google Sheets về khi mở ứng dụng (Auto-Pull)
+    AUTO_PULL_ON_LOAD: true,
+
+    // 4. Tự động đẩy thay đổi lên Google Sheets khi Admin chỉnh sửa (Auto-Push)
+    AUTO_PUSH_ON_CHANGE: true
+};
+`;
+        const blob = new Blob([content], { type: "application/javascript;charset=utf-8" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "config.js";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast("Đã tải file config.js! Vui lòng lưu đè vào thư mục dự án để áp dụng vĩnh viễn.", "success");
+    }
+    window.downloadConfigFile = downloadConfigFile;
 
     function saveGSheetConfig(url, key) {
         localStorage.setItem(LS_GSHEET_URL, (url || "").trim());
@@ -12712,6 +12756,10 @@
         if (inpUrl) inpUrl.value = config.url;
         if (inpKey) inpKey.value = config.adminKey;
         if (statusBox) statusBox.classList.add("hidden");
+        const originBadge = document.getElementById("gsheetConfigOriginBadge");
+        if (originBadge) {
+            originBadge.classList.toggle("hidden", !config.globalUrl);
+        }
 
         const isAdmin = isUserAdmin();
         if (btnPush) {
@@ -12924,6 +12972,19 @@
     if (btnDictGSheetSync) btnDictGSheetSync.onclick = openGoogleSheetSyncModal;
     if (btnCloseGSheetSync) btnCloseGSheetSync.onclick = closeGoogleSheetSyncModal;
 
+    const btnDownloadConfigJs = document.getElementById("btnDownloadConfigJs");
+    if (btnDownloadConfigJs) {
+        btnDownloadConfigJs.onclick = () => {
+            const url = document.getElementById("gsheetApiUrlInput")?.value || "";
+            const key = document.getElementById("gsheetAdminKeyInput")?.value || "admin123";
+            if (!url) {
+                showToast("Vui lòng dán link Google Apps Script vào ô trước khi tải file config.js!", "warning");
+                return;
+            }
+            downloadConfigFile(url, key);
+        };
+    }
+
     if (btnSaveGSheetConfig) {
         btnSaveGSheetConfig.onclick = () => {
             const url = document.getElementById("gsheetApiUrlInput")?.value || "";
@@ -12949,6 +13010,7 @@
     // Expose helpers globally
     window.isUserAdmin = isUserAdmin;
     window.openGoogleSheetSyncModal = openGoogleSheetSyncModal;
+    window.getGSheetConfig = getGSheetConfig;
     window.pullDataFromGoogleSheet = pullDataFromGoogleSheet;
     window.pushDataToGoogleSheet = pushDataToGoogleSheet;
 

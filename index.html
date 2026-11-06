@@ -1717,6 +1717,8 @@
         </div>
     </div>
 
+    <!-- Cấu hình hệ thống toàn cục (Tự động đồng bộ cho mọi trình duyệt & Tab ẩn danh) -->
+    <script src="config.js?v=20261106_v1"></script>
     <script src="templates_data.js"></script>
     <!-- Modal: Từ điển & Tra cứu Biến xạ Word Template -->
     <div id="modalVarsDictionary" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-2.5 hidden backdrop-blur-xs">
@@ -2897,6 +2899,12 @@
                     </button>
                 </div>
 
+                <!-- Config Origin Badge -->
+                <div id="gsheetConfigOriginBadge" class="p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-900 text-[10.5px] flex items-center gap-2 hidden">
+                    <i class="fa-solid fa-circle-check text-emerald-600 shrink-0"></i>
+                    <span>Cấu hình đang được kích hoạt từ file <strong>config.js</strong> (Áp dụng vĩnh viễn cho Cốc Cốc, Chrome, Edge và Tab Ẩn danh).</span>
+                </div>
+
                 <!-- Status Box -->
                 <div id="gsheetSyncStatusBox" class="p-2.5 rounded-lg text-xs hidden"></div>
 
@@ -2916,7 +2924,10 @@
 
             <!-- Footer -->
             <div class="px-4 py-2 bg-slate-50 border-t border-slate-200 flex items-center justify-between shrink-0">
-                <span class="text-[9.5px] text-slate-400">Tự động ghi nhớ cấu hình trên trình duyệt này</span>
+                <button id="btnDownloadConfigJs" type="button" class="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold rounded-lg text-xs cursor-pointer shadow-xs flex items-center gap-1.5" title="Tải file config.js để lưu vĩnh viễn cho mọi trình duyệt và tab ẩn danh">
+                    <i class="fa-solid fa-file-arrow-down text-emerald-600"></i>
+                    <span>Tải file config.js (Lưu vĩnh viễn)</span>
+                </button>
                 <button id="btnSaveGSheetConfig" type="button" class="px-3.5 py-1 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg text-xs cursor-pointer shadow-xs">
                     Lưu cấu hình &amp; Đóng
                 </button>
