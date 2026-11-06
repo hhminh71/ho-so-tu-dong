@@ -2772,9 +2772,18 @@
             return;
         }
 
-        studioVarsTableBody.innerHTML = filtered.map(v => `
-            <tr class="hover:bg-slate-50/80 transition-colors">
-                <td class="col-stt py-0.5 px-1.5 text-center text-slate-400 font-mono text-[9.5px] border-r border-slate-100">${v.stt}</td>
+        studioVarsTableBody.innerHTML = filtered.map((v, filteredIdx) => {
+            const isFirst = filteredIdx === 0;
+            const isLast = filteredIdx === filtered.length - 1;
+
+            return `
+            <tr class="studio-dict-var-row hover:bg-slate-50/80 transition-colors select-none" draggable="true" data-tag="${v.tag}">
+                <td class="col-stt py-0.5 px-1 text-center text-slate-400 font-mono text-[9.5px] border-r border-slate-100 cursor-grab active:cursor-grabbing hover:bg-slate-100" title="Kéo thả để sắp xếp">
+                    <div class="flex items-center justify-center gap-1">
+                        <i class="fa-solid fa-grip-vertical text-[8px] text-slate-300"></i>
+                        <span>${v.stt}</span>
+                    </div>
+                </td>
                 <td class="col-tag py-0.5 px-2 border-r border-slate-100 font-mono">
                     <button type="button" class="btn-copy-tag group font-mono text-[10px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-1.5 py-0.2 rounded flex items-center gap-1 transition-all cursor-pointer truncate max-w-full" data-tag="{${v.tag}}" title="Bấm để sao chép vào Word">
                         <span class="truncate">{${v.tag}}</span>
@@ -2786,18 +2795,41 @@
                     <span class="px-1.5 py-0.2 rounded text-[9.5px] font-semibold truncate block ${v.isGeneral ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-slate-100 text-slate-700'}" title="${v.group}">${v.group}</span>
                 </td>
                 <td class="col-actions py-0.5 px-1 text-center">
-                    <div class="flex items-center justify-center space-x-1">
-                        <button type="button" class="btn-copy-tag text-[9.5px] font-bold text-emerald-700 hover:text-emerald-900 bg-white hover:bg-emerald-50 border border-slate-200 px-1 py-0.5 rounded cursor-pointer transition-all" data-tag="{${v.tag}}" title="Sao chép {${v.tag}}">
+                    <div class="flex items-center justify-center space-x-0.5">
+                        <button type="button" class="btn-move-var-up text-[9px] font-bold text-slate-600 hover:text-indigo-700 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 w-5 h-5 rounded flex items-center justify-center cursor-pointer transition-all ${isFirst ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" data-tag="${v.tag}" title="Di chuyển lên trên (▲)">
+                            <i class="fa-solid fa-arrow-up"></i>
+                        </button>
+                        <button type="button" class="btn-move-var-down text-[9px] font-bold text-slate-600 hover:text-indigo-700 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 w-5 h-5 rounded flex items-center justify-center cursor-pointer transition-all ${isLast ? 'opacity-20 cursor-not-allowed pointer-events-none' : ''}" data-tag="${v.tag}" title="Di chuyển xuống dưới (▼)">
+                            <i class="fa-solid fa-arrow-down"></i>
+                        </button>
+                        <button type="button" class="btn-copy-tag text-[9.5px] font-bold text-emerald-700 hover:text-emerald-900 bg-white hover:bg-emerald-50 border border-slate-200 w-5 h-5 rounded flex items-center justify-center cursor-pointer transition-all" data-tag="{${v.tag}}" title="Sao chép {${v.tag}}">
                             <i class="fa-regular fa-copy"></i>
                         </button>
-                        <button type="button" class="btn-edit-studio-var text-[9.5px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-1.5 py-0.5 rounded cursor-pointer transition-all flex items-center gap-0.5" data-tag="${v.tag}" title="Điều chỉnh tên biến và mã TAG">
+                        <button type="button" class="btn-edit-studio-var text-[9.5px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-1.5 h-5 rounded cursor-pointer transition-all flex items-center gap-0.5" data-tag="${v.tag}" title="Điều chỉnh tên biến và mã TAG">
                             <i class="fa-solid fa-pen-to-square text-[8.5px]"></i>
                             <span>Sửa</span>
                         </button>
                     </div>
                 </td>
             </tr>
-        `).join("");
+            `;
+        }).join("");
+
+        studioVarsTableBody.querySelectorAll(".btn-move-var-up").forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                const tag = btn.getAttribute("data-tag");
+                moveStudioVariableInCatalog(tag, "up");
+            };
+        });
+
+        studioVarsTableBody.querySelectorAll(".btn-move-var-down").forEach(btn => {
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                const tag = btn.getAttribute("data-tag");
+                moveStudioVariableInCatalog(tag, "down");
+            };
+        });
 
         studioVarsTableBody.querySelectorAll(".btn-copy-tag").forEach(btn => {
             btn.onclick = (e) => {
@@ -2814,6 +2846,43 @@
                 const tag = btn.getAttribute("data-tag");
                 openEditVariableModal(tag);
             };
+        });
+
+        // Drag & Drop reordering support for Studio
+        let draggedTag = null;
+        studioVarsTableBody.querySelectorAll(".studio-dict-var-row").forEach(row => {
+            row.addEventListener("dragstart", (e) => {
+                draggedTag = row.getAttribute("data-tag");
+                e.dataTransfer.effectAllowed = "move";
+                e.dataTransfer.setData("text/plain", draggedTag);
+                row.classList.add("opacity-50", "bg-indigo-50");
+            });
+
+            row.addEventListener("dragend", () => {
+                row.classList.remove("opacity-50", "bg-indigo-50");
+                studioVarsTableBody.querySelectorAll(".studio-dict-var-row").forEach(r => {
+                    r.classList.remove("border-t-2", "border-indigo-500", "bg-indigo-50/50");
+                });
+            });
+
+            row.addEventListener("dragover", (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                row.classList.add("border-t-2", "border-indigo-500", "bg-indigo-50/50");
+            });
+
+            row.addEventListener("dragleave", () => {
+                row.classList.remove("border-t-2", "border-indigo-500", "bg-indigo-50/50");
+            });
+
+            row.addEventListener("drop", (e) => {
+                e.preventDefault();
+                row.classList.remove("border-t-2", "border-indigo-500", "bg-indigo-50/50");
+                const targetTag = row.getAttribute("data-tag");
+                if (draggedTag && targetTag && draggedTag !== targetTag) {
+                    moveStudioVariableToPosition(draggedTag, targetTag, "before");
+                }
+            });
         });
     }
 
@@ -2900,25 +2969,104 @@
             const raw = localStorage.getItem(LS_VARS_CUSTOMIZATIONS);
             if (!raw) return;
             const savedList = JSON.parse(raw);
-            if (!Array.isArray(savedList)) return;
+            if (!Array.isArray(savedList) || savedList.length === 0) return;
 
-            savedList.forEach(savedVar => {
-                const existing = MASTER_VARIABLES_CATALOG.find(v => (savedVar.origTag && v.tag === savedVar.origTag) || v.tag === savedVar.tag || (savedVar.stt && v.stt === savedVar.stt));
-                if (existing) {
-                    existing.label = savedVar.label;
-                    existing.tag = savedVar.tag;
-                    existing.group = savedVar.group;
-                    existing.groupKey = savedVar.groupKey;
-                    existing.isGeneral = savedVar.isGeneral;
-                    existing.example = savedVar.example;
+            const reordered = [];
+            const remaining = [...MASTER_VARIABLES_CATALOG];
+
+            savedList.forEach((savedVar, idx) => {
+                const foundIdx = remaining.findIndex(v => 
+                    (savedVar.origTag && v.tag === savedVar.origTag) || 
+                    v.tag === savedVar.tag || 
+                    (savedVar.stt && v.stt === savedVar.stt)
+                );
+                if (foundIdx !== -1) {
+                    const item = remaining.splice(foundIdx, 1)[0];
+                    item.label = savedVar.label;
+                    item.tag = savedVar.tag;
+                    item.group = savedVar.group;
+                    item.groupKey = savedVar.groupKey;
+                    item.isGeneral = savedVar.isGeneral;
+                    item.example = savedVar.example;
+                    item.stt = idx + 1;
+                    reordered.push(item);
                 } else {
-                    MASTER_VARIABLES_CATALOG.push(savedVar);
+                    savedVar.stt = idx + 1;
+                    reordered.push(savedVar);
                 }
             });
+
+            // Append any builtin items that were not in savedList
+            remaining.forEach(item => {
+                item.stt = reordered.length + 1;
+                reordered.push(item);
+            });
+
+            // Mutate MASTER_VARIABLES_CATALOG in-place
+            MASTER_VARIABLES_CATALOG.length = 0;
+            reordered.forEach(item => MASTER_VARIABLES_CATALOG.push(item));
         } catch (e) {
             console.warn("Error loading catalog customizations in Studio:", e);
         }
     }
+
+    function moveStudioVariableInCatalog(tag, direction = "up") {
+        if (!Array.isArray(MASTER_VARIABLES_CATALOG) || MASTER_VARIABLES_CATALOG.length === 0) return;
+
+        // Current list based on active category filter
+        const currentList = MASTER_VARIABLES_CATALOG.filter(v => {
+            if (currentDictCatFilter !== "all" && v.groupKey !== currentDictCatFilter) return false;
+            return true;
+        });
+
+        const listIdx = currentList.findIndex(v => v.tag === tag);
+        if (listIdx === -1) return;
+
+        const targetListIdx = direction === "up" ? listIdx - 1 : listIdx + 1;
+        if (targetListIdx < 0 || targetListIdx >= currentList.length) return;
+
+        const targetTag = currentList[targetListIdx].tag;
+
+        const globalIdxA = MASTER_VARIABLES_CATALOG.findIndex(v => v.tag === tag);
+        const globalIdxB = MASTER_VARIABLES_CATALOG.findIndex(v => v.tag === targetTag);
+        if (globalIdxA === -1 || globalIdxB === -1) return;
+
+        const temp = MASTER_VARIABLES_CATALOG[globalIdxA];
+        MASTER_VARIABLES_CATALOG[globalIdxA] = MASTER_VARIABLES_CATALOG[globalIdxB];
+        MASTER_VARIABLES_CATALOG[globalIdxB] = temp;
+
+        MASTER_VARIABLES_CATALOG.forEach((v, i) => { v.stt = i + 1; });
+        saveCatalogCustomizations();
+
+        renderStudioVarsTable();
+        renderPaletteTextVars();
+        showToast(`Đã chuyển biến "${temp.label}" ${direction === "up" ? "lên" : "xuống"} vị trí #${MASTER_VARIABLES_CATALOG.findIndex(v => v.tag === tag) + 1}!`, "info");
+    }
+
+    function moveStudioVariableToPosition(draggedTag, targetTag, position = "before") {
+        if (!draggedTag || !targetTag || draggedTag === targetTag) return;
+        const fromIdx = MASTER_VARIABLES_CATALOG.findIndex(v => v.tag === draggedTag);
+        if (fromIdx === -1) return;
+
+        const [item] = MASTER_VARIABLES_CATALOG.splice(fromIdx, 1);
+        let insertIdx = MASTER_VARIABLES_CATALOG.findIndex(v => v.tag === targetTag);
+        if (insertIdx === -1) {
+            MASTER_VARIABLES_CATALOG.push(item);
+        } else {
+            if (position === "after") insertIdx += 1;
+            MASTER_VARIABLES_CATALOG.splice(insertIdx, 0, item);
+        }
+
+        MASTER_VARIABLES_CATALOG.forEach((v, i) => { v.stt = i + 1; });
+        saveCatalogCustomizations();
+
+        renderStudioVarsTable();
+        renderPaletteTextVars();
+        showToast(`Đã chuyển biến "${item.label}" đến vị trí #${item.stt}!`, "success");
+    }
+
+    window.moveStudioVariableInCatalog = moveStudioVariableInCatalog;
+    window.moveStudioVariableToPosition = moveStudioVariableToPosition;
 
     loadCatalogCustomizations();
     window.MASTER_VARIABLES_CATALOG = MASTER_VARIABLES_CATALOG;
