@@ -3450,6 +3450,11 @@
                     bc.close();
                 } catch(e) {}
             }
+
+            // Tự động đồng bộ lên Google Sheets Cloud
+            if (typeof triggerStudioAutoPushToGSheet === "function") {
+                triggerStudioAutoPushToGSheet();
+            }
         } catch (e) {
             console.warn("Could not save catalog customizations:", e);
         }
@@ -3779,9 +3784,119 @@
         } catch(e) {}
     }
 
+    
+    // =============================================================
+    // GOOGLE SHEETS CLOUD SYNC FOR TEMPLATE STUDIO 2.0 (2-WAY)
+    // =============================================================
+    let isStudioGSheetSyncing = false;
+    let studioGSheetPushDebounce = null;
+
+    async function pullStudioDataFromGoogleSheet(forceRender = true) {
+        if (isStudioGSheetSyncing) return false;
+        try {
+            isStudioGSheetSyncing = true;
+            const appCfg = (window.APP_CONFIG && typeof window.APP_CONFIG === "object") ? window.APP_CONFIG : {};
+            const url = (localStorage.getItem("ho_so_gsheet_api_url") || appCfg.GSHEET_API_URL || "").trim();
+            if (!url) return false;
+
+            const fetchUrl = url + (url.includes("?") ? "&" : "?") + "action=getData&t=" + Date.now();
+            const resp = await fetch(fetchUrl);
+            if (!resp.ok) return false;
+            const data = await resp.json();
+            if (!data || !data.success || !Array.isArray(data.catalog) || data.catalog.length === 0) return false;
+
+            // Cập nhật MASTER_VARIABLES_CATALOG
+            MASTER_VARIABLES_CATALOG.length = 0;
+            data.catalog.forEach((item, idx) => {
+                MASTER_VARIABLES_CATALOG.push({
+                    stt: item.stt || (idx + 1),
+                    groupKey: item.groupKey || (item.group ? item.group.charAt(0) : "A"),
+                    group: item.group || "A. Chủ đầu tư",
+                    label: item.label,
+                    tag: (item.tag || "").toUpperCase(),
+                    isGeneral: !!item.isGeneral,
+                    example: item.example || ""
+                });
+            });
+
+            // Ghi nhận vào phiên hiện tại
+            saveCatalogCustomizations();
+
+            if (forceRender) {
+                if (typeof renderPaletteTextVars === "function") renderPaletteTextVars();
+                if (typeof renderStudioVarsTable === "function") renderStudioVarsTable();
+                if (typeof updateStudioDictBadgeCounts === "function") updateStudioDictBadgeCounts();
+            }
+            console.log("Template Studio 2.0 synced from Google Sheets:", MASTER_VARIABLES_CATALOG.length, "variables");
+            return true;
+        } catch (e) {
+            console.warn("Template Studio 2.0 Google Sheets sync error:", e);
+            return false;
+        } finally {
+            setTimeout(() => { isStudioGSheetSyncing = false; }, 600);
+        }
+    }
+
+    async function pushStudioDataToGoogleSheet() {
+        try {
+            const appCfg = (window.APP_CONFIG && typeof window.APP_CONFIG === "object") ? window.APP_CONFIG : {};
+            const url = (localStorage.getItem("ho_so_gsheet_api_url") || appCfg.GSHEET_API_URL || "").trim();
+            const adminKey = (localStorage.getItem("ho_so_gsheet_admin_key") || appCfg.GSHEET_ADMIN_KEY || "admin123").trim();
+            if (!url) return false;
+
+            const payload = {
+                action: "syncFromWeb",
+                adminKey: adminKey,
+                catalog: MASTER_VARIABLES_CATALOG.map((v, i) => ({
+                    stt: v.stt || (i + 1),
+                    group: v.group,
+                    groupKey: v.groupKey,
+                    label: v.label,
+                    tag: v.tag,
+                    isGeneral: v.isGeneral,
+                    example: v.example
+                }))
+            };
+
+            const resp = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload)
+            });
+            return resp.ok;
+        } catch(e) {
+            return false;
+        }
+    }
+
+    function triggerStudioAutoPushToGSheet() {
+        if (isStudioGSheetSyncing) return;
+        try {
+            const appCfg = (window.APP_CONFIG && typeof window.APP_CONFIG === "object") ? window.APP_CONFIG : {};
+            const url = (localStorage.getItem("ho_so_gsheet_api_url") || appCfg.GSHEET_API_URL || "").trim();
+            if (!url) return;
+
+            clearTimeout(studioGSheetPushDebounce);
+            studioGSheetPushDebounce = setTimeout(() => {
+                pushStudioDataToGoogleSheet().then(ok => {
+                    if (ok && typeof showToast === "function") {
+                        showToast("Đã tự động đồng bộ biến lên Google Sheets Cloud!", "info");
+                    }
+                });
+            }, 800);
+        } catch(e) {}
+    }
+
+    window.pullStudioDataFromGoogleSheet = pullStudioDataFromGoogleSheet;
+
     window.addEventListener("focus", syncStudioIfUpdated);
     document.addEventListener("visibilitychange", () => {
         if (!document.hidden) syncStudioIfUpdated();
     });
     setInterval(syncStudioIfUpdated, 800);
+
+    // Tự động tải từ Google Sheets khi khởi động Template Studio (hỗ trợ cả Tab Ẩn danh)
+    setTimeout(() => {
+        pullStudioDataFromGoogleSheet(true);
+    }, 400);
 })();
