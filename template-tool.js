@@ -2250,6 +2250,8 @@
 
     // Reset Template to Factory Original
     function resetSingleTemplate() {
+        showToast("Chức năng khôi phục mẫu gốc đã được tắt để bảo vệ mẫu đang tùy biến!", "warning");
+        return;
         const docId = state.activeDocId;
         if (!confirm("Bạn có chắc chắn muốn khôi phục về mẫu gốc ban đầu của hệ thống? Tất cả các chỉnh sửa tùy biến của văn bản này sẽ được đặt lại.")) {
             return;
@@ -3442,6 +3444,8 @@
     }
 
     function resetCatalogToDefault() {
+        showToast("Chức năng khôi phục mặc định đã được tắt để bảo vệ dữ liệu đang thiết lập!", "warning");
+        return;
         if (confirm("Bạn có chắc chắn muốn khôi phục toàn bộ Danh mục Biến xạ về cấu hình chuẩn ban đầu? Mọi tùy chỉnh tên hoặc mã thẻ sẽ được đặt lại.")) {
             localStorage.removeItem(LS_VARS_CUSTOMIZATIONS);
             location.reload();

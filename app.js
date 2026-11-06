@@ -5572,6 +5572,8 @@
     }
 
     function resetDefaultCategories() {
+        showToast("Chức năng khôi phục mặc định đã được tắt để bảo vệ dữ liệu đang thiết lập!", "warning");
+        return;
         if (!confirm("Khôi phục danh sách phân nhóm về 10 nhóm chuẩn ban đầu (A -> J)?\nCác biến đang để trống hoặc thuộc nhóm tự tạo có thể cần được phân nhóm lại.")) return;
 
         currentCategories = JSON.parse(JSON.stringify(DEFAULT_VARIABLE_CATEGORIES));
@@ -6454,6 +6456,8 @@
     });
 
     function resetCatalogToDefault() {
+        showToast("Chức năng khôi phục mặc định đã được tắt để bảo vệ dữ liệu đang thiết lập!", "warning");
+        return;
         if (confirm("Bạn có chắc chắn muốn khôi phục toàn bộ Danh mục Biến xạ về cấu hình chuẩn ban đầu? Mọi tùy chỉnh tên hoặc mã thẻ sẽ được đặt lại.")) {
             localStorage.removeItem(LS_VARS_CUSTOMIZATIONS);
             location.reload();
@@ -9702,6 +9706,8 @@
         const btnResetDefs = document.getElementById("btnResetTableDefs");
         if (btnResetDefs) {
             btnResetDefs.onclick = () => {
+            showToast("Chức năng khôi phục mặc định đã được tắt để bảo vệ dữ liệu đang thiết lập!", "warning");
+            return;
                 if (confirm("Khôi phục danh mục bảng biến xạ về 3 bảng chuẩn ban đầu (Hàng hóa, Nhân sự, Tiến độ)? Các bảng tự tạo sẽ bị xóa.")) {
                     localStorage.removeItem("ho_so_custom_table_defs");
                     currentActiveDictTableTag = "BANG_HANG_HOA";
