@@ -2978,9 +2978,8 @@
 
             savedList.forEach((savedVar, idx) => {
                 const foundIdx = remaining.findIndex(v => 
-                    (savedVar.origTag && v.tag === savedVar.origTag) || 
-                    v.tag === savedVar.tag || 
-                    (savedVar.stt && v.stt === savedVar.stt)
+                    (savedVar.origTag && v.tag && v.tag.toUpperCase() === savedVar.origTag.toUpperCase()) || 
+                    (savedVar.tag && v.tag && v.tag.toUpperCase() === savedVar.tag.toUpperCase())
                 );
                 if (foundIdx !== -1) {
                     const item = remaining.splice(foundIdx, 1)[0];

@@ -523,7 +523,7 @@
     };
 
     const commonGeneralKeys = [
-        "TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CO_QUAN_TRINH_QUYET_DINH",
+        "TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CO_QUAN_TRINH", "CO_QUAN_TRINH_QUYET_DINH",
         "CAP_QUYET_DINH_DAU_TU", "DIA_DANH", "TINH_THANH_PHO", "DIA_CHI_TRU_SO", "TEN_DU_AN",
         "TEN_CONG_TRINH", "NGUON_VON", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU",
         "HINH_THUC_LCNT", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "THOI_GIAN_TO_CHUC_LCNT",
@@ -5725,6 +5725,8 @@
 
     function closeVarsDictionaryModal() {
         if (modalVarsDictionary) modalVarsDictionary.classList.add("hidden");
+        if (typeof syncFormLabelsFromDictionary === "function") syncFormLabelsFromDictionary();
+        if (typeof populateFormInputs === "function") populateFormInputs();
     }
 
     function renderVarsDictionaryTable() {
@@ -5920,9 +5922,8 @@
 
             savedList.forEach((savedVar, idx) => {
                 const foundIdx = remaining.findIndex(v => 
-                    (savedVar.origTag && v.tag === savedVar.origTag) || 
-                    v.tag === savedVar.tag || 
-                    (savedVar.stt && v.stt === savedVar.stt)
+                    (savedVar.origTag && v.tag && v.tag.toUpperCase() === savedVar.origTag.toUpperCase()) || 
+                    (savedVar.tag && v.tag && v.tag.toUpperCase() === savedVar.tag.toUpperCase())
                 );
                 if (foundIdx !== -1) {
                     const item = remaining.splice(foundIdx, 1)[0];
