@@ -6513,6 +6513,11 @@
                     bc.close();
                 } catch(e) {}
             }
+
+            // 3. Tự động đồng bộ thứ tự & nội dung biến lên Google Sheets Cloud (Debounced Auto-Push)
+            if (typeof triggerAutoPushCatalogToGSheet === "function") {
+                triggerAutoPushCatalogToGSheet();
+            }
         } catch (e) {
             console.warn("Could not save catalog customizations:", e);
         }
@@ -12657,6 +12662,30 @@
     // GOOGLE SHEETS CLOUD SYNCHRONIZATION MODULE (2-WAY REALTIME)
     // =============================================================
     const LS_GSHEET_URL = "ho_so_gsheet_api_url";
+    let gsheetPushDebounceTimer = null;
+    let isGSheetSyncInProgress = false;
+
+    function triggerAutoPushCatalogToGSheet() {
+        if (isGSheetSyncInProgress) return;
+        if (typeof isUserAdmin === "function" && !isUserAdmin()) return;
+
+        try {
+            const cfg = getGSheetConfig();
+            if (!cfg || !cfg.url) return;
+
+            clearTimeout(gsheetPushDebounceTimer);
+            gsheetPushDebounceTimer = setTimeout(() => {
+                if (typeof pushDataToGoogleSheet === "function" && isUserAdmin()) {
+                    pushDataToGoogleSheet(false).then(ok => {
+                        if (ok) {
+                            showToast("Đã tự động đồng bộ thứ tự biến lên Google Sheets Cloud!", "info");
+                        }
+                    });
+                }
+            }, 800);
+        } catch(e) {}
+    }
+    window.triggerAutoPushCatalogToGSheet = triggerAutoPushCatalogToGSheet;
     const LS_GSHEET_KEY = "ho_so_gsheet_admin_key";
 
     function getGSheetConfig() {
@@ -12701,6 +12730,7 @@
     }
 
     async function pullDataFromGoogleSheet(showToasts = true) {
+        isGSheetSyncInProgress = true;
         const config = getGSheetConfig();
         const statusBox = document.getElementById("gsheetSyncStatusBox");
 
@@ -12794,6 +12824,8 @@
             }
             if (showToasts) showToast("Lỗi đồng bộ Google Sheets: " + err.message, "error");
             return false;
+        } finally {
+            setTimeout(() => { isGSheetSyncInProgress = false; }, 600);
         }
     }
 
@@ -12868,6 +12900,8 @@
             }
             if (showToasts) showToast("Lỗi khi lưu lên Google Sheets: " + err.message, "error");
             return false;
+        } finally {
+            setTimeout(() => { isGSheetSyncInProgress = false; }, 600);
         }
     }
 

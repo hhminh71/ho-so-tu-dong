@@ -220,6 +220,8 @@ function updateInfoSheet(sheet, catalogList, packagesList) {
   const startRow = 5;
   const numRows = catalogList.length;
   const lastCol = Math.max(sheet.getLastColumn(), 5);
+  const currentTotalRows = Math.max(sheet.getLastRow(), startRow + numRows - 1);
+  const existingRowsCount = Math.max(0, currentTotalRows - startRow + 1);
 
   // Đọc header để xác định các cột gói thầu
   const headerRow = sheet.getRange(4, 1, 1, lastCol).getValues()[0];
@@ -231,32 +233,58 @@ function updateInfoSheet(sheet, catalogList, packagesList) {
     }
   }
 
-  // Đọc toàn bộ khối dữ liệu hiện có để bảo toàn các cột khác nếu không thay đổi
-  const existingValues = sheet.getRange(startRow, 1, numRows, lastCol).getValues();
-
-  for (let i = 0; i < numRows; i++) {
-    const item = catalogList[i];
-    existingValues[i][0] = item.stt || (i + 1);
-    existingValues[i][1] = item.group || "";
-    existingValues[i][2] = item.label || "";
-    existingValues[i][3] = item.tag ? String(item.tag).replace(/[{}]/g, "") : "";
-    if (item.example !== undefined && item.example !== "") {
-      existingValues[i][4] = item.example;
-    }
-
-    // Nếu có danh sách các gói thầu, đồng bộ giá trị tương ứng từng cột gói
-    if (Array.isArray(packagesList) && item.tag) {
-      const cleanTag = String(item.tag).replace(/[{}]/g, "").toUpperCase();
-      pkgCols.forEach((colIdx, pIdx) => {
-        if (packagesList[pIdx] && packagesList[pIdx].fields && packagesList[pIdx].fields[cleanTag] !== undefined) {
-          existingValues[i][colIdx] = packagesList[pIdx].fields[cleanTag];
-        }
-      });
+  // Đọc toàn bộ khối dữ liệu hiện có và lập chỉ mục theo mã TAG
+  // Giúp khi di chuyển thứ tự trên Web, TOÀN BỘ dữ liệu của dòng đó (kể cả giá trị các gói thầu) sẽ di chuyển theo đúng vị trí mới!
+  const oldRowByTag = {};
+  if (existingRowsCount > 0) {
+    const oldValues = sheet.getRange(startRow, 1, existingRowsCount, lastCol).getValues();
+    for (let r = 0; r < oldValues.length; r++) {
+      const rawTag = String(oldValues[r][3] || "").replace(/[{}]/g, "").trim().toUpperCase();
+      if (rawTag) {
+        oldRowByTag[rawTag] = oldValues[r];
+      }
     }
   }
 
-  // Ghi toàn bộ dữ liệu chỉ với 1 lệnh setValues (cực nhanh, không bao giờ bị nghẽn hay timeout)
-  sheet.getRange(startRow, 1, numRows, lastCol).setValues(existingValues);
+  const newValues = [];
+  for (let i = 0; i < numRows; i++) {
+    const item = catalogList[i];
+    const cleanTag = String(item.tag || "").replace(/[{}]/g, "").trim().toUpperCase();
+
+    // Lấy nguyên dòng dữ liệu cũ nếu có, hoặc tạo dòng mới
+    let rowData = oldRowByTag[cleanTag] ? oldRowByTag[cleanTag].slice() : new Array(lastCol).fill("");
+    while (rowData.length < lastCol) rowData.push("");
+
+    // Cập nhật các cột thông tin
+    rowData[0] = item.stt || (i + 1); // Cập nhật lại số thứ tự (STT) 1, 2, 3... theo vị trí mới
+    rowData[1] = item.group || "";
+    rowData[2] = item.label || "";
+    rowData[3] = cleanTag;
+
+    if (item.example !== undefined && item.example !== "") {
+      rowData[4] = item.example;
+    }
+
+    // Nếu có danh sách các gói thầu, đồng bộ giá trị tương ứng từng cột gói
+    if (Array.isArray(packagesList) && cleanTag) {
+      pkgCols.forEach((colIdx, pIdx) => {
+        if (packagesList[pIdx] && packagesList[pIdx].fields && packagesList[pIdx].fields[cleanTag] !== undefined) {
+          rowData[colIdx] = packagesList[pIdx].fields[cleanTag];
+        }
+      });
+    }
+
+    newValues.push(rowData);
+  }
+
+  // Ghi toàn bộ dữ liệu thứ tự mới chỉ với 1 lệnh setValues (cực nhanh, không bao giờ bị nghẽn hay timeout)
+  sheet.getRange(startRow, 1, numRows, lastCol).setValues(newValues);
+
+  // Xóa các dòng thừa phía dưới nếu danh mục mới ngắn hơn dữ liệu cũ
+  if (currentTotalRows > startRow + numRows - 1) {
+    const extraRows = currentTotalRows - (startRow + numRows - 1);
+    sheet.getRange(startRow + numRows, 1, extraRows, lastCol).clearContent();
+  }
 }
 
 function updateRoadmapSheet(sheet, generalInfo, packages) {
