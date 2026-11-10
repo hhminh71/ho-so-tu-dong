@@ -20,15 +20,15 @@
                 "documents": [
                     { "id": "tk_sc_1", "code": "110.QĐ", "name": "QĐ giao kế hoạch", "signer": "TCT", "duration": 2, "dateFormula": { "type": "manual" }, "defaultDate": "2026-01-12", "docNo": "110/QĐ-TCTCHKVN", "templateFile": "" },
                     { "id": "tk_sc_2", "code": "BB-KT", "name": "Biên bản kiểm tra đột xuất", "signer": "Các phòng VCA", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-04-04", "docNo": "", "templateFile": "" },
-                    { "id": "tk_sc_3", "code": "01.TTr", "name": "[TRIỂN KHAI] Tờ trình", "signer": "PKTHT", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-07-21", "docNo": "01/ĐKNCC/TTr-KTHT", "templateFile": "templates/01_To_trinh_KHLCNT.docx" },
+                    { "id": "tk_sc_3", "code": "01.TTr", "name": "[TRIỂN KHAI] Tờ trình", "signer": "PKTHT", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-07-21", "docNo": "01/ĐKNCC/TTr-KTHT", "templateFile": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/01_To_trinh_KHLCNT.docx" },
                     { "id": "tk_sc_4", "code": "02.TTr", "name": "[TL TỔ THẨM ĐỊNH] Tờ Trình", "signer": "PKTHT", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "2026-07-22", "docNo": "02/ĐKNCC/TTr-KTHT", "templateFile": "" },
-                    { "id": "tk_sc_5", "code": "930a.QĐ", "name": "[TL TỔ THẨM ĐỊNH] Quyết định", "signer": "GĐ", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-07-28", "docNo": "930a/QĐ-CHKQTCT", "templateFile": "templates/02_Quyet_dinh_KHLCNT.docx" },
+                    { "id": "tk_sc_5", "code": "930a.QĐ", "name": "[TL TỔ THẨM ĐỊNH] Quyết định", "signer": "GĐ", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-07-28", "docNo": "930a/QĐ-CHKQTCT", "templateFile": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/02_Quyet_dinh_KHLCNT.docx" },
                     { "id": "tk_sc_6", "code": "03.BC", "name": "BÁO CÁO BẢO TRÌ", "signer": "PKTHT", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "2026-07-29", "docNo": "03/BCTHBT-KTHT", "templateFile": "" },
                     { "id": "tk_sc_7", "code": "QĐ-DT", "name": "Phê duyệt dự toán G1", "signer": "GĐ", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "", "docNo": "", "templateFile": "" },
-                    { "id": "tk_sc_8", "code": "04.TTr", "name": "[KH LCNT] Tờ trình", "signer": "PKTHT", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-07-29", "docNo": "04/ĐKNCC/TTr-KTHT", "templateFile": "templates/01_To_trinh_KHLCNT.docx" },
-                    { "id": "tk_sc_9", "code": "BB-TĐ", "name": "[KH LCNT] BB Thẩm định", "signer": "Tổ thẩm định", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-07-30", "docNo": "", "templateFile": "templates/2_Bien_ban_hoan_thien_hop_dong.docx" },
+                    { "id": "tk_sc_8", "code": "04.TTr", "name": "[KH LCNT] Tờ trình", "signer": "PKTHT", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-07-29", "docNo": "04/ĐKNCC/TTr-KTHT", "templateFile": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/01_To_trinh_KHLCNT.docx" },
+                    { "id": "tk_sc_9", "code": "BB-TĐ", "name": "[KH LCNT] BB Thẩm định", "signer": "Tổ thẩm định", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-07-30", "docNo": "", "templateFile": "" },
                     { "id": "tk_sc_10", "code": "05.BC", "name": "[KH LCNT] BC Thẩm định", "signer": "Tổ thẩm định", "duration": 1, "dateFormula": { "type": "manual" }, "defaultDate": "2026-07-30", "docNo": "05/BC-HĐTĐ-KQTĐ", "templateFile": "" },
-                    { "id": "tk_sc_11", "code": "968.QĐ", "name": "[KH LCNT] QĐ Phê Duyệt", "signer": "GĐ", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "2026-07-31", "docNo": "968/QĐ-CHKQTCT", "templateFile": "templates/02_Quyet_dinh_KHLCNT.docx" }
+                    { "id": "tk_sc_11", "code": "968.QĐ", "name": "[KH LCNT] QĐ Phê Duyệt", "signer": "GĐ", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "2026-07-31", "docNo": "968/QĐ-CHKQTCT", "templateFile": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/02_Quyet_dinh_KHLCNT.docx" }
                 ]
             },
             {
@@ -38,12 +38,12 @@
                 "description": "Áp dụng cho mua sắm hàng hóa, tài sản, trang thiết bị thường xuyên",
                 "documents": [
                     { "id": "tk_ms_1", "code": "01.DX-NS", "name": "Báo cáo đề xuất nhu cầu mua sắm", "signer": "Đơn vị sử dụng", "duration": 2, "dateFormula": { "type": "manual" }, "defaultDate": "2026-01-12", "docNo": "01/BC-DXMS", "templateFile": "" },
-                    { "id": "tk_ms_2", "code": "02.BB-HOP", "name": "Biên bản họp thống nhất danh mục mua sắm", "signer": "Hội đồng mua sắm", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "02/BB-HOP", "templateFile": "templates/2_Bien_ban_hoan_thien_hop_dong.docx" },
-                    { "id": "tk_ms_3", "code": "03.TM-BG", "name": "Thư mời báo giá / Biên bản thu thập 03 báo giá", "signer": "Tổ mua sắm", "duration": 3, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "03/TM-BG", "templateFile": "templates/1_Giay_moi_tham_gia.docx" },
-                    { "id": "tk_ms_4", "code": "04.TTr-CTMS", "name": "Tờ trình phê duyệt chủ trương và dự toán mua sắm", "signer": "Phòng Kế hoạch", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "04/TTr-CTMS", "templateFile": "templates/01_To_trinh_KHLCNT.docx" },
-                    { "id": "tk_ms_5", "code": "05.QĐ-CTMS", "name": "Quyết định phê duyệt chủ trương mua sắm", "signer": "Lãnh đạo đơn vị", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "05/QĐ-CTMS", "templateFile": "templates/02_Quyet_dinh_KHLCNT.docx" },
-                    { "id": "tk_ms_6", "code": "06.TTr-KHLCNT", "name": "Tờ trình đề nghị phê duyệt Kế hoạch LCNT", "signer": "Tổ mua sắm", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "06/TTr-KHLCNT", "templateFile": "templates/01_To_trinh_KHLCNT.docx" },
-                    { "id": "tk_ms_7", "code": "07.QĐ-KHLCNT", "name": "Quyết định phê duyệt Kế hoạch LCNT mua sắm", "signer": "Cấp thẩm quyền", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "07/QĐ-KHLCNT", "templateFile": "templates/02_Quyet_dinh_KHLCNT.docx" }
+                    { "id": "tk_ms_2", "code": "02.BB-HOP", "name": "Biên bản họp thống nhất danh mục mua sắm", "signer": "Hội đồng mua sắm", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "02/BB-HOP", "templateFile": "" },
+                    { "id": "tk_ms_3", "code": "03.TM-BG", "name": "Thư mời báo giá / Biên bản thu thập 03 báo giá", "signer": "Tổ mua sắm", "duration": 3, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "03/TM-BG", "templateFile": "" },
+                    { "id": "tk_ms_4", "code": "04.TTr-CTMS", "name": "Tờ trình phê duyệt chủ trương và dự toán mua sắm", "signer": "Phòng Kế hoạch", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "04/TTr-CTMS", "templateFile": "" },
+                    { "id": "tk_ms_5", "code": "05.QĐ-CTMS", "name": "Quyết định phê duyệt chủ trương mua sắm", "signer": "Lãnh đạo đơn vị", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "05/QĐ-CTMS", "templateFile": "" },
+                    { "id": "tk_ms_6", "code": "06.TTr-KHLCNT", "name": "Tờ trình đề nghị phê duyệt Kế hoạch LCNT", "signer": "Tổ mua sắm", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "06/TTr-KHLCNT", "templateFile": "" },
+                    { "id": "tk_ms_7", "code": "07.QĐ-KHLCNT", "name": "Quyết định phê duyệt Kế hoạch LCNT mua sắm", "signer": "Cấp thẩm quyền", "duration": 1, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "07/QĐ-KHLCNT", "templateFile": "" }
                 ]
             },
             {
@@ -52,14 +52,14 @@
                 "code": "TK-ĐT",
                 "description": "Áp dụng cho dự án đầu tư xây dựng, cải tạo nâng cấp quy mô lớn",
                 "documents": [
-                    { "id": "tk_dt_1", "code": "01.TTr-CTDT", "name": "Tờ trình đề xuất chủ trương đầu tư", "signer": "Ban QLDA", "duration": 3, "dateFormula": { "type": "manual" }, "defaultDate": "2026-01-12", "docNo": "01/TTr-CTDT", "templateFile": "templates/01_To_trinh_KHLCNT.docx" },
-                    { "id": "tk_dt_2", "code": "02.QĐ-CTDT", "name": "Quyết định phê duyệt chủ trương đầu tư", "signer": "Cấp quyết định ĐT", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "02/QĐ-CTDT", "templateFile": "templates/02_Quyet_dinh_KHLCNT.docx" },
+                    { "id": "tk_dt_1", "code": "01.TTr-CTDT", "name": "Tờ trình đề xuất chủ trương đầu tư", "signer": "Ban QLDA", "duration": 3, "dateFormula": { "type": "manual" }, "defaultDate": "2026-01-12", "docNo": "01/TTr-CTDT", "templateFile": "" },
+                    { "id": "tk_dt_2", "code": "02.QĐ-CTDT", "name": "Quyết định phê duyệt chủ trương đầu tư", "signer": "Cấp quyết định ĐT", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "02/QĐ-CTDT", "templateFile": "" },
                     { "id": "tk_dt_3", "code": "03.NV-KS", "name": "Đề cương nhiệm vụ khảo sát, lập Báo cáo KT-KT", "signer": "Đơn vị tư vấn", "duration": 5, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "03/NV-KS", "templateFile": "" },
                     { "id": "tk_dt_4", "code": "04.TTr-BCKTKT", "name": "Tờ trình thẩm định Báo cáo KT-KT", "signer": "Ban QLDA", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "04/TTr-BCKTKT", "templateFile": "" },
                     { "id": "tk_dt_5", "code": "05.BC-TT", "name": "Báo cáo kết quả thẩm tra Báo cáo KT-KT", "signer": "Đơn vị thẩm tra", "duration": 5, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "05/BC-TT", "templateFile": "" },
-                    { "id": "tk_dt_6", "code": "06.QĐ-PD-DA", "name": "Quyết định phê duyệt dự án đầu tư xây dựng", "signer": "Người có thẩm quyền", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "06/QĐ-PDDA", "templateFile": "templates/02_Quyet_dinh_KHLCNT.docx" },
-                    { "id": "tk_dt_7", "code": "07.TTr-KHLCNT", "name": "Tờ trình phê duyệt Kế hoạch LCNT tổng thể", "signer": "Chủ đầu tư", "duration": 3, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "07/TTr-KHLCNT", "templateFile": "templates/01_To_trinh_KHLCNT.docx" },
-                    { "id": "tk_dt_8", "code": "08.QĐ-KHLCNT", "name": "Quyết định phê duyệt Kế hoạch LCNT tổng thể", "signer": "Cấp quyết định ĐT", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "08/QĐ-KHLCNT", "templateFile": "templates/02_Quyet_dinh_KHLCNT.docx" }
+                    { "id": "tk_dt_6", "code": "06.QĐ-PD-DA", "name": "Quyết định phê duyệt dự án đầu tư xây dựng", "signer": "Người có thẩm quyền", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "06/QĐ-PDDA", "templateFile": "" },
+                    { "id": "tk_dt_7", "code": "07.TTr-KHLCNT", "name": "Tờ trình phê duyệt Kế hoạch LCNT tổng thể", "signer": "Chủ đầu tư", "duration": 3, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "07/TTr-KHLCNT", "templateFile": "" },
+                    { "id": "tk_dt_8", "code": "08.QĐ-KHLCNT", "name": "Quyết định phê duyệt Kế hoạch LCNT tổng thể", "signer": "Cấp quyết định ĐT", "duration": 2, "dateFormula": { "type": "default" }, "defaultDate": "", "docNo": "08/QĐ-KHLCNT", "templateFile": "" }
                 ]
             }
         ]
@@ -72,7 +72,13 @@
         if (savedCustomImpl) {
             const parsedImpl = JSON.parse(savedCustomImpl);
             if (parsedImpl.implementationTypes && parsedImpl.implementationTypes.length > 0) {
-                IMPLEMENTATION_MATRIX = parsedImpl;
+                // Tự động dọn dẹp đường dẫn cũ không có thư mục phân cấp
+                const rawStr = JSON.stringify(parsedImpl);
+                if (rawStr.includes('"templates/01_To_trinh') || rawStr.includes('"templates/2_Bien_ban')) {
+                    localStorage.removeItem("ho_so_tu_dong_implementation_matrix");
+                } else {
+                    IMPLEMENTATION_MATRIX = parsedImpl;
+                }
             }
         }
     } catch (e) {
@@ -85,7 +91,12 @@
         if (savedCustomMatrix) {
             const parsedCustom = JSON.parse(savedCustomMatrix);
             if (parsedCustom.procurementTypes && parsedCustom.procurementTypes.length > 0) {
-                PROCUREMENT_MATRIX = parsedCustom;
+                const rawStr = JSON.stringify(parsedCustom);
+                if (rawStr.includes('"templates/01_To_trinh') || rawStr.includes('"templates/07_Hop_dong')) {
+                    localStorage.removeItem("ho_so_tu_dong_matrix_custom");
+                } else {
+                    PROCUREMENT_MATRIX = parsedCustom;
+                }
             }
         }
     } catch (e) {
@@ -369,6 +380,24 @@
         console.warn("Could not load from localStorage:", e);
     }
 
+    // Re-apply and prioritize URL parameters over localStorage
+    try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const qWf = urlParams.get("workflow");
+        const qDoc = urlParams.get("doc");
+        const qTab = urlParams.get("tab");
+        if (qWf && PROCUREMENT_MATRIX.procurementTypes.some(pt => pt.id === qWf)) {
+            appState.selectedProcurementTypeId = qWf;
+        }
+        if (qDoc) {
+            appState.activeDocId = qDoc;
+            appState.activeMainTab = "docs";
+        }
+        if (qTab === "docs" || window.location.hash === "#docs" || window.location.hash === "#tao-ho-so") {
+            appState.activeMainTab = "docs";
+        }
+    } catch (e) {}
+
     // Tự động dọn dẹp các biến dự án chung (như TEN_DU_AN) bị lưu nhầm vào gói thầu cũ
     try {
         if (appState && appState.packages && Array.isArray(appState.packages)) {
@@ -479,21 +508,30 @@
     }
 
     const prebuiltDocxMap = {
-        "cdtrg_1": "templates/01_To_trinh_KHLCNT.docx",
-        "d100_1": "templates/01_To_trinh_KHLCNT.docx",
-        "cdtrg_2": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "d100_2": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "cdtrg_3": "templates/1_Giay_moi_tham_gia.docx",
-        "cdtrg_4": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "cdtrg_5": "templates/3_To_trinh_chi_dinh_thau.docx",
-        "cdtrg_6": "templates/4_Quyet_dinh_chi_dinh_thau.docx",
-        "cdtrg_7": "templates/07_Hop_dong_kinh_te.docx",
-        "d50_3": "templates/07_Hop_dong_kinh_te.docx",
-        "d100_4": "templates/07_Hop_dong_kinh_te.docx",
-        "cghc_9": "templates/07_Hop_dong_kinh_te.docx",
-        "cdttt_12": "templates/07_Hop_dong_kinh_te.docx",
-        "dtrr_23": "templates/07_Hop_dong_kinh_te.docx"
+        // Triển khai sửa chữa
+        "tk_sc_3": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/01_To_trinh_KHLCNT.docx",
+        "tk_sc_5": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/02_Quyet_dinh_KHLCNT.docx",
+        "tk_sc_8": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/01_To_trinh_KHLCNT.docx",
+        "tk_sc_11": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/02_Quyet_dinh_KHLCNT.docx",
+
+        // Hình thức LCNT: Xây dựng chỉ định thầu rút gọn
+        "cdtrg_1": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/01_To_trinh_KHLCNT.docx",
+        "cdtrg_2": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/02_Quyet_dinh_KHLCNT.docx",
+        "cdtrg_3": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/1_Giay_moi_tham_gia.docx",
+        "cdtrg_4": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "cdtrg_5": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/3_To_trinh_chi_dinh_thau.docx",
+        "cdtrg_6": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/4_Quyet_dinh_chi_dinh_thau.docx",
+        "cdtrg_7": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/07_Hop_dong_kinh_te.docx"
     };
+
+    function hasDocTemplate(docObj) {
+        if (!docObj) return false;
+        const docId = docObj.id || docObj.code || "";
+        if (localStorage.getItem("ho_so_custom_template_" + docId)) return true;
+        if (docObj.templateFile && docObj.templateFile.trim() !== "") return true;
+        if (prebuiltDocxMap[docId] && prebuiltDocxMap[docId].trim() !== "") return true;
+        return false;
+    }
 
 
     // -------------------------------------------------------------
@@ -4561,6 +4599,53 @@
         if (typeof reapplyActiveFieldPreviewHighlight === "function") {
             reapplyActiveFieldPreviewHighlight();
         }
+
+        // Cập nhật trạng thái file mẫu (Badge & Nút Studio)
+        const docTemplateStatusBadge = document.getElementById("docTemplateStatusBadge");
+        const btnOpenStudioFromPreview = document.getElementById("btnOpenStudioFromPreview");
+        const hasTpl = hasDocTemplate(activeDoc);
+
+        if (docTemplateStatusBadge) {
+            docTemplateStatusBadge.classList.remove("hidden");
+            if (hasTpl) {
+                const isCustom = !!localStorage.getItem("ho_so_custom_template_" + activeDoc.id);
+                docTemplateStatusBadge.className = "text-[10px] font-semibold px-2 py-0.5 rounded border flex items-center gap-1 whitespace-nowrap " +
+                    (isCustom ? "bg-amber-50 text-amber-900 border-amber-300" : "bg-emerald-50 text-emerald-800 border-emerald-300");
+                docTemplateStatusBadge.innerHTML = isCustom 
+                    ? `<i class="fa-solid fa-star text-amber-500 text-[9px]"></i> Mẫu tùy biến`
+                    : `<i class="fa-solid fa-file-word text-blue-600 text-[9px]"></i> Đã có mẫu .docx`;
+            } else {
+                docTemplateStatusBadge.className = "text-[10px] font-semibold px-2 py-0.5 rounded border bg-amber-50 text-amber-900 border-amber-300 flex items-center gap-1 whitespace-nowrap";
+                docTemplateStatusBadge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-600 text-[9px]"></i> Chưa có mẫu .docx`;
+            }
+        }
+        if (btnOpenStudioFromPreview) {
+            if (!hasTpl) {
+                btnOpenStudioFromPreview.className = "text-[10px] bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded border border-amber-400 shadow-2xs flex items-center space-x-1 h-6 transition-all cursor-pointer whitespace-nowrap";
+                btnOpenStudioFromPreview.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-amber-600 text-[10px]"></i> <span>Tạo mẫu Studio</span>`;
+            } else {
+                btnOpenStudioFromPreview.className = "text-[10px] bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-800 font-bold px-2 py-0.5 rounded border border-slate-300 shadow-2xs flex items-center space-x-1 h-6 transition-all cursor-pointer whitespace-nowrap";
+                btnOpenStudioFromPreview.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-amber-500 text-[10px]"></i> <span>Sửa mẫu Studio</span>`;
+            }
+        }
+
+        if (!hasTpl && documentPreviewContent) {
+            const warningBanner = document.createElement("div");
+            warningBanner.className = "mb-4 p-2.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 rounded-lg text-amber-900 text-xs flex items-center justify-between shadow-2xs print:hidden";
+            warningBanner.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-600 text-base shrink-0"></i>
+                    <div>
+                        <p class="font-bold">Văn bản này chưa có file mẫu .docx trong thư mục tương ứng.</p>
+                        <p class="text-[11px] text-amber-700">Bạn có thể tự khởi tạo và thiết kế mẫu mới bằng cách bấm nút <b>"Tạo mẫu Studio"</b>.</p>
+                    </div>
+                </div>
+                <button type="button" onclick="document.getElementById('btnOpenStudioFromPreview').click()" class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded text-[11px] shrink-0 cursor-pointer transition-all shadow-xs">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Tạo mẫu ngay
+                </button>
+            `;
+            documentPreviewContent.insertBefore(warningBanner, documentPreviewContent.firstChild);
+        }
     }
 
     // -------------------------------------------------------------
@@ -6970,25 +7055,30 @@
 
     
     async function getDocTemplateArrayBuffer(docObj) {
-        let templateUrl = (docObj && docObj.templateFile !== undefined && docObj.templateFile !== "") 
+        if (!docObj) return null;
+        let templateUrl = (docObj.templateFile !== undefined && docObj.templateFile !== "") 
             ? docObj.templateFile 
             : (prebuiltDocxMap[docObj.id] || "");
-        if (!templateUrl) templateUrl = "templates/01_To_trinh_KHLCNT.docx";
 
         let arrayBuffer = null;
 
         // 0. Kiểm tra mẫu tùy biến đã được chuẩn hóa & lưu từ Template Studio
-        const docIdForCustom = docObj ? (docObj.id || docObj.code) : "";
+        const docIdForCustom = docObj.id || docObj.code || "";
         const customStudioB64 = docIdForCustom 
-            ? (localStorage.getItem("ho_so_custom_template_" + docIdForCustom) || localStorage.getItem("ho_so_custom_template_" + templateUrl)) 
+            ? (localStorage.getItem("ho_so_custom_template_" + docIdForCustom) || (templateUrl ? localStorage.getItem("ho_so_custom_template_" + templateUrl) : null)) 
             : null;
         if (customStudioB64) {
             try {
                 const bytes = base64ToUint8Array(customStudioB64);
-                arrayBuffer = bytes.buffer;
+                return bytes.buffer;
             } catch (e) {
                 console.warn("Lỗi giải mã template tùy biến từ localStorage:", e);
             }
+        }
+
+        // Nếu văn bản chưa có file mẫu nào (thư mục chưa có file và chưa tạo trong Studio)
+        if (!templateUrl || templateUrl.trim() === "") {
+            return null;
         }
 
         // 1. Kiểm tra file mẫu tùy biến do người dùng upload trực tiếp
@@ -7003,9 +7093,6 @@
                 const baseName = templateUrl.split("/").pop();
                 const matchedKey = Object.keys(window.BUILTIN_DOCX_TEMPLATES).find(k => k.endsWith(baseName));
                 if (matchedKey) b64 = window.BUILTIN_DOCX_TEMPLATES[matchedKey];
-            }
-            if (!b64) {
-                b64 = window.BUILTIN_DOCX_TEMPLATES["templates/01_To_trinh_KHLCNT.docx"] || Object.values(window.BUILTIN_DOCX_TEMPLATES)[0];
             }
             if (b64) {
                 const bytes = base64ToUint8Array(b64);
@@ -7432,6 +7519,11 @@
         const activeDoc = getCurrentActiveDoc();
         if (!activeDoc) return;
 
+        if (!hasDocTemplate(activeDoc)) {
+            showToast(`Văn bản "${activeDoc.name}" chưa có file mẫu .docx. Bạn hãy bấm "Tạo mẫu Studio" để thiết kế mẫu!`, "warning");
+            return;
+        }
+
         const currentPkg = appState.packages[appState.activePackageIndex] || { name: "GoiThau" };
         try {
             btnExportSingleDoc.disabled = true;
@@ -7463,6 +7555,15 @@
                 return;
             }
 
+            const docsWithTemplate = allDocs.filter(d => hasDocTemplate(d));
+            if (docsWithTemplate.length === 0) {
+                showToast("Chưa có văn bản nào trong quy trình này có file mẫu .docx để gộp!", "warning");
+                return;
+            }
+            if (docsWithTemplate.length < allDocs.length) {
+                showToast(`Quy trình có ${docsWithTemplate.length}/${allDocs.length} văn bản có mẫu .docx. Đang gộp các văn bản đã có mẫu...`, "info");
+            }
+
             const currentPkg = appState.packages[appState.activePackageIndex] || { name: "GoiThau" };
             const procType = getCurrentProcurementType();
 
@@ -7471,14 +7572,14 @@
                 btnExportMergedDocx.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-white"></i> <span>Đang gộp...</span>`;
 
                 const data = getMergedData();
-                const blob = await renderMergedDocxBlob(allDocs, data);
+                const blob = await renderMergedDocxBlob(docsWithTemplate, data);
 
                 const safeProcCode = (procType.code || "QuyTrinh").replace(/[^a-zA-Z0-9_-]/g, "_");
                 const safePkgName = (currentPkg.name || "GoiThau").replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9]/g, "_");
                 const fileName = `Tron_bo_ho_so_${safeProcCode}_${safePkgName}.docx`;
 
                 saveAs(blob, fileName);
-                showToast(`Đã xuất 1 file Word trọn bộ (${allDocs.length} văn bản ngắt Section) thành công!`, "success");
+                showToast(`Đã xuất 1 file Word trọn bộ (${docsWithTemplate.length} văn bản ngắt Section) thành công!`, "success");
             } catch (err) {
                 console.error("Export merged docx error:", err);
                 showToast("Lỗi khi xuất file Word gộp: " + err.message, "error");
@@ -10290,7 +10391,7 @@
     initAutoExpandTextareas();
     populateFormInputs();
     applyVariableFilter();
-    const initialTab = (window.location.hash === "#docs" || window.location.hash === "#tao-ho-so") 
+    const initialTab = (window.location.hash === "#docs" || window.location.hash === "#tao-ho-so" || appState.activeMainTab === "docs") 
         ? "docs" 
         : (appState.activeMainTab || "roadmap");
 

@@ -95,7 +95,7 @@
     // Master Procurement Matrix & Implementation Matrix Defaults (Synced with app.js)
     // -------------------------------------------------------------
     const DEFAULT_PROCUREMENT_MATRIX = JSON.parse("{\"system\": \"Hệ thống Quản lý & Tự động xuất Hồ sơ Mua sắm, Xây lắp\", \"version\": \"3.0\", \"legalBases\": [\"Luật Đấu thầu số 22/2023/QH15 ngày 23/06/2023\", \"Nghị định số 24/2024/NĐ-CP ngày 27/02/2024 của Chính phủ\", \"Nghị định số 30/2020/NĐ-CP ngày 05/03/2020 về công tác văn thư\"], \"procurementTypes\": [{\"id\": \"duoi_50_trieu\", \"code\": \"D50\", \"name\": \"1. Mua sắm siêu rút gọn (Dưới 50 triệu)\", \"badge\": \"< 50 triệu\", \"badgeColor\": \"emerald\", \"description\": \"Áp dụng mua sắm tài sản, thiết bị, sửa chữa thường xuyên dưới 50 triệu đồng theo dự toán nội bộ.\", \"threshold\": 50000000, \"phases\": [{\"phaseId\": \"chuan_bi\", \"phaseName\": \"Giai đoạn Chuẩn bị\", \"documents\": [{\"id\": \"d50_1\", \"code\": \"01.TTr-MS\", \"name\": \"01. Tờ trình phê duyệt chủ trương và dự toán\", \"desc\": \"Tờ trình đơn vị đề xuất mua sắm hàng hóa / sửa chữa\", \"requiredVars\": [\"TEN_DON_VI\", \"SO_TO_TRINH\", \"NGAY_TO_TRINH\", \"TEN_HANG_MUC\", \"LY_DO_MUA_SAM\", \"TONG_MUC_DAU_TU\", \"NGUON_VON\", \"TRUONG_DON_VI\"]}, {\"id\": \"d50_2\", \"code\": \"02.BC-MS\", \"name\": \"02. Báo cáo thẩm định & phê duyệt mua sắm\", \"desc\": \"Báo cáo phê duyệt kết quả mua sắm dưới 50 triệu\", \"requiredVars\": [\"TEN_DON_VI\", \"SO_BAO_CAO\", \"NGAY_BAO_CAO\", \"TEN_HANG_MUC\", \"TEN_NHA_THAU\", \"MA_SO_THUE\", \"GIA_TRI_MUA_SAM\", \"NGUOI_PHE_DUYET\"]}]}, {\"phaseId\": \"thuc_hien\", \"phaseName\": \"Giai đoạn Ký kết & Nghiệm thu\", \"documents\": [{\"id\": \"d50_3\", \"code\": \"03.HD-KT\", \"name\": \"03. Hợp đồng kinh tế / Đơn đặt hàng\", \"desc\": \"Hợp đồng mua bán hoặc sửa chữa\", \"requiredVars\": [\"TEN_DON_VI\", \"DAI_DIEN_BEN_A\", \"TEN_NHA_THAU\", \"DAI_DIEN_BEN_B\", \"GIA_TRI_HOP_DONG\", \"THOI_GIAN_THUC_HIEN\"]}, {\"id\": \"d50_4\", \"code\": \"04.BB-NT\", \"name\": \"04. Biên bản nghiệm thu bàn giao và thanh lý\", \"desc\": \"Biên bản bàn giao thiết bị / hoàn thành sửa chữa\", \"requiredVars\": [\"TEN_DON_VI\", \"TEN_NHA_THAU\", \"NGAY_NGHIEM_THU\", \"NOI_DUNG_CONG_VIEC\", \"GIA_TRI_QUYET_TOAN\"]}]}]}, {\"id\": \"duoi_100_trieu\", \"code\": \"D100\", \"name\": \"2. Mua sắm thường xuyên 50tr - 100tr (Khoản 4 Điều 23)\", \"badge\": \"50tr - 100tr\", \"badgeColor\": \"teal\", \"description\": \"Áp dụng chỉ định thầu siêu nhỏ không qua mạng theo Khoản 4 Điều 23 Luật Đấu thầu 2023.\", \"threshold\": 100000000, \"phases\": [{\"phaseId\": \"chuan_bi\", \"phaseName\": \"Giai đoạn Chuẩn bị\", \"documents\": [{\"id\": \"d100_1\", \"code\": \"01.TTr-KHLCNT\", \"name\": \"01. Tờ trình phê duyệt Kế hoạch LCNT\", \"desc\": \"Tờ trình phê duyệt KHLCNT gói mua sắm thường xuyên\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"TEN_GOI_THAU\", \"GIA_GOI_THAU\", \"HINH_THUC_LCNT\", \"NGUOI_TRINH\"]}, {\"id\": \"d100_2\", \"code\": \"02.QD-KHLCNT\", \"name\": \"02. Quyết định phê duyệt Kế hoạch LCNT\", \"desc\": \"Quyết định phê duyệt của Người có thẩm quyền\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"SO_QUYET_DINH\", \"NGAY_QUYET_DINH\", \"TEN_GOI_THAU\", \"NGUOI_KY_CDT\"]}]}, {\"phaseId\": \"thuc_hien\", \"phaseName\": \"Giai đoạn Ký kết & Thanh lý\", \"documents\": [{\"id\": \"d100_3\", \"code\": \"03.BB-TT\", \"name\": \"03. Biên bản thương thảo hoàn thiện đơn hàng\", \"desc\": \"Biên bản thống nhất giá và tiến độ giao hàng\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"TEN_NHA_THAU\", \"GIA_THUONG_THAO\", \"THOI_GIAN_GIAO_HANG\"]}, {\"id\": \"d100_4\", \"code\": \"04.HD-KT\", \"name\": \"04. Hợp đồng kinh tế và biên bản giao nhận\", \"desc\": \"Hợp đồng kinh tế trọn gói\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"TEN_NHA_THAU\", \"GIA_TRI_HOP_DONG\", \"KHO_BAC_NHA_NUOC\"]}]}]}, {\"id\": \"chao_gia_han_che\", \"code\": \"CGHC\", \"name\": \"3. Chào giá cạnh tranh hạn chế (Nội bộ)\", \"badge\": \"Chào giá NB\", \"badgeColor\": \"cyan\", \"description\": \"Gửi thư mời chào giá đến ít nhất 3 nhà thầu có năng lực để so sánh giá cạnh tranh.\", \"threshold\": 500000000, \"phases\": [{\"phaseId\": \"chuan_bi\", \"phaseName\": \"Giai đoạn Chuẩn bị\", \"documents\": [{\"id\": \"cghc_1\", \"code\": \"01.TTr-CT\", \"name\": \"01. Tờ trình phê duyệt chủ trương chào giá\", \"desc\": \"Tờ trình chủ trương mua sắm cạnh tranh\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"TEN_GOI_THAU\", \"GIA_GOI_THAU\"]}, {\"id\": \"cghc_2\", \"code\": \"02.BC-MS\", \"name\": \"02. Báo cáo đề xuất phương án chào giá hạn chế\", \"desc\": \"Đề xuất danh sách ít nhất 3 nhà thầu\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"DANH_SACH_3_NHA_THAU\"]}, {\"id\": \"cghc_3\", \"code\": \"03.TB-CG\", \"name\": \"03. Thư mời chào giá kèm bảng yêu cầu kỹ thuật\", \"desc\": \"Gửi các nhà thầu nộp thư báo giá\", \"requiredVars\": [\"TEN_NHA_THAU\", \"HAN_NOP_BAO_GIA\", \"YEU_CAU_KY_THUAT\"]}]}, {\"phaseId\": \"thuc_hien\", \"phaseName\": \"Giai đoạn Đánh giá & Trao thầu\", \"documents\": [{\"id\": \"cghc_4\", \"code\": \"04.BB-MT\", \"name\": \"04. Biên bản mở thư chào giá\", \"desc\": \"Biên bản mở niêm phong các báo giá\", \"requiredVars\": [\"THOI_GIAN_MO_THAU\", \"DANH_SACH_GIA_CHAO\"]}, {\"id\": \"cghc_5\", \"code\": \"05.BB-DG\", \"name\": \"05. Biên bản họp đánh giá so sánh báo giá\", \"desc\": \"So sánh kỹ thuật và đơn giá\", \"requiredVars\": [\"TO_CHUYEN_GIA\", \"DON_VI_GIA_THAP_NHAT\"]}, {\"id\": \"cghc_6\", \"code\": \"06.BB-TT\", \"name\": \"06. Biên bản thương thảo hợp đồng\", \"desc\": \"Thương thảo với đơn vị có giá tốt nhất\", \"requiredVars\": [\"TEN_NHA_THAU_TRUNG\", \"GIA_THUONG_THAO\"]}, {\"id\": \"cghc_7\", \"code\": \"07.BC-DG\", \"name\": \"07. Báo cáo đánh giá kết quả chào giá\", \"desc\": \"Báo cáo trình lãnh đạo phê duyệt\", \"requiredVars\": [\"TEN_NHA_THAU_TRUNG\", \"GIA_DE_NGHI\"]}, {\"id\": \"cghc_8\", \"code\": \"08.TB-KQ\", \"name\": \"08. Thông báo kết quả chào giá\", \"desc\": \"Thông báo gửi các đơn vị tham gia\", \"requiredVars\": [\"TEN_NHA_THAU_TRUNG\", \"GIA_TRUNG_THAU\"]}, {\"id\": \"cghc_9\", \"code\": \"09.HD-KT\", \"name\": \"09. Hợp đồng kinh tế\", \"desc\": \"Hợp đồng kinh tế ký kết\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"TEN_NHA_THAU_TRUNG\", \"GIA_TRI_HOP_DONG\"]}]}]}, {\"id\": \"chi_dinh_thau_rut_gon\", \"code\": \"CDTRG\", \"name\": \"4. Chỉ định thầu rút gọn (Tư vấn < 500tr; XL/HH < 1 tỷ)\", \"badge\": \"CĐT Rút Gọn\", \"badgeColor\": \"emerald\", \"description\": \"Quy trình chuẩn theo Điều 78 Nghị định 24/2024/NĐ-CP (Tư vấn, Xây lắp, Hàng hóa).\", \"threshold\": 1000000000, \"phases\": [{\"phaseId\": \"chuan_bi\", \"phaseName\": \"Giai đoạn Chuẩn bị\", \"documents\": [{\"id\": \"cdtrg_1\", \"code\": \"01.TTr-KHLCNT\", \"name\": \"01. Tờ trình phê duyệt Kế hoạch LCNT\", \"desc\": \"Trình cấp thẩm quyền phê duyệt KHLCNT\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"TEN_DU_AN\", \"TEN_GOI_THAU\", \"GIA_GOI_THAU_SO\"]}, {\"id\": \"cdtrg_2\", \"code\": \"02.QD-KHLCNT\", \"name\": \"02. Quyết định phê duyệt Kế hoạch LCNT\", \"desc\": \"Quyết định phê duyệt KHLCNT\", \"requiredVars\": [\"SO_QUYET_DINH_KHLCNT\", \"NGAY_QUYET_DINH\", \"NGUOI_KY_CDT\"]}, {\"id\": \"cdtrg_3\", \"code\": \"03.GM-TT\", \"name\": \"03. Giấy mời tham gia hoàn thiện hợp đồng\", \"desc\": \"Gửi nhà thầu được chỉ định\", \"requiredVars\": [\"TEN_BAN_QUAN_LY_DU_AN\", \"TEN_NHA_THAU\", \"THOI_GIAN_HOP\", \"DIA_DIEM_HOP\"]}]}, {\"phaseId\": \"thuc_hien\", \"phaseName\": \"Giai đoạn Hoàn thiện & Phê duyệt\", \"documents\": [{\"id\": \"cdtrg_4\", \"code\": \"04.BB-HT\", \"name\": \"04. Biên bản hoàn thiện hợp đồng\", \"desc\": \"Biên bản hoàn thiện điều khoản hợp đồng\", \"requiredVars\": [\"SO_BIEN_BAN_HOAN_THIEN\", \"GIA_TRI_HOP_DONG_SO\", \"GIA_TRI_HOP_DONG_CHU\", \"DAI_DIEN_NHA_THAU\"]}, {\"id\": \"cdtrg_5\", \"code\": \"05.TTr-KQLCNT\", \"name\": \"05. Tờ trình phê duyệt kết quả chỉ định thầu\", \"desc\": \"Trình phê duyệt chỉ định thầu\", \"requiredVars\": [\"SO_TO_TRINH\", \"CO_QUAN_TRINH\", \"TRUONG_BAN_DHDA\", \"TEN_NHA_THAU\"]}, {\"id\": \"cdtrg_6\", \"code\": \"06.QD-KQLCNT\", \"name\": \"06. Quyết định phê duyệt kết quả chỉ định thầu\", \"desc\": \"Quyết định phê duyệt trúng thầu\", \"requiredVars\": [\"SO_QUYET_DINH\", \"NGUOI_KY_CDT\", \"GIA_TRI_HOP_DONG_SO\", \"THOI_GIAN_THUC_HIEN\"]}, {\"id\": \"cdtrg_7\", \"code\": \"07.HD-KT\", \"name\": \"07. Hợp đồng kinh tế\", \"desc\": \"Hợp đồng kinh tế chính thức\", \"requiredVars\": [\"TEN_CHU_DAU_TU\", \"TEN_NHA_THAU\", \"GIA_TRI_HOP_DONG_SO\", \"KHO_BAC_NHA_NUOC\"]}]}]}, {\"id\": \"chi_dinh_thau_thong_thuong\", \"code\": \"CDTTT\", \"name\": \"5. Chỉ định thầu quy trình thông thường (HSYC & HSĐX)\", \"badge\": \"CĐT Thông Thường\", \"badgeColor\": \"indigo\", \"description\": \"Áp dụng gói thầu cần lập Hồ sơ yêu cầu, đánh giá Hồ sơ đề xuất và thẩm định kết quả.\", \"threshold\": 5000000000, \"phases\": [{\"phaseId\": \"chuan_bi_hsyc\", \"phaseName\": \"Giai đoạn Chuẩn bị Hồ sơ yêu cầu\", \"documents\": [{\"id\": \"cdttt_1\", \"code\": \"01.QD-TCG\", \"name\": \"01. Quyết định thành lập Tổ chuyên gia & Tổ thẩm định\", \"desc\": \"Thành lập ban bệ tổ chức chỉ định thầu\", \"requiredVars\": [\"TO_TRUONG_CHUYEN_GIA\", \"TO_TRUONG_THAM_DINH\"]}, {\"id\": \"cdttt_2\", \"code\": \"02.TTr-HSYC\", \"name\": \"02. Tờ trình đề nghị phê duyệt Hồ sơ yêu cầu (E-HSYC)\", \"desc\": \"Trình duyệt E-HSYC\", \"requiredVars\": [\"TEN_GOI_THAU\", \"TIEU_CHUAN_DANH_GIA\"]}, {\"id\": \"cdttt_3\", \"code\": \"03.BC-TD-HSYC\", \"name\": \"03. Báo cáo thẩm định Hồ sơ yêu cầu\", \"desc\": \"Tổ thẩm định kiểm tra HSYC\", \"requiredVars\": [\"KET_QUA_THAM_DINH_HSYC\"]}, {\"id\": \"cdttt_4\", \"code\": \"04.QD-PD-HSYC\", \"name\": \"04. Quyết định phê duyệt Hồ sơ yêu cầu\", \"desc\": \"Ban hành HSYC chính thức\", \"requiredVars\": [\"SO_QD_HSYC\", \"NGAY_BAN_HANH\"]}, {\"id\": \"cdttt_5\", \"code\": \"05.TM-HSDX\", \"name\": \"05. Thư mời nộp Hồ sơ đề xuất\", \"desc\": \"Gửi đơn vị dự kiến chỉ định\", \"requiredVars\": [\"TEN_NHA_THAU\", \"HAN_NOP_HSDX\"]}]}, {\"phaseId\": \"danh_gia_trao_thau\", \"phaseName\": \"Giai đoạn Đánh giá & Phê duyệt kết quả\", \"documents\": [{\"id\": \"cdttt_6\", \"code\": \"06.BB-M-HSDX\", \"name\": \"06. Biên bản mở Hồ sơ đề xuất\", \"desc\": \"Mở hồ sơ đề xuất\", \"requiredVars\": [\"THOI_GIAN_MO_THAU\"]}, {\"id\": \"cdttt_7\", \"code\": \"07.BC-DG-HSDX\", \"name\": \"07. Báo cáo đánh giá Hồ sơ đề xuất\", \"desc\": \"Đánh giá năng lực, kinh nghiệm, tài chính\", \"requiredVars\": [\"KET_QUA_DANH_GIA\"]}, {\"id\": \"cdttt_8\", \"code\": \"08.BB-TT\", \"name\": \"08. Biên bản thương thảo hợp đồng\", \"desc\": \"Thương thảo hoàn thiện\", \"requiredVars\": [\"GIA_THUONG_THAO\"]}, {\"id\": \"cdttt_9\", \"code\": \"09.TTr-KQLCNT\", \"name\": \"09. Tờ trình đề nghị phê duyệt Kết quả chỉ định thầu\", \"desc\": \"Trình kết quả LCNT\", \"requiredVars\": [\"GIA_TRUNG_THAU_SO\"]}, {\"id\": \"cdttt_10\", \"code\": \"10.BC-TD-KQ\", \"name\": \"10. Báo cáo thẩm định Kết quả lựa chọn nhà thầu\", \"desc\": \"Thẩm định trước khi ký duyệt\", \"requiredVars\": [\"Y_KIEN_THAM_DINH\"]}, {\"id\": \"cdttt_11\", \"code\": \"11.QD-PD-KQ\", \"name\": \"11. Quyết định phê duyệt Kết quả chỉ định thầu\", \"desc\": \"Quyết định phê duyệt chính thức\", \"requiredVars\": [\"SO_QUYET_DINH\"]}, {\"id\": \"cdttt_12\", \"code\": \"12.HD-KT\", \"name\": \"12. Hợp đồng kinh tế\", \"desc\": \"Hợp đồng kinh tế\", \"requiredVars\": [\"GIA_TRI_HOP_DONG_SO\"]}]}]}, {\"id\": \"dau_thau_rong_rai_hh_xl\", \"code\": \"DTRR\", \"name\": \"6. Đấu thầu rộng rãi qua mạng (E-HSMT Xây lắp & Mua sắm)\", \"badge\": \"Đấu Thầu Rộng Rãi\", \"badgeColor\": \"rose\", \"description\": \"Đầy đủ 23 biểu mẫu theo chuẩn Hệ thống Mạng Đấu thầu Quốc gia qua 6 giai đoạn (từ chuẩn bị đến ký HĐ).\", \"threshold\": 100000000000, \"phases\": [{\"phaseId\": \"giai_doan_1_hsmt\", \"phaseName\": \"GĐ 1: Chuẩn bị Hồ sơ mời thầu (E-HSMT)\", \"documents\": [{\"id\": \"dtrr_1\", \"code\": \"01.QD-TL\", \"name\": \"01. Quyết định thành lập Tổ chuyên gia và Tổ thẩm định\", \"desc\": \"Thành lập tổ chấm thầu\", \"requiredVars\": [\"TO_TRUONG_CHUYEN_GIA\", \"TO_TRUONG_THAM_DINH\"]}, {\"id\": \"dtrr_2\", \"code\": \"02.BB-HOP-TCG\", \"name\": \"02. Biên bản họp Tổ chuyên gia thông qua dự thảo E-HSMT\", \"desc\": \"Họp rà soát tiêu chuẩn mời thầu\", \"requiredVars\": [\"NOI_DUNG_DU_THAO\"]}, {\"id\": \"dtrr_3\", \"code\": \"03.TTr-HSMT\", \"name\": \"03. Tờ trình đề nghị thẩm định, phê duyệt E-HSMT\", \"desc\": \"Trình thẩm định E-HSMT\", \"requiredVars\": [\"TEN_GOI_THAU\", \"GIA_GOI_THAU\"]}, {\"id\": \"dtrr_4\", \"code\": \"04.BB-HOP-TTD\", \"name\": \"04. Biên bản họp Tổ thẩm định E-HSMT\", \"desc\": \"Họp thẩm định E-HSMT\", \"requiredVars\": [\"KET_QUA_HOP_THAM_DINH\"]}, {\"id\": \"dtrr_5\", \"code\": \"05.BC-TD-HSMT\", \"name\": \"05. Báo cáo thẩm định E-HSMT\", \"desc\": \"Báo cáo thẩm định đạt yêu cầu\", \"requiredVars\": [\"KET_LUAN_THAM_DINH\"]}, {\"id\": \"dtrr_6\", \"code\": \"06.QD-PD-HSMT\", \"name\": \"06. Quyết định phê duyệt E-HSMT\", \"desc\": \"Phê duyệt để đăng tải mạng\", \"requiredVars\": [\"SO_QD_HSMT\", \"NGAY_KY\"]}]}, {\"phaseId\": \"giai_doan_2_to_chuc\", \"phaseName\": \"GĐ 2: Tổ chức Lựa chọn nhà thầu & Mở thầu\", \"documents\": [{\"id\": \"dtrr_7\", \"code\": \"07.TB-MT\", \"name\": \"07. Thông báo mời thầu (E-TBMT)\", \"desc\": \"Thông báo phát hành hồ sơ mời thầu\", \"requiredVars\": [\"SO_E_TBMT\", \"THOI_DIEM_DONG_THAU\"]}, {\"id\": \"dtrr_8\", \"code\": \"08.VB-LAM-RO\", \"name\": \"08. Văn bản làm rõ E-HSMT (nếu có)\", \"desc\": \"Giải đáp thắc mắc của nhà thầu\", \"requiredVars\": [\"NOI_DUNG_LAM_RO\"]}, {\"id\": \"dtrr_9\", \"code\": \"09.QD-SUA-DOI\", \"name\": \"09. Quyết định sửa đổi E-HSMT (nếu có)\", \"desc\": \"Điều chỉnh hồ sơ mời thầu\", \"requiredVars\": [\"NOI_DUNG_SUA_DOI\"]}, {\"id\": \"dtrr_10\", \"code\": \"10.BB-MO-THAU\", \"name\": \"10. Biên bản mở thầu điện tử\", \"desc\": \"Trích xuất danh sách nhà thầu dự thầu\", \"requiredVars\": [\"DANH_SACH_NHA_THAU_DU_THAU\"]}]}, {\"phaseId\": \"giai_doan_3_danh_gia\", \"phaseName\": \"GĐ 3: Đánh giá Hồ sơ dự thầu (E-HSDT)\", \"documents\": [{\"id\": \"dtrr_11\", \"code\": \"11.BB-HOP-PC\", \"name\": \"11. Biên bản họp Tổ chuyên gia phân công nhiệm vụ\", \"desc\": \"Phân công tổ viên chấm điểm\", \"requiredVars\": [\"PHAN_CONG_CHAM_THAU\"]}, {\"id\": \"dtrr_12\", \"code\": \"12.VB-LR-HSDT\", \"name\": \"12. Văn bản yêu cầu làm rõ E-HSDT (nếu có)\", \"desc\": \"Làm rõ hồ sơ dự thầu\", \"requiredVars\": [\"YEU_CAU_LAM_RO_HSDT\"]}, {\"id\": \"dtrr_13\", \"code\": \"13.BB-HOP-KQ\", \"name\": \"13. Biên bản họp Tổ chuyên gia thông qua kết quả chấm thầu\", \"desc\": \"Thống nhất xếp hạng nhà thầu\", \"requiredVars\": [\"XEP_HANG_NHA_THAU\"]}, {\"id\": \"dtrr_14\", \"code\": \"14.BC-DG-HSDT\", \"name\": \"14. Báo cáo đánh giá Hồ sơ dự thầu (E-HSDT)\", \"desc\": \"Báo cáo chấm thầu chính thức\", \"requiredVars\": [\"NHA_THAU_XEP_HANG_1\"]}]}, {\"phaseId\": \"giai_doan_4_thuong_thao\", \"phaseName\": \"GĐ 4: Thương thảo và Hoàn thiện hợp đồng\", \"documents\": [{\"id\": \"dtrr_15\", \"code\": \"15.GM-TT\", \"name\": \"15. Văn bản mời nhà thầu xếp hạng nhất vào thương thảo\", \"desc\": \"Mời thương thảo\", \"requiredVars\": [\"TEN_NHA_THAU_HANG_1\", \"LICH_THUONG_THAO\"]}, {\"id\": \"dtrr_16\", \"code\": \"16.BB-TT\", \"name\": \"16. Biên bản thương thảo hợp đồng\", \"desc\": \"Thương thảo các điều khoản\", \"requiredVars\": [\"GIA_THUONG_THAO_CUOI_CUNG\"]}, {\"id\": \"dtrr_17\", \"code\": \"17.BB-HT\", \"name\": \"17. Biên bản hoàn thiện hợp đồng\", \"desc\": \"Rà soát điều kiện hợp đồng\", \"requiredVars\": [\"GIA_TRI_HOP_DONG_THONG_NHAT\"]}]}, {\"phaseId\": \"giai_doan_5_phe_duyet\", \"phaseName\": \"GĐ 5: Thẩm định và Phê duyệt Kết quả LCNT\", \"documents\": [{\"id\": \"dtrr_18\", \"code\": \"18.TTr-KQLCNT\", \"name\": \"18. Tờ trình đề nghị thẩm định, phê duyệt Kết quả LCNT\", \"desc\": \"Trình phê duyệt trúng thầu\", \"requiredVars\": [\"TEN_DON_VI_TRUNG_THAU\", \"GIA_TRUNG_THAU\"]}, {\"id\": \"dtrr_19\", \"code\": \"19.BB-HOP-TTD\", \"name\": \"19. Biên bản họp Tổ thẩm định Kết quả LCNT\", \"desc\": \"Họp thẩm định kết quả\", \"requiredVars\": [\"Y_KIEN_TO_THAM_DINH\"]}, {\"id\": \"dtrr_20\", \"code\": \"20.BC-TD-KQ\", \"name\": \"20. Báo cáo thẩm định Kết quả LCNT\", \"desc\": \"Báo cáo thẩm định\", \"requiredVars\": [\"KET_LUAN_THAM_DINH_KQLCNT\"]}, {\"id\": \"dtrr_21\", \"code\": \"21.QD-PD-KQ\", \"name\": \"21. Quyết định phê duyệt Kết quả lựa chọn nhà thầu\", \"desc\": \"Quyết định phê duyệt trúng thầu chính thức\", \"requiredVars\": [\"SO_QUYET_DINH\", \"GIA_TRUNG_THAU_SO\"]}]}, {\"phaseId\": \"giai_doan_6_hop_dong\", \"phaseName\": \"GĐ 6: Công khai Kết quả & Ký kết Hợp đồng\", \"documents\": [{\"id\": \"dtrr_22\", \"code\": \"22.TB-KQ\", \"name\": \"22. Thông báo Kết quả lựa chọn nhà thầu\", \"desc\": \"Đăng tải kết quả trên mạng đấu thầu\", \"requiredVars\": [\"TEN_NHA_THAU_TRUNG_THAU\"]}, {\"id\": \"dtrr_23\", \"code\": \"23.HD-KT\", \"name\": \"23. Hợp đồng kinh tế chính thức (kèm phụ lục)\", \"desc\": \"Hợp đồng kinh tế xây lắp/mua sắm\", \"requiredVars\": [\"GIA_TRI_HOP_DONG\", \"BAO_DAM_THUC_HIEN_HD\"]}]}]}]}");
-    const DEFAULT_IMPLEMENTATION_MATRIX = JSON.parse("{\"version\": \"1.0\", \"implementationTypes\": [{\"id\": \"trien_khai_sua_chua\", \"name\": \"1. Triển khai hồ sơ sửa chữa\", \"code\": \"TK-SC\", \"description\": \"Áp dụng cho các dự án sửa chữa, bảo trì, khắc phục hư hỏng\", \"documents\": [{\"id\": \"tk_sc_1\", \"code\": \"110.QĐ\", \"name\": \"QĐ giao kế hoạch\", \"signer\": \"TCT\", \"duration\": 2, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-01-12\", \"docNo\": \"110/QĐ-TCTCHKVN\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_2\", \"code\": \"BB-KT\", \"name\": \"Biên bản kiểm tra đột xuất\", \"signer\": \"Các phòng VCA\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-04-04\", \"docNo\": \"\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_3\", \"code\": \"01.TTr\", \"name\": \"[TRIỂN KHAI] Tờ trình\", \"signer\": \"PKTHT\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-07-21\", \"docNo\": \"01/ĐKNCC/TTr-KTHT\", \"templateFile\": \"templates/01_To_trinh_KHLCNT.docx\"}, {\"id\": \"tk_sc_4\", \"code\": \"02.TTr\", \"name\": \"[TL TỔ THẨM ĐỊNH] Tờ Trình\", \"signer\": \"PKTHT\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"2026-07-22\", \"docNo\": \"02/ĐKNCC/TTr-KTHT\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_5\", \"code\": \"930a.QĐ\", \"name\": \"[TL TỔ THẨM ĐỊNH] Quyết định\", \"signer\": \"GĐ\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-07-28\", \"docNo\": \"930a/QĐ-CHKQTCT\", \"templateFile\": \"templates/02_Quyet_dinh_KHLCNT.docx\"}, {\"id\": \"tk_sc_6\", \"code\": \"03.BC\", \"name\": \"BÁO CÁO BẢO TRÌ\", \"signer\": \"PKTHT\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"2026-07-29\", \"docNo\": \"03/BCTHBT-KTHT\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_7\", \"code\": \"QĐ-DT\", \"name\": \"Phê duyệt dự toán G1\", \"signer\": \"GĐ\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"\", \"docNo\": \"\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_8\", \"code\": \"04.TTr\", \"name\": \"[KH LCNT] Tờ trình\", \"signer\": \"PKTHT\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-07-29\", \"docNo\": \"04/ĐKNCC/TTr-KTHT\", \"templateFile\": \"templates/01_To_trinh_KHLCNT.docx\"}, {\"id\": \"tk_sc_9\", \"code\": \"BB-TĐ\", \"name\": \"[KH LCNT] BB Thẩm định\", \"signer\": \"Tổ thẩm định\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-07-30\", \"docNo\": \"\", \"templateFile\": \"templates/2_Bien_ban_hoan_thien_hop_dong.docx\"}, {\"id\": \"tk_sc_10\", \"code\": \"05.BC\", \"name\": \"[KH LCNT] BC Thẩm định\", \"signer\": \"Tổ thẩm định\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-07-30\", \"docNo\": \"05/BC-HĐTĐ-KQTĐ\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_11\", \"code\": \"968.QĐ\", \"name\": \"[KH LCNT] QĐ Phê Duyệt\", \"signer\": \"GĐ\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"2026-07-31\", \"docNo\": \"968/QĐ-CHKQTCT\", \"templateFile\": \"templates/02_Quyet_dinh_KHLCNT.docx\"}]}, {\"id\": \"trien_khai_mua_sam\", \"name\": \"2. Triển khai hồ sơ mua sắm\", \"code\": \"TK-MS\", \"description\": \"Áp dụng cho mua sắm hàng hóa, tài sản, trang thiết bị thường xuyên\", \"documents\": [{\"id\": \"tk_ms_1\", \"code\": \"01.DX-NS\", \"name\": \"Báo cáo đề xuất nhu cầu mua sắm\", \"signer\": \"Đơn vị sử dụng\", \"duration\": 2, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-01-12\", \"docNo\": \"01/BC-DXMS\", \"templateFile\": \"\"}, {\"id\": \"tk_ms_2\", \"code\": \"02.BB-HOP\", \"name\": \"Biên bản họp thống nhất danh mục mua sắm\", \"signer\": \"Hội đồng mua sắm\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"02/BB-HOP\", \"templateFile\": \"templates/2_Bien_ban_hoan_thien_hop_dong.docx\"}, {\"id\": \"tk_ms_3\", \"code\": \"03.TM-BG\", \"name\": \"Thư mời báo giá / Biên bản thu thập 03 báo giá\", \"signer\": \"Tổ mua sắm\", \"duration\": 3, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"03/TM-BG\", \"templateFile\": \"templates/1_Giay_moi_tham_gia.docx\"}, {\"id\": \"tk_ms_4\", \"code\": \"04.TTr-CTMS\", \"name\": \"Tờ trình phê duyệt chủ trương và dự toán mua sắm\", \"signer\": \"Phòng Kế hoạch\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"04/TTr-CTMS\", \"templateFile\": \"templates/01_To_trinh_KHLCNT.docx\"}, {\"id\": \"tk_ms_5\", \"code\": \"05.QĐ-CTMS\", \"name\": \"Quyết định phê duyệt chủ trương mua sắm\", \"signer\": \"Lãnh đạo đơn vị\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"05/QĐ-CTMS\", \"templateFile\": \"templates/02_Quyet_dinh_KHLCNT.docx\"}, {\"id\": \"tk_ms_6\", \"code\": \"06.TTr-KHLCNT\", \"name\": \"Tờ trình đề nghị phê duyệt Kế hoạch LCNT\", \"signer\": \"Tổ mua sắm\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"06/TTr-KHLCNT\", \"templateFile\": \"templates/01_To_trinh_KHLCNT.docx\"}, {\"id\": \"tk_ms_7\", \"code\": \"07.QĐ-KHLCNT\", \"name\": \"Quyết định phê duyệt Kế hoạch LCNT mua sắm\", \"signer\": \"Cấp thẩm quyền\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"07/QĐ-KHLCNT\", \"templateFile\": \"templates/02_Quyet_dinh_KHLCNT.docx\"}]}, {\"id\": \"trien_khai_dau_tu\", \"name\": \"3. Triển khai hồ sơ đầu tư\", \"code\": \"TK-ĐT\", \"description\": \"Áp dụng cho dự án đầu tư xây dựng, cải tạo nâng cấp quy mô lớn\", \"documents\": [{\"id\": \"tk_dt_1\", \"code\": \"01.TTr-CTDT\", \"name\": \"Tờ trình đề xuất chủ trương đầu tư\", \"signer\": \"Ban QLDA\", \"duration\": 3, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-01-12\", \"docNo\": \"01/TTr-CTDT\", \"templateFile\": \"templates/01_To_trinh_KHLCNT.docx\"}, {\"id\": \"tk_dt_2\", \"code\": \"02.QĐ-CTDT\", \"name\": \"Quyết định phê duyệt chủ trương đầu tư\", \"signer\": \"Cấp quyết định ĐT\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"02/QĐ-CTDT\", \"templateFile\": \"templates/02_Quyet_dinh_KHLCNT.docx\"}, {\"id\": \"tk_dt_3\", \"code\": \"03.NV-KS\", \"name\": \"Đề cương nhiệm vụ khảo sát, lập Báo cáo KT-KT\", \"signer\": \"Đơn vị tư vấn\", \"duration\": 5, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"03/NV-KS\", \"templateFile\": \"\"}, {\"id\": \"tk_dt_4\", \"code\": \"04.TTr-BCKTKT\", \"name\": \"Tờ trình thẩm định Báo cáo KT-KT\", \"signer\": \"Ban QLDA\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"04/TTr-BCKTKT\", \"templateFile\": \"\"}, {\"id\": \"tk_dt_5\", \"code\": \"05.BC-TT\", \"name\": \"Báo cáo kết quả thẩm tra Báo cáo KT-KT\", \"signer\": \"Đơn vị thẩm tra\", \"duration\": 5, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"05/BC-TT\", \"templateFile\": \"\"}, {\"id\": \"tk_dt_6\", \"code\": \"06.QĐ-PD-DA\", \"name\": \"Quyết định phê duyệt dự án đầu tư xây dựng\", \"signer\": \"Người có thẩm quyền\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"06/QĐ-PDDA\", \"templateFile\": \"templates/02_Quyet_dinh_KHLCNT.docx\"}, {\"id\": \"tk_dt_7\", \"code\": \"07.TTr-KHLCNT\", \"name\": \"Tờ trình phê duyệt Kế hoạch LCNT tổng thể\", \"signer\": \"Chủ đầu tư\", \"duration\": 3, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"07/TTr-KHLCNT\", \"templateFile\": \"templates/01_To_trinh_KHLCNT.docx\"}, {\"id\": \"tk_dt_8\", \"code\": \"08.QĐ-KHLCNT\", \"name\": \"Quyết định phê duyệt Kế hoạch LCNT tổng thể\", \"signer\": \"Cấp quyết định ĐT\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"08/QĐ-KHLCNT\", \"templateFile\": \"templates/02_Quyet_dinh_KHLCNT.docx\"}]}]}");
+    const DEFAULT_IMPLEMENTATION_MATRIX = JSON.parse("{\"version\": \"1.0\", \"implementationTypes\": [{\"id\": \"trien_khai_sua_chua\", \"name\": \"1. Tri\u1ec3n khai h\u1ed3 s\u01a1 s\u1eeda ch\u1eefa\", \"code\": \"TK-SC\", \"description\": \"\u00c1p d\u1ee5ng cho c\u00e1c d\u1ef1 \u00e1n s\u1eeda ch\u1eefa, b\u1ea3o tr\u00ec, kh\u1eafc ph\u1ee5c h\u01b0 h\u1ecfng\", \"documents\": [{\"id\": \"tk_sc_1\", \"code\": \"110.Q\u0110\", \"name\": \"Q\u0110 giao k\u1ebf ho\u1ea1ch\", \"signer\": \"TCT\", \"duration\": 2, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-01-12\", \"docNo\": \"110/Q\u0110-TCTCHKVN\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_2\", \"code\": \"BB-KT\", \"name\": \"Bi\u00ean b\u1ea3n ki\u1ec3m tra \u0111\u1ed9t xu\u1ea5t\", \"signer\": \"C\u00e1c ph\u00f2ng VCA\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-04-04\", \"docNo\": \"\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_3\", \"code\": \"01.TTr\", \"name\": \"[TRI\u1ec2N KHAI] T\u1edd tr\u00ecnh\", \"signer\": \"PKTHT\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-07-21\", \"docNo\": \"01/\u0110KNCC/TTr-KTHT\", \"templateFile\": \"templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/01_To_trinh_KHLCNT.docx\"}, {\"id\": \"tk_sc_4\", \"code\": \"02.TTr\", \"name\": \"[TL T\u1ed4 TH\u1ea8M \u0110\u1ecaNH] T\u1edd Tr\u00ecnh\", \"signer\": \"PKTHT\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"2026-07-22\", \"docNo\": \"02/\u0110KNCC/TTr-KTHT\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_5\", \"code\": \"930a.Q\u0110\", \"name\": \"[TL T\u1ed4 TH\u1ea8M \u0110\u1ecaNH] Quy\u1ebft \u0111\u1ecbnh\", \"signer\": \"G\u0110\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-07-28\", \"docNo\": \"930a/Q\u0110-CHKQTCT\", \"templateFile\": \"templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/02_Quyet_dinh_KHLCNT.docx\"}, {\"id\": \"tk_sc_6\", \"code\": \"03.BC\", \"name\": \"B\u00c1O C\u00c1O B\u1ea2O TR\u00cc\", \"signer\": \"PKTHT\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"2026-07-29\", \"docNo\": \"03/BCTHBT-KTHT\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_7\", \"code\": \"Q\u0110-DT\", \"name\": \"Ph\u00ea duy\u1ec7t d\u1ef1 to\u00e1n G1\", \"signer\": \"G\u0110\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"\", \"docNo\": \"\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_8\", \"code\": \"04.TTr\", \"name\": \"[KH LCNT] T\u1edd tr\u00ecnh\", \"signer\": \"PKTHT\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-07-29\", \"docNo\": \"04/\u0110KNCC/TTr-KTHT\", \"templateFile\": \"templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/01_To_trinh_KHLCNT.docx\"}, {\"id\": \"tk_sc_9\", \"code\": \"BB-T\u0110\", \"name\": \"[KH LCNT] BB Th\u1ea9m \u0111\u1ecbnh\", \"signer\": \"T\u1ed5 th\u1ea9m \u0111\u1ecbnh\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-07-30\", \"docNo\": \"\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_10\", \"code\": \"05.BC\", \"name\": \"[KH LCNT] BC Th\u1ea9m \u0111\u1ecbnh\", \"signer\": \"T\u1ed5 th\u1ea9m \u0111\u1ecbnh\", \"duration\": 1, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-07-30\", \"docNo\": \"05/BC-H\u0110T\u0110-KQT\u0110\", \"templateFile\": \"\"}, {\"id\": \"tk_sc_11\", \"code\": \"968.Q\u0110\", \"name\": \"[KH LCNT] Q\u0110 Ph\u00ea Duy\u1ec7t\", \"signer\": \"G\u0110\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"2026-07-31\", \"docNo\": \"968/Q\u0110-CHKQTCT\", \"templateFile\": \"templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/02_Quyet_dinh_KHLCNT.docx\"}]}, {\"id\": \"trien_khai_mua_sam\", \"name\": \"2. Tri\u1ec3n khai h\u1ed3 s\u01a1 mua s\u1eafm\", \"code\": \"TK-MS\", \"description\": \"\u00c1p d\u1ee5ng cho mua s\u1eafm h\u00e0ng h\u00f3a, t\u00e0i s\u1ea3n, trang thi\u1ebft b\u1ecb th\u01b0\u1eddng xuy\u00ean\", \"documents\": [{\"id\": \"tk_ms_1\", \"code\": \"01.DX-NS\", \"name\": \"B\u00e1o c\u00e1o \u0111\u1ec1 xu\u1ea5t nhu c\u1ea7u mua s\u1eafm\", \"signer\": \"\u0110\u01a1n v\u1ecb s\u1eed d\u1ee5ng\", \"duration\": 2, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-01-12\", \"docNo\": \"01/BC-DXMS\", \"templateFile\": \"\"}, {\"id\": \"tk_ms_2\", \"code\": \"02.BB-HOP\", \"name\": \"Bi\u00ean b\u1ea3n h\u1ecdp th\u1ed1ng nh\u1ea5t danh m\u1ee5c mua s\u1eafm\", \"signer\": \"H\u1ed9i \u0111\u1ed3ng mua s\u1eafm\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"02/BB-HOP\", \"templateFile\": \"\"}, {\"id\": \"tk_ms_3\", \"code\": \"03.TM-BG\", \"name\": \"Th\u01b0 m\u1eddi b\u00e1o gi\u00e1 / Bi\u00ean b\u1ea3n thu th\u1eadp 03 b\u00e1o gi\u00e1\", \"signer\": \"T\u1ed5 mua s\u1eafm\", \"duration\": 3, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"03/TM-BG\", \"templateFile\": \"\"}, {\"id\": \"tk_ms_4\", \"code\": \"04.TTr-CTMS\", \"name\": \"T\u1edd tr\u00ecnh ph\u00ea duy\u1ec7t ch\u1ee7 tr\u01b0\u01a1ng v\u00e0 d\u1ef1 to\u00e1n mua s\u1eafm\", \"signer\": \"Ph\u00f2ng K\u1ebf ho\u1ea1ch\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"04/TTr-CTMS\", \"templateFile\": \"\"}, {\"id\": \"tk_ms_5\", \"code\": \"05.Q\u0110-CTMS\", \"name\": \"Quy\u1ebft \u0111\u1ecbnh ph\u00ea duy\u1ec7t ch\u1ee7 tr\u01b0\u01a1ng mua s\u1eafm\", \"signer\": \"L\u00e3nh \u0111\u1ea1o \u0111\u01a1n v\u1ecb\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"05/Q\u0110-CTMS\", \"templateFile\": \"\"}, {\"id\": \"tk_ms_6\", \"code\": \"06.TTr-KHLCNT\", \"name\": \"T\u1edd tr\u00ecnh \u0111\u1ec1 ngh\u1ecb ph\u00ea duy\u1ec7t K\u1ebf ho\u1ea1ch LCNT\", \"signer\": \"T\u1ed5 mua s\u1eafm\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"06/TTr-KHLCNT\", \"templateFile\": \"\"}, {\"id\": \"tk_ms_7\", \"code\": \"07.Q\u0110-KHLCNT\", \"name\": \"Quy\u1ebft \u0111\u1ecbnh ph\u00ea duy\u1ec7t K\u1ebf ho\u1ea1ch LCNT mua s\u1eafm\", \"signer\": \"C\u1ea5p th\u1ea9m quy\u1ec1n\", \"duration\": 1, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"07/Q\u0110-KHLCNT\", \"templateFile\": \"\"}]}, {\"id\": \"trien_khai_dau_tu\", \"name\": \"3. Tri\u1ec3n khai h\u1ed3 s\u01a1 \u0111\u1ea7u t\u01b0\", \"code\": \"TK-\u0110T\", \"description\": \"\u00c1p d\u1ee5ng cho d\u1ef1 \u00e1n \u0111\u1ea7u t\u01b0 x\u00e2y d\u1ef1ng, c\u1ea3i t\u1ea1o n\u00e2ng c\u1ea5p quy m\u00f4 l\u1edbn\", \"documents\": [{\"id\": \"tk_dt_1\", \"code\": \"01.TTr-CTDT\", \"name\": \"T\u1edd tr\u00ecnh \u0111\u1ec1 xu\u1ea5t ch\u1ee7 tr\u01b0\u01a1ng \u0111\u1ea7u t\u01b0\", \"signer\": \"Ban QLDA\", \"duration\": 3, \"dateFormula\": {\"type\": \"manual\"}, \"defaultDate\": \"2026-01-12\", \"docNo\": \"01/TTr-CTDT\", \"templateFile\": \"\"}, {\"id\": \"tk_dt_2\", \"code\": \"02.Q\u0110-CTDT\", \"name\": \"Quy\u1ebft \u0111\u1ecbnh ph\u00ea duy\u1ec7t ch\u1ee7 tr\u01b0\u01a1ng \u0111\u1ea7u t\u01b0\", \"signer\": \"C\u1ea5p quy\u1ebft \u0111\u1ecbnh \u0110T\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"02/Q\u0110-CTDT\", \"templateFile\": \"\"}, {\"id\": \"tk_dt_3\", \"code\": \"03.NV-KS\", \"name\": \"\u0110\u1ec1 c\u01b0\u01a1ng nhi\u1ec7m v\u1ee5 kh\u1ea3o s\u00e1t, l\u1eadp B\u00e1o c\u00e1o KT-KT\", \"signer\": \"\u0110\u01a1n v\u1ecb t\u01b0 v\u1ea5n\", \"duration\": 5, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"03/NV-KS\", \"templateFile\": \"\"}, {\"id\": \"tk_dt_4\", \"code\": \"04.TTr-BCKTKT\", \"name\": \"T\u1edd tr\u00ecnh th\u1ea9m \u0111\u1ecbnh B\u00e1o c\u00e1o KT-KT\", \"signer\": \"Ban QLDA\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"04/TTr-BCKTKT\", \"templateFile\": \"\"}, {\"id\": \"tk_dt_5\", \"code\": \"05.BC-TT\", \"name\": \"B\u00e1o c\u00e1o k\u1ebft qu\u1ea3 th\u1ea9m tra B\u00e1o c\u00e1o KT-KT\", \"signer\": \"\u0110\u01a1n v\u1ecb th\u1ea9m tra\", \"duration\": 5, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"05/BC-TT\", \"templateFile\": \"\"}, {\"id\": \"tk_dt_6\", \"code\": \"06.Q\u0110-PD-DA\", \"name\": \"Quy\u1ebft \u0111\u1ecbnh ph\u00ea duy\u1ec7t d\u1ef1 \u00e1n \u0111\u1ea7u t\u01b0 x\u00e2y d\u1ef1ng\", \"signer\": \"Ng\u01b0\u1eddi c\u00f3 th\u1ea9m quy\u1ec1n\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"06/Q\u0110-PDDA\", \"templateFile\": \"\"}, {\"id\": \"tk_dt_7\", \"code\": \"07.TTr-KHLCNT\", \"name\": \"T\u1edd tr\u00ecnh ph\u00ea duy\u1ec7t K\u1ebf ho\u1ea1ch LCNT t\u1ed5ng th\u1ec3\", \"signer\": \"Ch\u1ee7 \u0111\u1ea7u t\u01b0\", \"duration\": 3, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"07/TTr-KHLCNT\", \"templateFile\": \"\"}, {\"id\": \"tk_dt_8\", \"code\": \"08.Q\u0110-KHLCNT\", \"name\": \"Quy\u1ebft \u0111\u1ecbnh ph\u00ea duy\u1ec7t K\u1ebf ho\u1ea1ch LCNT t\u1ed5ng th\u1ec3\", \"signer\": \"C\u1ea5p quy\u1ebft \u0111\u1ecbnh \u0110T\", \"duration\": 2, \"dateFormula\": {\"type\": \"default\"}, \"defaultDate\": \"\", \"docNo\": \"08/Q\u0110-KHLCNT\", \"templateFile\": \"\"}]}]}");
 
     let STUDIO_WORKFLOWS = {};
 
@@ -108,7 +108,12 @@
             if (customP) {
                 const parsedP = JSON.parse(customP);
                 if (parsedP.procurementTypes && parsedP.procurementTypes.length > 0) {
-                    pMatrix = parsedP;
+                    const rawStr = JSON.stringify(parsedP);
+                    if (rawStr.includes('"templates/01_To_trinh') || rawStr.includes('"templates/07_Hop_dong')) {
+                        localStorage.removeItem("ho_so_tu_dong_matrix_custom");
+                    } else {
+                        pMatrix = parsedP;
+                    }
                 }
             }
         } catch (e) {
@@ -120,7 +125,12 @@
             if (customI) {
                 const parsedI = JSON.parse(customI);
                 if (parsedI.implementationTypes && parsedI.implementationTypes.length > 0) {
-                    iMatrix = parsedI;
+                    const rawStr = JSON.stringify(parsedI);
+                    if (rawStr.includes('"templates/01_To_trinh') || rawStr.includes('"templates/2_Bien_ban')) {
+                        localStorage.removeItem("ho_so_tu_dong_implementation_matrix");
+                    } else {
+                        iMatrix = parsedI;
+                    }
                 }
             }
         } catch (e) {
@@ -745,9 +755,12 @@
                                     <i class="fa-solid fa-download text-[8.5px]"></i>
                                 </button>
                             ` : `
-                                <button type="button" class="btn-upload-for-slot px-2 py-0.5 text-[9.5px] font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded cursor-pointer transition-colors flex items-center gap-1" data-id="${doc.id}">
-                                    <i class="fa-solid fa-plus text-[8.5px]"></i>
-                                    <span>Chọn file</span>
+                                <button type="button" class="btn-create-doc-from-scratch px-2 py-0.5 text-[9.5px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded cursor-pointer transition-colors flex items-center gap-1" data-id="${doc.id}" title="Khởi tạo và thiết kế mẫu văn bản mới từ đầu trong Studio">
+                                    <i class="fa-solid fa-wand-magic-sparkles text-[8.5px] text-emerald-600"></i>
+                                    <span>Tạo mẫu mới</span>
+                                </button>
+                                <button type="button" class="btn-upload-for-slot px-1.5 py-0.5 text-[9.5px] font-medium text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-300 rounded cursor-pointer transition-colors flex items-center gap-1" data-id="${doc.id}" title="Tải file .docx có sẵn từ máy tính">
+                                    <i class="fa-solid fa-upload text-[8.5px]"></i>
                                 </button>
                             `}
                         </div>
@@ -772,6 +785,13 @@
             btn.onclick = async () => {
                 const docId = btn.getAttribute("data-id");
                 await exportSingleDocument(docId);
+            };
+        });
+
+        batchDocumentsTableBody.querySelectorAll(".btn-create-doc-from-scratch").forEach(btn => {
+            btn.onclick = () => {
+                state.activeDocId = btn.getAttribute("data-id");
+                switchViewMode("single");
             };
         });
 
@@ -937,116 +957,26 @@
     // Single Document Deep Editor Controller (Template Studio 2.0)
     // -------------------------------------------------------------
     const BUILTIN_DOCX_FILE_MAP = {
-        "cdtrg_1": "templates/01_To_trinh_KHLCNT.docx",
-        "cdtrg_2": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "cdtrg_3": "templates/1_Giay_moi_tham_gia.docx",
-        "cdtrg_4": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "cdtrg_5": "templates/3_To_trinh_chi_dinh_thau.docx",
-        "cdtrg_6": "templates/4_Quyet_dinh_chi_dinh_thau.docx",
-        "cdtrg_7": "templates/07_Hop_dong_kinh_te.docx",
-        "d50_1": "templates/01_To_trinh_KHLCNT.docx",
-        "d50_2": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "d50_3": "templates/07_Hop_dong_kinh_te.docx",
-        "d50_4": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "d100_1": "templates/01_To_trinh_KHLCNT.docx",
-        "d100_2": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "d100_3": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "d100_4": "templates/07_Hop_dong_kinh_te.docx",
-        "cghc_1": "templates/01_To_trinh_KHLCNT.docx",
-        "cghc_2": "templates/01_To_trinh_KHLCNT.docx",
-        "cghc_3": "templates/1_Giay_moi_tham_gia.docx",
-        "cghc_4": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "cghc_5": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "cghc_6": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "cghc_7": "templates/01_To_trinh_KHLCNT.docx",
-        "cghc_8": "templates/1_Giay_moi_tham_gia.docx",
-        "cghc_9": "templates/07_Hop_dong_kinh_te.docx",
-        "cdttt_1": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "cdttt_2": "templates/01_To_trinh_KHLCNT.docx",
-        "cdttt_3": "templates/01_To_trinh_KHLCNT.docx",
-        "cdttt_4": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "cdttt_5": "templates/1_Giay_moi_tham_gia.docx",
-        "cdttt_6": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "cdttt_7": "templates/01_To_trinh_KHLCNT.docx",
-        "cdttt_8": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "cdttt_9": "templates/3_To_trinh_chi_dinh_thau.docx",
-        "cdttt_10": "templates/01_To_trinh_KHLCNT.docx",
-        "cdttt_11": "templates/4_Quyet_dinh_chi_dinh_thau.docx",
-        "cdttt_12": "templates/07_Hop_dong_kinh_te.docx",
-        "dtrr_1": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "dtrr_2": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "dtrr_3": "templates/01_To_trinh_KHLCNT.docx",
-        "dtrr_4": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "dtrr_5": "templates/01_To_trinh_KHLCNT.docx",
-        "dtrr_6": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "dtrr_7": "templates/1_Giay_moi_tham_gia.docx",
-        "dtrr_8": "templates/1_Giay_moi_tham_gia.docx",
-        "dtrr_9": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "dtrr_10": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "dtrr_11": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "dtrr_12": "templates/1_Giay_moi_tham_gia.docx",
-        "dtrr_13": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "dtrr_14": "templates/01_To_trinh_KHLCNT.docx",
-        "dtrr_15": "templates/1_Giay_moi_tham_gia.docx",
-        "dtrr_16": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "dtrr_17": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "dtrr_18": "templates/3_To_trinh_chi_dinh_thau.docx",
-        "dtrr_19": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "dtrr_20": "templates/01_To_trinh_KHLCNT.docx",
-        "dtrr_21": "templates/4_Quyet_dinh_chi_dinh_thau.docx",
-        "dtrr_22": "templates/1_Giay_moi_tham_gia.docx",
-        "dtrr_23": "templates/07_Hop_dong_kinh_te.docx",
-        "tk_sc_1": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "tk_sc_2": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "tk_sc_3": "templates/01_To_trinh_KHLCNT.docx",
-        "tk_sc_4": "templates/01_To_trinh_KHLCNT.docx",
-        "tk_sc_5": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "tk_sc_6": "templates/01_To_trinh_KHLCNT.docx",
-        "tk_sc_7": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "tk_sc_8": "templates/01_To_trinh_KHLCNT.docx",
-        "tk_sc_9": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "tk_sc_10": "templates/01_To_trinh_KHLCNT.docx",
-        "tk_sc_11": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "tk_ms_1": "templates/01_To_trinh_KHLCNT.docx",
-        "tk_ms_2": "templates/2_Bien_ban_hoan_thien_hop_dong.docx",
-        "tk_ms_3": "templates/1_Giay_moi_tham_gia.docx",
-        "tk_ms_4": "templates/01_To_trinh_KHLCNT.docx",
-        "tk_ms_5": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "tk_ms_6": "templates/01_To_trinh_KHLCNT.docx",
-        "tk_ms_7": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "tk_dt_1": "templates/01_To_trinh_KHLCNT.docx",
-        "tk_dt_2": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "tk_dt_3": "templates/01_To_trinh_KHLCNT.docx",
-        "tk_dt_4": "templates/01_To_trinh_KHLCNT.docx",
-        "tk_dt_5": "templates/01_To_trinh_KHLCNT.docx",
-        "tk_dt_6": "templates/02_Quyet_dinh_KHLCNT.docx",
-        "tk_dt_7": "templates/01_To_trinh_KHLCNT.docx",
-        "tk_dt_8": "templates/02_Quyet_dinh_KHLCNT.docx"
+        // Triển khai sửa chữa
+        "tk_sc_3": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/01_To_trinh_KHLCNT.docx",
+        "tk_sc_5": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/02_Quyet_dinh_KHLCNT.docx",
+        "tk_sc_8": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/01_To_trinh_KHLCNT.docx",
+        "tk_sc_11": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/02_Quyet_dinh_KHLCNT.docx",
+
+        // Hình thức LCNT: Xây dựng chỉ định thầu rút gọn
+        "cdtrg_1": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/01_To_trinh_KHLCNT.docx",
+        "cdtrg_2": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/02_Quyet_dinh_KHLCNT.docx",
+        "cdtrg_3": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/1_Giay_moi_tham_gia.docx",
+        "cdtrg_4": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/2_Bien_ban_hoan_thien_hop_dong.docx",
+        "cdtrg_5": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/3_To_trinh_chi_dinh_thau.docx",
+        "cdtrg_6": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/4_Quyet_dinh_chi_dinh_thau.docx",
+        "cdtrg_7": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/07_Hop_dong_kinh_te.docx"
     };
 
     function getBuiltinTemplateForDoc(docId, docObj) {
         if (BUILTIN_DOCX_FILE_MAP[docId]) return BUILTIN_DOCX_FILE_MAP[docId];
-        if (docObj && docObj.templateFile) return docObj.templateFile;
-        const nameLower = ((docObj ? (docObj.name + " " + docObj.code) : docId) || "").toLowerCase();
-        if (nameLower.includes("quyết định") || nameLower.includes("qd-") || nameLower.includes(".qđ")) {
-            return "templates/02_Quyet_dinh_KHLCNT.docx";
-        }
-        if (nameLower.includes("giấy mời") || nameLower.includes("thư mời") || nameLower.includes("gm-") || nameLower.includes("tm-") || nameLower.includes("thông báo")) {
-            return "templates/1_Giay_moi_tham_gia.docx";
-        }
-        if (nameLower.includes("biên bản") || nameLower.includes("bb-")) {
-            return "templates/2_Bien_ban_hoan_thien_hop_dong.docx";
-        }
-        if (nameLower.includes("hợp đồng") || nameLower.includes("hd-")) {
-            return "templates/07_Hop_dong_kinh_te.docx";
-        }
-        if (nameLower.includes("kết quả") && (nameLower.includes("quyết định") || nameLower.includes("qd"))) {
-            return "templates/4_Quyet_dinh_chi_dinh_thau.docx";
-        }
-        if (nameLower.includes("kết quả") && (nameLower.includes("tờ trình") || nameLower.includes("ttr"))) {
-            return "templates/3_To_trinh_chi_dinh_thau.docx";
-        }
-        return "templates/01_To_trinh_KHLCNT.docx";
+        if (docObj && docObj.templateFile && docObj.templateFile.trim() !== "") return docObj.templateFile;
+        return "";
     }
 
     function base64ToArrayBuffer(base64) {
@@ -1245,22 +1175,21 @@
             }
         }
 
-        // 2. Nếu chưa có, nạp từ bộ mẫu nhúng sẵn BUILTIN_DOCX_TEMPLATES
+        // 2. Nếu chưa có, nạp từ bộ mẫu nhúng sẵn BUILTIN_DOCX_TEMPLATES (Chỉ khi có cấu hình tPath)
         if (!arrayBuffer && window.BUILTIN_DOCX_TEMPLATES) {
             const tPath = getBuiltinTemplateForDoc(docId, docObj);
-            let b64 = window.BUILTIN_DOCX_TEMPLATES[tPath];
-            if (!b64) {
-                const baseName = tPath.split("/").pop();
-                const matchedKey = Object.keys(window.BUILTIN_DOCX_TEMPLATES).find(k => k.endsWith(baseName));
-                if (matchedKey) b64 = window.BUILTIN_DOCX_TEMPLATES[matchedKey];
-            }
-            if (!b64) {
-                b64 = window.BUILTIN_DOCX_TEMPLATES["templates/01_To_trinh_KHLCNT.docx"] || Object.values(window.BUILTIN_DOCX_TEMPLATES)[0];
-            }
-            if (b64) {
-                arrayBuffer = base64ToArrayBuffer(b64);
-                fileName = tPath.split("/").pop();
-                isCustom = false;
+            if (tPath && tPath.trim() !== "") {
+                let b64 = window.BUILTIN_DOCX_TEMPLATES[tPath];
+                if (!b64) {
+                    const baseName = tPath.split("/").pop();
+                    const matchedKey = Object.keys(window.BUILTIN_DOCX_TEMPLATES).find(k => k.endsWith(baseName));
+                    if (matchedKey) b64 = window.BUILTIN_DOCX_TEMPLATES[matchedKey];
+                }
+                if (b64) {
+                    arrayBuffer = base64ToArrayBuffer(b64);
+                    fileName = tPath.split("/").pop();
+                    isCustom = false;
+                }
             }
         }
 
@@ -1379,7 +1308,7 @@
 
         const item = await getOrLoadBufferForDocument(docObj.id, docObj);
         if (singleDocFileNameBadge) {
-            singleDocFileNameBadge.textContent = item ? item.name : "(Không tìm thấy file mẫu)";
+            singleDocFileNameBadge.textContent = item ? item.name : "(Chưa có file mẫu .docx)";
         }
 
         const singleDocSourceBadge = document.getElementById("singleDocSourceBadge");
@@ -1387,9 +1316,12 @@
             if (item && item.isCustom) {
                 singleDocSourceBadge.className = "text-[10px] bg-amber-50 text-amber-800 font-semibold px-2 py-0.5 rounded border border-amber-300 flex items-center gap-1";
                 singleDocSourceBadge.innerHTML = `<i class="fa-solid fa-star text-amber-500 text-[9px]"></i> Mẫu tùy biến (Đang dùng)`;
-            } else {
+            } else if (item) {
                 singleDocSourceBadge.className = "text-[10px] bg-blue-50 text-blue-700 font-semibold px-2 py-0.5 rounded border border-blue-200 flex items-center gap-1";
                 singleDocSourceBadge.innerHTML = `<i class="fa-solid fa-cube text-blue-500 text-[9px]"></i> Mẫu gốc hệ thống`;
+            } else {
+                singleDocSourceBadge.className = "text-[10px] bg-amber-50 text-amber-800 font-semibold px-2 py-0.5 rounded border border-amber-300 flex items-center gap-1";
+                singleDocSourceBadge.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-amber-600 text-[9px]"></i> Khởi tạo Mẫu Mới (Chưa có .docx)`;
             }
         }
 
@@ -1406,21 +1338,176 @@
         return (str || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
+    // Helper: Tạo khung mẫu văn bản hành chính Việt Nam chuẩn Nghị định 30/2020/NĐ-CP
+    function generateDefaultDocumentScaffold(docObj) {
+        const docName = (docObj && docObj.name) ? docObj.name : "VĂN BẢN HÀNH CHÍNH";
+        const docCode = (docObj && docObj.code) ? docObj.code : "";
+        const nameLower = (docName + " " + docCode).toLowerCase();
+
+        let docTypeTitle = "TỜ TRÌNH";
+        let soTag = "{SO_TO_TRINH}";
+        let ngayTag = "{NGAY_TO_TRINH}";
+
+        if (nameLower.includes("quyết định") || nameLower.includes("qd-") || nameLower.includes(".qđ")) {
+            docTypeTitle = "QUYẾT ĐỊNH";
+            soTag = "{SO_QUYET_DINH}";
+            ngayTag = "{NGAY_QUYET_DINH}";
+        } else if (nameLower.includes("giấy mời") || nameLower.includes("thư mời") || nameLower.includes("gm-") || nameLower.includes("tm-")) {
+            docTypeTitle = "GIẤY MỜI";
+            soTag = "{SO_GIAY_MOI}";
+            ngayTag = "{NGAY_GIAY_MOI}";
+        } else if (nameLower.includes("biên bản") || nameLower.includes("bb-")) {
+            docTypeTitle = "BIÊN BẢN";
+            soTag = "{SO_BIEN_BAN}";
+            ngayTag = "{NGAY_BIEN_BAN}";
+        } else if (nameLower.includes("hợp đồng") || nameLower.includes("hd-")) {
+            docTypeTitle = "HỢP ĐỒNG KINH TẾ";
+            soTag = "{SO_HOP_DONG}";
+            ngayTag = "{NGAY_HOP_DONG}";
+        } else if (nameLower.includes("báo cáo") || nameLower.includes("bc-")) {
+            docTypeTitle = "BÁO CÁO";
+            soTag = "{SO_BAO_CAO}";
+            ngayTag = "{NGAY_BAO_CAO}";
+        }
+
+        if (docTypeTitle === "QUYẾT ĐỊNH") {
+            return `
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; font-family: 'Times New Roman', serif;">
+    <div style="text-align: center; width: 45%;">
+        <p style="margin: 0; font-size: 13pt; text-transform: uppercase;">{TEN_CHU_DAU_TU_VIET_HOA}</p>
+        <p style="margin: 0; font-size: 13pt; font-weight: bold; text-transform: uppercase;">{TEN_BAN_QUAN_LY_DU_AN}</p>
+        <p style="margin: 0; font-size: 12pt;">Số: ${soTag}</p>
+    </div>
+    <div style="text-align: center; width: 50%;">
+        <p style="margin: 0; font-size: 12.5pt; font-weight: bold; text-transform: uppercase;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+        <p style="margin: 0; font-size: 13pt; font-weight: bold; text-decoration: underline;">Độc lập - Tự do - Hạnh phúc</p>
+        <p style="margin: 6px 0 0 0; font-size: 13pt; font-style: italic;">{DIA_DANH}, ${ngayTag}</p>
+    </div>
+</div>
+
+<div style="text-align: center; margin: 28px 0 20px 0;">
+    <h2 style="margin: 0; font-size: 16pt; font-weight: bold; text-transform: uppercase;">QUYẾT ĐỊNH</h2>
+    <p style="margin: 6px 0 0 0; font-size: 13pt; font-style: italic;">Về việc phê duyệt: ${docObj.name || '{TEN_GOI_THAU}'}</p>
+    <p style="margin: 2px 0 0 0; font-size: 13pt; font-weight: bold;">Gói thầu: {TEN_GOI_THAU}</p>
+    <p style="margin: 2px 0 0 0; font-size: 13pt; font-style: italic;">Dự án / Công trình: {TEN_DU_AN}</p>
+</div>
+
+<div style="text-align: center; margin-bottom: 18px;">
+    <p style="margin: 0; font-size: 14pt; font-weight: bold; text-transform: uppercase;">{CHUC_VU_NGUOI_KY} {TEN_CHU_DAU_TU_VIET_HOA}</p>
+</div>
+
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">Căn cứ Luật Đấu thầu số 22/2023/QH15 ngày 23 tháng 6 năm 2023;</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">Căn cứ Nghị định số 24/2024/NĐ-CP ngày 27 tháng 02 năm 2024 của Chính phủ quy định chi tiết một số điều và biện pháp thi hành Luật Đấu thầu về lựa chọn nhà thầu;</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">Căn cứ Quyết định thành lập và chức năng nhiệm vụ của {TEN_CHU_DAU_TU};</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">Xét đề nghị tại Tờ trình số {SO_TO_TRINH} ngày {NGAY_TO_TRINH} của {CO_QUAN_TRINH} về việc phê duyệt {TEN_GOI_THAU},</p>
+
+<div style="text-align: center; margin: 16px 0;">
+    <p style="margin: 0; font-size: 14pt; font-weight: bold; text-transform: uppercase;">QUYẾT ĐỊNH:</p>
+</div>
+
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;"><b>Điều 1.</b> Phê duyệt gói thầu: <b>{TEN_GOI_THAU}</b> thuộc dự án <b>{TEN_DU_AN}</b> với các nội dung chi tiết sau:</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">- Chủ đầu tư: {TEN_CHU_DAU_TU}.</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">- Đơn vị thực hiện / Nhà thầu trúng thầu: <b>{TEN_NHA_THAU}</b> (Mã số thuế: {MA_SO_THUE}, Địa chỉ: {DIA_CHI_NHA_THAU}).</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">- Giá trị gói thầu: <b>{GIA_GOI_THAU_SO}</b> (Bằng chữ: <i>{GIA_GOI_THAU_CHU}</i>).</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">- Loại hợp đồng: {LOAI_HOP_DONG}.</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">- Thời gian thực hiện: {THOI_GIAN_THUC_HIEN_GOI_THAU}.</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">- Nguồn vốn: {NGUON_VON}.</p>
+
+<div style="margin: 16px 0;">
+    <p style="font-size: 13pt; font-weight: bold; margin-bottom: 6px;">Danh mục chi tiết:</p>
+    <p style="font-size: 13pt; text-align: center;">{BANG_HANG_HOA}</p>
+</div>
+
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;"><b>Điều 2.</b> Giao {TEN_BAN_QUAN_LY_DU_AN} chịu trách nhiệm triển khai và phối hợp với nhà thầu {TEN_NHA_THAU} thực hiện theo đúng quy định hiện hành.</p>
+
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 24px;"><b>Điều 3.</b> Các ông (bà) Trưởng phòng Kế hoạch, Kế toán trưởng và Thủ trưởng các đơn vị liên quan chịu trách nhiệm thi hành Quyết định này kể từ ngày ký./.</p>
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 30px; font-family: 'Times New Roman', serif;">
+    <div style="width: 45%;">
+        <p style="margin: 0; font-size: 11pt; font-weight: bold; font-style: italic;">Nơi nhận:</p>
+        <p style="margin: 2px 0 0 0; font-size: 10.5pt;">- Như Điều 3;</p>
+        <p style="margin: 2px 0 0 0; font-size: 10.5pt;">- {CAP_QUYET_DINH_DAU_TU} (để b/c);</p>
+        <p style="margin: 2px 0 0 0; font-size: 10.5pt;">- Lưu: VT, BQLDA.</p>
+    </div>
+    <div style="text-align: center; width: 45%;">
+        <p style="margin: 0; font-size: 13pt; font-weight: bold; text-transform: uppercase;">{CHUC_VU_NGUOI_KY}</p>
+        <p style="margin: 4px 0 0 0; font-size: 11pt; font-style: italic;">(Ký, ghi rõ họ tên và đóng dấu)</p>
+        <div style="height: 70px;"></div>
+        <p style="margin: 0; font-size: 13pt; font-weight: bold;">{NGUOI_KY_CDT}</p>
+    </div>
+</div>
+            `.trim();
+        }
+
+        // Khung mẫu Tờ trình và văn bản hành chính chung
+        return `
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; font-family: 'Times New Roman', serif;">
+    <div style="text-align: center; width: 45%;">
+        <p style="margin: 0; font-size: 13pt; text-transform: uppercase;">{TEN_CHU_DAU_TU_VIET_HOA}</p>
+        <p style="margin: 0; font-size: 13pt; font-weight: bold; text-transform: uppercase;">{TEN_BAN_QUAN_LY_DU_AN}</p>
+        <p style="margin: 0; font-size: 12pt;">Số: ${soTag}</p>
+    </div>
+    <div style="text-align: center; width: 50%;">
+        <p style="margin: 0; font-size: 12.5pt; font-weight: bold; text-transform: uppercase;">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
+        <p style="margin: 0; font-size: 13pt; font-weight: bold; text-decoration: underline;">Độc lập - Tự do - Hạnh phúc</p>
+        <p style="margin: 6px 0 0 0; font-size: 13pt; font-style: italic;">{DIA_DANH}, ${ngayTag}</p>
+    </div>
+</div>
+
+<div style="text-align: center; margin: 28px 0 20px 0;">
+    <h2 style="margin: 0; font-size: 16pt; font-weight: bold; text-transform: uppercase;">${docTypeTitle}</h2>
+    <p style="margin: 6px 0 0 0; font-size: 13pt; font-style: italic;">Về việc đề nghị thẩm định và phê duyệt: ${docObj.name || '{TEN_GOI_THAU}'}</p>
+    <p style="margin: 2px 0 0 0; font-size: 13pt; font-weight: bold;">Dự án / Công trình: {TEN_DU_AN}</p>
+</div>
+
+<div style="text-align: center; margin-bottom: 18px;">
+    <p style="margin: 0; font-size: 13pt; font-weight: bold;">Kính gửi: {TEN_CHU_DAU_TU}</p>
+</div>
+
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">Căn cứ Luật Đấu thầu số 22/2023/QH15 ngày 23 tháng 6 năm 2023;</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">Căn cứ Nghị định số 24/2024/NĐ-CP ngày 27 tháng 02 năm 2024 của Chính phủ quy định chi tiết một số điều và biện pháp thi hành Luật Đấu thầu về lựa chọn nhà thầu;</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">Căn cứ nhu cầu thực tế và hồ sơ tài liệu của dự án {TEN_DU_AN},</p>
+
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">{CO_QUAN_TRINH} kính trình {TEN_CHU_DAU_TU} xem xét, phê duyệt nội dung công việc với các thông tin chi tiết như sau:</p>
+
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">1. Tên gói thầu / hạng mục: <b>{TEN_GOI_THAU}</b>.</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">2. Giá dự toán / giá gói thầu: <b>{GIA_GOI_THAU_SO}</b> (Bằng chữ: <i>{GIA_GOI_THAU_CHU}</i>).</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">3. Đơn vị thực hiện / Nhà thầu đề xuất: <b>{TEN_NHA_THAU}</b>.</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">4. Hình thức lựa chọn nhà thầu: {HINH_THUC_LCNT}.</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">5. Loại hợp đồng: {LOAI_HOP_DONG}.</p>
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 8px;">6. Thời gian thực hiện: {THOI_GIAN_THUC_HIEN_GOI_THAU}.</p>
+
+<div style="margin: 16px 0;">
+    <p style="font-size: 13pt; font-weight: bold; margin-bottom: 6px;">Bảng danh mục chi tiết:</p>
+    <p style="font-size: 13pt; text-align: center;">{BANG_HANG_HOA}</p>
+</div>
+
+<p style="font-size: 13pt; text-indent: 1.27cm; line-height: 1.5; margin-bottom: 24px;">Kính trình {TEN_CHU_DAU_TU} xem xét, quyết định phê duyệt để làm cơ sở triển khai các bước tiếp theo./.</p>
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 30px; font-family: 'Times New Roman', serif;">
+    <div style="width: 45%;">
+        <p style="margin: 0; font-size: 11pt; font-weight: bold; font-style: italic;">Nơi nhận:</p>
+        <p style="margin: 2px 0 0 0; font-size: 10.5pt;">- Như trên;</p>
+        <p style="margin: 2px 0 0 0; font-size: 10.5pt;">- Lưu: VT, BQLDA.</p>
+    </div>
+    <div style="text-align: center; width: 45%;">
+        <p style="margin: 0; font-size: 13pt; font-weight: bold; text-transform: uppercase;">{CO_QUAN_TRINH}</p>
+        <p style="margin: 4px 0 0 0; font-size: 11pt; font-style: italic;">(Ký, ghi rõ họ tên)</p>
+        <div style="height: 70px;"></div>
+        <p style="margin: 0; font-size: 13pt; font-weight: bold;">{TRUONG_BAN_DHDA}</p>
+    </div>
+</div>
+        `.trim();
+    }
+
     // Render Canvas Content based on View Mode
     function renderCanvasContent(item) {
         if (!documentContentDisplay) return;
 
-        if (!item) {
-            documentContentDisplay.innerHTML = `
-                <div class="p-12 text-center text-slate-400 italic">
-                    Chưa nạp được nội dung văn bản mẫu. Vui lòng thử lại hoặc tải file Word lên.
-                </div>
-            `;
-            return;
-        }
-
         const docId = state.activeDocId;
         const currentDraft = workingDraftHtml[docId] || localStorage.getItem("ho_so_custom_template_html_" + docId);
+        const wf = getCurrentWorkflow();
+        const docObj = (wf && wf.documents) ? wf.documents.find(d => d.id === docId) : { id: docId, name: docId, code: docId };
 
         if (studioViewMode === "edit") {
             documentContentDisplay.contentEditable = "true";
@@ -1429,7 +1516,7 @@
             if (currentDraft && currentDraft.trim() !== "") {
                 // Hiển thị nội dung tùy biến từ bản thảo hoặc đã lưu
                 documentContentDisplay.innerHTML = formatTemplateHtmlWithBadges(currentDraft);
-            } else {
+            } else if (item && item.paragraphs && item.paragraphs.length > 0) {
                 // Hiển thị từ các đoạn văn bản trong file docx kèm highlight các thẻ biến
                 const paragraphs = item.paragraphs || [];
                 documentContentDisplay.innerHTML = paragraphs.map(p => {
@@ -1446,6 +1533,10 @@
                     });
                     return `<p class="mb-2 leading-relaxed text-slate-800">${text}</p>`;
                 }).join("");
+            } else {
+                // Khởi tạo khung mẫu văn bản hành chính chuẩn Nghị định 30/2020/NĐ-CP
+                const scaffold = generateDefaultDocumentScaffold(docObj);
+                documentContentDisplay.innerHTML = formatTemplateHtmlWithBadges(scaffold);
             }
         } else {
             // Chế độ "Xem Thử Dữ Liệu Thật"
@@ -1453,6 +1544,9 @@
             documentContentDisplay.classList.add("bg-amber-50/20");
 
             let currentRawText = currentDraft || documentContentDisplay.innerHTML;
+            if (!currentRawText || currentRawText.trim() === "" || currentRawText.includes("Chưa nạp được nội dung")) {
+                currentRawText = generateDefaultDocumentScaffold(docObj);
+            }
 
             const sampleHtml = renderSampleDataPreview(currentRawText, item);
             documentContentDisplay.innerHTML = `
@@ -2209,11 +2303,242 @@
         });
     }
 
+    // Helper: Tạo file Word .docx hoàn chỉnh từ Canvas HTML chuẩn OpenXML
+    async function createDocxFromCanvasHtml(cleanHtml) {
+        if (!window.BUILTIN_DOCX_TEMPLATES) throw new Error("Chưa nạp bộ mẫu chuẩn hệ thống");
+        const baseKey = Object.keys(window.BUILTIN_DOCX_TEMPLATES)[0];
+        const baseB64 = window.BUILTIN_DOCX_TEMPLATES[baseKey];
+        if (!baseB64) throw new Error("Không tìm thấy mẫu nền để khởi tạo file Word");
+
+        const baseBuffer = base64ToArrayBuffer(baseB64);
+        const zip = await JSZip.loadAsync(baseBuffer);
+        const docXmlStr = await zip.file("word/document.xml").async("string");
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
+        const wNS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+
+        const bodyNode = xmlDoc.getElementsByTagNameNS(wNS, "body")[0] || xmlDoc.getElementsByTagName("w:body")[0];
+        if (!bodyNode) throw new Error("Cấu trúc file Word không hợp lệ");
+
+        // Lưu lại sectPr cuối cùng (kích thước trang A4, lề chuẩn)
+        const sectPrList = bodyNode.getElementsByTagNameNS(wNS, "sectPr");
+        const sectPr = (sectPrList.length > 0) ? sectPrList[0].cloneNode(true) : null;
+
+        // Xóa các node con hiện có trong body
+        while (bodyNode.firstChild) {
+            bodyNode.removeChild(bodyNode.firstChild);
+        }
+
+        // Tạo container tạm để duyệt DOM HTML
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = cleanHtml;
+
+        // Helper tạo w:r
+        function createWordRun(text, isBold = false, isItalic = false, isUnderline = false, fontSizePt = 13) {
+            const r = xmlDoc.createElementNS(wNS, "w:r");
+            const rPr = xmlDoc.createElementNS(wNS, "w:rPr");
+
+            const rFonts = xmlDoc.createElementNS(wNS, "w:rFonts");
+            rFonts.setAttributeNS(wNS, "w:ascii", "Times New Roman");
+            rFonts.setAttributeNS(wNS, "w:hAnsi", "Times New Roman");
+            rFonts.setAttributeNS(wNS, "w:cs", "Times New Roman");
+            rPr.appendChild(rFonts);
+
+            const szVal = String(Math.round(fontSizePt * 2));
+            const sz = xmlDoc.createElementNS(wNS, "w:sz");
+            sz.setAttributeNS(wNS, "w:val", szVal);
+            rPr.appendChild(sz);
+            const szCs = xmlDoc.createElementNS(wNS, "w:szCs");
+            szCs.setAttributeNS(wNS, "w:val", szVal);
+            rPr.appendChild(szCs);
+
+            if (isBold) {
+                rPr.appendChild(xmlDoc.createElementNS(wNS, "w:b"));
+                rPr.appendChild(xmlDoc.createElementNS(wNS, "w:bCs"));
+            }
+            if (isItalic) {
+                rPr.appendChild(xmlDoc.createElementNS(wNS, "w:i"));
+                rPr.appendChild(xmlDoc.createElementNS(wNS, "w:iCs"));
+            }
+            if (isUnderline) {
+                const u = xmlDoc.createElementNS(wNS, "w:u");
+                u.setAttributeNS(wNS, "w:val", "single");
+                rPr.appendChild(u);
+            }
+            r.appendChild(rPr);
+
+            const t = xmlDoc.createElementNS(wNS, "w:t");
+            t.setAttribute("xml:space", "preserve");
+            t.textContent = text;
+            r.appendChild(t);
+            return r;
+        }
+
+        // Helper tạo w:p
+        function createWordParagraph(align = "both", indentFirstLine = false) {
+            const p = xmlDoc.createElementNS(wNS, "w:p");
+            const pPr = xmlDoc.createElementNS(wNS, "w:pPr");
+
+            if (align && align !== "left") {
+                const jc = xmlDoc.createElementNS(wNS, "w:jc");
+                jc.setAttributeNS(wNS, "w:val", align);
+                pPr.appendChild(jc);
+            }
+
+            const spacing = xmlDoc.createElementNS(wNS, "w:spacing");
+            spacing.setAttributeNS(wNS, "w:line", "360"); // 1.5 line spacing
+            spacing.setAttributeNS(wNS, "w:lineRule", "auto");
+            spacing.setAttributeNS(wNS, "w:after", "120"); // 6pt after
+            pPr.appendChild(spacing);
+
+            if (indentFirstLine) {
+                const ind = xmlDoc.createElementNS(wNS, "w:ind");
+                ind.setAttributeNS(wNS, "w:firstLine", "720"); // ~1.27cm
+                pPr.appendChild(ind);
+            }
+
+            p.appendChild(pPr);
+            return p;
+        }
+
+        // Helper tạo bảng 2 cột không viền (cho Header Quốc hiệu / Cơ quan)
+        function createHeaderTwoColumnTable(leftEl, rightEl) {
+            const tbl = xmlDoc.createElementNS(wNS, "w:tbl");
+            const tblPr = xmlDoc.createElementNS(wNS, "w:tblPr");
+            const tblW = xmlDoc.createElementNS(wNS, "w:tblW");
+            tblW.setAttributeNS(wNS, "w:w", "9600");
+            tblW.setAttributeNS(wNS, "w:type", "dxa");
+            tblPr.appendChild(tblW);
+
+            // Bỏ viền bảng
+            const tblBorders = xmlDoc.createElementNS(wNS, "w:tblBorders");
+            ["top", "left", "bottom", "right", "insideH", "insideV"].forEach(b => {
+                const border = xmlDoc.createElementNS(wNS, "w:" + b);
+                border.setAttributeNS(wNS, "w:val", "none");
+                tblBorders.appendChild(border);
+            });
+            tblPr.appendChild(tblBorders);
+            tbl.appendChild(tblPr);
+
+            const tr = xmlDoc.createElementNS(wNS, "w:tr");
+
+            // Ô trái
+            const tc1 = xmlDoc.createElementNS(wNS, "w:tc");
+            const tcPr1 = xmlDoc.createElementNS(wNS, "w:tcPr");
+            const tcW1 = xmlDoc.createElementNS(wNS, "w:tcW");
+            tcW1.setAttributeNS(wNS, "w:w", "4500");
+            tcW1.setAttributeNS(wNS, "w:type", "dxa");
+            tcPr1.appendChild(tcW1);
+            tc1.appendChild(tcPr1);
+
+            const leftPs = leftEl.querySelectorAll("p");
+            if (leftPs.length > 0) {
+                leftPs.forEach(lp => {
+                    const wp = createWordParagraph("center", false);
+                    const isBold = lp.style.fontWeight === "bold" || lp.querySelector("b, strong") !== null;
+                    const isItalic = lp.style.fontStyle === "italic" || lp.querySelector("i, em") !== null;
+                    wp.appendChild(createWordRun(lp.innerText || lp.textContent || "", isBold, isItalic, false, 12));
+                    tc1.appendChild(wp);
+                });
+            } else {
+                const wp = createWordParagraph("center", false);
+                wp.appendChild(createWordRun(leftEl.innerText || leftEl.textContent || "", false, false, false, 12));
+                tc1.appendChild(wp);
+            }
+            tr.appendChild(tc1);
+
+            // Ô phải
+            const tc2 = xmlDoc.createElementNS(wNS, "w:tc");
+            const tcPr2 = xmlDoc.createElementNS(wNS, "w:tcPr");
+            const tcW2 = xmlDoc.createElementNS(wNS, "w:tcW");
+            tcW2.setAttributeNS(wNS, "w:w", "5100");
+            tcW2.setAttributeNS(wNS, "w:type", "dxa");
+            tcPr2.appendChild(tcW2);
+            tc2.appendChild(tcPr2);
+
+            const rightPs = rightEl.querySelectorAll("p");
+            if (rightPs.length > 0) {
+                rightPs.forEach(rp => {
+                    const wp = createWordParagraph("center", false);
+                    const isBold = rp.style.fontWeight === "bold" || rp.querySelector("b, strong") !== null;
+                    const isItalic = rp.style.fontStyle === "italic" || rp.querySelector("i, em") !== null;
+                    const isUnderline = rp.style.textDecoration === "underline";
+                    wp.appendChild(createWordRun(rp.innerText || rp.textContent || "", isBold, isItalic, isUnderline, 12.5));
+                    tc2.appendChild(wp);
+                });
+            } else {
+                const wp = createWordParagraph("center", false);
+                wp.appendChild(createWordRun(rightEl.innerText || rightEl.textContent || "", false, false, false, 12.5));
+                tc2.appendChild(wp);
+            }
+            tr.appendChild(tc2);
+
+            tbl.appendChild(tr);
+            return tbl;
+        }
+
+        // Duyệt từng node con của tempDiv
+        Array.from(tempDiv.children).forEach(el => {
+            const style = el.getAttribute("style") || "";
+            const isFlex = style.includes("display: flex") || style.includes("display:flex");
+
+            if (isFlex && el.children.length >= 2) {
+                // Khung 2 cột (Header hoặc Footer ký tên)
+                const tbl = createHeaderTwoColumnTable(el.children[0], el.children[1]);
+                bodyNode.appendChild(tbl);
+                return;
+            }
+
+            // Đoạn văn thông thường
+            let align = "both";
+            if (style.includes("text-align: center") || el.classList.contains("text-center")) align = "center";
+            else if (style.includes("text-align: right") || el.classList.contains("text-right")) align = "right";
+
+            const indentFirstLine = style.includes("text-indent") && align === "both";
+
+            // Nếu element chứa các đoạn con <p>, duyệt từng đoạn con
+            const innerPs = el.querySelectorAll("p");
+            if (innerPs.length > 0 && el.tagName === "DIV") {
+                innerPs.forEach(ip => {
+                    let pAlign = align;
+                    const ipStyle = ip.getAttribute("style") || "";
+                    if (ipStyle.includes("text-align: center") || ip.classList.contains("text-center")) pAlign = "center";
+                    else if (ipStyle.includes("text-align: right") || ip.classList.contains("text-right")) pAlign = "right";
+                    const pIndent = ipStyle.includes("text-indent") && pAlign === "both";
+
+                    const wp = createWordParagraph(pAlign, pIndent);
+                    const isBold = ipStyle.includes("font-weight: bold") || ip.querySelector("b, strong") !== null;
+                    const isItalic = ipStyle.includes("font-style: italic") || ip.querySelector("i, em") !== null;
+                    wp.appendChild(createWordRun(ip.innerText || ip.textContent || "", isBold, isItalic, false, 13));
+                    bodyNode.appendChild(wp);
+                });
+            } else {
+                const wp = createWordParagraph(align, indentFirstLine);
+                const isBold = style.includes("font-weight: bold") || el.tagName === "H1" || el.tagName === "H2" || el.tagName === "H3" || el.querySelector("b, strong") !== null;
+                const isItalic = style.includes("font-style: italic") || el.querySelector("i, em") !== null;
+                const fontSize = (el.tagName === "H2") ? 16 : 13;
+                wp.appendChild(createWordRun(el.innerText || el.textContent || "", isBold, isItalic, false, fontSize));
+                bodyNode.appendChild(wp);
+            }
+        });
+
+        // Gắn lại sectPr vào cuối body
+        if (sectPr) bodyNode.appendChild(sectPr);
+
+        const serializer = new XMLSerializer();
+        const updatedXml = serializer.serializeToString(xmlDoc);
+        zip.file("word/document.xml", updatedXml);
+
+        return await zip.generateAsync({
+            type: "blob",
+            mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        });
+    }
+
     // Save modified template as System Default
     async function applyAsSystemDefaultTemplate() {
         const docId = state.activeDocId;
-        const item = state.batchFiles[docId];
-        if (!item || !documentContentDisplay) return;
+        if (!documentContentDisplay) return;
 
         try {
             showToast("Đang đóng gói và lưu mẫu chuẩn...", "info");
@@ -2224,9 +2549,35 @@
             localStorage.setItem("ho_so_custom_template_html_" + docId, cleanHtml);
             localStorage.setItem("ho_so_custom_template_time_" + docId, new Date().toISOString());
 
-            // 2. Tạo file Word .docx từ buffer hiện tại với các mappings và chèn các thẻ
-            const taggedBlob = await createTaggedDocxBlob(item.arrayBuffer, item.mappings || []);
-            const taggedBuffer = await taggedBlob.arrayBuffer();
+            let item = state.batchFiles[docId];
+            let taggedBuffer = null;
+
+            if (item && item.arrayBuffer) {
+                // Đã có buffer file gốc -> áp dụng XML tags lên file gốc
+                const taggedBlob = await createTaggedDocxBlob(item.arrayBuffer, item.mappings || []);
+                taggedBuffer = await taggedBlob.arrayBuffer();
+            } else {
+                // Chưa có file mẫu .docx gốc -> Tạo file .docx chuẩn mới hoàn toàn từ HTML
+                const generatedBlob = await createDocxFromCanvasHtml(cleanHtml);
+                taggedBuffer = await generatedBlob.arrayBuffer();
+
+                const wf = getCurrentWorkflow();
+                const docObj = (wf && wf.documents) ? wf.documents.find(d => d.id === docId) : { id: docId, name: docId, code: docId };
+                const paragraphs = await extractParagraphsFromBuffer(taggedBuffer);
+
+                item = {
+                    id: docId,
+                    name: `${docObj.code || docId}_custom.docx`,
+                    size: taggedBuffer.byteLength,
+                    arrayBuffer: taggedBuffer,
+                    paragraphs: paragraphs,
+                    mappings: detectEntitiesForDocument(docObj, paragraphs),
+                    isCustom: true,
+                    status: "matched"
+                };
+                state.batchFiles[docId] = item;
+            }
+
             const b64 = arrayBufferToBase64(taggedBuffer);
             localStorage.setItem("ho_so_custom_template_" + docId, b64);
 
@@ -2234,6 +2585,9 @@
             item.arrayBuffer = taggedBuffer;
 
             // Cập nhật giao diện
+            if (singleDocFileNameBadge) {
+                singleDocFileNameBadge.textContent = item.name;
+            }
             const singleDocSourceBadge = document.getElementById("singleDocSourceBadge");
             if (singleDocSourceBadge) {
                 singleDocSourceBadge.className = "text-[10px] bg-amber-50 text-amber-800 font-semibold px-2 py-0.5 rounded border border-amber-300 flex items-center gap-1";
@@ -2278,13 +2632,18 @@
     if (btnDownloadSingleDocx) {
         btnDownloadSingleDocx.onclick = async () => {
             const docId = state.activeDocId;
-            const item = state.batchFiles[docId];
-            if (!item) return;
+            let item = state.batchFiles[docId];
             const wf = getCurrentWorkflow();
-            const docObj = wf.documents.find(d => d.id === docId);
+            const docObj = (wf && wf.documents) ? wf.documents.find(d => d.id === docId) : { id: docId, name: docId, code: docId };
 
             try {
-                const blob = await createTaggedDocxBlob(item.arrayBuffer, item.mappings || []);
+                let blob = null;
+                if (item && item.arrayBuffer) {
+                    blob = await createTaggedDocxBlob(item.arrayBuffer, item.mappings || []);
+                } else {
+                    const cleanHtml = cleanCanvasHtmlForStorage();
+                    blob = await createDocxFromCanvasHtml(cleanHtml);
+                }
                 const fileName = `${docObj.code}_${docObj.name.replace(/[^a-zA-Z0-9_À-ỹ]+/g, "_")}.docx`;
                 saveAs(blob, fileName);
                 showToast(`Đã xuất template: ${fileName}`);
