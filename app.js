@@ -12807,9 +12807,73 @@ window.APP_CONFIG = {
         if (modal) modal.classList.add("hidden");
     }
 
+    
+    // =============================================================
+    // GOOGLE SHEETS LIVE STATUS INDICATOR & FOUC PREVENTION
+    // =============================================================
+    let lastGSheetSyncTimestamp = null;
+
+    function showInitialCloudSyncNotice(customMsg) {
+        const el = document.getElementById("cloudInitialSyncNotice");
+        const txt = document.getElementById("cloudInitialSyncNoticeText");
+        if (!el) return;
+        if (txt && customMsg) txt.textContent = customMsg;
+        el.classList.remove("opacity-0", "-translate-y-3", "pointer-events-none");
+        el.classList.add("opacity-100", "translate-y-0");
+    }
+
+    function hideInitialCloudSyncNotice() {
+        const el = document.getElementById("cloudInitialSyncNotice");
+        if (!el) return;
+        el.classList.remove("opacity-100", "translate-y-0");
+        el.classList.add("opacity-0", "-translate-y-3", "pointer-events-none");
+    }
+
+    function updateGSheetNavbarStatus(status, customMsg = "") {
+        const btn = document.getElementById("btnOpenGSheetSyncModal");
+        const ping = document.getElementById("gsheetStatusPing");
+        const dot = document.getElementById("gsheetStatusDot");
+        const icon = document.getElementById("gsheetStatusIcon");
+        const text = document.getElementById("gsheetStatusText");
+        if (!btn) return;
+
+        if (status === "syncing") {
+            if (ping) {
+                ping.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75";
+                ping.classList.remove("hidden");
+            }
+            if (dot) dot.className = "relative inline-flex rounded-full h-2 w-2 bg-amber-400";
+            if (icon) icon.className = "fa-solid fa-arrows-rotate fa-spin text-amber-300 text-[11px]";
+            if (text) text.textContent = customMsg || "Đang đồng bộ...";
+            btn.title = "Đang truyền dữ liệu với Google Sheets Cloud...";
+        } else if (status === "connected" || status === "success") {
+            lastGSheetSyncTimestamp = new Date();
+            const timeStr = lastGSheetSyncTimestamp.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            if (ping) ping.classList.add("hidden");
+            if (dot) dot.className = "relative inline-flex rounded-full h-2 w-2 bg-emerald-400 shadow-[0_0_6px_#34d399]";
+            if (icon) icon.className = "fa-solid fa-cloud-check text-emerald-300 text-[11px]";
+            if (text) text.textContent = "Google Sheets";
+            btn.title = `Google Sheets Cloud: Đã kết nối & Đồng bộ lúc ${timeStr} (Bấm để xem cài đặt)`;
+        } else if (status === "error" || status === "disconnected") {
+            if (ping) ping.classList.add("hidden");
+            if (dot) dot.className = "relative inline-flex rounded-full h-2 w-2 bg-rose-500 shadow-[0_0_6px_#f43f5e]";
+            if (icon) icon.className = "fa-solid fa-cloud-slash text-rose-300 text-[11px]";
+            if (text) text.textContent = "Mất kết nối";
+            btn.title = customMsg ? `Lỗi: ${customMsg}` : "Lỗi kết nối Google Sheets Cloud (Bấm để xem chi tiết)";
+        } else if (status === "unconfigured") {
+            if (ping) ping.classList.add("hidden");
+            if (dot) dot.className = "relative inline-flex rounded-full h-2 w-2 bg-slate-400";
+            if (icon) icon.className = "fa-solid fa-cloud text-slate-300 text-[11px]";
+            if (text) text.textContent = "Google Sheets";
+            btn.title = "Chưa cấu hình Google Sheets Cloud (Bấm để cài đặt)";
+        }
+    }
+    window.updateGSheetNavbarStatus = updateGSheetNavbarStatus;
+
     async function pullDataFromGoogleSheet(showToasts = true) {
         isGSheetSyncInProgress = true;
         const config = getGSheetConfig();
+        updateGSheetNavbarStatus("syncing", "Đang tải...");
         const statusBox = document.getElementById("gsheetSyncStatusBox");
 
         if (!config.url) {
@@ -12893,6 +12957,7 @@ window.APP_CONFIG = {
             }
 
             if (showToasts) showToast(`Đã đồng bộ thành công dữ liệu từ Google Sheets!`, "success");
+            updateGSheetNavbarStatus("connected");
             return true;
         } catch (err) {
             console.error("GSheet Pull Error:", err);
@@ -12901,6 +12966,7 @@ window.APP_CONFIG = {
                 statusBox.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 mr-1"></i> Lỗi đồng bộ: ${err.message}`;
             }
             if (showToasts) showToast("Lỗi đồng bộ Google Sheets: " + err.message, "error");
+            updateGSheetNavbarStatus("error", err.message);
             return false;
         } finally {
             setTimeout(() => { isGSheetSyncInProgress = false; }, 600);
@@ -12924,6 +12990,7 @@ window.APP_CONFIG = {
 
         try {
             if (showToasts) showToast("Đang lưu Từ điển & Dữ liệu lên Google Sheets...", "info");
+            updateGSheetNavbarStatus("syncing", "Đang lưu...");
             if (statusBox) {
                 statusBox.className = "p-2.5 rounded-lg text-xs bg-blue-50 border border-blue-200 text-blue-800";
                 statusBox.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Đang ghi dữ liệu lên Google Sheets...';
@@ -12969,6 +13036,7 @@ window.APP_CONFIG = {
             }
 
             if (showToasts) showToast(res.message || "Đã lưu lên Google Sheets thành công!", "success");
+            updateGSheetNavbarStatus("connected");
             return true;
         } catch(err) {
             console.error("GSheet Push Error:", err);
@@ -12977,6 +13045,7 @@ window.APP_CONFIG = {
                 statusBox.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-600 mr-1"></i> Lỗi ghi: ${err.message}`;
             }
             if (showToasts) showToast("Lỗi khi lưu lên Google Sheets: " + err.message, "error");
+            updateGSheetNavbarStatus("error", err.message);
             return false;
         } finally {
             setTimeout(() => { isGSheetSyncInProgress = false; }, 600);
@@ -13082,15 +13151,28 @@ window.APP_CONFIG = {
         }
     } catch(e) {}
 
-    // Tự động tải dữ liệu từ Google Sheets về khi mở Web App (Auto-Pull)
-    setTimeout(() => {
-        const cfg = getGSheetConfig();
-        if (cfg && cfg.url) {
+    // Tự động tải dữ liệu từ Google Sheets về khi mở Web App (Auto-Pull cực nhanh + Chống giật FOUC)
+    const startupCfg = getGSheetConfig();
+    if (startupCfg && startupCfg.url) {
+        showInitialCloudSyncNotice();
+        updateGSheetNavbarStatus("syncing", "Đang nạp...");
+        setTimeout(() => {
             pullDataFromGoogleSheet(false).then(ok => {
-                if (ok) console.log("Google Sheets Auto-Pull on load successful");
+                hideInitialCloudSyncNotice();
+                if (ok) {
+                    console.log("Google Sheets Auto-Pull on load successful");
+                    updateGSheetNavbarStatus("connected");
+                } else {
+                    updateGSheetNavbarStatus("error");
+                }
+            }).catch(e => {
+                hideInitialCloudSyncNotice();
+                updateGSheetNavbarStatus("error", e.message);
             });
-        }
-    }, 600);
+        }, 80);
+    } else {
+        updateGSheetNavbarStatus("unconfigured");
+    }
 
     switchMainTab(initialTab, false);
 

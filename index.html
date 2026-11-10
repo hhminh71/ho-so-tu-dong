@@ -20,6 +20,16 @@
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col text-[11.5px]">
 
+    <!-- Cloud Initial Sync Indicator Banner -->
+    <div id="cloudInitialSyncNotice" class="fixed top-2.5 left-1/2 -translate-x-1/2 z-[100] bg-slate-900/95 text-white px-3.5 py-1.5 rounded-full shadow-2xl border border-emerald-500/50 backdrop-blur-md flex items-center gap-2.5 text-xs font-medium transition-all duration-300 opacity-0 -translate-y-3 pointer-events-none">
+        <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+        </span>
+        <i class="fa-solid fa-arrows-rotate fa-spin text-emerald-400 text-xs"></i>
+        <span id="cloudInitialSyncNoticeText">Đang kiểm tra &amp; nạp dữ liệu từ Google Sheets Cloud...</span>
+    </div>
+
     <!-- ============================================================= -->
     <!-- MÀN HÌNH ĐĂNG NHẬP HỆ THỐNG (LOGIN OVERLAY) -->
     <!-- ============================================================= -->
@@ -178,9 +188,14 @@
             <div class="flex items-center space-x-2 shrink-0 text-xs">
                 <!-- User Account Profile Menu (Bảng cá nhân tích hợp đầy đủ công cụ) -->
                 <!-- Nút Mở Modal Đồng bộ Google Sheets Cloud -->
-                <button id="btnOpenGSheetSyncModal" type="button" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-700/80 hover:bg-emerald-600 text-white border border-emerald-400/40 shadow-xs flex items-center gap-1.5 transition-all cursor-pointer h-7.5" title="Đồng bộ Online với Google Sheets trung tâm (Cloud Sync)">
-                    <i class="fa-solid fa-cloud-arrow-up text-emerald-300 text-[11px]"></i>
-                    <span class="hidden md:inline">Google Sheets</span>
+                <button id="btnOpenGSheetSyncModal" type="button" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-800/90 hover:bg-emerald-700 text-white border border-emerald-400/30 shadow-xs flex items-center gap-2 transition-all cursor-pointer h-7.5 relative group" title="Đồng bộ Online với Google Sheets trung tâm (Cloud Sync)">
+                    <!-- Status LED indicator -->
+                    <span class="relative flex h-2 w-2">
+                        <span id="gsheetStatusPing" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 hidden"></span>
+                        <span id="gsheetStatusDot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400 shadow-[0_0_6px_#34d399]"></span>
+                    </span>
+                    <i id="gsheetStatusIcon" class="fa-solid fa-cloud-check text-emerald-300 text-[11px]"></i>
+                    <span id="gsheetStatusText" class="hidden md:inline text-[11.5px]">Google Sheets</span>
                 </button>
                 <div class="relative" id="userHeaderBlock">
                     <button id="btnUserAccount" type="button" class="flex items-center space-x-2 px-2.5 py-1 rounded-lg bg-black/20 hover:bg-black/30 transition-colors border border-white/15 shadow-2xs h-7.5 cursor-pointer">
@@ -2941,7 +2956,7 @@
     </div>
 
     <!-- Script RBAC & Xác thực tài khoản -->
-    <script src="app.js?v=20261106_v15"></script>
+    <script src="app.js?v=20261110_v1"></script>
     <script src="auth.js"></script>
 
 </body>
