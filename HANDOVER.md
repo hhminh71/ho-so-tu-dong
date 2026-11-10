@@ -73,7 +73,7 @@ Hệ thống đã hoàn tất và kích hoạt thành công **Cơ chế Đồng 
 ## ⚠️ 4. TRẠNG THÁI HIỆN TẠI & CÓ LỖI NÀO ĐANG VƯỚNG KHÔNG?
 
 * **Lỗi tồn đọng nghiêm trọng (Blocker/Critical):** **KHÔNG CÓ.**
-* **Tình trạng mã nguồn:** Sạch sẽ, không có xung đột Git. Toàn bộ mã nguồn đã được commit và push lên `origin/main` (Commit mới nhất: `ec58674`).
+* **Tình trạng mã nguồn:** Sạch sẽ, không có xung đột Git. Toàn bộ mã nguồn đã được commit và push lên `origin/main` (Commit mới nhất: `101f22e`).
 * **Hệ thống Server cục bộ:** Đang chạy một phiên bản HTTP Server nền tại cổng 8000 (PID kiểm thử, phục vụ phát triển cục bộ).
 
 ---
@@ -82,8 +82,9 @@ Hệ thống đã hoàn tất và kích hoạt thành công **Cơ chế Đồng 
 
 Nếu người dùng yêu cầu tiếp tục phát triển, đây là các hạng mục ưu tiên cao tiếp theo có thể thực hiện ngay:
 
-- [ ] **Nhiệm vụ 1: Bổ sung chỉ báo trạng thái Cloud trực quan trên Navbar:**
-  * Hiện tại nút `[ Google Sheets ]` là nút tĩnh. Có thể thêm một chấm đèn trạng thái nhỏ (xanh lá nhấp nháy khi đang đồng bộ, xanh tĩnh khi kết nối tốt) để người dùng an tâm rằng dữ liệu luôn được lưu trữ trên đám mây.
+- [x] **Nhiệm vụ 1: Bổ sung chỉ báo trạng thái Cloud trực quan trên Navbar & Chống giật FOUC:** *(ĐÃ HOÀN THÀNH - Commit `101f22e`)*
+  * Đèn LED trạng thái 3 màu (Xanh lá / Vàng nhấp nháy / Đỏ) hiển thị thời gian thực.
+  * Lớp phủ thông báo nạp đám mây nhẹ nhàng, loại bỏ hoàn toàn hiện tượng giật gián đoạn khi mở trang.
 - [ ] **Nhiệm vụ 2: Kiểm thử xuất hàng loạt tệp Word (Batch Export .zip):**
   * Kiểm tra việc xả dữ liệu từ 65 biến Google Sheets vào các văn bản mẫu trong quy trình chỉ định thầu rút gọn (`cdtrg_1` đến `cdtrg_7`) để bảo đảm không còn thẻ `{TAG}` nào bị sót hoặc xuất hiện chuỗi `undefined`.
 - [ ] **Nhiệm vụ 3: Mở rộng thêm gói thầu mới trên Google Sheet:**
