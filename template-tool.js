@@ -395,6 +395,10 @@
     window.studioState = state;
     window.processIncomingFiles = processIncomingFiles;
     window.loadFileForSingleDocument = loadFileForSingleDocument;
+    window.cleanCanvasHtmlForStorage = cleanCanvasHtmlForStorage;
+    window.createDocxFromCanvasHtml = createDocxFromCanvasHtml;
+    window.performUndo = performUndo;
+    window.performRedo = performRedo;
 
     if (btnViewBatchMode) btnViewBatchMode.onclick = () => switchViewMode("batch");
     if (btnViewSingleMode) btnViewSingleMode.onclick = () => {
@@ -500,6 +504,7 @@
             }
 
             const mappings = detectEntitiesForDocument(docObj, paragraphs);
+            const styledHtml = await parseDocxToStyledHtml(arrayBuffer, mappings);
 
             const item = {
                 id: docId,
@@ -507,6 +512,7 @@
                 size: file.size,
                 arrayBuffer: arrayBuffer,
                 paragraphs: paragraphs,
+                styledHtml: styledHtml,
                 mappings: mappings,
                 status: "matched",
                 isCustom: true,
@@ -677,6 +683,7 @@
                 const arrayBuffer = await file.arrayBuffer();
                 const paragraphs = await extractParagraphsFromBuffer(arrayBuffer);
                 const mappings = detectEntitiesForDocument(matchedDoc, paragraphs);
+                const styledHtml = await parseDocxToStyledHtml(arrayBuffer, mappings);
 
                 state.batchFiles[matchedDoc.id] = {
                     file: file,
@@ -684,6 +691,7 @@
                     size: file.size,
                     arrayBuffer: arrayBuffer,
                     paragraphs: paragraphs,
+                    styledHtml: styledHtml,
                     mappings: mappings,
                     status: "matched",
                     isCustom: true,
@@ -726,6 +734,253 @@
         } catch (e) {
             console.error("Error extracting paragraphs:", e);
             return [];
+        }
+    }
+
+    // -------------------------------------------------------------
+    // OpenXML (.docx) to Rich Styled HTML Parser
+    // Bảo tồn: Khung bảng 2 cột tiêu ngữ/cơ quan, bảng dữ liệu,
+    // căn lề (giữa, phải, đều 2 bên), in đậm/nghiêng/gạch chân,
+    // và nhúng thẻ biến tương tác có nút xóa (x).
+    // -------------------------------------------------------------
+    async function parseDocxToStyledHtml(arrayBuffer, mappings = []) {
+        try {
+            const zip = await JSZip.loadAsync(arrayBuffer);
+            const docXmlFile = zip.file("word/document.xml");
+            if (!docXmlFile) return "";
+            const docXmlStr = await docXmlFile.async("string");
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(docXmlStr, "application/xml");
+
+            const body = xmlDoc.getElementsByTagName("w:body")[0] || xmlDoc.getElementsByTagName("body")[0];
+            if (!body) return "";
+
+            let html = "";
+
+            function parseRun(rNode) {
+                let rPr = null;
+                let runHtml = "";
+
+                let isBold = false;
+                let isItalic = false;
+                let isUnderline = false;
+                let fontSizePt = null;
+
+                for (let c = 0; c < rNode.childNodes.length; c++) {
+                    const child = rNode.childNodes[c];
+                    if (!child || child.nodeType !== 1) continue;
+                    const local = child.localName || child.nodeName.split(":").pop();
+                    if (local === "rPr") {
+                        rPr = child;
+                        for (let k = 0; k < rPr.childNodes.length; k++) {
+                            const prop = rPr.childNodes[k];
+                            if (!prop || prop.nodeType !== 1) continue;
+                            const pLocal = prop.localName || prop.nodeName.split(":").pop();
+                            const val = (typeof prop.getAttribute === "function") ? (prop.getAttribute("w:val") || prop.getAttribute("val")) : null;
+                            if (pLocal === "b" && val !== "0" && val !== "false") isBold = true;
+                            if (pLocal === "i" && val !== "0" && val !== "false") isItalic = true;
+                            if (pLocal === "u" && val !== "none") isUnderline = true;
+                            if (pLocal === "sz" && val) fontSizePt = Math.round(parseInt(val, 10) / 2);
+                        }
+                    } else if (local === "t") {
+                        const raw = child.textContent || "";
+                        runHtml += escapeHtml(raw);
+                    } else if (local === "br") {
+                        runHtml += "<br>";
+                    } else if (local === "tab") {
+                        runHtml += "&nbsp;&nbsp;&nbsp;&nbsp;";
+                    }
+                }
+
+                if (!runHtml) return "";
+
+                if (isBold) runHtml = `<strong>${runHtml}</strong>`;
+                if (isItalic) runHtml = `<em>${runHtml}</em>`;
+                if (isUnderline) runHtml = `<u>${runHtml}</u>`;
+                if (fontSizePt && fontSizePt >= 14) {
+                    runHtml = `<span style="font-size: ${fontSizePt}pt;">${runHtml}</span>`;
+                }
+                return runHtml;
+            }
+
+            function parseParagraph(pNode) {
+                let pPr = null;
+                let align = "left";
+                let indent = false;
+                let hasBottomBorder = false;
+
+                for (let i = 0; i < pNode.childNodes.length; i++) {
+                    const child = pNode.childNodes[i];
+                    if (!child || child.nodeType !== 1) continue;
+                    const local = child.localName || child.nodeName.split(":").pop();
+                    if (local === "pPr") {
+                        pPr = child;
+                        for (let j = 0; j < pPr.childNodes.length; j++) {
+                            const prop = pPr.childNodes[j];
+                            if (!prop || prop.nodeType !== 1) continue;
+                            const pl = prop.localName || prop.nodeName.split(":").pop();
+                            if (pl === "jc") {
+                                const val = (typeof prop.getAttribute === "function") ? (prop.getAttribute("w:val") || prop.getAttribute("val")) : null;
+                                if (val === "center") align = "center";
+                                else if (val === "right") align = "right";
+                                else if (val === "both" || val === "distribute") align = "justify";
+                                else if (val === "left") align = "left";
+                            } else if (pl === "ind") {
+                                const fl = (typeof prop.getAttribute === "function") ? (prop.getAttribute("w:firstLine") || prop.getAttribute("firstLine")) : null;
+                                if (fl && parseInt(fl, 10) > 200) indent = true;
+                            } else if (pl === "pBdr") {
+                                const btm = prop.getElementsByTagName("w:bottom")[0] || prop.getElementsByTagName("bottom")[0];
+                                if (btm) hasBottomBorder = true;
+                            }
+                        }
+                        break;
+                    }
+                }
+
+                let innerHtml = "";
+                for (let i = 0; i < pNode.childNodes.length; i++) {
+                    const child = pNode.childNodes[i];
+                    if (!child || child.nodeType !== 1) continue;
+                    const local = child.localName || child.nodeName.split(":").pop();
+                    if (local === "r") {
+                        innerHtml += parseRun(child);
+                    } else if (local === "hyperlink") {
+                        const rNodes = child.getElementsByTagName("w:r");
+                        for (let r = 0; r < rNodes.length; r++) innerHtml += parseRun(rNodes[r]);
+                    }
+                }
+
+                const styleArr = [];
+                if (align !== "left") styleArr.push(`text-align: ${align}`);
+                if (indent && align === "justify") styleArr.push("text-indent: 28px");
+                if (hasBottomBorder) styleArr.push("border-bottom: 1.5px solid #334155; width: fit-content; margin-left: auto; margin-right: auto; padding-bottom: 2px");
+
+                const styleStr = styleArr.length > 0 ? ` style="${styleArr.join('; ')}"` : "";
+                const alignClass = align === "center" ? "text-center" : (align === "right" ? "text-right" : (align === "justify" ? "text-justify" : ""));
+
+                return `<p class="mb-2 leading-relaxed text-slate-800 ${alignClass}"${styleStr}>${innerHtml || "&nbsp;"}</p>`;
+            }
+
+            function parseTable(tblNode) {
+                let isBorderless = true;
+                const borders = tblNode.getElementsByTagName("w:tblBorders")[0] || tblNode.getElementsByTagName("tblBorders")[0];
+                if (borders) {
+                    for (let b = 0; b < borders.childNodes.length; b++) {
+                        const bNode = borders.childNodes[b];
+                        if (!bNode || bNode.nodeType !== 1) continue;
+                        const val = (typeof bNode.getAttribute === "function") ? (bNode.getAttribute("w:val") || bNode.getAttribute("val")) : null;
+                        if (val && val !== "none" && val !== "nil") {
+                            isBorderless = false;
+                            break;
+                        }
+                    }
+                }
+
+                const trNodes = [];
+                for (let i = 0; i < tblNode.childNodes.length; i++) {
+                    const child = tblNode.childNodes[i];
+                    if (!child || child.nodeType !== 1) continue;
+                    const local = child.localName || child.nodeName.split(":").pop();
+                    if (local === "tr") trNodes.push(child);
+                }
+
+                if (trNodes.length <= 4 && isBorderless) {
+                    // Header hoặc Signature layout table (2 cột)
+                    let tblHtml = `<table class="w-full my-2 border-collapse" style="width: 100%; border: none; margin-bottom: 14px;"><tbody>`;
+                    for (let r = 0; r < trNodes.length; r++) {
+                        const tr = trNodes[r];
+                        tblHtml += `<tr style="border: none;">`;
+                        const tcNodes = [];
+                        for (let c = 0; c < tr.childNodes.length; c++) {
+                            const child = tr.childNodes[c];
+                            if (!child || child.nodeType !== 1) continue;
+                            const local = child.localName || child.nodeName.split(":").pop();
+                            if (local === "tc") tcNodes.push(child);
+                        }
+                        for (let c = 0; c < tcNodes.length; c++) {
+                            const tc = tcNodes[c];
+                            const widthPct = (c === 0) ? "45%" : "55%";
+                            const padStyle = (c === 0) ? "padding: 2px 10px 2px 0;" : "padding: 2px 0 2px 10px;";
+                            tblHtml += `<td style="vertical-align: top; width: ${widthPct}; border: none; ${padStyle}">`;
+                            for (let p = 0; p < tc.childNodes.length; p++) {
+                                const pChild = tc.childNodes[p];
+                                if (!pChild || pChild.nodeType !== 1) continue;
+                                const pLocal = pChild.localName || pChild.nodeName.split(":").pop();
+                                if (pLocal === "p") {
+                                    tblHtml += parseParagraph(pChild);
+                                }
+                            }
+                            tblHtml += `</td>`;
+                        }
+                        tblHtml += `</tr>`;
+                    }
+                    tblHtml += `</tbody></table>`;
+                    return tblHtml;
+                } else {
+                    // Data table có viền
+                    let tblHtml = `<table class="w-full my-3 border-collapse border border-slate-400 text-sm" style="width: 100%; border-collapse: collapse; margin-bottom: 16px;"><tbody>`;
+                    for (let r = 0; r < trNodes.length; r++) {
+                        const tr = trNodes[r];
+                        tblHtml += `<tr>`;
+                        const tcNodes = [];
+                        for (let c = 0; c < tr.childNodes.length; c++) {
+                            const child = tr.childNodes[c];
+                            if (!child || child.nodeType !== 1) continue;
+                            const local = child.localName || child.nodeName.split(":").pop();
+                            if (local === "tc") tcNodes.push(child);
+                        }
+                        for (let c = 0; c < tcNodes.length; c++) {
+                            const tc = tcNodes[c];
+                            tblHtml += `<td class="border border-slate-300 p-2 text-slate-800" style="vertical-align: top; border: 1px solid #cbd5e1; padding: 6px 8px;">`;
+                            for (let p = 0; p < tc.childNodes.length; p++) {
+                                const pChild = tc.childNodes[p];
+                                if (!pChild || pChild.nodeType !== 1) continue;
+                                const pLocal = pChild.localName || pChild.nodeName.split(":").pop();
+                                if (pLocal === "p") {
+                                    tblHtml += parseParagraph(pChild);
+                                }
+                            }
+                            tblHtml += `</td>`;
+                        }
+                        tblHtml += `</tr>`;
+                    }
+                    tblHtml += `</tbody></table>`;
+                    return tblHtml;
+                }
+            }
+
+            for (let i = 0; i < body.childNodes.length; i++) {
+                const child = body.childNodes[i];
+                if (!child || child.nodeType !== 1) continue;
+                const local = child.localName || child.nodeName.split(":").pop();
+                if (local === "p") {
+                    html += parseParagraph(child);
+                } else if (local === "tbl") {
+                    html += parseTable(child);
+                }
+            }
+
+            // Gán các thực thể tự động nhận diện thành mã {TAG}
+            (mappings || []).forEach(m => {
+                if (m.originalText) {
+                    const esc = escapeHtml(m.originalText);
+                    if (html.includes(esc)) {
+                        html = html.split(esc).join(`{${m.tag}}`);
+                    } else if (html.includes(m.originalText)) {
+                        html = html.split(m.originalText).join(`{${m.tag}}`);
+                    }
+                }
+            });
+
+            // Chuẩn hóa tất cả {{TAG}} hoặc {TAG} thành {TAG} chuẩn mực duy nhất
+            html = html.replace(/\{+([A-Z0-9_]+)\}+/g, (match, tag) => {
+                return `{${tag}}`;
+            });
+
+            return html;
+        } catch (err) {
+            console.error("Lỗi parse docx sang HTML định dạng:", err);
+            return "";
         }
     }
 
@@ -1402,6 +1657,7 @@
 
         const paragraphs = await extractParagraphsFromBuffer(arrayBuffer);
         const mappings = detectEntitiesForDocument(docObj, paragraphs);
+        const styledHtml = await parseDocxToStyledHtml(arrayBuffer, mappings);
 
         const item = {
             id: docId,
@@ -1409,6 +1665,7 @@
             size: arrayBuffer.byteLength,
             arrayBuffer: arrayBuffer,
             paragraphs: paragraphs,
+            styledHtml: styledHtml,
             mappings: mappings,
             isCustom: isCustom
         };
@@ -1444,6 +1701,10 @@
             if (btnEdit) btnEdit.click();
         }
 
+        if (typeof pushUndoState === "function") {
+            pushUndoState(`Chèn thẻ ${tagString}`);
+        }
+
         documentContentDisplay.focus();
         const sel = window.getSelection();
         let range = savedCursorRange;
@@ -1456,11 +1717,12 @@
             // Chèn vào cuối canvas
             const p = document.createElement("p");
             p.className = "mb-2 leading-relaxed text-slate-800";
-            p.innerHTML = isTable 
-                ? `<span class="tag-table-badge" contenteditable="false">${formattedTag}</span>&nbsp;`
-                : `<span class="tag-badge" contenteditable="false">${formattedTag}</span>&nbsp;`;
+            const badgeClass = isTable ? "tag-table-badge" : "tag-badge";
+            p.innerHTML = `<span class="${badgeClass}" data-tag="${cleanTag}" contenteditable="false">${formattedTag}<span class="btn-remove-tag" data-tag="${cleanTag}" title="Xóa biến này" contenteditable="false">×</span></span>&nbsp;`;
             documentContentDisplay.appendChild(p);
             showToast(`Đã chèn thẻ ${formattedTag} vào cuối văn bản!`);
+            if (state.activeDocId) workingDraftHtml[state.activeDocId] = cleanCanvasHtmlForStorage();
+            if (typeof renderContextualRecommendedVars === "function") renderContextualRecommendedVars();
             return;
         }
 
@@ -1469,8 +1731,9 @@
 
         const badge = document.createElement("span");
         badge.className = isTable ? "tag-table-badge" : "tag-badge";
-        badge.textContent = formattedTag;
+        badge.setAttribute("data-tag", cleanTag);
         badge.setAttribute("contenteditable", "false");
+        badge.innerHTML = `${formattedTag}<span class="btn-remove-tag" data-tag="${cleanTag}" title="Xóa biến này" contenteditable="false">×</span>`;
 
         range.deleteContents();
         range.insertNode(badge);
@@ -1485,6 +1748,7 @@
         sel.addRange(range);
         savedCursorRange = range.cloneRange();
 
+        if (state.activeDocId) workingDraftHtml[state.activeDocId] = cleanCanvasHtmlForStorage();
         showToast(`Đã chèn ${formattedTag} tại vị trí con trỏ!`);
         if (typeof renderContextualRecommendedVars === "function") {
             renderContextualRecommendedVars();
@@ -1732,25 +1996,31 @@
             if (currentDraft && currentDraft.trim() !== "" && !item?.isUploaded) {
                 // Hiển thị nội dung tùy biến từ bản thảo hoặc đã lưu
                 documentContentDisplay.innerHTML = formatTemplateHtmlWithBadges(currentDraft);
+            } else if (item && item.styledHtml && item.styledHtml.trim() !== "") {
+                // Hiển thị từ file Word chuẩn OpenXML (giữ nguyên bảng 2 cột, căn giữa, in đậm/nghiêng)
+                documentContentDisplay.innerHTML = formatTemplateHtmlWithBadges(item.styledHtml);
+                workingDraftHtml[docId] = cleanCanvasHtmlForStorage();
+                item.isUploaded = false;
+                if (typeof pushUndoState === "function") pushUndoState("Nạp file Word");
             } else if (item && item.paragraphs && item.paragraphs.length > 0) {
-                // Hiển thị từ các đoạn văn bản trong file docx kèm highlight các thẻ biến
+                // Fallback nếu không có styledHtml
                 const paragraphs = item.paragraphs || [];
                 documentContentDisplay.innerHTML = paragraphs.map(p => {
                     let text = escapeHtml(p);
                     (item.mappings || []).forEach(m => {
                         if (m.originalText && text.includes(m.originalText)) {
-                            text = text.split(m.originalText).join(`<span class="tag-badge" contenteditable="false">{${m.tag}}</span>`);
+                            text = text.split(m.originalText).join(`<span class="tag-badge" data-tag="${m.tag}" contenteditable="false">{${m.tag}}<span class="btn-remove-tag" data-tag="${m.tag}" title="Xóa biến này" contenteditable="false">×</span></span>`);
                         }
                     });
-                    // Thay thế {TAG} và {BANG_...} đã có sẵn trong file Word
                     text = text.replace(/\{([A-Z0-9_]+)\}/g, (match, tag) => {
                         const isTable = tag.startsWith("BANG_");
-                        return `<span class="${isTable ? 'tag-table-badge' : 'tag-badge'}" contenteditable="false">{${tag}}</span>`;
+                        return `<span class="${isTable ? 'tag-table-badge' : 'tag-badge'}" data-tag="${tag}" contenteditable="false">{${tag}}<span class="btn-remove-tag" data-tag="${tag}" title="Xóa biến này" contenteditable="false">×</span></span>`;
                     });
                     return `<p class="mb-2 leading-relaxed text-slate-800">${text}</p>`;
                 }).join("");
                 workingDraftHtml[docId] = cleanCanvasHtmlForStorage();
                 item.isUploaded = false;
+                if (typeof pushUndoState === "function") pushUndoState("Nạp file Word");
             } else {
                 // Khởi tạo khung mẫu văn bản hành chính chuẩn Nghị định 30/2020/NĐ-CP
                 const scaffold = generateDefaultDocumentScaffold(docObj);
@@ -1792,13 +2062,18 @@
     // Convert raw HTML template tags into visible badges & page breaks
     function formatTemplateHtmlWithBadges(htmlStr) {
         if (!htmlStr) return "";
-        let res = htmlStr.replace(/\{([A-Z0-9_]+)\}/g, (match, tag) => {
+        let res = htmlStr;
+
+        // Chuẩn hóa và chuyển mọi dạng {{TAG}} hoặc {TAG} thành badge tương tác có nút xóa (x)
+        res = res.replace(/\{+([A-Z0-9_]+)\}+/g, (match, tag) => {
             if (tag === "PAGE_BREAK") {
                 return `<div class="a4-page-break" contenteditable="false"><i class="fa-solid fa-file-invoice text-indigo-600 mr-1"></i> DẤU NGẮT TRANG A4 (Hết trang • Bắt đầu trang tiếp theo)</div>`;
             }
             const isTable = tag.startsWith("BANG_");
-            return `<span class="${isTable ? 'tag-table-badge' : 'tag-badge'}" contenteditable="false">{${tag}}</span>`;
+            const badgeClass = isTable ? "tag-table-badge" : "tag-badge";
+            return `<span class="${badgeClass}" data-tag="${tag}" contenteditable="false">{${tag}}<span class="btn-remove-tag" data-tag="${tag}" title="Xóa biến này" contenteditable="false">×</span></span>`;
         });
+
         return res;
     }
 
@@ -1807,20 +2082,24 @@
         if (!documentContentDisplay) return "";
         const clone = documentContentDisplay.cloneNode(true);
 
-        // Remove any floating sample alert banners
+        // Xóa alert banner xem thử nếu có
         const alertBanner = clone.querySelector(".bg-gradient-to-r");
-        if (alertBanner) alertBanner.remove();
+        if (alertBanner && alertBanner.textContent.includes("SAMPLE MODE")) alertBanner.remove();
 
-        // Convert page break divs back to {PAGE_BREAK}
+        // Xóa các popover hoặc menu nổi
+        clone.querySelectorAll("#tagActionPopover, .tag-action-popover, #selectionMenu").forEach(el => el.remove());
+
+        // Chuyển dấu ngắt trang trở lại {PAGE_BREAK}
         clone.querySelectorAll(".a4-page-break").forEach(el => {
             const textNode = document.createTextNode("\n{PAGE_BREAK}\n");
             el.parentNode.replaceChild(textNode, el);
         });
 
-        // Convert badge spans back to raw {TAG}
+        // Chuyển badge trở lại thành {TAG} thuần (loại bỏ nút x và text rác)
         clone.querySelectorAll(".tag-badge, .tag-table-badge").forEach(el => {
-            const rawTag = el.textContent.trim();
-            const textNode = document.createTextNode(rawTag);
+            el.querySelectorAll(".btn-remove-tag").forEach(b => b.remove());
+            const rawTag = el.getAttribute("data-tag") || el.textContent.replace(/[×{}]/g, "").trim();
+            const textNode = document.createTextNode(`{${rawTag}}`);
             el.parentNode.replaceChild(textNode, el);
         });
 
@@ -2539,6 +2818,10 @@
             if (btnEdit) btnEdit.click();
         }
 
+        if (typeof pushUndoState === "function") {
+            pushUndoState(`Chèn ${missingTags.length} biến khuyến nghị`);
+        }
+
         documentContentDisplay.focus();
         const sel = window.getSelection();
         let range = savedCursorRange;
@@ -2550,8 +2833,9 @@
             const badge = document.createElement("span");
             const isTable = tag.startsWith("BANG_");
             badge.className = isTable ? "tag-table-badge" : "tag-badge";
-            badge.textContent = `{${tag}}`;
+            badge.setAttribute("data-tag", tag);
             badge.setAttribute("contenteditable", "false");
+            badge.innerHTML = `{${tag}}<span class="btn-remove-tag" data-tag="${tag}" title="Xóa biến này" contenteditable="false">×</span>`;
             p.appendChild(badge);
             p.appendChild(document.createTextNode(" "));
         });
@@ -2581,6 +2865,10 @@
         const cleanTag = tag.replace(/[{}]/g, "").trim().toUpperCase();
         const item = state.batchFiles[state.activeDocId];
 
+        if (typeof pushUndoState === "function") {
+            pushUndoState(`Gán biến {${cleanTag}}`);
+        }
+
         if (item) {
             item.mappings = item.mappings || [];
             item.mappings.push({
@@ -2600,8 +2888,9 @@
             const badge = document.createElement("span");
             const isTable = cleanTag.startsWith("BANG_");
             badge.className = isTable ? "tag-table-badge" : "tag-badge";
-            badge.textContent = `{${cleanTag}}`;
+            badge.setAttribute("data-tag", cleanTag);
             badge.setAttribute("contenteditable", "false");
+            badge.innerHTML = `{${cleanTag}}<span class="btn-remove-tag" data-tag="${cleanTag}" title="Xóa biến này" contenteditable="false">×</span>`;
 
             range.deleteContents();
             range.insertNode(badge);
@@ -3085,48 +3374,169 @@
             return tbl;
         }
 
+        // Helper chuyển đổi <table> HTML thành <w:tbl> Word OpenXML
+        function convertHtmlTableToWordTable(tableEl) {
+            const tbl = xmlDoc.createElementNS(wNS, "w:tbl");
+            const tblPr = xmlDoc.createElementNS(wNS, "w:tblPr");
+            const tblW = xmlDoc.createElementNS(wNS, "w:tblW");
+            tblW.setAttributeNS(wNS, "w:w", "9600");
+            tblW.setAttributeNS(wNS, "w:type", "dxa");
+            tblPr.appendChild(tblW);
+
+            const tableStyle = (tableEl.getAttribute("style") || "").toLowerCase();
+            const tableClass = (tableEl.getAttribute("class") || "").toLowerCase();
+            const isBorderless = tableStyle.includes("border: none") || tableStyle.includes("border:none") || tableClass.includes("border-none") || (!tableStyle.includes("border") && !tableClass.includes("border-slate"));
+
+            const tblBorders = xmlDoc.createElementNS(wNS, "w:tblBorders");
+            ["top", "left", "bottom", "right", "insideH", "insideV"].forEach(b => {
+                const border = xmlDoc.createElementNS(wNS, "w:" + b);
+                if (isBorderless) {
+                    border.setAttributeNS(wNS, "w:val", "none");
+                } else {
+                    border.setAttributeNS(wNS, "w:val", "single");
+                    border.setAttributeNS(wNS, "w:sz", "4");
+                    border.setAttributeNS(wNS, "w:space", "0");
+                    border.setAttributeNS(wNS, "w:color", "auto");
+                }
+                tblBorders.appendChild(border);
+            });
+            tblPr.appendChild(tblBorders);
+            tbl.appendChild(tblPr);
+
+            const trList = tableEl.querySelectorAll("tr");
+            trList.forEach(trEl => {
+                const tr = xmlDoc.createElementNS(wNS, "w:tr");
+                const cells = Array.from(trEl.children).filter(c => c.tagName === "TD" || c.tagName === "TH");
+                const colCount = cells.length || 1;
+
+                cells.forEach((cellEl, colIdx) => {
+                    const tc = xmlDoc.createElementNS(wNS, "w:tc");
+                    const tcPr = xmlDoc.createElementNS(wNS, "w:tcPr");
+                    const cellStyle = cellEl.getAttribute("style") || "";
+
+                    let widthDxa = Math.round(9600 / colCount);
+                    if (cellStyle.includes("width:")) {
+                        const m = cellStyle.match(/width:\s*(\d+)%/);
+                        if (m && m[1]) widthDxa = Math.round(9600 * (parseInt(m[1], 10) / 100));
+                    }
+                    const tcW = xmlDoc.createElementNS(wNS, "w:tcW");
+                    tcW.setAttributeNS(wNS, "w:w", String(widthDxa));
+                    tcW.setAttributeNS(wNS, "w:type", "dxa");
+                    tcPr.appendChild(tcW);
+                    tc.appendChild(tcPr);
+
+                    const pList = cellEl.querySelectorAll("p");
+                    if (pList.length > 0) {
+                        pList.forEach(pEl => {
+                            const wp = convertHtmlParagraphToWordParagraph(pEl);
+                            tc.appendChild(wp);
+                        });
+                    } else {
+                        const wp = convertHtmlParagraphToWordParagraph(cellEl);
+                        tc.appendChild(wp);
+                    }
+
+                    if (tc.getElementsByTagNameNS(wNS, "p").length === 0 && tc.getElementsByTagName("w:p").length === 0) {
+                        const emptyP = createWordParagraph("left", false);
+                        tc.appendChild(emptyP);
+                    }
+
+                    tr.appendChild(tc);
+                });
+                tbl.appendChild(tr);
+            });
+
+            return tbl;
+        }
+
+        // Helper chuyển đổi <p> hoặc element văn bản HTML thành <w:p> Word OpenXML
+        function convertHtmlParagraphToWordParagraph(pEl) {
+            const pStyle = pEl.getAttribute("style") || "";
+            let align = "both";
+            if (pStyle.includes("text-align: center") || pEl.classList.contains("text-center")) align = "center";
+            else if (pStyle.includes("text-align: right") || pEl.classList.contains("text-right")) align = "right";
+            else if (pStyle.includes("text-align: left") || pEl.classList.contains("text-left")) align = "left";
+            else if (pStyle.includes("text-align: justify") || pEl.classList.contains("text-justify")) align = "both";
+
+            const indentFirstLine = pStyle.includes("text-indent") && align === "both";
+            const wp = createWordParagraph(align, indentFirstLine);
+
+            function processNode(node, isBold, isItalic, isUnderline, fontSize) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const text = node.textContent;
+                    if (text) {
+                        wp.appendChild(createWordRun(text, isBold, isItalic, isUnderline, fontSize));
+                    }
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    const tag = node.tagName.toUpperCase();
+                    if (tag === "BR") {
+                        const r = xmlDoc.createElementNS(wNS, "w:r");
+                        r.appendChild(xmlDoc.createElementNS(wNS, "w:br"));
+                        wp.appendChild(r);
+                        return;
+                    }
+                    if (node.classList && (node.classList.contains("btn-remove-tag") || node.classList.contains("tag-action-popover"))) {
+                        return; // Bỏ qua UI xóa thẻ
+                    }
+
+                    const nStyle = node.getAttribute("style") || "";
+                    const newBold = isBold || tag === "STRONG" || tag === "B" || nStyle.includes("font-weight: bold") || (node.classList && node.classList.contains("tag-badge"));
+                    const newItalic = isItalic || tag === "EM" || tag === "I" || nStyle.includes("font-style: italic");
+                    const newUnderline = isUnderline || tag === "U" || nStyle.includes("text-decoration: underline");
+                    let newFontSize = fontSize;
+                    if (tag === "H1") newFontSize = 18;
+                    else if (tag === "H2") newFontSize = 16;
+                    else if (tag === "H3") newFontSize = 14;
+
+                    for (let c = 0; c < node.childNodes.length; c++) {
+                        processNode(node.childNodes[c], newBold, newItalic, newUnderline, newFontSize);
+                    }
+                }
+            }
+
+            if (pEl.childNodes.length === 0) {
+                wp.appendChild(createWordRun("", false, false, false, 13));
+            } else {
+                for (let c = 0; c < pEl.childNodes.length; c++) {
+                    processNode(pEl.childNodes[c], false, false, false, 13);
+                }
+            }
+
+            return wp;
+        }
+
         // Duyệt từng node con của tempDiv
         Array.from(tempDiv.children).forEach(el => {
             const style = el.getAttribute("style") || "";
             const isFlex = style.includes("display: flex") || style.includes("display:flex");
 
             if (isFlex && el.children.length >= 2) {
-                // Khung 2 cột (Header hoặc Footer ký tên)
+                // Khung 2 cột (Header hoặc Footer ký tên từ scaffold)
                 const tbl = createHeaderTwoColumnTable(el.children[0], el.children[1]);
                 bodyNode.appendChild(tbl);
                 return;
             }
 
-            // Đoạn văn thông thường
-            let align = "both";
-            if (style.includes("text-align: center") || el.classList.contains("text-center")) align = "center";
-            else if (style.includes("text-align: right") || el.classList.contains("text-right")) align = "right";
+            if (el.tagName === "TABLE") {
+                const tbl = convertHtmlTableToWordTable(el);
+                bodyNode.appendChild(tbl);
+                return;
+            }
 
-            const indentFirstLine = style.includes("text-indent") && align === "both";
-
-            // Nếu element chứa các đoạn con <p>, duyệt từng đoạn con
-            const innerPs = el.querySelectorAll("p");
-            if (innerPs.length > 0 && el.tagName === "DIV") {
-                innerPs.forEach(ip => {
-                    let pAlign = align;
-                    const ipStyle = ip.getAttribute("style") || "";
-                    if (ipStyle.includes("text-align: center") || ip.classList.contains("text-center")) pAlign = "center";
-                    else if (ipStyle.includes("text-align: right") || ip.classList.contains("text-right")) pAlign = "right";
-                    const pIndent = ipStyle.includes("text-indent") && pAlign === "both";
-
-                    const wp = createWordParagraph(pAlign, pIndent);
-                    const isBold = ipStyle.includes("font-weight: bold") || ip.querySelector("b, strong") !== null;
-                    const isItalic = ipStyle.includes("font-style: italic") || ip.querySelector("i, em") !== null;
-                    wp.appendChild(createWordRun(ip.innerText || ip.textContent || "", isBold, isItalic, false, 13));
-                    bodyNode.appendChild(wp);
-                });
-            } else {
-                const wp = createWordParagraph(align, indentFirstLine);
-                const isBold = style.includes("font-weight: bold") || el.tagName === "H1" || el.tagName === "H2" || el.tagName === "H3" || el.querySelector("b, strong") !== null;
-                const isItalic = style.includes("font-style: italic") || el.querySelector("i, em") !== null;
-                const fontSize = (el.tagName === "H2") ? 16 : 13;
-                wp.appendChild(createWordRun(el.innerText || el.textContent || "", isBold, isItalic, false, fontSize));
+            if (el.tagName === "P" || el.tagName.startsWith("H")) {
+                const wp = convertHtmlParagraphToWordParagraph(el);
                 bodyNode.appendChild(wp);
+            } else if (el.tagName === "DIV") {
+                const innerPs = el.querySelectorAll("p");
+                if (innerPs.length > 0) {
+                    innerPs.forEach(ip => {
+                        const wp = convertHtmlParagraphToWordParagraph(ip);
+                        bodyNode.appendChild(wp);
+                    });
+                } else {
+                    const wp = convertHtmlParagraphToWordParagraph(el);
+                    bodyNode.appendChild(wp);
+                }
             }
         });
 
@@ -3341,8 +3751,291 @@
         };
     });
 
+    // -------------------------------------------------------------
+    // Undo / Redo (Hoàn tác / Làm lại) System (Ctrl+Z / Ctrl+Y)
+    // -------------------------------------------------------------
+    const undoStack = [];
+    const redoStack = [];
+    const MAX_UNDO_STACK = 50;
+
+    function pushUndoState(actionName = "Chỉnh sửa") {
+        if (!documentContentDisplay) return;
+        const currentHtml = documentContentDisplay.innerHTML;
+        if (undoStack.length > 0 && undoStack[undoStack.length - 1].html === currentHtml) {
+            return;
+        }
+        undoStack.push({
+            html: currentHtml,
+            action: actionName,
+            time: Date.now()
+        });
+        if (undoStack.length > MAX_UNDO_STACK) undoStack.shift();
+        redoStack.length = 0;
+        updateUndoRedoButtons();
+    }
+
+    function performUndo() {
+        if (undoStack.length === 0) {
+            showToast("Không còn thao tác nào để hoàn tác!", "info");
+            return;
+        }
+        const currentHtml = documentContentDisplay.innerHTML;
+        redoStack.push({
+            html: currentHtml,
+            action: "Làm lại",
+            time: Date.now()
+        });
+
+        const previousState = undoStack.pop();
+        documentContentDisplay.innerHTML = previousState.html;
+
+        if (state.activeDocId) {
+            workingDraftHtml[state.activeDocId] = cleanCanvasHtmlForStorage();
+        }
+        renderContextualRecommendedVars();
+        updateUndoRedoButtons();
+        showToast(`Đã hoàn tác: ${previousState.action || 'Thao tác'} (Ctrl+Z)`);
+    }
+
+    function performRedo() {
+        if (redoStack.length === 0) {
+            showToast("Không còn thao tác nào để làm lại!", "info");
+            return;
+        }
+        const currentHtml = documentContentDisplay.innerHTML;
+        undoStack.push({
+            html: currentHtml,
+            action: "Hoàn tác",
+            time: Date.now()
+        });
+
+        const nextState = redoStack.pop();
+        documentContentDisplay.innerHTML = nextState.html;
+
+        if (state.activeDocId) {
+            workingDraftHtml[state.activeDocId] = cleanCanvasHtmlForStorage();
+        }
+        renderContextualRecommendedVars();
+        updateUndoRedoButtons();
+        showToast(`Đã làm lại thao tác (Ctrl+Y)`);
+    }
+
+    function updateUndoRedoButtons() {
+        const btnUndo = document.getElementById("btnStudioUndo");
+        const btnRedo = document.getElementById("btnStudioRedo");
+        if (btnUndo) {
+            btnUndo.disabled = (undoStack.length === 0);
+            btnUndo.classList.toggle("opacity-40", undoStack.length === 0);
+            btnUndo.classList.toggle("cursor-not-allowed", undoStack.length === 0);
+            btnUndo.title = undoStack.length > 0
+                ? `Hoàn tác: ${undoStack[undoStack.length - 1].action || 'Thao tác'} (Ctrl + Z)`
+                : `Hoàn tác (Ctrl + Z)`;
+        }
+        if (btnRedo) {
+            btnRedo.disabled = (redoStack.length === 0);
+            btnRedo.classList.toggle("opacity-40", redoStack.length === 0);
+            btnRedo.classList.toggle("cursor-not-allowed", redoStack.length === 0);
+            btnRedo.title = redoStack.length > 0
+                ? `Làm lại (Ctrl + Y hoặc Ctrl + Shift + Z)`
+                : `Làm lại (Ctrl + Y)`;
+        }
+    }
+
+    const btnStudioUndo = document.getElementById("btnStudioUndo");
+    const btnStudioRedo = document.getElementById("btnStudioRedo");
+    if (btnStudioUndo) btnStudioUndo.onclick = () => performUndo();
+    if (btnStudioRedo) btnStudioRedo.onclick = () => performRedo();
+
+    window.addEventListener("keydown", (e) => {
+        if (state.viewMode !== "single" || studioViewMode !== "edit") return;
+        const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+        if (isCtrlOrCmd && !e.altKey) {
+            const key = e.key.toLowerCase();
+            if (key === "z" && !e.shiftKey) {
+                e.preventDefault();
+                performUndo();
+            } else if (key === "y" || (key === "z" && e.shiftKey)) {
+                e.preventDefault();
+                performRedo();
+            }
+        }
+    });
+
+    // -------------------------------------------------------------
+    // Variable Deletion & Tag Action Popover Controller
+    // -------------------------------------------------------------
+    let activePopoverBadge = null;
+
+    function showTagActionPopover(badge) {
+        const popover = document.getElementById("tagActionPopover");
+        if (!popover || !badge) return;
+        activePopoverBadge = badge;
+        const tag = badge.getAttribute("data-tag") || badge.textContent.replace(/[×{}]/g, "").trim();
+
+        const lblName = document.getElementById("lblPopoverTagName");
+        if (lblName) lblName.textContent = `{${tag}}`;
+
+        const quickSwapList = document.getElementById("popoverQuickSwapList");
+        if (quickSwapList) {
+            quickSwapList.innerHTML = "";
+            const wf = getCurrentWorkflow();
+            const docObj = (wf && wf.documents) ? wf.documents.find(d => d.id === state.activeDocId) : null;
+            const recVars = (docObj && typeof getStudioRecommendedVarsForDoc === "function")
+                ? getStudioRecommendedVarsForDoc(docObj).slice(0, 6)
+                : ["TEN_CHU_DAU_TU", "TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO", "SO_BAO_CAO"];
+
+            recVars.forEach(v => {
+                if (v !== tag) {
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.className = "px-1.5 py-0.5 bg-slate-800 hover:bg-emerald-700 text-slate-300 hover:text-white rounded text-[10px] font-mono cursor-pointer transition-colors";
+                    btn.textContent = `{${v}}`;
+                    btn.title = `Đổi thành {${v}}`;
+                    btn.onclick = () => {
+                        pushUndoState(`Đổi biến {${tag}} sang {${v}}`);
+                        badge.setAttribute("data-tag", v);
+                        const isTable = v.startsWith("BANG_");
+                        badge.className = isTable ? "tag-table-badge" : "tag-badge";
+                        badge.innerHTML = `{${v}}<span class="btn-remove-tag" data-tag="${v}" title="Xóa biến này" contenteditable="false">×</span>`;
+                        hideTagActionPopover();
+                        if (state.activeDocId) workingDraftHtml[state.activeDocId] = cleanCanvasHtmlForStorage();
+                        renderContextualRecommendedVars();
+                        showToast(`Đã đổi sang biến {${v}}! (Ctrl+Z để hoàn tác)`);
+                    };
+                    quickSwapList.appendChild(btn);
+                }
+            });
+        }
+
+        popover.classList.remove("hidden");
+        const rect = badge.getBoundingClientRect();
+        const popoverWidth = 260;
+        let left = rect.left;
+        let top = rect.bottom + 6;
+        if (left + popoverWidth > window.innerWidth) left = window.innerWidth - popoverWidth - 16;
+        if (left < 10) left = 10;
+        popover.style.position = "fixed";
+        popover.style.left = `${left}px`;
+        popover.style.top = `${top}px`;
+    }
+
+    function hideTagActionPopover() {
+        const popover = document.getElementById("tagActionPopover");
+        if (popover) popover.classList.add("hidden");
+        activePopoverBadge = null;
+    }
+
+    const btnCloseTagPopover = document.getElementById("btnCloseTagPopover");
+    if (btnCloseTagPopover) btnCloseTagPopover.onclick = hideTagActionPopover;
+
+    const btnPopoverUnwrapTag = document.getElementById("btnPopoverUnwrapTag");
+    if (btnPopoverUnwrapTag) {
+        btnPopoverUnwrapTag.onclick = () => {
+            if (!activePopoverBadge) return;
+            const tag = activePopoverBadge.getAttribute("data-tag") || activePopoverBadge.textContent.replace(/[×{}]/g, "").trim();
+            pushUndoState(`Gỡ thẻ biến {${tag}}`);
+            const textNode = document.createTextNode(`{${tag}}`);
+            activePopoverBadge.parentNode.replaceChild(textNode, activePopoverBadge);
+            hideTagActionPopover();
+            if (state.activeDocId) workingDraftHtml[state.activeDocId] = cleanCanvasHtmlForStorage();
+            renderContextualRecommendedVars();
+            showToast(`Đã gỡ biến {${tag}} thành văn bản thường! (Ctrl+Z để hoàn tác)`);
+        };
+    }
+
+    const btnPopoverDeleteTag = document.getElementById("btnPopoverDeleteTag");
+    if (btnPopoverDeleteTag) {
+        btnPopoverDeleteTag.onclick = () => {
+            if (!activePopoverBadge) return;
+            const tag = activePopoverBadge.getAttribute("data-tag") || activePopoverBadge.textContent.replace(/[×{}]/g, "").trim();
+            pushUndoState(`Xóa biến {${tag}}`);
+            activePopoverBadge.remove();
+            hideTagActionPopover();
+            if (state.activeDocId) workingDraftHtml[state.activeDocId] = cleanCanvasHtmlForStorage();
+            renderContextualRecommendedVars();
+            showToast(`Đã xóa biến {${tag}} khỏi văn bản! (Ctrl+Z để hoàn tác)`);
+        };
+    }
+
+    const btnRemoveTagFromSelection = document.getElementById("btnRemoveTagFromSelection");
+    if (btnRemoveTagFromSelection) {
+        btnRemoveTagFromSelection.onclick = () => {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0 || !documentContentDisplay) return;
+            const range = sel.getRangeAt(0);
+
+            let removedCount = 0;
+            const badges = documentContentDisplay.querySelectorAll(".tag-badge, .tag-table-badge");
+            badges.forEach(b => {
+                if (sel.containsNode(b, true)) {
+                    if (removedCount === 0) pushUndoState("Xóa các biến đã chọn");
+                    b.remove();
+                    removedCount++;
+                }
+            });
+
+            if (removedCount === 0) {
+                const parentEl = range.commonAncestorContainer.nodeType === 1 ? range.commonAncestorContainer : range.commonAncestorContainer.parentElement;
+                const closestBadge = parentEl ? parentEl.closest(".tag-badge, .tag-table-badge") : null;
+                if (closestBadge) {
+                    pushUndoState("Xóa biến " + closestBadge.textContent);
+                    closestBadge.remove();
+                    removedCount++;
+                }
+            }
+
+            if (removedCount > 0) {
+                if (state.activeDocId) workingDraftHtml[state.activeDocId] = cleanCanvasHtmlForStorage();
+                renderContextualRecommendedVars();
+                showToast(`Đã xóa ${removedCount} thẻ biến! (Ctrl+Z để hoàn tác)`);
+            } else {
+                showToast("Vui lòng bôi đen thẻ biến cần xóa!", "info");
+            }
+
+            const menu = document.getElementById("selectionMenu");
+            if (menu) menu.classList.add("hidden");
+        };
+    }
+
+    // Canvas click delegation: Delete button 'x' & Tag Popover
+    if (documentContentDisplay) {
+        documentContentDisplay.addEventListener("click", (e) => {
+            const removeBtn = e.target.closest(".btn-remove-tag");
+            if (removeBtn) {
+                e.preventDefault();
+                e.stopPropagation();
+                const badge = removeBtn.closest(".tag-badge, .tag-table-badge");
+                if (badge) {
+                    const tag = badge.getAttribute("data-tag") || badge.textContent.replace(/[×{}]/g, "").trim();
+                    pushUndoState(`Xóa biến {${tag}}`);
+                    badge.remove();
+                    if (state.activeDocId) workingDraftHtml[state.activeDocId] = cleanCanvasHtmlForStorage();
+                    renderContextualRecommendedVars();
+                    showToast(`Đã xóa biến {${tag}}! (Bấm Ctrl+Z để hoàn tác)`);
+                }
+                return;
+            }
+
+            const badge = e.target.closest(".tag-badge, .tag-table-badge");
+            if (badge) {
+                e.preventDefault();
+                e.stopPropagation();
+                showTagActionPopover(badge);
+            } else {
+                hideTagActionPopover();
+            }
+        });
+    }
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#tagActionPopover") && !e.target.closest(".tag-badge") && !e.target.closest(".tag-table-badge")) {
+            hideTagActionPopover();
+        }
+    });
+
     // Save Selection in Canvas on any keyup/mouseup/selectionchange & real-time coverage updates
     let canvasInputDebounceTimer = null;
+    let canvasUndoDebounceTimer = null;
     if (documentContentDisplay) {
         documentContentDisplay.addEventListener("input", () => {
             if (state.activeDocId && studioViewMode === "edit") {
@@ -3354,6 +4047,11 @@
                     renderContextualRecommendedVars();
                 }
             }, 300);
+
+            if (canvasUndoDebounceTimer) clearTimeout(canvasUndoDebounceTimer);
+            canvasUndoDebounceTimer = setTimeout(() => {
+                pushUndoState("Chỉnh sửa nội dung");
+            }, 800);
         });
         documentContentDisplay.addEventListener("keyup", saveCanvasSelection);
         documentContentDisplay.addEventListener("mouseup", saveCanvasSelection);

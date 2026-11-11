@@ -1,7 +1,7 @@
 # 📋 TÀI LIỆU BÀN GIAO DỰ ÁN & BÁO CÁO TRẠNG THÁI (PROJECT HANDOVER)
 
 > **Dành cho:** AI Assistant / Kỹ sư phần mềm tiếp quản dự án.  
-> **Thời điểm cập nhật:** 10/11/2026 (Local Time)  
+> **Thời điểm cập nhật:** 11/11/2026 (Local Time)  
 > **Dự án:** Hệ thống Tạo Hồ Sơ Tự Động & Quản Lý Đấu Thầu (`ho-so-tu-dong`)  
 > **Kho lưu trữ Git:** `https://github.com/hhminh71/ho-so-tu-dong.git` (Nhánh chính: `main`)  
 > **Môi trường hoạt động:** Windows, Google Drive Desktop (`I:\My Drive\APP\Projects\ho-so-tu-dong`), Cốc Cốc, Chrome, Edge.
@@ -36,6 +36,26 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
    * Hỗ trợ thao tác kéo-thả trực tiếp file Word (.docx) vào lòng trang Canvas.
    * Bộ so khớp tiếng Việt thông minh (`findBestMatchingDoc`) tự động nhận diện số thứ tự (`01`, `02`) và từ khóa loại văn bản ("báo cáo", "tờ trình", "thẩm định", "mua sắm") để gán đúng văn bản ngay cả khi tải hàng loạt.
    * Tự động trích xuất cấu trúc văn bản, gán thẻ biến tự động, hiển thị Badge `[File vừa tải lên]` (xanh ngọc) và cập nhật thanh khuyến nghị tức thì.
+6. **Bảo Tồn 100% Định Dạng File Word Gốc (Bảng biểu 2 cột, Căn lề, Chữ in đậm/nghiêng) & Chuyển Đổi Round-Trip Hoàn Hảo:**
+   * **Phân tích OpenXML sang HTML có cấu trúc (`parseDocxToStyledHtml`):**
+     * Nhận diện và giữ nguyên bảng không viền 2 cột chuẩn văn bản hành chính Việt Nam (Cột trái: Đơn vị/Số VB; Cột phải: Quốc hiệu/Tiêu ngữ/Địa danh ngày tháng; Khối ký tên đóng dấu bên dưới).
+     * Nhận diện bảng dữ liệu có viền (Bảng danh mục hàng hóa, đơn giá, thành tiền).
+     * Giữ nguyên căn lề đoạn văn (`w:jc` -> `center`, `right`, `justify`), thụt đầu dòng (`w:ind`), gạch chân tiêu ngữ (`w:pBdr/w:bottom`), và định dạng chữ (`w:b`, `w:i`, `w:u`, cỡ chữ tiêu đề `w:sz`).
+     * Đầy đủ bộ lọc `nodeType === 1` an toàn tuyệt đối với mọi file Word chứa XML Comments hoặc khoảng trắng text node.
+   * **Biên dịch 2 chiều từ Canvas HTML trở lại file Word (.docx):**
+     * Module `createDocxFromCanvasHtml` chuyển đổi các bảng `<table>` trên Canvas thành bảng Word `w:tbl` nguyên bản, bảo toàn căn lề và định dạng khi xuất file Word.
+7. **Chức Năng Xóa Biến Đa Năng (3 Phương Thức Tiện Dụng):**
+   * **Nút gỡ nhanh `[×]` (`.btn-remove-tag`):** Tích hợp trực tiếp trên mỗi Tag Badge, 1-click xóa ngay biến.
+   * **Menu Thao Tác Biến Nhanh (`tagActionPopover`):** Khi click vào thân Tag Badge, hộp menu nổi sang trọng xuất hiện với 3 tùy chọn:
+     * `[Gỡ thẻ (thành chữ)]`: Tháo bỏ badge trở về đoạn text thuần `{TAG}` để người dùng tự do biên tập.
+     * `[🗑️ Xóa biến]`: Xóa hoàn toàn biến khỏi nội dung văn bản.
+     * `[Đổi nhanh sang biến khác]`: Gợi ý 4-6 biến ngữ cảnh liên quan nhất để đổi nhanh trong 1-click mà không cần gõ phím.
+   * **Xóa biến qua Menu bôi đen (`#selectionMenu`):** Thêm nút `[🗑️ Xóa biến]` khi người dùng bôi đen đoạn văn bản hoặc thẻ biến.
+   * **Cơ chế dọn dẹp sạch sẽ (`cleanCanvasHtmlForStorage`):** Tự động bóc tách và loại bỏ các nút phụ trợ (`×`, popover) để xuất ra chuỗi `{TAG}` sạch sẽ cho docxtemplater và lưu trữ.
+8. **Bộ Hoàn Tác & Làm Lại Toàn Diện (Undo / Redo - Ctrl+Z / Ctrl+Y):**
+   * **Thanh công cụ Canvas:** Bổ sung cặp nút `[↶ Hoàn tác (Ctrl+Z)]` (`#btnStudioUndo`) và `[↷ Làm lại (Ctrl+Y)]` (`#btnStudioRedo`) với hiệu ứng sáng/mờ theo trạng thái khả dụng.
+   * **Phím tắt chuẩn Desktop:** Hỗ trợ đầy đủ `Ctrl+Z` (Undo), `Ctrl+Y` và `Ctrl+Shift+Z` (Redo).
+   * **Quản lý ngăn xếp thông minh (Undo Stack tối đa 50 bước):** Tự động ghi lại điểm khôi phục khi chèn biến, xóa biến, đổi biến, ngắt trang, và khi người dùng gõ văn bản trực tiếp trên Canvas (debounced 800ms).
 
 ---
 
@@ -43,15 +63,13 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
 
 | Tên tệp | Trạng thái | Mục đích & Chi tiết thay đổi |
 | :--- | :---: | :--- |
-| [`app.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/app.js) | **NÂNG CẤP** | Cập nhật ma trận `DEFAULT_IMPLEMENTATION_MATRIX` và `prebuiltDocxMap` theo đường dẫn 2 tầng; loại bỏ mẫu giả; bổ sung hàm `hasDocTemplate(docObj)`; hiển thị Badge trạng thái mẫu và chặn xuất Word rỗng; ưu tiên tham số URL `workflow`, `doc`, `tab=docs` khi khởi động. |
-| [`index.html`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/index.html) | **NÂNG CẤP** | Bổ sung `#docTemplateStatusBadge` hiển thị trạng thái mẫu thời gian thực cạnh bộ chọn văn bản; cập nhật cache-buster lên `app.js?v=20261110_v3`. |
-| [`template-tool.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.js) | **NÂNG CẤP** | Bổ sung `STUDIO_DOC_VAR_MAP` và `getStudioRecommendedVarsForDoc`; cơ chế quét độ phủ biến thời gian thực `renderContextualRecommendedVars`; cuộn và highlight biến `highlightTagInCanvas`; tự động chèn đồng loạt `insertAllMissingRecommended`; menu gán biến động khi bôi đen chữ `updateSelectionMenuWithRecommended` và `applyTagToSelection`; bổ sung nạp file riêng `loadFileForSingleDocument`, kéo-thả canvas, so khớp tiếng Việt thông minh `findBestMatchingDoc`, nhận diện thực thể mở rộng cho Báo cáo (`SO_BAO_CAO`, `NGAY_BAO_CAO_FULL`, `MA_SO_THUE`, `GIA_TRI_HOP_DONG_SO`). |
-| [`template-tool.html`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.html) | **NÂNG CẤP** | Thêm khối giao diện `#contextualRecommendedVarsBox` trên đầu Sidebar trái, badge `#recommendedCoverageBadge`, nút `#btnInsertAllMissingRecommended`, danh sách chip `#contextualRecommendedChips`; thêm nút nạp file Word riêng `#btnUploadSingleDocx` trên thanh công cụ xem chi tiết; nâng cache-buster lên `template-tool.js?v=20261111_v2`. |
-| `scratch/test_single_upload_flow.py` | **MỚI** | Script kiểm thử tự động quy trình nạp file Word riêng lẻ, so khớp tiếng Việt và nhận diện thẻ trên Studio qua Chrome CDP. |
-| [`templates_data.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/templates_data.js) | **NÂNG CẤP** | Bổ sung các alias keys lồng thư mục cho 7 file Base64, bảo đảm tra cứu tức thì trên mọi giao thức (kể cả `file:///`). |
-| `templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/` | **MỚI** | Chứa 2 file Word thực tế: `01_To_trinh_KHLCNT.docx`, `02_Quyet_dinh_KHLCNT.docx`. |
-| `templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/` | **MỚI** | Chứa 5 file Word thực tế: `1_Giay_moi_tham_gia.docx`, `2_Bien_ban_hoan_thien_hop_dong.docx`, `3_To_trinh_chi_dinh_thau.docx`, `4_Quyet_dinh_chi_dinh_thau.docx`, `07_Hop_dong_kinh_te.docx`. |
-| [`config.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/config.js) | **HIỆN HỮU** | Chứa cấu hình toàn cục `window.APP_CONFIG`. Lưu vĩnh viễn đường link Google Apps Script Web App để mọi trình duyệt và Tab Ẩn danh tự động nạp. |
+| [`template-tool.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.js) | **NÂNG CẤP LỚN** | Bổ sung bộ phân tích OpenXML `parseDocxToStyledHtml` với type-guards; bảo tồn bảng 2 cột & căn lề; nâng cấp `createDocxFromCanvasHtml` hỗ trợ table roundtrip; tích hợp Undo/Redo Manager (`undoStack`, `redoStack`, `performUndo`, `performRedo`, `Ctrl+Z`, `Ctrl+Y`); tích hợp Tag Action Popover (`tagActionPopover`, gỡ thẻ, xóa biến, đổi biến nhanh); bổ sung nút `×` trên badge; cơ chế dọn dẹp sạch `cleanCanvasHtmlForStorage`. |
+| [`template-tool.html`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.html) | **NÂNG CẤP** | Thêm nhóm nút Undo/Redo `#btnStudioUndo` & `#btnStudioRedo` trên toolbar; thêm nút `#btnRemoveTagFromSelection` trên selection menu; thêm giao diện popover `#tagActionPopover`; định dạng CSS cho nút xóa tag, hiệu ứng hover, căn lề và bảng in trang A4; nâng cache-buster lên `template-tool.js?v=20261111_v3`. |
+| `scratch/test_format_delete_undo.py` | **MỚI** | Script kiểm thử tự động toàn diện: kiểm tra bảo tồn bảng biểu & căn lề, xóa tag bằng nút `×`, hoàn tác Undo bằng nút & phím tắt Ctrl+Z, Redo, menu popover, và kiểm tra file docx tạo ra chứa đúng bảng và căn giữa. |
+| `scratch/test_user_report_file.py` | **MỚI** | Script kiểm thử tải file Word thực tế "2. BCMS.docx" có bảng tiêu ngữ, bảng báo giá và bảng ký tên, kiểm tra hiển thị đúng 3 bảng và căn giữa trên Canvas. |
+| [`app.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/app.js) | **HIỆN HỮU** | Ma trận `DEFAULT_IMPLEMENTATION_MATRIX` 2 tầng; hàm `hasDocTemplate(docObj)`; hiển thị Badge trạng thái mẫu và chặn xuất Word rỗng. |
+| [`index.html`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/index.html) | **HIỆN HỮU** | Badge `#docTemplateStatusBadge` hiển thị trạng thái mẫu thời gian thực cạnh bộ chọn văn bản. |
+| [`config.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/config.js) | **HIỆN HỮU** | Cấu hình Google Apps Script Web App URL vĩnh viễn cho mọi trình duyệt và Tab Ẩn danh. |
 
 ---
 
@@ -86,12 +104,43 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
   5. Xóa sạch bản thảo cũ khi nạp file mới, tự động render nội dung file Word lên Canvas, gán thẻ biến tự động, hiển thị Badge `[File vừa tải lên]` (xanh lá) và cập nhật ngay độ phủ biến trên thanh Khuyến nghị.
 * **Xác thực:** Kiểm thử thành công 100% bằng script CDP headless Chrome (`scratch/test_single_upload_flow.py`), ảnh minh chứng: `verify_uploaded_file_view.png`.
 
+### 6. Lỗi: Mất định dạng khi thể hiện file Word lên Canvas (Bị dồn hết sang lề trái, mất bảng 2 cột và bảng báo giá)
+* **Nguyên nhân:**
+  1. Trình bóc tách cũ chỉ đọc nội dung các thẻ `w:p` dưới dạng chuỗi thô (plain strings), hoàn toàn bỏ qua các thẻ bảng biểu OpenXML (`w:tbl` - bao gồm bảng Quốc hiệu/Tiêu ngữ 2 cột hành chính và bảng danh mục hàng hóa báo giá).
+  2. Bỏ qua các thuộc tính căn lề đoạn văn (`w:jc`), thụt đầu dòng (`w:ind`), đường kẻ tiêu ngữ (`w:pBdr/w:bottom`) và các kiểu định dạng chữ (`w:b`, `w:i`, `w:u`, `w:sz`), dẫn đến văn bản bị dồn phẳng sang bên trái (left-aligned) như một khối text thô.
+  3. Khi gặp XML Comments (`<!-- ... -->`) hoặc khoảng trắng text node trong tài liệu Word, hàm đọc thuộc tính `.getAttribute()` bị lỗi kiểu dữ liệu `TypeError: getAttribute is not a function` dẫn đến fallback về danh sách paragraph thô.
+* **Xử lý:**
+  1. Nâng cấp toàn diện hàm `parseDocxToStyledHtml(arrayBuffer, mappings)` với DOMParser OpenXML chuẩn mực:
+     - Nhận diện và dựng thành thẻ `<table>` không viền 2 cột cho phần Tiêu đề cơ quan / Quốc hiệu - Tiêu ngữ và phần Chữ ký đóng dấu cuối văn bản.
+     - Nhận diện và dựng thành thẻ `<table>` có viền kẻ bảng lưới cho các bảng dữ liệu (Bảng danh mục vật tư, báo giá).
+     - Phân tích và gán đầy đủ CSS `text-align: center`, `text-align: right`, `text-align: justify`, `text-indent: 28px`, gạch chân tiêu ngữ `border-bottom: 1.5px solid #334155`.
+     - Phân tích và bọc thẻ in đậm `<strong>`, in nghiêng `<em>`, gạch chân `<u>`, cỡ chữ tiêu đề `<span>`.
+     - Thêm type-guard `nodeType === 1` an toàn tuyệt đối cho tất cả các vòng lặp duyệt XML node.
+  2. Nâng cấp `createDocxFromCanvasHtml` để hỗ trợ chuyển đổi ngược 2 chiều các thẻ `<table>` từ Canvas thành bảng Word `w:tbl` nguyên bản khi xuất file Word.
+* **Xác thực:** Kiểm thử tự động trên Chrome CDP (`scratch/test_user_report_file.py`): nhận diện và hiển thị đủ 3 bảng (Header, Báo giá, Chữ ký), tiêu đề căn giữa đạt `True`, ảnh minh chứng: `verify_bcms_full_layout.png`.
+
+### 7. Yêu cầu: Bổ sung chức năng Xóa biến và Phím tắt hoàn tác Ctrl+Z
+* **Xử lý:**
+  1. **Xóa biến linh hoạt với 3 cách:**
+     - Nút `[×]` (`.btn-remove-tag`) nhỏ gọn trực tiếp trên từng Tag Badge: bấm 1-click xóa ngay biến.
+     - Click vào Tag Badge mở **Menu thao tác nhanh (`tagActionPopover`)**:
+       - `[Gỡ thẻ (thành chữ)]`: tháo badge về dạng `{TAG}` thuần để sửa tự do.
+       - `[🗑️ Xóa biến]`: xóa hoàn toàn biến khỏi văn bản.
+       - `[Đổi nhanh sang biến khác]`: hiển thị 4-6 chip biến khuyến nghị theo ngữ cảnh để đổi nhanh trong 1-click.
+     - Bôi đen đoạn chữ trên Canvas và bấm nút `[🗑️ Xóa biến]` trên Floating Selection Menu.
+     - Hàm `cleanCanvasHtmlForStorage` tự động bóc tách sạch sẽ các nút UI phụ trợ trước khi lưu hoặc xuất Word.
+  2. **Bộ Hoàn tác (Undo) và Làm lại (Redo) chuẩn Desktop:**
+     - Tích hợp 2 nút `[↶ Hoàn tác (Ctrl+Z)]` và `[↷ Làm lại (Ctrl+Y)]` ngay trên thanh công cụ Canvas (`#btnStudioUndo`, `#btnStudioRedo`).
+     - Bắt sự kiện phím tắt toàn diện `Ctrl+Z`, `Ctrl+Y`, `Ctrl+Shift+Z`.
+     - Ngăn xếp `undoStack` (tối đa 50 bước) tự động lưu lại trạng thái sau mỗi thao tác chèn, xóa, đổi biến, ngắt trang và khi gõ văn bản trực tiếp trên Canvas (debounced 800ms).
+* **Xác thực:** Kiểm thử tự động toàn diện (`scratch/test_format_delete_undo.py`): Xóa biến bằng nút `×` (21 -> 20 biến), Hoàn tác bằng nút Undo (20 -> 21 biến), Làm lại bằng nút Redo (21 -> 20 biến), Hoàn tác bằng phím tắt `Ctrl+Z` (20 -> 21 biến), mở Popover đổi biến nhanh (5 chip gợi ý), biên dịch Word giữ nguyên 2 bảng và 10 đoạn căn giữa. Ảnh minh chứng: `verify_format_delete_undo.png`.
+
 ---
 
 ## ⚠️ 4. TRẠNG THÁI HIỆN TẠI & CÓ LỖI NÀO ĐANG VƯỚNG KHÔNG?
 
 * **Lỗi tồn đọng nghiêm trọng (Blocker/Critical):** **0 LỖI.**
-* **Tình trạng mã nguồn:** Sạch sẽ, không có xung đột Git. Toàn bộ mã nguồn đã được commit và push lên `origin/main` (Commit mới nhất: `dc92a86`).
+* **Tình trạng mã nguồn:** Sạch sẽ, không có xung đột Git.
 * **Hệ thống Server cục bộ:** Đang chạy một phiên bản HTTP Server nền tại cổng 8000.
 * **Kết quả Kiểm thử Tự động (End-to-End Headless Chrome CDP):**
   * Test Case 1 (Văn bản chưa có mẫu): Đạt 100% (Hiện badge vàng cảnh báo, nút "Tạo mẫu Studio", chặn xuất Word rỗng).
@@ -99,6 +148,8 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
   * Test Case 3 (Khởi tạo mẫu mới từ Studio): Đạt 100% (Hiện khung mẫu NĐ 30/2020, lưu thành công vào localStorage dưới dạng Word .docx).
   * Test Case 4 (Đồng bộ ngược về index.html): Đạt 100% (Lập tức nhận diện "Mẫu tùy biến" màu vàng kim và nút "Sửa mẫu Studio").
   * Test Case 5 (Nạp file Word riêng & Gán tag Báo cáo mua sắm): Đạt 100% (Nhận diện đúng `d50_2`, nạp 9 thực thể tự động, thanh gợi ý hiển thị Có 8/18 biến).
+  * Test Case 6 (Bảo tồn định dạng Word & Bảng biểu): Đạt 100% (Giữ nguyên bảng không viền 2 cột, bảng báo giá có viền, căn giữa, in đậm/nghiêng).
+  * Test Case 7 (Xóa biến đa năng & Hoàn tác Undo/Redo Ctrl+Z): Đạt 100% (Xóa biến qua nút `×`, menu popover, Floating menu; hoàn tác phục hồi trạng thái bằng nút và phím tắt `Ctrl+Z`/`Ctrl+Y`).
 
 ---
 

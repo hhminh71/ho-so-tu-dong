@@ -104,10 +104,43 @@
             user-select: all;
             margin: 0 2px;
             cursor: pointer;
+            transition: all 0.15s ease;
         }
         .tag-badge:hover {
             background-color: #d1fae5;
-            border-color: #6ee7b7;
+            border-color: #34d399;
+            box-shadow: 0 0 0 1px #10b981;
+        }
+        .btn-remove-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            margin-left: 3px;
+            border-radius: 9999px;
+            font-size: 13px;
+            font-weight: bold;
+            line-height: 1;
+            cursor: pointer;
+            color: #047857;
+            background-color: rgba(4, 120, 87, 0.12);
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .btn-remove-tag:hover {
+            background-color: #fee2e2;
+            color: #dc2626;
+            transform: scale(1.18);
+        }
+        .a4-preview-page table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+        .a4-preview-page table td,
+        .a4-preview-page table th {
+            vertical-align: top;
         }
         .tag-table-badge {
             display: inline-flex;
@@ -538,6 +571,16 @@
                                 </button>
                             </div>
 
+                            <!-- Undo / Redo Controls (Ctrl+Z / Ctrl+Y) -->
+                            <div class="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200 text-xs shadow-2xs" title="Hoàn tác (Ctrl+Z) / Làm lại (Ctrl+Y)">
+                                <button id="btnStudioUndo" type="button" class="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-indigo-700 hover:bg-white rounded cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="Hoàn tác (Ctrl + Z)" disabled>
+                                    <i class="fa-solid fa-rotate-left text-[10.5px]"></i>
+                                </button>
+                                <button id="btnStudioRedo" type="button" class="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-indigo-700 hover:bg-white rounded cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-not-allowed" title="Làm lại (Ctrl + Y hoặc Ctrl + Shift + Z)" disabled>
+                                    <i class="fa-solid fa-rotate-right text-[10.5px]"></i>
+                                </button>
+                            </div>
+
                             <!-- Zoom Controls (+ / -) -->
                             <div class="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200 text-xs" title="Thu phóng A4">
                                 <button id="btnStudioZoomOut" type="button" class="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white rounded cursor-pointer transition-colors" title="Thu nhỏ (Ctrl + Cuộn chuột xuống)">
@@ -590,6 +633,31 @@
                                 <button class="quick-tag-btn px-2 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white font-medium cursor-pointer transition-colors" data-var="NGUOI_KY_CDT">Người ký</button>
                             </div>
                             <button id="btnQuickCustomTag" class="px-2 py-0.5 bg-indigo-700 hover:bg-indigo-600 rounded text-white font-bold cursor-pointer transition-colors">+ Mới</button>
+                            <button id="btnRemoveTagFromSelection" type="button" class="px-2 py-0.5 bg-rose-700 hover:bg-rose-600 rounded text-white font-medium cursor-pointer transition-colors text-[10.5px]" title="Xóa hoặc gỡ thẻ biến tại vị trí đang chọn">
+                                <i class="fa-solid fa-trash-can text-[9px] mr-1"></i>Xóa biến
+                            </button>
+                        </div>
+
+                        <!-- Tag Action Popover (Appears when clicking on a tag badge) -->
+                        <div id="tagActionPopover" class="hidden absolute z-50 bg-slate-900 text-white rounded-lg py-2 px-2.5 text-xs shadow-2xl border border-slate-700 flex flex-col gap-1.5 w-64 select-none">
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-1">
+                                <span class="font-bold text-emerald-400 font-mono text-[11px]" id="lblPopoverTagName">{TAG}</span>
+                                <button id="btnCloseTagPopover" type="button" class="text-slate-400 hover:text-white cursor-pointer px-1">✕</button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1 pt-0.5">
+                                <button id="btnPopoverUnwrapTag" type="button" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded text-[10.5px] font-medium flex items-center justify-center gap-1 cursor-pointer transition-colors" title="Chuyển thẻ này thành chữ thường để có thể chỉnh sửa tự do">
+                                    <i class="fa-solid fa-font text-[9px]"></i>
+                                    <span>Gỡ thẻ (thành chữ)</span>
+                                </button>
+                                <button id="btnPopoverDeleteTag" type="button" class="px-2 py-1 bg-rose-900/60 hover:bg-rose-800 text-rose-200 hover:text-white rounded text-[10.5px] font-medium flex items-center justify-center gap-1 cursor-pointer transition-colors" title="Xóa hoàn toàn thẻ này khỏi văn bản">
+                                    <i class="fa-solid fa-trash-can text-[9px]"></i>
+                                    <span>Xóa hẳn</span>
+                                </button>
+                            </div>
+                            <div class="text-[10px] text-slate-400 font-medium pt-0.5">Đổi nhanh sang biến khác:</div>
+                            <div id="popoverQuickSwapList" class="flex flex-wrap gap-1 max-h-24 overflow-y-auto">
+                                <!-- Dynamically populated -->
+                            </div>
                         </div>
                     </div>
 
@@ -947,6 +1015,6 @@
     <!-- Cấu hình hệ thống toàn cục (Tự động đồng bộ cho mọi trình duyệt & Tab ẩn danh) -->
     <script src="config.js?v=20261106_v1"></script>
     <script src="templates_data.js"></script>
-    <script src="template-tool.js?v=20261111_v2"></script>
+    <script src="template-tool.js?v=20261111_v3"></script>
 </body>
 </html>
