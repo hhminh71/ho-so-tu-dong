@@ -263,6 +263,25 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
   - Quét `TỔNG CÔNG TY` & Bấm 1-Click `[ 🔗 Gán biến này ]`: Gán thành công biến `CAP_QUYET_DINH_DAU_TU`, chèn badge `{CAP_QUYET_DINH_DAU_TU}×` vào Canvas và tạo mapping tương ứng.
   - Ảnh minh chứng: `verify_proactive_matched_var.png`, `verify_filled_matched_var.png`, `verify_proactive_assign_canvas.png`.
 
+### 13. Khắc Phục Lỗi: Đã Báo Gán Biến Nhưng Chưa Thể Hiện Vào Bản Xem Trước (Canvas Preview):
+* **Bối cảnh:** Người dùng bôi đen cụm từ *"CẢNG HK QUỐC TẾ CẦN THƠ"*, mở modal và gán biến `{TEN_CHU_DAU_TU_VIET_HOA}`. Thông báo góc phải báo *"Đã gán biến có sẵn {TEN_CHU_DAU_TU_VIET_HOA} vào văn bản!"*, nhưng trên Canvas chuỗi chữ vẫn giữ nguyên là văn bản thường, chưa chuyển thành huy hiệu Tag Badge `{TEN_CHU_DAU_TU_VIET_HOA}×` và thanh checklist phía trên vẫn báo thiếu (`+`).
+* **Nguyên nhân cốt lõi:**
+  1. Khi người dùng click chuột vào nút `[+ Mới]` trên menu nổi (`#selectionMenu`) hoặc mở modal, trình duyệt tự động chuyển focus khiến `window.getSelection()` bị thu gọn (`isCollapsed = true`) hoặc mất liên kết với `documentContentDisplay`.
+  2. Đoạn mã cũ chỉ trông cậy vào `targetRange` đơn thuần. Khi `targetRange` bị `null` hoặc ném lỗi Range (do cấu trúc bảng biểu hoặc nhiều run lồng nhau), mã lệnh lặng lẽ bỏ qua việc thay thế DOM trên Canvas nhưng vẫn ghi nhận mapping vào danh mục `item.mappings`.
+* **Giải pháp khắc phục triệt để:**
+  1. **Bảo tồn Vùng Chọn Chuột:** Thêm `e.preventDefault()` vào sự kiện `mousedown` của `#selectionMenu` để ngăn trình duyệt hủy vùng chọn Canvas khi click vào các nút trên menu nổi.
+  2. **Bộ nhớ đệm Range tức thì (`activeSelectionRange`):** Tự động sao lưu Range chuẩn ngay trong sự kiện `selectionchange` trước khi focus bị dịch chuyển.
+  3. **Thuật toán quét chuỗi đa tầng `findRangeForTextInContainer`:**
+     - Tự động chuẩn hóa khoảng trắng không ngắt (`\u00a0`).
+     - Quét xuyên qua các thẻ định dạng (`<strong>`, `<em>`, `<span>`) để xác định đúng tọa độ bắt đầu và kết thúc của chuỗi văn bản.
+  4. **Cơ chế Chèn Badge Dự Phòng Kép (Dual Fallback):** Trong cả `applyTagToSelection` và `saveVariableChanges`, nếu việc chèn qua `targetRange` thất bại hoặc bị `null`, hệ thống lập tức kích hoạt `replaceTextWithBadgeAcrossNodes` để tìm và hoán đổi đúng cụm từ thành thẻ badge `{TAG}×` trên Canvas.
+  5. Cập nhật ngay `workingDraftHtml`, đồng bộ độ phủ biến checklist và nâng cache-buster lên `template-tool.js?v=20261111_v9`.
+* **Xác thực:** Kiểm thử Chrome CDP tự động (`scratch/test_verify_preview_tag_replacement.py`):
+  - Canvas lập tức hiển thị thẻ badge `<span class="tag-badge" data-tag="TEN_CHU_DAU_TU_VIET_HOA">...</span>`.
+  - Chip trên checklist chuyển sang màu xanh lá `✓`.
+  - Chuyển sang *"Xem Thử Dữ Liệu Thật"*: Tự động điền dữ liệu thực tế trơn tru.
+  - Ảnh minh chứng: `verify_tag_badge_rendered_on_canvas.png`, `verify_tag_real_data_preview.png`.
+
 ---
 
 ## 🚀 5. NHIỆM VỤ TIẾP THEO (NEXT TASKS CHO AI TIẾP QUẢN)

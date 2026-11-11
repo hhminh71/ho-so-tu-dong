@@ -3073,6 +3073,7 @@
             renderBatchTable();
         }
 
+        let inserted = false;
         const sel = window.getSelection();
         if (sel && sel.rangeCount > 0 && documentContentDisplay && documentContentDisplay.contains(sel.anchorNode)) {
             const range = sel.getRangeAt(0);
@@ -3083,16 +3084,29 @@
             badge.setAttribute("contenteditable", "false");
             badge.innerHTML = `{${cleanTag}}<span class="btn-remove-tag" data-tag="${cleanTag}" title="Xóa biến này" contenteditable="false">×</span>`;
 
-            range.deleteContents();
-            range.insertNode(badge);
+            try {
+                range.deleteContents();
+                range.insertNode(badge);
 
-            const spacer = document.createTextNode(" ");
-            range.setStartAfter(badge);
-            range.insertNode(spacer);
-            range.setStartAfter(spacer);
-            range.collapse(true);
-            savedCursorRange = range.cloneRange();
-        } else if (item) {
+                const spacer = document.createTextNode(" ");
+                range.setStartAfter(badge);
+                range.insertNode(spacer);
+                range.setStartAfter(spacer);
+                range.collapse(true);
+                savedCursorRange = range.cloneRange();
+                inserted = true;
+            } catch (e) {
+                console.warn("Could not insert badge via Range in applyTagToSelection:", e);
+            }
+        }
+
+        if (!inserted && documentContentDisplay && selectedTextToTag) {
+            const isTable = cleanTag.startsWith("BANG_");
+            const rep = replaceTextWithBadgeAcrossNodes(documentContentDisplay, selectedTextToTag, cleanTag, isTable, true);
+            if (rep > 0) inserted = true;
+        }
+
+        if (!inserted && item) {
             renderCanvasContent(item);
         }
 
@@ -4251,6 +4265,15 @@
 
     // Text selection & floating menu for quick tagging in Single View
     let selectedTextToTag = "";
+    let activeSelectionRange = null;
+
+    if (selectionMenu) {
+        selectionMenu.addEventListener("mousedown", (e) => {
+            // Prevent selection from collapsing on mousedown
+            e.preventDefault();
+        });
+    }
+
     document.addEventListener("selectionchange", () => {
         const sel = window.getSelection();
         if (!sel || sel.isCollapsed || !documentContentDisplay || !documentContentDisplay.contains(sel.anchorNode)) {
@@ -4264,6 +4287,7 @@
         if (text.length > 1 && text.length < 150) {
             selectedTextToTag = text;
             const range = sel.getRangeAt(0);
+            activeSelectionRange = range.cloneRange();
             const rect = range.getBoundingClientRect();
             const wrapper = document.getElementById("docViewerWrapper");
             if (!wrapper) return;
@@ -4293,6 +4317,8 @@
             let savedRange = null;
             if (sel && sel.rangeCount > 0 && documentContentDisplay && documentContentDisplay.contains(sel.anchorNode)) {
                 savedRange = sel.getRangeAt(0).cloneRange();
+            } else if (activeSelectionRange) {
+                savedRange = activeSelectionRange.cloneRange();
             }
             openEditVariableModal(null, null, {
                 mode: "selection",
@@ -4975,9 +5001,12 @@
 
     let currentEditVarContext = null;
 
-    function replaceTextWithBadgeAcrossNodes(rootEl, searchStr, tag, isTable = false) {
-        if (!rootEl || !searchStr) return 0;
-        const walker = document.createTreeWalker(rootEl, NodeFilter.SHOW_TEXT, {
+    function findRangeForTextInContainer(container, searchText) {
+        if (!container || !searchText) return null;
+        const cleanSearch = searchText.replace(/\u00a0/g, " ").trim();
+        if (!cleanSearch) return null;
+
+        const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
             acceptNode: function(node) {
                 if (node.parentElement && (
                     node.parentElement.classList.contains("tag-badge") || 
@@ -4987,43 +5016,85 @@
                 )) {
                     return NodeFilter.FILTER_REJECT;
                 }
-                if (node.nodeValue && node.nodeValue.includes(searchStr)) {
-                    return NodeFilter.FILTER_ACCEPT;
-                }
-                return NodeFilter.FILTER_SKIP;
+                return NodeFilter.FILTER_ACCEPT;
             }
         });
 
-        const matchedNodes = [];
+        let fullText = "";
+        const nodeRanges = [];
         while (walker.nextNode()) {
-            matchedNodes.push(walker.currentNode);
+            const node = walker.currentNode;
+            const start = fullText.length;
+            const nodeText = (node.nodeValue || "").replace(/\u00a0/g, " ");
+            fullText += nodeText;
+            nodeRanges.push({ node, start, end: start + nodeText.length, len: nodeText.length });
         }
 
-        let count = 0;
-        for (const textNode of matchedNodes) {
-            let parent = textNode.parentNode;
-            if (!parent) continue;
-            let content = textNode.nodeValue;
-            let idx = content.indexOf(searchStr);
-            if (idx !== -1) {
-                count++;
-                const before = content.substring(0, idx);
-                const after = content.substring(idx + searchStr.length);
+        const idx = fullText.indexOf(cleanSearch);
+        if (idx === -1) return null;
 
-                const badge = document.createElement("span");
-                badge.className = isTable ? "tag-table-badge" : "tag-badge";
-                badge.setAttribute("data-tag", tag);
-                badge.setAttribute("contenteditable", "false");
-                badge.innerHTML = `{${tag}}<span class="btn-remove-tag" data-tag="${tag}" title="Xóa biến này" contenteditable="false">×</span>`;
+        const endIdx = idx + cleanSearch.length;
+        let startNode = null, startOffset = 0;
+        let endNode = null, endOffset = 0;
 
-                const fragment = document.createDocumentFragment();
-                if (before) fragment.appendChild(document.createTextNode(before));
-                fragment.appendChild(badge);
-                fragment.appendChild(document.createTextNode(" "));
-                if (after) fragment.appendChild(document.createTextNode(after));
-
-                parent.replaceChild(fragment, textNode);
+        for (const nr of nodeRanges) {
+            if (!startNode && idx >= nr.start && idx < nr.end) {
+                startNode = nr.node;
+                startOffset = idx - nr.start;
             }
+            if (endIdx > nr.start && endIdx <= nr.end) {
+                endNode = nr.node;
+                endOffset = endIdx - nr.start;
+                break;
+            }
+        }
+
+        if (startNode && endNode) {
+            try {
+                const range = document.createRange();
+                range.setStart(startNode, startOffset);
+                range.setEnd(endNode, endOffset);
+                return range;
+            } catch (e) {
+                console.warn("Error creating range in findRangeForTextInContainer:", e);
+                return null;
+            }
+        }
+        return null;
+    }
+
+    function replaceTextWithBadgeAcrossNodes(rootEl, searchStr, tag, isTable = false, onlyFirst = false) {
+        if (!rootEl || !searchStr) return 0;
+        const cleanSearch = searchStr.replace(/\u00a0/g, " ").trim();
+        if (!cleanSearch) return 0;
+        const cleanTag = (tag || "").replace(/[{}]/g, "").trim().toUpperCase();
+        if (!cleanTag) return 0;
+
+        let count = 0;
+        while (true) {
+            const range = findRangeForTextInContainer(rootEl, cleanSearch);
+            if (!range) break;
+
+            const badge = document.createElement("span");
+            badge.className = isTable ? "tag-table-badge" : "tag-badge";
+            badge.setAttribute("data-tag", cleanTag);
+            badge.setAttribute("contenteditable", "false");
+            badge.innerHTML = `{${cleanTag}}<span class="btn-remove-tag" data-tag="${cleanTag}" title="Xóa biến này" contenteditable="false">×</span>`;
+
+            try {
+                range.deleteContents();
+                range.insertNode(badge);
+                const spacer = document.createTextNode(" ");
+                range.setStartAfter(badge);
+                range.insertNode(spacer);
+                count++;
+            } catch (e) {
+                console.warn("Could not insert badge into range in replaceTextWithBadgeAcrossNodes:", e);
+                break;
+            }
+
+            if (onlyFirst) break;
+            if (count >= 100) break;
         }
         return count;
     }
@@ -5914,6 +5985,7 @@
                 }
                 showToast(isExistingTag ? `Đã gán biến có sẵn {${newTag}} cho ${replaceCount || 1} vị trí trong văn bản!` : `Đã tạo biến {${newTag}} và thay thế ${replaceCount || 1} vị trí trong văn bản!`, "success");
             } else {
+                let inserted = false;
                 let targetRange = null;
                 const sel = window.getSelection();
                 if (sel && sel.rangeCount > 0 && documentContentDisplay && documentContentDisplay.contains(sel.anchorNode)) {
@@ -5938,9 +6010,16 @@
                         targetRange.setStartAfter(spacer);
                         targetRange.collapse(true);
                         savedCursorRange = targetRange.cloneRange();
+                        inserted = true;
                     } catch (e) {
-                        console.warn("Could not insert badge via Range, falling back to canvas re-render:", e);
+                        console.warn("Could not insert badge via Range, falling back to text replacer:", e);
                     }
+                }
+
+                // BẢO ĐẢM 100%: Nếu targetRange bị null hoặc chèn không thành công:
+                if (!inserted && documentContentDisplay && ctx.selectedText) {
+                    const repCount = replaceTextWithBadgeAcrossNodes(documentContentDisplay, ctx.selectedText, newTag, isTable, true);
+                    if (repCount > 0) inserted = true;
                 }
 
                 if (item) {
