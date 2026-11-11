@@ -63,8 +63,9 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
 
 | Tên tệp | Trạng thái | Mục đích & Chi tiết thay đổi |
 | :--- | :---: | :--- |
-| [`template-tool.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.js) | **NÂNG CẤP LỚN** | Bổ sung bộ phân tích OpenXML `parseDocxToStyledHtml` với type-guards; bảo tồn bảng 2 cột & căn lề; nâng cấp `createDocxFromCanvasHtml` hỗ trợ table roundtrip; tích hợp Undo/Redo Manager (`undoStack`, `redoStack`, `performUndo`, `performRedo`, `Ctrl+Z`, `Ctrl+Y`); tích hợp Tag Action Popover (`tagActionPopover`, gỡ thẻ, xóa biến, đổi biến nhanh); bổ sung nút `×` trên badge; cơ chế dọn dẹp sạch `cleanCanvasHtmlForStorage`. |
-| [`template-tool.html`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.html) | **NÂNG CẤP** | Thêm nhóm nút Undo/Redo `#btnStudioUndo` & `#btnStudioRedo` trên toolbar; thêm nút `#btnRemoveTagFromSelection` trên selection menu; thêm giao diện popover `#tagActionPopover`; định dạng CSS cho nút xóa tag, hiệu ứng hover, căn lề và bảng in trang A4; nâng cache-buster lên `template-tool.js?v=20261111_v3`. |
+| [`template-tool.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.js) | **NÂNG CẤP LỚN** | Bổ sung bộ phân tích OpenXML `parseDocxToStyledHtml` với type-guards; bảo tồn bảng 2 cột & căn lề; nâng cấp `createDocxFromCanvasHtml` hỗ trợ table roundtrip; tích hợp Undo/Redo Manager (`undoStack`, `redoStack`, `performUndo`, `performRedo`, `Ctrl+Z`, `Ctrl+Y`); tích hợp Tag Action Popover (`tagActionPopover`, gỡ thẻ, xóa biến, đổi biến nhanh); bổ sung nút `×` trên badge; cơ chế dọn dẹp sạch `cleanCanvasHtmlForStorage`; nâng cấp bộ phân giải dữ liệu xem thử đa tầng `resolvePreviewValueForTag` (chuỗi gốc Word, project data, catalog example); nâng cấp `detectEntitiesForDocument` quét trực tiếp từ Từ điển biến & Thông tin chung; bổ sung nút `rescanDocumentEntitiesFromDictionary`; sửa lỗi bộ gõ tiếng Việt Telex (IME composition) khi nhập mã thẻ biến. |
+| [`template-tool.html`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.html) | **NÂNG CẤP** | Thêm nhóm nút Undo/Redo `#btnStudioUndo` & `#btnStudioRedo` trên toolbar; thêm nút `#btnRemoveTagFromSelection` trên selection menu; thêm giao diện popover `#tagActionPopover`; định dạng CSS cho nút xóa tag, hiệu ứng hover, căn lề và bảng in trang A4; đưa hộp gợi ý biến `#contextualRecommendedVarsBox` lên cố định trên đầu Sidebar cho cả 3 Tab; thêm nút `#btnRescanDictionaryVars` trong Tab 3; nâng cache-buster lên `template-tool.js?v=20261111_v4`. |
+| `scratch/test_preview_and_dictionary_scan.py` | **MỚI** | Script kiểm thử tự động quy trình quét từ điển & thông tin chung cho file BCMS.docx (phát hiện đủ 10 biến), kiểm tra hiển thị hộp gợi ý biến trên Tab 3, kiểm tra phân giải dữ liệu xem thử cho biến mới và căn cứ quyết định. |
 | `scratch/test_format_delete_undo.py` | **MỚI** | Script kiểm thử tự động toàn diện: kiểm tra bảo tồn bảng biểu & căn lề, xóa tag bằng nút `×`, hoàn tác Undo bằng nút & phím tắt Ctrl+Z, Redo, menu popover, và kiểm tra file docx tạo ra chứa đúng bảng và căn giữa. |
 | `scratch/test_user_report_file.py` | **MỚI** | Script kiểm thử tải file Word thực tế "2. BCMS.docx" có bảng tiêu ngữ, bảng báo giá và bảng ký tên, kiểm tra hiển thị đúng 3 bảng và căn giữa trên Canvas. |
 | [`app.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/app.js) | **HIỆN HỮU** | Ma trận `DEFAULT_IMPLEMENTATION_MATRIX` 2 tầng; hàm `hasDocTemplate(docObj)`; hiển thị Badge trạng thái mẫu và chặn xuất Word rỗng. |
@@ -135,6 +136,30 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
      - Ngăn xếp `undoStack` (tối đa 50 bước) tự động lưu lại trạng thái sau mỗi thao tác chèn, xóa, đổi biến, ngắt trang và khi gõ văn bản trực tiếp trên Canvas (debounced 800ms).
 * **Xác thực:** Kiểm thử tự động toàn diện (`scratch/test_format_delete_undo.py`): Xóa biến bằng nút `×` (21 -> 20 biến), Hoàn tác bằng nút Undo (20 -> 21 biến), Làm lại bằng nút Redo (21 -> 20 biến), Hoàn tác bằng phím tắt `Ctrl+Z` (20 -> 21 biến), mở Popover đổi biến nhanh (5 chip gợi ý), biên dịch Word giữ nguyên 2 bảng và 10 đoạn căn giữa. Ảnh minh chứng: `verify_format_delete_undo.png`.
 
+### 8. Lỗi: Xem thử dữ liệu thật của biến mới không thể hiện và chưa kích hoạt gợi ý biến từ Từ điển (Thông tin chung)
+* **Nguyên nhân:**
+  1. **Xem thử dữ liệu bị giới hạn cứng:** Hàm `renderSampleDataPreview` chỉ đọc dữ liệu từ đối tượng tĩnh `SAMPLE_ADMIN_DATA` (~30 biến mặc định). Bất kỳ biến mới tạo (`+ Thêm biến mới`), biến tự động trích xuất từ văn bản (`TEN_KEM_SO_NGAY_QUYET_DINH`, `NGAY_BAO_CAO_FULL`), hay biến tùy biến đều bị rơi vào nhánh fallback trả về mã thẻ màu hổ phách `{TAG}` mà không hiện dữ liệu thật.
+  2. **Chưa đối chiếu văn bản với Từ điển & Thông tin chung:** Hàm `detectEntitiesForDocument` chỉ dùng các biểu thức chính quy cứng nhắc (ví dụ yêu cầu phải có chữ `Chủ đầu tư:`), hoàn toàn không quét đối chiếu văn bản tải lên với Từ điển biến `MASTER_VARIABLES_CATALOG` (50+ biến) và dữ liệu Thông tin chung của Dự án (`appState.generalInfo`). Do đó các thông tin như `CẢNG HÀNG KHÔNG QUỐC TẾ CẦN THƠ`, `PHÒNG TC-KH`, `Hạng mục: ...`, `Kính gửi: ...`, `Căn cứ Quyết định số ...` bị bỏ sót.
+  3. **Hộp gợi ý biến bị ẩn khi ở Tab 3:** Hộp gợi ý `#contextualRecommendedVarsBox` trước đó được đặt bên trong Tab 1 ("1. Biến chữ"). Khi nạp file Word lên, hệ thống tự động chuyển sang Tab 3 ("3. Đã gán") khiến hộp gợi ý bị ẩn đi.
+  4. **Xung đột bộ gõ tiếng Việt Telex (IME):** Khi tạo biến mới, sự kiện `oninput` trên ô nhập mã thẻ ép chạy hàm `slugifyToUpperSnake` trên từng phím gõ, làm đứt quãng bộ gõ tiếng Việt (Unikey/Cốc Cốc/EVKey) và biến từ `TÊN HẠNG MỤC` thành `T_N_H_NG_M_C`.
+* **Xử lý:**
+  1. **Nâng cấp bộ phân giải dữ liệu xem thử thông minh đa tầng (`resolvePreviewValueForTag`):**
+     - *Tầng 1 (Ưu tiên cao nhất):* Đọc chuỗi gốc thực tế `originalText` từ `item.mappings` (dữ liệu thật từ file Word của người dùng).
+     - *Tầng 2:* Đọc dữ liệu dự án hiện hành `ho_so_tu_dong_state_v3` (`generalInfo` và `packages`).
+     - *Tầng 3:* Đọc dữ liệu mẫu `example` hoặc `defaultValue` trong Từ điển `MASTER_VARIABLES_CATALOG`.
+     - *Tầng 4:* Dữ liệu chuẩn hành chính `SAMPLE_ADMIN_DATA`.
+     - *Tầng 5:* Sinh nhãn tiếng Việt dễ hiểu theo ngữ nghĩa, tuyệt đối không để trơ mã thẻ `{TAG}` khó chịu.
+  2. **Nâng cấp toàn diện `detectEntitiesForDocument` (Quét 2 chiều):**
+     - Quét đối chiếu toàn bộ các giá trị từ Thông tin chung dự án (`appState.generalInfo`) và Từ điển biến (`MASTER_VARIABLES_CATALOG`).
+     - Tự động nhận diện cấu trúc tiêu đề hành chính 2 cột: Tên cơ quan chủ quản / CĐT in hoa (`TEN_CHU_DAU_TU_VIET_HOA`), Đơn vị tham mưu / Phòng ban (`TEN_BAN_QUAN_LY_DU_AN`), Số báo cáo (`SO_BAO_CAO`), Địa danh ngày tháng (`DIA_DANH` & `NGAY_BAO_CAO_FULL`).
+     - Tự động nhận diện dòng `Hạng mục: “...”` thành `{TEN_GOI_THAU}` (chuẩn gói thầu mua sắm/sửa chữa).
+     - Tự động nhận diện dòng `Kính gửi: ...` thành `{CHUC_VU_NGUOI_KY}`.
+     - Tự động nhận diện trích dẫn `Căn cứ Quyết định số ... ngày ...` thành `{TEN_KEM_SO_NGAY_QUYET_DINH}`.
+  3. **Đưa hộp gợi ý biến `#contextualRecommendedVarsBox` lên vị trí cố định trên đầu Sidebar:** Luôn hiển thị liên tục và sẵn sàng tương tác cho cả 3 Tab (Tab 1, Tab 2, Tab 3).
+  4. **Bổ sung nút `[⚡ Gợi ý từ Từ điển]` (`#btnRescanDictionaryVars`):** Tích hợp ngay trên đầu Tab 3 để người dùng bấm quét lại đối chiếu bất cứ lúc nào.
+  5. **Khắc phục triệt để lỗi bộ gõ tiếng Việt (IME Composition):** Lắng nghe sự kiện `compositionstart` và `compositionend`, chỉ chuẩn hóa mã thẻ khi kết thúc gõ hoặc khi rời chuột (`blur`), gõ tiếng Việt hoàn toàn tự nhiên không bị lỗi chèn dấu gạch dưới `_`.
+* **Xác thực:** Kiểm thử tự động trên Chrome CDP (`scratch/test_preview_and_dictionary_scan.py`): Quét và tự động nhận diện thành công 10/10 biến từ Từ điển và cấu trúc văn bản; hộp gợi ý biến hiển thị đầy đủ trên Tab 3; chế độ xem thử thay thế thành công 100% dữ liệu thực cho biến mới và căn cứ quyết định. Ảnh minh chứng: `verify_preview_and_dictionary_scan.png`.
+
 ---
 
 ## ⚠️ 4. TRẠNG THÁI HIỆN TẠI & CÓ LỖI NÀO ĐANG VƯỚNG KHÔNG?
@@ -150,6 +175,7 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
   * Test Case 5 (Nạp file Word riêng & Gán tag Báo cáo mua sắm): Đạt 100% (Nhận diện đúng `d50_2`, nạp 9 thực thể tự động, thanh gợi ý hiển thị Có 8/18 biến).
   * Test Case 6 (Bảo tồn định dạng Word & Bảng biểu): Đạt 100% (Giữ nguyên bảng không viền 2 cột, bảng báo giá có viền, căn giữa, in đậm/nghiêng).
   * Test Case 7 (Xóa biến đa năng & Hoàn tác Undo/Redo Ctrl+Z): Đạt 100% (Xóa biến qua nút `×`, menu popover, Floating menu; hoàn tác phục hồi trạng thái bằng nút và phím tắt `Ctrl+Z`/`Ctrl+Y`).
+  * Test Case 8 (Xem thử dữ liệu biến mới & Quét từ điển Thông tin chung): Đạt 100% (Nhận diện tự động 10 biến từ Từ điển; hiển thị liên tục hộp gợi ý; xem thử hiển thị đầy đủ dữ liệu thật).
 
 ---
 

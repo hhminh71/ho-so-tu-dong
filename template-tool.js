@@ -393,6 +393,8 @@
     }
     window.switchViewMode = switchViewMode;
     window.studioState = state;
+    window.state = state;
+    window.rescanDocumentEntitiesFromDictionary = rescanDocumentEntitiesFromDictionary;
     window.processIncomingFiles = processIncomingFiles;
     window.loadFileForSingleDocument = loadFileForSingleDocument;
     window.cleanCanvasHtmlForStorage = cleanCanvasHtmlForStorage;
@@ -993,7 +995,8 @@
 
         function addMapping(tag, originalText, tier, reason) {
             if (!originalText || originalText.trim().length < 2) return;
-            const cleanText = originalText.trim().replace(/^[\s:–—\-]+/, "").replace(/[\s;.,]+$/, "");
+            const cleanText = originalText.trim().replace(/^[\s:–—\-“"']+|[\s;.,”"']+$/g, "");
+            if (cleanText.length < 2) return;
             if (mappings.some(m => m.tag === tag || m.originalText === cleanText)) return;
 
             mappings.push({
@@ -1005,8 +1008,117 @@
             });
         }
 
-        // TẦNG 1: DÙNG CHUNG TOÀN DỰ ÁN (TIER 1)
-        // Chủ đầu tư
+        // =========================================================
+        // BƯỚC 1: QUÉT TRỰC TIẾP TỪ THÔNG TIN CHUNG DỰ ÁN (ho_so_tu_dong_state_v3)
+        // & TỪ ĐIỂN BIẾN TOÀN CỤC (MASTER_VARIABLES_CATALOG)
+        // =========================================================
+        try {
+            const rawState = localStorage.getItem("ho_so_tu_dong_state_v3");
+            if (rawState) {
+                const appData = JSON.parse(rawState);
+                const gInfo = appData.generalInfo || {};
+                for (const [key, val] of Object.entries(gInfo)) {
+                    if (val && typeof val === "string" && val.trim().length >= 3) {
+                        const strVal = val.trim();
+                        if (fullText.includes(strVal)) {
+                            addMapping(key, strVal, 1, "Thông tin chung dự án");
+                        } else if (fullText.toLowerCase().includes(strVal.toLowerCase())) {
+                            const idx = fullText.toLowerCase().indexOf(strVal.toLowerCase());
+                            const matchedStr = fullText.substr(idx, strVal.length);
+                            addMapping(key, matchedStr, 1, "Thông tin chung dự án");
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn("Lỗi quét generalInfo:", e);
+        }
+
+        // Quét tiếp qua Từ điển biến MASTER_VARIABLES_CATALOG (ví dụ, tên mẫu CĐT, Ban QLDA...)
+        // Ưu tiên khớp chính xác nguyên bản trước (ví dụ CĐT VIẾT HOA trước CĐT thường)
+        if (typeof MASTER_VARIABLES_CATALOG !== "undefined" && Array.isArray(MASTER_VARIABLES_CATALOG)) {
+            // Lượt 1: Khớp chính xác cả chữ hoa/thường
+            MASTER_VARIABLES_CATALOG.forEach(v => {
+                if (v.example && typeof v.example === "string" && v.example.trim().length >= 4) {
+                    const ex = v.example.trim();
+                    if (!/^\d+$/.test(ex) && !/^\d+\s*ngày$/i.test(ex)) {
+                        if (fullText.includes(ex)) {
+                            addMapping(v.tag, ex, v.tier || (v.isGeneral ? 1 : 2), `Từ điển: ${v.label}`);
+                        }
+                    }
+                }
+            });
+            // Lượt 2: Khớp không phân biệt hoa thường nếu chưa được gán
+            MASTER_VARIABLES_CATALOG.forEach(v => {
+                if (v.example && typeof v.example === "string" && v.example.trim().length >= 4) {
+                    const ex = v.example.trim();
+                    if (!/^\d+$/.test(ex) && !/^\d+\s*ngày$/i.test(ex)) {
+                        if (!mappings.some(m => m.tag === v.tag) && fullText.toLowerCase().includes(ex.toLowerCase())) {
+                            const idx = fullText.toLowerCase().indexOf(ex.toLowerCase());
+                            const matchedStr = fullText.substr(idx, ex.length);
+                            addMapping(v.tag, matchedStr, v.tier || (v.isGeneral ? 1 : 2), `Từ điển: ${v.label}`);
+                        }
+                    }
+                }
+            });
+        }
+
+        // =========================================================
+        // BƯỚC 2: NHẬN DIỆN CẤU TRÚC HÀNH CHÍNH CHUẨN NĐ 30/2020/NĐ-CP
+        // =========================================================
+        // 2.1 Tiêu đề cơ quan / Chủ đầu tư (Bên trái bảng header)
+        const headerOrgMatches = [
+            /(?:^|\n)\s*(CẢNG HÀNG KHÔNG QUỐC TẾ[^\n\r]+)/,
+            /(?:^|\n)\s*(TỔNG CÔNG TY[^\n\r]+)/,
+            /(?:^|\n)\s*(CÔNG TY\s+[^\n\r]+)/,
+            /(?:^|\n)\s*(BAN QUẢN LÝ[^\n\r]+)/
+        ];
+        for (const reg of headerOrgMatches) {
+            const m = fullText.match(reg);
+            if (m && m[1] && m[1].trim().length < 80) {
+                addMapping("TEN_CHU_DAU_TU_VIET_HOA", m[1].trim(), 1, "Tên đơn vị / CĐT (Header)");
+                break;
+            }
+        }
+
+        // 2.2 Phòng ban thực hiện / Ban QLDA (Dòng thứ 2 bên trái header)
+        const deptMatches = [
+            /(?:^|\n)\s*(PHÒNG\s+[A-Z0-9\-_–— ]+)/i,
+            /(?:^|\n)\s*(BAN\s+[A-Z0-9\-_–— ]+)/i,
+            /(?:^|\n)\s*(TRUNG TÂM\s+[A-Z0-9\-_–— ]+)/i
+        ];
+        for (const reg of deptMatches) {
+            const m = fullText.match(reg);
+            if (m && m[1] && m[1].trim().length < 50) {
+                addMapping("TEN_BAN_QUAN_LY_DU_AN", m[1].trim(), 1, "Phòng ban / Đơn vị thực hiện");
+                break;
+            }
+        }
+
+        // 2.3 Hạng mục mua sắm / Gói thầu / Dự toán
+        const hmMatch = fullText.match(/hạng mục\s*[:–—\-]\s*[“"']?([^”"'\n\r]{6,150})[”"']?/i) ||
+                        fullText.match(/nội dung mua sắm\s*[:–—\-]\s*[“"']?([^”"'\n\r]{6,150})[”"']?/i) ||
+                        fullText.match(/dự toán mua sắm\s*[:–—\-]\s*[“"']?([^”"'\n\r]{6,150})[”"']?/i);
+        if (hmMatch && hmMatch[1]) {
+            addMapping("TEN_GOI_THAU", hmMatch[1].trim(), 2, "Hạng mục / Gói thầu mua sắm");
+        }
+
+        // 2.4 Kính gửi: Giám đốc / Thủ trưởng
+        const kgMatch = fullText.match(/kính gửi\s*[:–—\-]\s*([^\n\r.,;]{4,80})/i);
+        if (kgMatch && kgMatch[1]) {
+            addMapping("CHUC_VU_NGUOI_KY", kgMatch[1].trim(), 1, "Chức vụ người nhận / Kính gửi");
+        }
+
+        // 2.5 Cấp quyết định / Tổng công ty trong căn cứ
+        const capQdMatch = fullText.match(/(Tổng công ty Cảng hàng không Việt Nam\s*[–—-]\s*CTCP)/i);
+        if (capQdMatch && capQdMatch[1]) {
+            addMapping("CAP_QUYET_DINH_DAU_TU", capQdMatch[1].trim(), 1, "Cấp quyết định đầu tư");
+        }
+
+        // =========================================================
+        // BƯỚC 3: CÁC QUY TẮC NHẬN DIỆN CÒN LẠI (SỐ VB, NGÀY THÁNG, GIÁ TIỀN, MST, CĂN CỨ)
+        // =========================================================
+        // Chủ đầu tư (dạng nhãn)
         const cdtRegexes = [
             /chủ đầu tư\s*[:–—\-]\s*([^\n.,;]{4,80})/i,
             /bên a\s*\(?[^\n)]*\)?\s*[:–—\-]\s*([^\n.,;]{4,80})/i
@@ -1032,7 +1144,6 @@
             addMapping("DIA_DANH", ddMatch[1].trim(), 1, "Địa danh phát hành VB");
         }
 
-        // TẦNG 2: THÔNG TIN GÓI THẦU (TIER 2)
         // Tên gói thầu
         const gtMatch = fullText.match(/gói thầu\s*(?:số\s*\d+)?\s*[:–—\-]\s*([^\n;]{6,120})/i);
         if (gtMatch && gtMatch[1]) {
@@ -1049,9 +1160,9 @@
         // Giá gói thầu / Giá hợp đồng / Giá mua sắm
         const giaMatch = fullText.match(/([\d]{1,3}(?:\.[\d]{3})+)\s*(?:đồng|vnđ)/i);
         if (giaMatch && giaMatch[1]) {
-            if (doc.code.includes("HD") || doc.name.toLowerCase().includes("hợp đồng")) {
+            if (doc && (doc.code?.includes("HD") || doc.name?.toLowerCase().includes("hợp đồng"))) {
                 addMapping("GIA_TRI_HOP_DONG_SO", giaMatch[1], 2, "Giá trị hợp đồng");
-            } else if (doc.code.includes("BC") || doc.name.toLowerCase().includes("báo cáo")) {
+            } else if (doc && (doc.code?.includes("BC") || doc.name?.toLowerCase().includes("báo cáo"))) {
                 addMapping("GIA_TRI_HOP_DONG_SO", giaMatch[1], 2, "Giá trị mua sắm / hợp đồng");
             } else {
                 addMapping("GIA_GOI_THAU_SO", giaMatch[1], 2, "Giá gói thầu");
@@ -1064,22 +1175,23 @@
             addMapping("MA_SO_THUE", mstMatch[1].trim(), 2, "Mã số thuế");
         }
 
-        // TẦNG 3: BIẾN ĐỊNH DANH RIÊNG VĂN BẢN (CHỐNG CHỒNG CHÉO SỐ VB VÀ NGÀY KÝ)
-        // Số văn bản ở góc trái trên đầu (hỗ trợ đầy đủ ký tự tiếng Việt như ĐKNCC, QĐ, UBND, BC)
+        // TẦNG 3: BIẾN ĐỊNH DANH RIÊNG VĂN BẢN
         const soVbMatch = fullText.match(/số\s*[:–—\-]?\s*([0-9a-zA-ZÀ-ỹ\/\.\-_]+)/i);
         if (soVbMatch && soVbMatch[1] && soVbMatch[1].includes("/")) {
             const soStr = soVbMatch[1].trim();
-            if (doc.code.includes("TTr") || doc.name.toLowerCase().includes("tờ trình")) {
+            const dCode = doc?.code || "";
+            const dName = (doc?.name || "").toLowerCase();
+            if (dCode.includes("TTr") || dName.includes("tờ trình")) {
                 addMapping("SO_TO_TRINH", soStr, 3, "Số Tờ trình");
-            } else if (doc.code.includes("QD") || doc.name.toLowerCase().includes("quyết định")) {
+            } else if (dCode.includes("QD") || dName.includes("quyết định")) {
                 addMapping("SO_QUYET_DINH", soStr, 3, "Số Quyết định");
-            } else if (doc.code.includes("BC") || doc.name.toLowerCase().includes("báo cáo")) {
+            } else if (dCode.includes("BC") || dName.includes("báo cáo")) {
                 addMapping("SO_BAO_CAO", soStr, 3, "Số Báo cáo");
-            } else if (doc.code.includes("GM") || doc.name.toLowerCase().includes("giấy mời")) {
+            } else if (dCode.includes("GM") || dName.includes("giấy mời")) {
                 addMapping("SO_GIAY_MOI", soStr, 3, "Số Giấy mời");
-            } else if (doc.code.includes("BB") || doc.name.toLowerCase().includes("biên bản")) {
+            } else if (dCode.includes("BB") || dName.includes("biên bản")) {
                 addMapping("SO_BIEN_BAN_HOAN_THIEN", soStr, 3, "Số Biên bản");
-            } else if (doc.code.includes("HD") || doc.name.toLowerCase().includes("hợp đồng")) {
+            } else if (dCode.includes("HD") || dName.includes("hợp đồng")) {
                 addMapping("SO_HOP_DONG", soStr, 3, "Số Hợp đồng");
             }
         }
@@ -1088,29 +1200,32 @@
         const ngayLongMatch = fullText.match(/ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})\s+năm\s+(\d{4})/i);
         if (ngayLongMatch) {
             const rawLongDate = ngayLongMatch[0];
-            if (doc.code.includes("TTr") || doc.name.toLowerCase().includes("tờ trình")) {
+            const dCode = doc?.code || "";
+            const dName = (doc?.name || "").toLowerCase();
+            if (dCode.includes("TTr") || dName.includes("tờ trình")) {
                 addMapping("NGAY_TO_TRINH_FULL", rawLongDate, 3, "Ngày Tờ trình đầy đủ (Header)");
-            } else if (doc.code.includes("QD") || doc.name.toLowerCase().includes("quyết định")) {
+            } else if (dCode.includes("QD") || dName.includes("quyết định")) {
                 addMapping("NGAY_QUYET_DINH_FULL", rawLongDate, 3, "Ngày QĐ đầy đủ (Header)");
-            } else if (doc.code.includes("BC") || doc.name.toLowerCase().includes("báo cáo")) {
+            } else if (dCode.includes("BC") || dName.includes("báo cáo")) {
                 addMapping("NGAY_BAO_CAO_FULL", rawLongDate, 3, "Ngày Báo cáo đầy đủ (Header)");
-            } else if (doc.code.includes("GM") || doc.name.toLowerCase().includes("giấy mời")) {
+            } else if (dCode.includes("GM") || dName.includes("giấy mời")) {
                 addMapping("NGAY_GIAY_MOI_FULL", rawLongDate, 3, "Ngày Giấy mời đầy đủ (Header)");
-            } else if (doc.code.includes("BB") || doc.name.toLowerCase().includes("biên bản")) {
+            } else if (dCode.includes("BB") || dName.includes("biên bản")) {
                 addMapping("NGAY_BIEN_BAN_FULL", rawLongDate, 3, "Ngày Biên bản đầy đủ (Header)");
-            } else if (doc.code.includes("HD") || doc.name.toLowerCase().includes("hợp đồng")) {
+            } else if (dCode.includes("HD") || dName.includes("hợp đồng")) {
                 addMapping("NGAY_HOP_DONG_FULL", rawLongDate, 3, "Ngày Hợp đồng đầy đủ (Header)");
             }
         }
 
-        // TẦNG 4: BIẾN TRÍCH DẪN CĂN CỨ HỖN HỢP (TIER 4)
-        // Tìm các câu trích dẫn căn cứ văn bản trước: "Căn cứ Tờ trình số ... ngày ..."
-        const canCuTTrMatch = fullText.match(/tờ trình\s+(?:số\s+)?([0-9a-zA-ZÀ-ỹ\/\.\-_]+)\s+ngày\s+(\d{1,2}\/\d{1,2}\/\d{4})/i);
+        // TẦNG 4: BIẾN TRÍCH DẪN CĂN CỨ HỖN HỢP
+        const canCuTTrMatch = fullText.match(/(?:tờ trình số\s+|căn cứ tờ trình số\s+)([0-9a-zA-ZÀ-ỹ\/\.\-_]+)\s+ngày\s+(\d{1,2}\s+tháng\s+\d{1,2}\s+năm\s+\d{4}|\d{1,2}\/\d{1,2}\/\d{4})/i) ||
+                              fullText.match(/tờ trình\s+(?:số\s+)?([0-9a-zA-ZÀ-ỹ\/\.\-_]+)\s+ngày\s+(\d{1,2}\/\d{1,2}\/\d{4})/i);
         if (canCuTTrMatch) {
             addMapping("TEN_KEM_SO_NGAY_TO_TRINH", canCuTTrMatch[0], 4, "Trích dẫn căn cứ Tờ trình");
         }
 
-        const canCuQdMatch = fullText.match(/quyết định\s+(?:số\s+)?([0-9a-zA-ZÀ-ỹ\/\.\-_]+)\s+ngày\s+(\d{1,2}\/\d{1,2}\/\d{4})/i);
+        const canCuQdMatch = fullText.match(/(?:quyết định số\s+|căn cứ quyết định số\s+)([0-9a-zA-ZÀ-ỹ\/\.\-_]+)\s+ngày\s+(\d{1,2}\s+tháng\s+\d{1,2}\s+năm\s+\d{4}|\d{1,2}\/\d{1,2}\/\d{4})/i) ||
+                             fullText.match(/quyết định\s+(?:số\s+)?([0-9a-zA-ZÀ-ỹ\/\.\-_]+)\s+ngày\s+(\d{1,2}\/\d{1,2}\/\d{4})/i);
         if (canCuQdMatch) {
             addMapping("TEN_KEM_SO_NGAY_QUYET_DINH", canCuQdMatch[0], 4, "Trích dẫn căn cứ Quyết định");
         }
@@ -2150,24 +2265,100 @@
         "SO_HOP_DONG": "26076/HĐKT-CHKQTCT",
         "SO_BAO_CAO": "05/BC-HĐTĐ-KQTĐ",
         "NGAY_TO_TRINH": "ngày 29 tháng 07 năm 2026",
+        "NGAY_TO_TRINH_FULL": "ngày 29 tháng 07 năm 2026",
         "NGAY_QUYET_DINH": "ngày 31 tháng 07 năm 2026",
+        "NGAY_QUYET_DINH_FULL": "ngày 31 tháng 07 năm 2026",
         "NGAY_GIAY_MOI": "ngày 01 tháng 08 năm 2026",
+        "NGAY_GIAY_MOI_FULL": "ngày 01 tháng 08 năm 2026",
         "NGAY_BIEN_BAN": "ngày 03 tháng 08 năm 2026",
+        "NGAY_BIEN_BAN_FULL": "ngày 03 tháng 08 năm 2026",
         "NGAY_HOP_DONG": "ngày 05 tháng 08 năm 2026",
+        "NGAY_HOP_DONG_FULL": "ngày 05 tháng 08 năm 2026",
         "NGAY_KY_HOP_DONG": "ngày 05 tháng 08 năm 2026",
-        "NGAY_BAO_CAO": "ngày 30 tháng 07 năm 2026"
+        "NGAY_BAO_CAO": "ngày 30 tháng 07 năm 2026",
+        "NGAY_BAO_CAO_FULL": "ngày 30 tháng 07 năm 2026",
+        "TEN_KEM_SO_NGAY_TO_TRINH": "Tờ trình số 04/ĐKNCC/TTr-KTHT ngày 29/07/2026",
+        "TEN_KEM_SO_NGAY_QUYET_DINH": "Quyết định số 53/QĐ-HĐQT ngày 20/01/2025"
     };
+
+    // Hàm phân giải dữ liệu hiển thị xem thử thông minh cho mọi loại biến (kể cả biến mới tạo)
+    function resolvePreviewValueForTag(tag, item) {
+        if (!tag) return "";
+        const cleanTag = tag.replace(/[{}]/g, "").trim().toUpperCase();
+
+        // 1. Dữ liệu chuỗi gốc (originalText) được gán thực tế từ tài liệu Word đang mở
+        // Ưu tiên cao nhất vì đây là chữ thật người dùng đã chọn hoặc hệ thống bóc tách từ file Word
+        if (item && Array.isArray(item.mappings)) {
+            const m = item.mappings.find(map => map.tag && map.tag.toUpperCase() === cleanTag);
+            if (m && m.originalText && String(m.originalText).trim()) {
+                return String(m.originalText).trim();
+            }
+        }
+
+        // 2. Dữ liệu thực tế từ ho_so_tu_dong_state_v3 (Dự án hiện hành trên Web App)
+        try {
+            const rawState = localStorage.getItem("ho_so_tu_dong_state_v3");
+            if (rawState) {
+                const savedAppState = JSON.parse(rawState);
+                if (savedAppState.generalInfo && savedAppState.generalInfo[cleanTag]) {
+                    const val = String(savedAppState.generalInfo[cleanTag]).trim();
+                    if (val) return val;
+                }
+                if (Array.isArray(savedAppState.packages)) {
+                    for (const pkg of savedAppState.packages) {
+                        if (pkg && pkg[cleanTag]) {
+                            const val = String(pkg[cleanTag]).trim();
+                            if (val) return val;
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn("Lỗi đọc state_v3 cho preview:", e);
+        }
+
+        // 3. Tra cứu trong Từ điển biến toàn cục (MASTER_VARIABLES_CATALOG & Tùy biến người dùng)
+        if (typeof MASTER_VARIABLES_CATALOG !== "undefined" && Array.isArray(MASTER_VARIABLES_CATALOG)) {
+            const v = MASTER_VARIABLES_CATALOG.find(cat => cat.tag && cat.tag.toUpperCase() === cleanTag);
+            if (v) {
+                if (v.example && String(v.example).trim()) return String(v.example).trim();
+                if (v.defaultValue && String(v.defaultValue).trim()) return String(v.defaultValue).trim();
+                if (v.sampleValue && String(v.sampleValue).trim()) return String(v.sampleValue).trim();
+                if (v.label && String(v.label).trim()) return v.label.trim();
+            }
+        }
+
+        // 4. Tra cứu trong Dữ liệu mẫu chuẩn hành chính (SAMPLE_ADMIN_DATA)
+        if (SAMPLE_ADMIN_DATA && SAMPLE_ADMIN_DATA[cleanTag]) {
+            return SAMPLE_ADMIN_DATA[cleanTag];
+        }
+
+        // 5. Mẫu định dạng thông minh dựa trên ngữ nghĩa của mã thẻ
+        if (cleanTag.includes("SO_")) return "05/BC-HĐTĐ-KQTĐ";
+        if (cleanTag.includes("NGAY_")) return "ngày 16 tháng 10 năm 2026";
+        if (cleanTag.includes("GIA_") || cleanTag.includes("TIEN_")) return "48.500.000 VNĐ";
+        if (cleanTag.includes("HANG_MUC") || cleanTag.includes("GOI_THAU") || cleanTag.includes("DU_AN")) {
+            return "Thuê sửa chữa thay thế khung mui che hành lí cho xe băng chuyền TUG VCA-110.08";
+        }
+
+        // 6. Fallback thân thiện: Chuyển tên mã thẻ thành tên tiếng Việt đọc được
+        const humanLabel = cleanTag.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+        return `[${humanLabel}]`;
+    }
 
     function renderSampleDataPreview(rawHtml, item) {
         let text = rawHtml || cleanCanvasHtmlForStorage();
         if (!text) {
-            text = (item.paragraphs || []).map(p => `<p class="mb-2 leading-relaxed text-slate-800">${escapeHtml(p)}</p>`).join("");
+            text = (item && item.paragraphs || []).map(p => `<p class="mb-2 leading-relaxed text-slate-800">${escapeHtml(p)}</p>`).join("");
         }
 
-        // Strip badge wrappers if present so tags are pure {TAG}
-        text = text.replace(/<span[^>]*class="[^"]*tag(?:-table)?-badge[^"]*"[^>]*>\{([A-Z0-9_]+)\}\s*<\/span>/gi, '{$1}');
+        // Loại bỏ hoàn toàn wrapper badge (kể cả có nút remove button x) để đưa về dạng thuần {TAG}
+        text = text.replace(/<span[^>]*class="[^"]*tag(?:-table)?-badge[^"]*"[^>]*>\{?([A-Z0-9_]+)\}?(?:<span[^>]*class="[^"]*btn-remove-tag[^"]*"[^>]*>.*?<\/span>)?\s*<\/span>/gi, '{$1}');
 
-        // Replace all {TAG} with sample data
+        // Đề phòng trường hợp text còn sót dạng {TAG} lồng nhau
+        text = text.replace(/\{+([A-Z0-9_]+)\}+/g, '{$1}');
+
+        // Thay thế tất cả các thẻ {TAG} bằng giá trị dữ liệu thật / dữ liệu mẫu tương ứng
         text = text.replace(/\{([A-Z0-9_]+)\}/g, (match, tag) => {
             if (tag === "PAGE_BREAK") {
                 return `<div class="a4-page-break" contenteditable="false"><i class="fa-solid fa-file-invoice text-indigo-600 mr-1"></i> DẤU NGẮT TRANG A4 (Hết trang • Bắt đầu trang tiếp theo)</div>`;
@@ -2175,9 +2366,9 @@
             if (tag.startsWith("BANG_")) {
                 return renderSampleTableHtml(tag);
             }
-            const sampleVal = SAMPLE_ADMIN_DATA[tag];
+            const sampleVal = resolvePreviewValueForTag(tag, item);
             if (sampleVal) {
-                return `<span class="bg-emerald-50 text-emerald-950 font-semibold px-1 rounded border-b border-emerald-300" title="Biến: {${tag}}">${sampleVal}</span>`;
+                return `<span class="bg-emerald-50 text-emerald-950 font-semibold px-1 rounded border-b border-emerald-300" title="Biến: {${tag}}">${escapeHtml(sampleVal)}</span>`;
             }
             return `<span class="bg-amber-100 text-amber-900 px-1 rounded font-mono text-xs">{${tag}}</span>`;
         });
@@ -4131,6 +4322,69 @@
     }
 
     // -------------------------------------------------------------
+    // Gợi ý & Nhận diện tự động từ Từ điển & Thông tin chung
+    // -------------------------------------------------------------
+    const btnRescanDictionaryVars = document.getElementById("btnRescanDictionaryVars");
+    if (btnRescanDictionaryVars) {
+        btnRescanDictionaryVars.onclick = () => rescanDocumentEntitiesFromDictionary();
+    }
+
+    async function rescanDocumentEntitiesFromDictionary() {
+        const docId = state.activeDocId;
+        if (!docId) {
+            showToast("Vui lòng chọn một văn bản trước!", "warning");
+            return;
+        }
+        const item = state.batchFiles[docId];
+        if (!item) {
+            showToast("Văn bản này chưa có nội dung hoặc file Word để quét!", "warning");
+            return;
+        }
+
+        const paragraphs = item.paragraphs || [];
+        if (paragraphs.length === 0) {
+            showToast("Tài liệu không có đoạn văn nào để quét!", "warning");
+            return;
+        }
+
+        const wf = getCurrentWorkflow();
+        const docObj = (wf && wf.documents) ? wf.documents.find(d => d.id === docId) : { id: docId, name: docId, code: docId };
+
+        const freshMappings = detectEntitiesForDocument(docObj, paragraphs);
+        let addedCount = 0;
+
+        item.mappings = item.mappings || [];
+        freshMappings.forEach(fm => {
+            const exists = item.mappings.some(m => m.tag === fm.tag || m.originalText === fm.originalText);
+            if (!exists) {
+                item.mappings.push(fm);
+                addedCount++;
+            }
+        });
+
+        // Tái tạo styledHtml nếu có file docx buffer
+        if (item.arrayBuffer) {
+            item.styledHtml = await parseDocxToStyledHtml(item.arrayBuffer, item.mappings);
+        }
+
+        delete workingDraftHtml[docId];
+        localStorage.removeItem("ho_so_custom_template_html_" + docId);
+
+        renderCanvasContent(item);
+        renderSingleMappingRows(item);
+        renderBatchTable();
+        if (typeof renderContextualRecommendedVars === "function") {
+            renderContextualRecommendedVars();
+        }
+
+        if (addedCount > 0) {
+            showToast(`⚡ Đã quét Từ điển & Thông tin chung: Tự động gán thêm ${addedCount} biến!`, "success");
+        } else {
+            showToast("Đã quét xong: Các biến từ Từ điển & Thông tin chung đã được nhận diện đầy đủ!", "info");
+        }
+    }
+
+    // -------------------------------------------------------------
     // Master Dictionary Modal Controller (2 Tabs: 1. Biến chữ | 2. Biến dạng bảng)
     // -------------------------------------------------------------
     let currentDictCatFilter = "all";
@@ -4881,6 +5135,8 @@
         }
     }
 
+    let isTagInputComposing = false;
+
     function validateVariableInputs() {
         const origTag = (document.getElementById("editVarOriginalTag")?.value || "").trim().toUpperCase();
         const labelInput = document.getElementById("editVarLabelInput");
@@ -4892,13 +5148,25 @@
 
         if (!tagInput || !labelInput || !btnSave) return;
 
+        if (!tagInput.dataset.hasImeListener) {
+            tagInput.dataset.hasImeListener = "true";
+            tagInput.addEventListener("compositionstart", () => { isTagInputComposing = true; });
+            tagInput.addEventListener("compositionend", () => {
+                isTagInputComposing = false;
+                tagInput.value = slugifyToUpperSnake(tagInput.value);
+                validateVariableInputs();
+            });
+            tagInput.addEventListener("blur", () => {
+                tagInput.value = slugifyToUpperSnake(tagInput.value);
+                validateVariableInputs();
+            });
+        }
+
+        if (isTagInputComposing) return;
+
         let rawTag = tagInput.value;
         let cleanTag = slugifyToUpperSnake(rawTag);
-        if (tagInput.value !== cleanTag && document.activeElement === tagInput) {
-            const pos = tagInput.selectionStart;
-            tagInput.value = cleanTag;
-            tagInput.setSelectionRange(pos, pos);
-        } else {
+        if (document.activeElement !== tagInput) {
             tagInput.value = cleanTag;
         }
 
