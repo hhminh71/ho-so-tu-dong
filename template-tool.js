@@ -5059,6 +5059,9 @@
         if (bannerSelection) bannerSelection.classList.add("hidden");
         if (applyScopeRow) applyScopeRow.classList.add("hidden");
         if (exampleLabel) exampleLabel.textContent = "Giá trị ví dụ / gợi ý";
+        const matchedCard = document.getElementById("editVarMatchedExistingCard");
+        const matchedList = document.getElementById("editVarMatchedExistingList");
+        if (matchedCard) matchedCard.classList.add("hidden");
 
         if (tagToEdit) {
             const cleanTag = tagToEdit.replace(/^[{]+|[}]+$/g, "");
@@ -5094,6 +5097,56 @@
                 if (radioFirst) radioFirst.checked = true;
             }
             if (exampleLabel) exampleLabel.textContent = "Chuỗi văn bản gốc thực tế trong Word:";
+
+            // Gợi ý và gán ngay các biến có sẵn phù hợp trong Từ điển
+            if (matchedCard && matchedList) {
+                const matches = findMatchingVariablesForText(rawSelected);
+                if (matches && matches.length > 0) {
+                    matchedList.innerHTML = matches.map((m) => `
+                        <div class="p-1.5 rounded-md bg-white border border-indigo-200 hover:border-indigo-400 flex items-center justify-between gap-2 shadow-2xs">
+                            <div class="flex-1 min-w-0">
+                                <div class="font-bold text-slate-900 truncate text-[11px]">${escapeHtml(m.label)}</div>
+                                <div class="text-[9.5px] text-slate-500 flex items-center gap-1.5">
+                                    <span class="text-indigo-800 font-mono font-bold">{${m.tag}}</span>
+                                    <span>•</span>
+                                    <span class="text-slate-600">${escapeHtml(m.group || "")}</span>
+                                    ${m.example ? `<span class="truncate max-w-[130px] text-slate-400">• Mẫu: "${escapeHtml(m.example)}"</span>` : ""}
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button type="button" class="btn-fill-matched-var px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-semibold cursor-pointer border border-slate-300" data-tag="${m.tag}" title="Điền thông tin biến này vào form bên dưới">
+                                    <i class="fa-solid fa-pen-to-square text-[9px] mr-1"></i>Điền form
+                                </button>
+                                <button type="button" class="btn-quick-assign-matched-var px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-[10.5px] font-bold cursor-pointer shadow-xs flex items-center gap-1" data-tag="${m.tag}" title="Gán biến này ngay lập tức vào văn bản">
+                                    <i class="fa-solid fa-link text-[10px]"></i><span>Gán biến này</span>
+                                </button>
+                            </div>
+                        </div>
+                    `).join("");
+                    matchedCard.classList.remove("hidden");
+
+                    matchedList.querySelectorAll(".btn-fill-matched-var").forEach(btn => {
+                        btn.onclick = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const tag = btn.getAttribute("data-tag");
+                            selectSuggestedVariable(tag);
+                        };
+                    });
+
+                    matchedList.querySelectorAll(".btn-quick-assign-matched-var").forEach(btn => {
+                        btn.onclick = (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            const tag = btn.getAttribute("data-tag");
+                            selectSuggestedVariable(tag);
+                            saveVariableChanges();
+                        };
+                    });
+                } else {
+                    matchedCard.classList.add("hidden");
+                }
+            }
 
             const cleanLabel = rawSelected.length > 60 ? (rawSelected.substring(0, 57) + "...") : rawSelected;
             if (labelInput) labelInput.value = cleanLabel;
@@ -5160,6 +5213,7 @@
         if (modal) modal.classList.add("hidden");
         document.getElementById("editVarLabelSuggestionsDropdown")?.classList.add("hidden");
         document.getElementById("editVarLabelMatchedBadge")?.classList.add("hidden");
+        document.getElementById("editVarMatchedExistingCard")?.classList.add("hidden");
         activeEditingMappingIdx = null;
         currentEditVarContext = null;
     }
@@ -5191,6 +5245,89 @@
         str = str.replace(/\u02C6|\u0306|\u031B/g, "");
         return str.trim();
     }
+
+    function expandTextAbbreviations(str) {
+        if (!str) return "";
+        let s = " " + str + " ";
+        s = s.replace(/\bhk\b/gi, "hang khong");
+        s = s.replace(/\bbql\b/gi, "ban quan ly");
+        s = s.replace(/\bblda\b/gi, "ban quan ly du an");
+        s = s.replace(/\bcdt\b/gi, "chu dau tu");
+        s = s.replace(/\btckh\b|\btc-kh\b/gi, "tai chinh ke hoach");
+        s = s.replace(/\bqd\b/gi, "quyet dinh");
+        s = s.replace(/\bnd\b/gi, "nghi dinh");
+        s = s.replace(/\btt\b/gi, "to trinh");
+        s = s.replace(/\bbc\b/gi, "bao cao");
+        s = s.replace(/\bms\b/gi, "mua sam");
+        s = s.replace(/\bhd\b/gi, "hop dong");
+        return s.trim();
+    }
+
+    function findMatchingVariablesForText(text) {
+        if (!text || !Array.isArray(MASTER_VARIABLES_CATALOG)) return [];
+        const raw = text.trim();
+        if (!raw) return [];
+
+        const norm = removeVietnameseTones(raw.toLowerCase());
+        const expNorm = expandTextAbbreviations(norm);
+        const candidates = [];
+
+        MASTER_VARIABLES_CATALOG.forEach(v => {
+            let score = 0;
+            const vLabelNorm = removeVietnameseTones((v.label || "").toLowerCase());
+            const vTag = (v.tag || "").toUpperCase();
+            const vExampleNorm = removeVietnameseTones((v.example || "").toLowerCase());
+
+            // 1. Khớp chính xác hoặc chứa chuỗi ví dụ mẫu trong từ điển
+            if (vExampleNorm) {
+                if (vExampleNorm === norm || vExampleNorm === expNorm) score += 110;
+                else if (vExampleNorm.includes(norm) || norm.includes(vExampleNorm)) score += 85;
+                else if (vExampleNorm.includes(expNorm) || expNorm.includes(vExampleNorm)) score += 95;
+            }
+
+            // 2. Khớp nhãn tiếng Việt
+            if (vLabelNorm === norm || vLabelNorm === expNorm) score += 105;
+            else if (norm.includes(vLabelNorm) || vLabelNorm.includes(norm) || expNorm.includes(vLabelNorm) || vLabelNorm.includes(expNorm)) score += 70;
+
+            // 3. Khớp theo từ khóa đặc thù
+            if (/cang|tong cong ty|chu dau tu|blda|ban quan ly|hang khong/i.test(expNorm)) {
+                if (vTag.includes("CHU_DAU_TU") || vTag.includes("BAN_QUAN_LY")) score += 60;
+            }
+            if (/phong|ban tc|ke hoach|ky thuat|tai chinh/i.test(expNorm)) {
+                if (vTag.includes("PHONG") || vTag.includes("CO_QUAN_TRINH")) score += 60;
+            }
+            if (/so:?\s*[\d\w\/\-]+/i.test(norm) || /bcms|hdtd|to trinh|bao cao/i.test(expNorm)) {
+                if (vTag.includes("SO_BAO_CAO") || vTag.includes("SO_TO_TRINH") || vTag.includes("SO_QUYET_DINH")) score += 55;
+            }
+            if (/ngay\s+\d+|\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/i.test(norm)) {
+                if (vTag.includes("NGAY")) score += 60;
+            }
+            if (/can cu|quyet dinh|nghi dinh|luat/i.test(expNorm)) {
+                if (vTag.includes("QUYET_DINH") || vTag.includes("CAN_CU")) score += 55;
+            }
+            if (/hang muc|thue|sua chua|mua sam|xay lap|goi thau/i.test(expNorm)) {
+                if (vTag === "TEN_GOI_THAU" || vTag === "TEN_DU_AN") score += 50;
+            }
+
+            // 4. Khớp tổ hợp từ
+            const tokens = Array.from(new Set([...norm.split(/\s+/), ...expNorm.split(/\s+/)]))
+                .filter(t => t.length > 1 && !/^(va|la|cua|ve|theo|tai|cho)$/.test(t));
+            if (tokens.length > 0) {
+                const matchTokens = tokens.filter(t => vLabelNorm.includes(t) || vExampleNorm.includes(t));
+                if (matchTokens.length >= 2) {
+                    score += (matchTokens.length / tokens.length) * 50;
+                }
+            }
+
+            if (score >= 45) {
+                candidates.push({ item: v, score });
+            }
+        });
+
+        candidates.sort((a, b) => b.score - a.score);
+        return candidates.map(c => c.item).slice(0, 3);
+    }
+    window.findMatchingVariablesForText = findMatchingVariablesForText;
 
     function searchCatalogVariables(query = "") {
         if (!Array.isArray(MASTER_VARIABLES_CATALOG) || MASTER_VARIABLES_CATALOG.length === 0) return [];
@@ -5613,13 +5750,47 @@
             } else {
                 const dupLabelVar = MASTER_VARIABLES_CATALOG.find(v => v.label.toLowerCase() === label.toLowerCase() && v.tag.toUpperCase() !== origTag);
                 if (dupLabelVar) {
-                    labelFeedback.innerHTML = `<i class="fa-solid fa-circle-info text-amber-500"></i> Lưu ý: Tên "${label}" đã có biến <code>{${dupLabelVar.tag}}</code> (${dupLabelVar.group}).`;
-                    labelFeedback.className = "text-[10px] mt-0.5 text-amber-700 font-medium";
-                    labelFeedback.classList.remove("hidden");
+                    if (dupLabelVar.tag.toUpperCase() === cleanTag) {
+                        labelFeedback.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Khớp chuẩn với Từ điển hệ thống: <code>{${dupLabelVar.tag}}</code> (${dupLabelVar.group || "Chung"}).`;
+                        labelFeedback.className = "text-[10px] mt-0.5 text-emerald-700 font-medium";
+                        labelFeedback.classList.remove("hidden");
+                    } else {
+                        labelFeedback.innerHTML = `<i class="fa-solid fa-circle-info text-amber-500"></i> Lưu ý: Tên "${label}" đã có biến <code>{${dupLabelVar.tag}}</code> (${dupLabelVar.group}).`;
+                        labelFeedback.className = "text-[10px] mt-0.5 text-amber-700 font-medium";
+                        labelFeedback.classList.remove("hidden");
+                    }
                 } else {
                     labelFeedback.classList.add("hidden");
                 }
             }
+        }
+
+        const btnSaveIcon = document.getElementById("btnSaveEditVarIcon");
+        const btnSaveText = document.getElementById("btnSaveEditVarText");
+
+        const isSelectionMode = currentEditVarContext && (currentEditVarContext.mode === "selection" || currentEditVarContext.mode === "add_to_doc");
+        const isExistingInDict = !!(MASTER_VARIABLES_CATALOG.find(v => v.tag.toUpperCase() === cleanTag) || (typeof appState !== "undefined" && appState?.customVariables && appState.customVariables[cleanTag]));
+
+        if (isSelectionMode && isExistingInDict) {
+            // Gán biến có sẵn trong từ điển vào văn bản
+            if (btnSaveText) btnSaveText.textContent = `Gán biến có sẵn {${cleanTag}}`;
+            if (btnSaveIcon) btnSaveIcon.className = "fa-solid fa-link";
+            btnSave.className = "px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all";
+        } else if (isSelectionMode) {
+            // Tạo biến mới và gán vào văn bản
+            if (btnSaveText) btnSaveText.textContent = "Tạo biến mới & Gán vào Word";
+            if (btnSaveIcon) btnSaveIcon.className = "fa-solid fa-circle-plus";
+            btnSave.className = "px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all";
+        } else {
+            // Chế độ Quản trị Từ điển
+            if (origTag) {
+                if (btnSaveText) btnSaveText.textContent = "Cập nhật biến Từ điển";
+                if (btnSaveIcon) btnSaveIcon.className = "fa-solid fa-floppy-disk";
+            } else {
+                if (btnSaveText) btnSaveText.textContent = "Thêm biến mới vào Từ điển";
+                if (btnSaveIcon) btnSaveIcon.className = "fa-solid fa-circle-plus";
+            }
+            btnSave.className = "px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all";
         }
 
         btnSave.disabled = !isTagValid || isDuplicate || !isLabelValid;
@@ -5716,6 +5887,7 @@
                 pushUndoState(`Tạo & gán biến {${newTag}} từ vùng chọn`);
             }
 
+            const isExistingTag = !!(MASTER_VARIABLES_CATALOG.find(v => v.tag.toUpperCase() === newTag) || (typeof appState !== "undefined" && appState?.customVariables && appState.customVariables[newTag]));
             const applyOption = document.querySelector('input[name="editVarApplyOption"]:checked')?.value || "selected";
             const isTable = newTag.startsWith("BANG_");
 
@@ -5735,12 +5907,12 @@
                             tag: newTag,
                             originalText: ctx.selectedText,
                             tier: isGeneral ? 1 : 2,
-                            reason: "Gán từ Từ điển (Tất cả vị trí)",
+                            reason: isExistingTag ? "Gán từ Từ điển (Tất cả vị trí)" : "Tạo mới (Tất cả vị trí)",
                             count: replaceCount || 1
                         });
                     }
                 }
-                showToast(`Đã tạo biến {${newTag}} và thay thế ${replaceCount || 1} vị trí trong văn bản!`, "success");
+                showToast(isExistingTag ? `Đã gán biến có sẵn {${newTag}} cho ${replaceCount || 1} vị trí trong văn bản!` : `Đã tạo biến {${newTag}} và thay thế ${replaceCount || 1} vị trí trong văn bản!`, "success");
             } else {
                 let targetRange = null;
                 const sel = window.getSelection();
@@ -5782,12 +5954,12 @@
                             tag: newTag,
                             originalText: ctx.selectedText,
                             tier: isGeneral ? 1 : 2,
-                            reason: "Gán từ Từ điển (Vùng chọn)",
+                            reason: isExistingTag ? "Gán từ Từ điển (Vùng chọn)" : "Tạo mới (Vùng chọn)",
                             count: 1
                         });
                     }
                 }
-                showToast(`Đã tạo biến Từ điển {${newTag}} và gán vào văn bản!`, "success");
+                showToast(isExistingTag ? `Đã gán biến có sẵn {${newTag}} vào văn bản!` : `Đã tạo biến Từ điển {${newTag}} và gán vào văn bản!`, "success");
             }
 
             if (state.activeDocId && studioViewMode === "edit") {

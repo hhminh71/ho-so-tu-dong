@@ -241,6 +241,28 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
   - Chọn biến `{PHONG_BAN_THUC_HIEN}`: Tự động điền nhãn *"Phòng/Ban thực hiện (*)"*, mã thẻ `{PHONG_BAN_THUC_HIEN}`, nhóm A, hiện huy hiệu khớp màu xanh.
   - Bấm `[Lưu biến xạ]`: Thay thế vùng chọn trên Canvas thành `{PHONG_BAN_THUC_HIEN}×`, cập nhật danh mục mapping và đóng modal thành công. Ảnh minh chứng: `verify_unaccented_search_combobox.png`.
 
+### 12. Gợi Ý Biến Có Sẵn Phù Hợp & Gán 1-Click Ngay Trong Modal Thêm Biến Từ Vùng Chọn:
+* **Bối cảnh:** Khi người dùng bôi đen văn bản (ví dụ: *"CẢNG HK QUỐC TẾ CẦN THƠ"* hoặc *"TỔNG CÔNG TY"*) và bấm `[+ Mới]`, trước đây modal hiển thị form trống hoặc chỉ gợi ý mã slug mới. Nếu người dùng chọn biến đã có trong Từ điển (`TEN_CHU_DAU_TU_VIET_HOA`), modal lại hiện cảnh báo màu vàng gây bối rối và nút lưu vẫn để *"Lưu biến xạ"* chưa rõ ràng là gán biến cũ hay tạo biến trùng.
+* **Xử lý:**
+  1. **Khối Card Gợi ý Chủ Động (`#editVarMatchedExistingCard`):**
+     - Đặt ngay dưới banner vùng chọn với nền gradient Indigo/Sky nổi bật.
+     - Tích hợp bộ giải thuật nhận diện & mở rộng từ viết tắt tiếng Việt chuyên ngành (`expandTextAbbreviations`): `hk` ➔ `hàng không`, `bql` ➔ `ban quản lý`, `cdt` ➔ `chủ đầu tư`, `tckh` ➔ `tài chính kế hoạch`, `qd` ➔ `quyết định`, `bc` ➔ `báo cáo`, `ms` ➔ `mua sắm`...
+     - Quét song song ví dụ mẫu, nhãn, từ khóa và token trong `MASTER_VARIABLES_CATALOG` để tìm ra 1-3 biến có sẵn phù hợp nhất.
+  2. **Cung Cấp 2 Hướng Thao Tác Trực Quan:**
+     - **Hướng 1 (1-Click - Nhanh Nhất):** Bấm nút **`[ 🔗 Gán biến này ]`** trên thẻ gợi ý để gán ngay biến vào văn bản, thay thế text thành thẻ badge `{TAG}×`, đồng bộ mappings và đóng modal lập tức mà không cần chạm vào form.
+     - **Hướng 2 (Điền Form & Tùy Biến):** Bấm nút **`[ Điền form ]`** để tự động nạp nhãn, mã thẻ, nhóm, phạm vi vào form bên dưới để người dùng kiểm tra hoặc đổi tùy chọn thay thế ("Chỉ vị trí này" hoặc "Tất cả vị trí").
+  3. **Xóa Bỏ Hoàn Toàn Cảnh Báo Trùng Lặp Gây Hiểu Lầm:**
+     - Khi nhãn hoặc mã thẻ khớp chuẩn với biến trong Từ điển (`cleanTag === dupLabelVar.tag`), hệ thống đổi thông báo sang màu xanh lục: `✅ Khớp chuẩn với Từ điển hệ thống: {TAG} (A. Chủ đầu tư)` thay vì cảnh báo màu hổ phách.
+  4. **Nút Hành Động Động Phản Ánh Chính Xác Ý Định:**
+     - Khi chọn biến có sẵn trong từ điển: Nút chuyển sang phong cách Indigo, icon `fa-link`, nhãn: **`[ 🔗 Gán biến có sẵn {TAG} ]`**.
+     - Khi nhập biến hoàn toàn mới: Nút chuyển sang phong cách Emerald, icon `fa-circle-plus`, nhãn: **`[ ➕ Tạo biến mới & Gán vào Word ]`**.
+  5. Nâng cache-buster lên `template-tool.js?v=20261111_v8`.
+* **Xác thực tự động (Chrome CDP `scratch/test_proactive_matched_var.py`):**
+  - Quét `CẢNG HK QUỐC TẾ CẦN THƠ`: Card hiển thị đầy đủ `TEN_CHU_DAU_TU` và `TEN_CHU_DAU_TU_VIET_HOA`.
+  - Bấm `[ Điền form ]`: Khớp biến màu xanh lục, nút chuyển thành `[ 🔗 Gán biến có sẵn {TEN_CHU_DAU_TU_VIET_HOA} ]`.
+  - Quét `TỔNG CÔNG TY` & Bấm 1-Click `[ 🔗 Gán biến này ]`: Gán thành công biến `CAP_QUYET_DINH_DAU_TU`, chèn badge `{CAP_QUYET_DINH_DAU_TU}×` vào Canvas và tạo mapping tương ứng.
+  - Ảnh minh chứng: `verify_proactive_matched_var.png`, `verify_filled_matched_var.png`, `verify_proactive_assign_canvas.png`.
+
 ---
 
 ## 🚀 5. NHIỆM VỤ TIẾP THEO (NEXT TASKS CHO AI TIẾP QUẢN)
