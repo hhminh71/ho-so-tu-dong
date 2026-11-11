@@ -363,7 +363,11 @@
                 </div>
 
                 <div class="flex items-center space-x-2">
-                    
+                    <input type="file" id="singleDocxUploadInput" accept=".docx" class="hidden">
+                    <button id="btnUploadSingleDocx" type="button" class="h-7 px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded shadow-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95" title="Tải file Word (.docx) thực tế lên cho văn bản này để tự động nhận diện nội dung và gợi ý biến">
+                        <i class="fa-solid fa-cloud-arrow-up text-xs"></i>
+                        <span>Tải file Word (.docx) lên</span>
+                    </button>
                     <button id="btnSaveAsSystemDefault" type="button" class="h-7 px-3 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs rounded shadow-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95" title="Lưu mẫu này làm mẫu chuẩn mặc định cho toàn bộ hệ thống">
                         <i class="fa-solid fa-bolt text-amber-300 text-xs"></i>
                         <span>⚡ Áp dụng làm Mẫu Chuẩn</span>
@@ -943,6 +947,6 @@
     <!-- Cấu hình hệ thống toàn cục (Tự động đồng bộ cho mọi trình duyệt & Tab ẩn danh) -->
     <script src="config.js?v=20261106_v1"></script>
     <script src="templates_data.js"></script>
-    <script src="template-tool.js?v=20261111_v1"></script>
+    <script src="template-tool.js?v=20261111_v2"></script>
 </body>
 </html>

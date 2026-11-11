@@ -231,6 +231,8 @@
     const btnBackToBatch = document.getElementById("btnBackToBatch");
     const singleDocTitle = document.getElementById("singleDocTitle");
     const singleDocFileNameBadge = document.getElementById("singleDocFileNameBadge");
+    const singleDocxUploadInput = document.getElementById("singleDocxUploadInput");
+    const btnUploadSingleDocx = document.getElementById("btnUploadSingleDocx");
     const btnApplySingleTags = document.getElementById("btnApplySingleTags");
     const btnDownloadSingleDocx = document.getElementById("btnDownloadSingleDocx");
     const singleMappingRowsContainer = document.getElementById("singleMappingRowsContainer");
@@ -391,6 +393,8 @@
     }
     window.switchViewMode = switchViewMode;
     window.studioState = state;
+    window.processIncomingFiles = processIncomingFiles;
+    window.loadFileForSingleDocument = loadFileForSingleDocument;
 
     if (btnViewBatchMode) btnViewBatchMode.onclick = () => switchViewMode("batch");
     if (btnViewSingleMode) btnViewSingleMode.onclick = () => {
@@ -419,6 +423,18 @@
     if (btnTriggerBatchUpload) btnTriggerBatchUpload.onclick = () => batchDocxUploadInput.click();
     if (btnBrowseBatchFiles) btnBrowseBatchFiles.onclick = () => batchDocxUploadInput.click();
 
+    // Single Document Upload Button
+    if (btnUploadSingleDocx && singleDocxUploadInput) {
+        btnUploadSingleDocx.onclick = () => singleDocxUploadInput.click();
+        singleDocxUploadInput.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                await loadFileForSingleDocument(file, state.activeDocId);
+            }
+            singleDocxUploadInput.value = "";
+        };
+    }
+
     // Drag and drop handlers for batchDropZone
     if (batchDropZone) {
         batchDropZone.ondragover = (e) => { e.preventDefault(); batchDropZone.classList.add("dragover"); };
@@ -431,12 +447,195 @@
         };
     }
 
+    // Drag and drop handlers for Single View Canvas (docViewerWrapper)
+    const docViewerWrapper = document.getElementById("docViewerWrapper");
+    if (docViewerWrapper) {
+        docViewerWrapper.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            docViewerWrapper.classList.add("ring-4", "ring-blue-400", "bg-blue-50/10");
+        });
+        docViewerWrapper.addEventListener("dragleave", () => {
+            docViewerWrapper.classList.remove("ring-4", "ring-blue-400", "bg-blue-50/10");
+        });
+        docViewerWrapper.addEventListener("drop", async (e) => {
+            e.preventDefault();
+            docViewerWrapper.classList.remove("ring-4", "ring-blue-400", "bg-blue-50/10");
+            const files = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith(".docx") || f.name.endsWith(".zip"));
+            if (files.length > 0) {
+                if (state.viewMode === "single" && files.length === 1 && files[0].name.endsWith(".docx")) {
+                    await loadFileForSingleDocument(files[0], state.activeDocId);
+                } else {
+                    await processIncomingFiles(files);
+                }
+            }
+        });
+    }
+
     if (batchDocxUploadInput) {
         batchDocxUploadInput.onchange = async (e) => {
             const files = Array.from(e.target.files);
             if (files.length > 0) await processIncomingFiles(files);
             batchDocxUploadInput.value = "";
         };
+    }
+
+    // Nạp file Word trực tiếp cho văn bản đơn lẻ đang mở
+    async function loadFileForSingleDocument(file, docId) {
+        if (!file || !docId) return;
+        if (!file.name.endsWith(".docx")) {
+            showToast("Vui lòng chọn file Word định dạng .docx!", "error");
+            return;
+        }
+
+        try {
+            const wf = getCurrentWorkflow();
+            const docObj = (wf && wf.documents) ? wf.documents.find(d => d.id === docId) : { id: docId, name: docId, code: docId };
+
+            const arrayBuffer = await file.arrayBuffer();
+            const paragraphs = await extractParagraphsFromBuffer(arrayBuffer);
+
+            if (!paragraphs || paragraphs.length === 0) {
+                showToast("File Word này không chứa đoạn văn bản nào!", "error");
+                return;
+            }
+
+            const mappings = detectEntitiesForDocument(docObj, paragraphs);
+
+            const item = {
+                id: docId,
+                name: file.name,
+                size: file.size,
+                arrayBuffer: arrayBuffer,
+                paragraphs: paragraphs,
+                mappings: mappings,
+                status: "matched",
+                isCustom: true,
+                isUploaded: true
+            };
+
+            state.batchFiles[docId] = item;
+            delete workingDraftHtml[docId];
+            localStorage.removeItem("ho_so_custom_template_html_" + docId);
+
+            state.activeDocId = docId;
+            await renderSingleView();
+
+            showToast(`Đã nạp file "${file.name}" vào ${docObj.code || ''}! Gợi ý ${mappings.length} biến.`);
+
+            const tab3Btn = document.querySelector('.palette-tab-btn[data-tab="3"]');
+            if (tab3Btn && mappings.length > 0) {
+                tab3Btn.click();
+            }
+        } catch (err) {
+            console.error("Lỗi khi nạp file Word:", err);
+            showToast("Lỗi khi đọc file Word: " + (err.message || err), "error");
+        }
+    }
+
+    // Helper: Xóa dấu tiếng Việt phục vụ so khớp thông minh
+    function removeVietnameseTones(str) {
+        if (!str) return "";
+        str = str.toLowerCase();
+        str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+        str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+        str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+        str = str.replace(/ò|ó|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+        str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+        str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+        str = str.replace(/đ/g, "d");
+        str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, "");
+        str = str.replace(/\u02C6|\u0306|\u031B/g, "");
+        return str.trim();
+    }
+
+    // Thuật toán so khớp thông minh file tải lên với văn bản trong quy trình
+    function findBestMatchingDoc(fileName, documents, activeDocId, isSingleMode) {
+        if (!Array.isArray(documents) || documents.length === 0) return null;
+
+        const cleanFileName = removeVietnameseTones(fileName || "");
+
+        let bestDoc = null;
+        let maxScore = -1;
+
+        for (const doc of documents) {
+            let score = 0;
+            const docCodeClean = removeVietnameseTones(doc.code || "");
+            const docNameClean = removeVietnameseTones(doc.name || "");
+
+            // 1.1 Khớp số thứ tự văn bản (01, 1, 02, 2, 03, 3, 04, 4...)
+            const docNumMatch = (doc.code + " " + doc.name).match(/(?:^|\D)(\d{1,2})(?:\D|$)/);
+            if (docNumMatch) {
+                const num = docNumMatch[1];
+                const numPadded = num.padStart(2, "0");
+                const fileNumMatch = cleanFileName.match(/(?:^|\D)(\d{1,2})(?:\D|$)/);
+                if (fileNumMatch) {
+                    if (fileNumMatch[1] === num || fileNumMatch[1] === numPadded) {
+                        score += 25;
+                    }
+                }
+            }
+
+            // 1.2 Khớp từ viết tắt trong mã văn bản (TTr, BC, QD, HD, BB, GM, CT...)
+            const codeParts = docCodeClean.split(/[^a-z0-9]/).filter(p => p.length >= 2);
+            codeParts.forEach(cp => {
+                if (cleanFileName.includes(cp)) {
+                    score += 15;
+                }
+            });
+
+            // 1.3 Khớp loại văn bản cốt lõi
+            const typeTokens = [
+                { words: ["to trinh", "ttr"], tag: "TTR" },
+                { words: ["bao cao", "bc"], tag: "BC" },
+                { words: ["quyet dinh", "qd"], tag: "QD" },
+                { words: ["hop dong", "hd"], tag: "HD" },
+                { words: ["bien ban", "bb"], tag: "BB" },
+                { words: ["giay moi", "thu moi", "gm"], tag: "GM" },
+                { words: ["tham dinh"], tag: "TD" },
+                { words: ["nghiem thu"], tag: "NT" },
+                { words: ["thuong thao"], tag: "TT" },
+                { words: ["hoan thien"], tag: "HT" },
+                { words: ["chu truong"], tag: "CT" },
+                { words: ["ke hoach", "khlcnt"], tag: "KH" },
+                { words: ["mua sam"], tag: "MS" }
+            ];
+
+            typeTokens.forEach(item => {
+                const docHasType = item.words.some(w => docNameClean.includes(w) || docCodeClean.includes(w));
+                const fileHasType = item.words.some(w => cleanFileName.includes(w));
+                if (docHasType && fileHasType) {
+                    score += 20;
+                }
+            });
+
+            // 1.4 Khớp các từ khóa cụ thể từ tên văn bản
+            const nameTokens = docNameClean.split(/[\s,.\-_/&]+/).filter(w => w.length >= 4);
+            nameTokens.forEach(tok => {
+                if (cleanFileName.includes(tok)) {
+                    score += 5;
+                }
+            });
+
+            // Ưu tiên văn bản đang được xem nếu đang ở Single View
+            if (isSingleMode && doc.id === activeDocId) {
+                score += 15;
+            }
+
+            if (score > maxScore) {
+                maxScore = score;
+                bestDoc = doc;
+            }
+        }
+
+        if (maxScore > 0) {
+            return bestDoc;
+        }
+
+        if (isSingleMode && activeDocId) {
+            return documents.find(d => d.id === activeDocId) || documents[0];
+        }
+
+        return documents.find(d => !state.batchFiles[d.id]) || documents[0];
     }
 
     async function processIncomingFiles(fileList) {
@@ -469,25 +668,10 @@
 
         const wf = getCurrentWorkflow();
         let matchedCount = 0;
+        let lastMatchedDocId = null;
 
         for (const file of docxFiles) {
-            const fileNameLower = file.name.toLowerCase();
-            let matchedDoc = null;
-
-            // Find best matching doc in current workflow
-            for (const doc of wf.documents) {
-                if (state.batchFiles[doc.id]) continue; // already matched
-                const hits = doc.keywords.filter(kw => fileNameLower.includes(kw.toLowerCase()));
-                if (hits.length > 0) {
-                    matchedDoc = doc;
-                    break;
-                }
-            }
-
-            // Fallback: match by code index or next empty slot
-            if (!matchedDoc) {
-                matchedDoc = wf.documents.find(d => !state.batchFiles[d.id]);
-            }
+            let matchedDoc = findBestMatchingDoc(file.name, wf.documents, state.activeDocId, state.viewMode === "single" && docxFiles.length === 1);
 
             if (matchedDoc) {
                 const arrayBuffer = await file.arrayBuffer();
@@ -501,13 +685,26 @@
                     arrayBuffer: arrayBuffer,
                     paragraphs: paragraphs,
                     mappings: mappings,
-                    status: "matched"
+                    status: "matched",
+                    isCustom: true,
+                    isUploaded: true
                 };
+
+                delete workingDraftHtml[matchedDoc.id];
+                localStorage.removeItem("ho_so_custom_template_html_" + matchedDoc.id);
+
                 matchedCount++;
+                lastMatchedDocId = matchedDoc.id;
             }
         }
 
         renderBatchTable();
+
+        if (state.viewMode === "single" && lastMatchedDocId) {
+            state.activeDocId = lastMatchedDocId;
+            await renderSingleView();
+        }
+
         showToast(`Đã nhận diện và khớp thành công ${matchedCount} văn bản!`);
     }
 
@@ -594,35 +791,41 @@
             addMapping("TEN_NHA_THAU", ntMatch[1], 2, "Tên nhà thầu");
         }
 
-        // Giá gói thầu / Giá hợp đồng
+        // Giá gói thầu / Giá hợp đồng / Giá mua sắm
         const giaMatch = fullText.match(/([\d]{1,3}(?:\.[\d]{3})+)\s*(?:đồng|vnđ)/i);
         if (giaMatch && giaMatch[1]) {
-            if (doc.code.includes("HD")) {
+            if (doc.code.includes("HD") || doc.name.toLowerCase().includes("hợp đồng")) {
                 addMapping("GIA_TRI_HOP_DONG_SO", giaMatch[1], 2, "Giá trị hợp đồng");
+            } else if (doc.code.includes("BC") || doc.name.toLowerCase().includes("báo cáo")) {
+                addMapping("GIA_TRI_HOP_DONG_SO", giaMatch[1], 2, "Giá trị mua sắm / hợp đồng");
             } else {
                 addMapping("GIA_GOI_THAU_SO", giaMatch[1], 2, "Giá gói thầu");
             }
         }
 
+        // Mã số thuế
+        const mstMatch = fullText.match(/(?:mã số thuế|mst)\s*[:–—\-]?\s*([0-9]{10}(?:-[0-9]{3})?)/i);
+        if (mstMatch && mstMatch[1]) {
+            addMapping("MA_SO_THUE", mstMatch[1].trim(), 2, "Mã số thuế");
+        }
+
         // TẦNG 3: BIẾN ĐỊNH DANH RIÊNG VĂN BẢN (CHỐNG CHỒNG CHÉO SỐ VB VÀ NGÀY KÝ)
-        // Số văn bản ở góc trái trên đầu (hỗ trợ đầy đủ ký tự tiếng Việt như ĐKNCC, QĐ, UBND)
+        // Số văn bản ở góc trái trên đầu (hỗ trợ đầy đủ ký tự tiếng Việt như ĐKNCC, QĐ, UBND, BC)
         const soVbMatch = fullText.match(/số\s*[:–—\-]?\s*([0-9a-zA-ZÀ-ỹ\/\.\-_]+)/i);
         if (soVbMatch && soVbMatch[1] && soVbMatch[1].includes("/")) {
             const soStr = soVbMatch[1].trim();
-            if (doc.code.includes("TTr-KHLCNT") || doc.code.includes("01.TTr")) {
-                addMapping("SO_TO_TRINH", soStr, 3, "Số Tờ trình KHLCNT");
-            } else if (doc.code.includes("QD-KHLCNT") || doc.code.includes("02.QD")) {
-                addMapping("SO_QUYET_DINH", soStr, 3, "Số Quyết định KHLCNT");
-            } else if (doc.code.includes("GM")) {
+            if (doc.code.includes("TTr") || doc.name.toLowerCase().includes("tờ trình")) {
+                addMapping("SO_TO_TRINH", soStr, 3, "Số Tờ trình");
+            } else if (doc.code.includes("QD") || doc.name.toLowerCase().includes("quyết định")) {
+                addMapping("SO_QUYET_DINH", soStr, 3, "Số Quyết định");
+            } else if (doc.code.includes("BC") || doc.name.toLowerCase().includes("báo cáo")) {
+                addMapping("SO_BAO_CAO", soStr, 3, "Số Báo cáo");
+            } else if (doc.code.includes("GM") || doc.name.toLowerCase().includes("giấy mời")) {
                 addMapping("SO_GIAY_MOI", soStr, 3, "Số Giấy mời");
-            } else if (doc.code.includes("BB")) {
+            } else if (doc.code.includes("BB") || doc.name.toLowerCase().includes("biên bản")) {
                 addMapping("SO_BIEN_BAN_HOAN_THIEN", soStr, 3, "Số Biên bản");
-            } else if (doc.code.includes("TTr-KQLCNT") || doc.code.includes("05.TTr")) {
-                addMapping("SO_TO_TRINH_KQLCNT", soStr, 3, "Số Tờ trình KQLCNT (Phân nhánh không trùng)");
-            } else if (doc.code.includes("QD-KQLCNT") || doc.code.includes("06.QD")) {
-                addMapping("SO_QUYET_DINH_KQLCNT", soStr, 3, "Số Quyết định KQLCNT (Phân nhánh không trùng)");
-            } else if (doc.code.includes("HD")) {
-                addMapping("SO_HOP_DONG", soStr, 3, "Số Hợp đồng kinh tế");
+            } else if (doc.code.includes("HD") || doc.name.toLowerCase().includes("hợp đồng")) {
+                addMapping("SO_HOP_DONG", soStr, 3, "Số Hợp đồng");
             }
         }
 
@@ -630,15 +833,17 @@
         const ngayLongMatch = fullText.match(/ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})\s+năm\s+(\d{4})/i);
         if (ngayLongMatch) {
             const rawLongDate = ngayLongMatch[0];
-            if (doc.code.includes("TTr-KHLCNT")) {
-                addMapping("NGAY_TO_TRINH_FULL", rawLongDate, 3, "Ngày Tờ trình KHLCNT đầy đủ (Header)");
-            } else if (doc.code.includes("QD-KHLCNT")) {
-                addMapping("NGAY_QUYET_DINH_FULL", rawLongDate, 3, "Ngày QĐ KHLCNT đầy đủ (Header)");
-            } else if (doc.code.includes("GM")) {
+            if (doc.code.includes("TTr") || doc.name.toLowerCase().includes("tờ trình")) {
+                addMapping("NGAY_TO_TRINH_FULL", rawLongDate, 3, "Ngày Tờ trình đầy đủ (Header)");
+            } else if (doc.code.includes("QD") || doc.name.toLowerCase().includes("quyết định")) {
+                addMapping("NGAY_QUYET_DINH_FULL", rawLongDate, 3, "Ngày QĐ đầy đủ (Header)");
+            } else if (doc.code.includes("BC") || doc.name.toLowerCase().includes("báo cáo")) {
+                addMapping("NGAY_BAO_CAO_FULL", rawLongDate, 3, "Ngày Báo cáo đầy đủ (Header)");
+            } else if (doc.code.includes("GM") || doc.name.toLowerCase().includes("giấy mời")) {
                 addMapping("NGAY_GIAY_MOI_FULL", rawLongDate, 3, "Ngày Giấy mời đầy đủ (Header)");
-            } else if (doc.code.includes("BB")) {
+            } else if (doc.code.includes("BB") || doc.name.toLowerCase().includes("biên bản")) {
                 addMapping("NGAY_BIEN_BAN_FULL", rawLongDate, 3, "Ngày Biên bản đầy đủ (Header)");
-            } else if (doc.code.includes("HD")) {
+            } else if (doc.code.includes("HD") || doc.name.toLowerCase().includes("hợp đồng")) {
                 addMapping("NGAY_HOP_DONG_FULL", rawLongDate, 3, "Ngày Hợp đồng đầy đủ (Header)");
             }
         }
@@ -1316,7 +1521,10 @@
 
         const singleDocSourceBadge = document.getElementById("singleDocSourceBadge");
         if (singleDocSourceBadge) {
-            if (item && item.isCustom) {
+            if (item && item.isUploaded) {
+                singleDocSourceBadge.className = "text-[10px] bg-emerald-50 text-emerald-800 font-semibold px-2 py-0.5 rounded border border-emerald-300 flex items-center gap-1";
+                singleDocSourceBadge.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-emerald-600 text-[9px]"></i> File vừa tải lên`;
+            } else if (item && item.isCustom) {
                 singleDocSourceBadge.className = "text-[10px] bg-amber-50 text-amber-800 font-semibold px-2 py-0.5 rounded border border-amber-300 flex items-center gap-1";
                 singleDocSourceBadge.innerHTML = `<i class="fa-solid fa-star text-amber-500 text-[9px]"></i> Mẫu tùy biến (Đang dùng)`;
             } else if (item) {
@@ -1521,7 +1729,7 @@
             documentContentDisplay.contentEditable = "true";
             documentContentDisplay.classList.remove("bg-amber-50/20");
 
-            if (currentDraft && currentDraft.trim() !== "") {
+            if (currentDraft && currentDraft.trim() !== "" && !item?.isUploaded) {
                 // Hiển thị nội dung tùy biến từ bản thảo hoặc đã lưu
                 documentContentDisplay.innerHTML = formatTemplateHtmlWithBadges(currentDraft);
             } else if (item && item.paragraphs && item.paragraphs.length > 0) {
@@ -1541,6 +1749,8 @@
                     });
                     return `<p class="mb-2 leading-relaxed text-slate-800">${text}</p>`;
                 }).join("");
+                workingDraftHtml[docId] = cleanCanvasHtmlForStorage();
+                item.isUploaded = false;
             } else {
                 // Khởi tạo khung mẫu văn bản hành chính chuẩn Nghị định 30/2020/NĐ-CP
                 const scaffold = generateDefaultDocumentScaffold(docObj);
@@ -2101,7 +2311,7 @@
     const STUDIO_DOC_VAR_MAP = {
         // 1. Mua sắm < 50tr
         "d50_1": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CO_QUAN_TRINH", "SO_TO_TRINH", "NGAY_TO_TRINH", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_CONG_TRINH", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "NGUON_VON", "CHUC_VU_TRUONG_BAN", "TRUONG_BAN_DHDA", "CAN_CU_PHAP_LY_CHUNG"],
-        "d50_2": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_CONG_TRINH", "TEN_GOI_THAU", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "MA_SO_THUE", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY", "CAN_CU_PHAP_LY_CHUNG"],
+        "d50_2": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "SO_BAO_CAO", "NGAY_BAO_CAO", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_CONG_TRINH", "TEN_GOI_THAU", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "MA_SO_THUE", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY", "CAN_CU_PHAP_LY_CHUNG"],
         "d50_3": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "DIA_CHI_TRU_SO", "TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "DAI_DIEN_NHA_THAU", "CHUC_VU_DAI_DIEN", "DIA_CHI_NHA_THAU", "MA_SO_THUE", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY", "NGAY_QUYET_DINH"],
         "d50_4": ["TEN_CHU_DAU_TU", "TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "NGAY_BIEN_BAN", "TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "DAI_DIEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY"],
 
@@ -2160,7 +2370,7 @@
             if (clean) set.add(clean);
         });
 
-        const suffixes = ["TO_TRINH", "QUYET_DINH", "GIAY_MOI", "BIEN_BAN", "HOP_DONG"];
+        const suffixes = ["TO_TRINH", "QUYET_DINH", "GIAY_MOI", "BIEN_BAN", "HOP_DONG", "BAO_CAO"];
         suffixes.forEach(sfx => {
             if (set.has(`NGAY_${sfx}`) || set.has(`SO_${sfx}`) || (sfx === "BIEN_BAN" && set.has("SO_BIEN_BAN_HOAN_THIEN"))) {
                 set.add(`NGAY_${sfx}`);
