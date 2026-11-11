@@ -1474,6 +1474,26 @@
                                 <input id="matrixTypeLegalInput" type="text" class="w-full bg-white border border-slate-300 rounded px-2 py-0.5 h-6 text-[10.5px] text-slate-700">
                             </div>
                         </div>
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <label id="adminFolderLabel" class="block text-[9.5px] font-bold text-emerald-800 uppercase flex items-center gap-1">
+                                    <i class="fa-solid fa-folder-open text-amber-500"></i>
+                                    <span>Đường dẫn thư mục chứa file mẫu (.docx)</span>
+                                </label>
+                                <button id="btnCopyMatrixFolder" type="button" class="text-[9.5px] text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-1 cursor-pointer transition-colors" title="Sao chép đường dẫn thư mục này">
+                                    <i class="fa-regular fa-copy text-[9px]"></i>
+                                    <span>Sao chép</span>
+                                </button>
+                            </div>
+                            <div class="relative flex items-center mt-0.5">
+                                <input id="matrixTypeFolderInput" type="text" class="w-full bg-white border border-emerald-300 rounded px-2 py-0.5 h-6.5 text-[11px] font-mono font-semibold text-emerald-950 focus:ring-1 focus:ring-emerald-500" placeholder="templates/Hinh_thuc_LCNT/...">
+                            </div>
+                            <div id="matrixTypeFolderHint" class="text-[9px] text-slate-500 mt-0.5 flex items-center gap-1 truncate">
+                                <i class="fa-solid fa-hard-drive text-slate-400 text-[8.5px] shrink-0"></i>
+                                <span class="text-slate-400 shrink-0">Đường dẫn Local:</span>
+                                <span id="matrixTypeLocalPathText" class="font-mono text-slate-600 truncate select-all"></span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Gán thứ tự mẫu văn bản -->

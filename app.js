@@ -502,15 +502,20 @@
     // Procurement Matrix Helpers
     // -------------------------------------------------------------
     function getCurrentProcurementType() {
-        const pt = PROCUREMENT_MATRIX.procurementTypes.find(t => t.id === appState.selectedProcurementTypeId);
-        return pt || PROCUREMENT_MATRIX.procurementTypes[3];
+        let pt = PROCUREMENT_MATRIX.procurementTypes.find(t => t.id === appState.selectedProcurementTypeId);
+        if (!pt && PROCUREMENT_MATRIX.procurementTypes && PROCUREMENT_MATRIX.procurementTypes.length > 0) {
+            pt = PROCUREMENT_MATRIX.procurementTypes[0];
+            appState.selectedProcurementTypeId = pt.id;
+        }
+        return pt || null;
     }
 
     function getAllDocsForCurrentType() {
         const pt = getCurrentProcurementType();
         const docs = [];
+        if (!pt || !pt.phases) return docs;
         pt.phases.forEach(ph => {
-            ph.documents.forEach(doc => {
+            (ph.documents || []).forEach(doc => {
                 docs.push({
                     ...doc,
                     phaseName: ph.phaseName
@@ -8084,6 +8089,52 @@
             .replace(/'/g, "&#039;");
     }
 
+    function getWorkflowTemplateFolder(item, category) {
+        if (!item) return "";
+        if (item.folder && item.folder.trim() !== "") {
+            return item.folder.trim();
+        }
+        const cat = category || activeAdminCategory;
+        const KNOWN_WORKFLOW_FOLDERS = {
+            // 1. Hình thức Lựa chọn nhà thầu (LCNT)
+            "duoi_50_trieu": "templates/Hinh_thuc_LCNT/Mua_sam_duoi_50tr",
+            "duoi_100_trieu": "templates/Hinh_thuc_LCNT/Xay_dung_duoi_100tr",
+            "chao_gia_han_che": "templates/Hinh_thuc_LCNT/Mua_sam_chao_gia_han_che",
+            "chao_gia_rong_rai": "templates/Hinh_thuc_LCNT/Mua_sam_chao_gia_rong_rai",
+            "chi_dinh_thau_rut_gon": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon",
+            "chi_dinh_thau_thong_thuong": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_thong_thuong",
+            "dau_thau_rong_rai_hh_xl": "templates/Hinh_thuc_LCNT/Xay_dung_dau_thau_rong_rai_qua_mang",
+            "dau_thau_rong_rai_qua_mang": "templates/Hinh_thuc_LCNT/Xay_dung_dau_thau_rong_rai_qua_mang",
+
+            // 2. Quy trình Triển khai dự án
+            "trien_khai_sua_chua": "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua",
+            "trien_khai_mua_sam": "templates/Quy_trinh_trien_khai/Trien_khai_mua_sam",
+            "trien_khai_dau_tu": "templates/Quy_trinh_trien_khai/Trien_khai_dau_tu"
+        };
+
+        if (KNOWN_WORKFLOW_FOLDERS[item.id]) {
+            return KNOWN_WORKFLOW_FOLDERS[item.id];
+        }
+
+        const basePrefix = cat === "implementation" ? "templates/Quy_trinh_trien_khai" : "templates/Hinh_thuc_LCNT";
+        const safeName = (item.code || item.id || "quy_trinh").replace(/[^a-zA-Z0-9_-]/g, "_");
+        return `${basePrefix}/${safeName}`;
+    }
+
+    function getAbsoluteLocalPath(relPath) {
+        if (!relPath) return "";
+        const cleanRel = relPath.replace(/\//g, "\\");
+        let driveBase = "I:\\My Drive\\APP\\Projects\\ho-so-tu-dong";
+        try {
+            if (window.location.protocol === "file:") {
+                let pathname = decodeURIComponent(window.location.pathname);
+                pathname = pathname.replace(/^\/([a-zA-Z]:)/, '$1').replace(/\/[^/]*$/, '').replace(/\//g, '\\');
+                if (pathname) driveBase = pathname;
+            }
+        } catch (e) {}
+        return `${driveBase}\\${cleanRel}`;
+    }
+
     function renderAdminMatrixModal() {
         const matrixTypesList = document.getElementById("matrixTypesList");
         const adminTabProcurement = document.getElementById("adminTabProcurement");
@@ -8137,6 +8188,7 @@
                 const card = document.createElement("div");
                 const isActive = pt.id === activeAdminTypeId;
                 const isDefault = DEFAULT_PROCUREMENT_MATRIX.procurementTypes.some(d => d.id === pt.id);
+                const folderPath = getWorkflowTemplateFolder(pt, "procurement");
 
                 card.className = isActive 
                     ? "w-full rounded-lg bg-emerald-50/90 border-2 border-emerald-500 font-bold text-emerald-950 text-[11px] shadow-2xs transition-all overflow-hidden"
@@ -8152,7 +8204,7 @@
 
                 card.innerHTML = `
                     <div class="p-2 cursor-pointer flex items-start justify-between select-none" data-action="select">
-                        <div class="min-w-0 pr-1">
+                        <div class="min-w-0 pr-1 w-full">
                             <div class="truncate font-bold">${escapeHtml(pt.name)}</div>
                             <div class="text-[9.5px] text-slate-500 font-normal flex items-center gap-1.5 mt-0.5">
                                 <span>${docsCount} mẫu văn bản</span>
@@ -8160,6 +8212,10 @@
                                 <span class="${tplsCount === docsCount ? 'text-emerald-700 font-bold' : (tplsCount > 0 ? 'text-teal-700' : 'text-amber-700 font-bold')}">
                                     ${tplsCount}/${docsCount} có mẫu
                                 </span>
+                            </div>
+                            <div class="text-[9px] text-emerald-800 font-mono flex items-center gap-1 mt-1 truncate bg-emerald-50/70 px-1.5 py-0.5 rounded border border-emerald-200/60" title="Thư mục chứa file: ${escapeHtml(folderPath)}">
+                                <i class="fa-solid fa-folder-open text-amber-500 text-[8.5px] shrink-0"></i>
+                                <span class="truncate">${escapeHtml(folderPath)}</span>
                             </div>
                         </div>
                         ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[10px] mt-1 shrink-0"></i>' : ''}
@@ -8204,6 +8260,7 @@
                 const card = document.createElement("div");
                 const isActive = it.id === activeAdminImplTypeId;
                 const isDefault = DEFAULT_IMPLEMENTATION_MATRIX.implementationTypes.some(d => d.id === it.id);
+                const folderPath = getWorkflowTemplateFolder(it, "implementation");
 
                 card.className = isActive 
                     ? "w-full rounded-lg bg-emerald-50/90 border-2 border-emerald-500 font-bold text-emerald-950 text-[11px] shadow-2xs transition-all overflow-hidden"
@@ -8214,7 +8271,7 @@
 
                 card.innerHTML = `
                     <div class="p-2 cursor-pointer flex items-start justify-between select-none" data-action="select">
-                        <div class="min-w-0 pr-1">
+                        <div class="min-w-0 pr-1 w-full">
                             <div class="truncate font-bold">${escapeHtml(it.name)}</div>
                             <div class="text-[9.5px] text-slate-500 font-normal flex items-center gap-1.5 mt-0.5">
                                 <span>${docsCount} mẫu văn bản</span>
@@ -8222,6 +8279,10 @@
                                 <span class="${tplsCount === docsCount ? 'text-emerald-700 font-bold' : (tplsCount > 0 ? 'text-teal-700' : 'text-amber-700 font-bold')}">
                                     ${tplsCount}/${docsCount} có mẫu
                                 </span>
+                            </div>
+                            <div class="text-[9px] text-emerald-800 font-mono flex items-center gap-1 mt-1 truncate bg-emerald-50/70 px-1.5 py-0.5 rounded border border-emerald-200/60" title="Thư mục chứa file: ${escapeHtml(folderPath)}">
+                                <i class="fa-solid fa-folder-open text-amber-500 text-[8.5px] shrink-0"></i>
+                                <span class="truncate">${escapeHtml(folderPath)}</span>
                             </div>
                         </div>
                         ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[10px] mt-1 shrink-0"></i>' : ''}
@@ -8267,10 +8328,22 @@
         const matrixTypeNameInput = document.getElementById("matrixTypeNameInput");
         const matrixTypeCodeInput = document.getElementById("matrixTypeCodeInput");
         const matrixTypeLegalInput = document.getElementById("matrixTypeLegalInput");
+        const matrixTypeFolderInput = document.getElementById("matrixTypeFolderInput");
+        const matrixTypeLocalPathText = document.getElementById("matrixTypeLocalPathText");
+        const adminFolderLabel = document.getElementById("adminFolderLabel");
 
         if (matrixTypeNameInput) matrixTypeNameInput.value = currentItem.name || "";
         if (matrixTypeCodeInput) matrixTypeCodeInput.value = currentItem.code || "";
         if (matrixTypeLegalInput) matrixTypeLegalInput.value = (activeAdminCategory === "procurement" ? currentItem.legalBasis : currentItem.description) || "";
+
+        const currentFolder = getWorkflowTemplateFolder(currentItem, activeAdminCategory);
+        if (matrixTypeFolderInput) matrixTypeFolderInput.value = currentItem.folder || currentFolder;
+        if (matrixTypeLocalPathText) matrixTypeLocalPathText.textContent = getAbsoluteLocalPath(currentItem.folder || currentFolder);
+        if (adminFolderLabel) {
+            adminFolderLabel.innerHTML = activeAdminCategory === "procurement"
+                ? '<i class="fa-solid fa-folder-open text-amber-500"></i><span>Đường dẫn thư mục chứa file mẫu (.docx) của Hình thức LCNT này</span>'
+                : '<i class="fa-solid fa-folder-open text-amber-500"></i><span>Đường dẫn thư mục chứa file mẫu (.docx) của Quy trình Triển khai này</span>';
+        }
 
         renderAdminDocsTable(currentItem);
     }
@@ -8304,13 +8377,15 @@
 
         const SYSTEM_TEMPLATES = [
             { value: "", label: "-- Chưa gán mẫu (để trống) --" },
-            { value: "templates/01_To_trinh_KHLCNT.docx", label: "01_To_trinh_KHLCNT.docx" },
-            { value: "templates/02_Quyet_dinh_KHLCNT.docx", label: "02_Quyet_dinh_KHLCNT.docx" },
-            { value: "templates/1_Giay_moi_tham_gia.docx", label: "1_Giay_moi_tham_gia.docx" },
-            { value: "templates/2_Bien_ban_hoan_thien_hop_dong.docx", label: "2_Bien_ban_hoan_thien_hop_dong.docx" },
-            { value: "templates/3_To_trinh_chi_dinh_thau.docx", label: "3_To_trinh_chi_dinh_thau.docx" },
-            { value: "templates/4_Quyet_dinh_chi_dinh_thau.docx", label: "4_Quyet_dinh_chi_dinh_thau.docx" },
-            { value: "templates/07_Hop_dong_kinh_te.docx", label: "07_Hop_dong_kinh_te.docx" }
+            // Mẫu thuộc Quy trình triển khai sửa chữa
+            { value: "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/01_To_trinh_KHLCNT.docx", label: "01_To_trinh_KHLCNT.docx (TK Sửa chữa)" },
+            { value: "templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/02_Quyet_dinh_KHLCNT.docx", label: "02_Quyet_dinh_KHLCNT.docx (TK Sửa chữa)" },
+            // Mẫu thuộc Chỉ định thầu rút gọn
+            { value: "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/1_Giay_moi_tham_gia.docx", label: "1_Giay_moi_tham_gia.docx (CĐT Rút gọn)" },
+            { value: "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/2_Bien_ban_hoan_thien_hop_dong.docx", label: "2_Bien_ban_hoan_thien_hop_dong.docx (CĐT Rút gọn)" },
+            { value: "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/3_To_trinh_chi_dinh_thau.docx", label: "3_To_trinh_chi_dinh_thau.docx (CĐT Rút gọn)" },
+            { value: "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/4_Quyet_dinh_chi_dinh_thau.docx", label: "4_Quyet_dinh_chi_dinh_thau.docx (CĐT Rút gọn)" },
+            { value: "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/07_Hop_dong_kinh_te.docx", label: "07_Hop_dong_kinh_te.docx (CĐT Rút gọn)" }
         ];
 
         allDocs.forEach((doc, idx) => {
@@ -8506,9 +8581,11 @@
         const matrixTypeNameInput = document.getElementById("matrixTypeNameInput");
         const matrixTypeCodeInput = document.getElementById("matrixTypeCodeInput");
         const matrixTypeLegalInput = document.getElementById("matrixTypeLegalInput");
+        const matrixTypeFolderInput = document.getElementById("matrixTypeFolderInput");
 
         if (matrixTypeNameInput) currentItem.name = matrixTypeNameInput.value.trim() || currentItem.name;
         if (matrixTypeCodeInput) currentItem.code = matrixTypeCodeInput.value.trim();
+        if (matrixTypeFolderInput) currentItem.folder = matrixTypeFolderInput.value.trim();
         if (matrixTypeLegalInput) {
             if (activeAdminCategory === "procurement") {
                 currentItem.legalBasis = matrixTypeLegalInput.value.trim();
@@ -8659,6 +8736,36 @@
         });
     }
 
+    const btnCopyMatrixFolder = document.getElementById("btnCopyMatrixFolder");
+    if (btnCopyMatrixFolder) {
+        btnCopyMatrixFolder.addEventListener("click", () => {
+            const matrixTypeFolderInput = document.getElementById("matrixTypeFolderInput");
+            const rel = matrixTypeFolderInput ? matrixTypeFolderInput.value.trim() : "";
+            const abs = getAbsoluteLocalPath(rel);
+            const copyText = abs || rel;
+            if (!copyText) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(copyText).then(() => {
+                    showToast(`Đã sao chép đường dẫn: ${copyText}`, "success");
+                }).catch(() => {
+                    fallbackCopyPath(copyText);
+                });
+            } else {
+                fallbackCopyPath(copyText);
+            }
+        });
+    }
+
+    function fallbackCopyPath(text) {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        showToast(`Đã sao chép đường dẫn: ${text}`, "success");
+    }
+
     const btnSaveMatrixSettings = document.getElementById("btnSaveMatrixSettings");
     if (btnSaveMatrixSettings) {
         btnSaveMatrixSettings.addEventListener("click", () => {
@@ -8683,9 +8790,19 @@
             renderDocTabs();
             renderDocumentPreview();
 
-            const modal = document.getElementById("modalProcurementMatrixManager");
-            if (modal) modal.classList.add("hidden");
-            showToast("Đã lưu và áp dụng toàn diện cấu hình LCNT, Triển khai & thứ tự mẫu văn bản!", "success");
+            // KHÔNG THOÁT BẢNG: Cập nhật lại giao diện modal ngay lập tức để người dùng tiếp tục thao tác
+            renderAdminMatrixModal();
+
+            // Hiệu ứng phản hồi trực quan trên nút Lưu
+            const origHtml = btnSaveMatrixSettings.innerHTML;
+            btnSaveMatrixSettings.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-200"></i><span>✓ Đã lưu thành công!</span>';
+            btnSaveMatrixSettings.classList.add("bg-emerald-700");
+            setTimeout(() => {
+                btnSaveMatrixSettings.innerHTML = origHtml;
+                btnSaveMatrixSettings.classList.remove("bg-emerald-700");
+            }, 1800);
+
+            showToast("✓ Đã lưu và áp dụng cấu hình ma trận thành công! (Bảng tiếp tục mở để bạn chỉnh sửa)", "success");
         });
     }
 
