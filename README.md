@@ -8,7 +8,7 @@ Hệ thống chuyên nghiệp tự động hóa toàn diện quy trình lập v�
 
 ### 1. Ma Trận Mua Sắm Đa Quy Trình (`matrix_procurement.json`)
 Hệ thống tích hợp sẵn ma trận phân loại văn bản cho **6 quy trình mua sắm & xây lắp phổ biến nhất**:
-1. **Mua sắm siêu rút gọn (< 50 triệu)**: Tờ trình chủ trương, Báo cáo thẩm định mua sắm, Hợp đồng/Đơn đặt hàng, Biên bản nghiệm thu & thanh lý.
+1. **Mua sắm (Dưới 50 triệu)**: Tờ trình chủ trương, Báo cáo thẩm định mua sắm, Hợp đồng/Đơn đặt hàng, Biên bản nghiệm thu & thanh lý.
 2. **Mua sắm thường xuyên 50tr - 100tr (Khoản 4 Điều 23)**: Tờ trình KHLCNT, Quyết định phê duyệt KHLCNT, Biên bản thương thảo, Hợp đồng kinh tế.
 3. **Chào giá cạnh tranh hạn chế (Nội bộ)**: 9 văn bản (Tờ trình, Báo cáo đề xuất 3 nhà thầu, Thư mời báo giá, Biên bản mở thư chào giá, Biên bản họp đánh giá so sánh giá, Biên bản thương thảo, Báo cáo đánh giá, Thông báo kết quả, Hợp đồng kinh tế).
 4. **Chỉ định thầu rút gọn (Tư vấn < 500tr; XL/HH < 1 tỷ)**: 7 văn bản chuẩn (Tờ trình KHLCNT, Quyết định KHLCNT, Giấy mời hoàn thiện hợp đồng, Biên bản hoàn thiện hợp đồng, Tờ trình chỉ định thầu, Quyết định chỉ định thầu, Hợp đồng kinh tế).
