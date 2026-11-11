@@ -8182,61 +8182,47 @@
         if (!matrixTypesList) return;
         matrixTypesList.innerHTML = "";
 
-        // 1. Render Left Column List with 1-Click Clone & Safe Delete
+        // Hàm so sánh tên theo thứ tự bảng chữ cái A-Z (bỏ số thứ tự ở đầu nếu có để xếp chuẩn theo chữ)
+        function sortWorkflowAZ(a, b) {
+            const cleanA = (a.name || "").replace(/^\d+[\.\s\-]+/, '').trim();
+            const cleanB = (b.name || "").replace(/^\d+[\.\s\-]+/, '').trim();
+            return cleanA.localeCompare(cleanB, 'vi', { sensitivity: 'base', numeric: true });
+        }
+
+        // 1. Render Left Column List: Thon gọn, chỉ thể hiện tên, sắp xếp A-Z
         if (activeAdminCategory === "procurement") {
-            PROCUREMENT_MATRIX.procurementTypes.forEach((pt) => {
+            const sortedList = [...PROCUREMENT_MATRIX.procurementTypes].sort(sortWorkflowAZ);
+            if (!activeAdminTypeId || !sortedList.some(pt => pt.id === activeAdminTypeId)) {
+                activeAdminTypeId = sortedList[0]?.id;
+            }
+
+            sortedList.forEach((pt) => {
                 const card = document.createElement("div");
                 const isActive = pt.id === activeAdminTypeId;
                 const isDefault = DEFAULT_PROCUREMENT_MATRIX.procurementTypes.some(d => d.id === pt.id);
-                const folderPath = getWorkflowTemplateFolder(pt, "procurement");
 
                 card.className = isActive 
-                    ? "w-full rounded-lg bg-emerald-50/90 border-2 border-emerald-500 font-bold text-emerald-950 text-[11px] shadow-2xs transition-all overflow-hidden"
-                    : "w-full rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-[11px] transition-all overflow-hidden";
-
-                const allTypeDocs = [];
-                (pt.phases || []).forEach(ph => (ph.documents || []).forEach(d => allTypeDocs.push(d)));
-                const docsCount = allTypeDocs.length;
-                const tplsCount = allTypeDocs.filter(d => {
-                    const t = d.templateFile !== undefined ? d.templateFile : (prebuiltDocxMap[d.id] || "");
-                    return Boolean(t && t.trim() !== "");
-                }).length;
+                    ? "group w-full flex items-center justify-between px-2.5 py-1.5 rounded bg-emerald-50 text-emerald-950 font-bold border-l-3 border-emerald-600 border border-emerald-300 text-xs shadow-2xs transition-all cursor-pointer"
+                    : "group w-full flex items-center justify-between px-2.5 py-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 font-medium border border-slate-200 text-xs transition-all cursor-pointer";
 
                 card.innerHTML = `
-                    <div class="p-2 cursor-pointer flex items-start justify-between select-none" data-action="select">
-                        <div class="min-w-0 pr-1 w-full">
-                            <div class="truncate font-bold">${escapeHtml(pt.name)}</div>
-                            <div class="text-[9.5px] text-slate-500 font-normal flex items-center gap-1.5 mt-0.5">
-                                <span>${docsCount} mẫu văn bản</span>
-                                <span>•</span>
-                                <span class="${tplsCount === docsCount ? 'text-emerald-700 font-bold' : (tplsCount > 0 ? 'text-teal-700' : 'text-amber-700 font-bold')}">
-                                    ${tplsCount}/${docsCount} có mẫu
-                                </span>
-                            </div>
-                            <div class="text-[9px] text-emerald-800 font-mono flex items-center gap-1 mt-1 truncate bg-emerald-50/70 px-1.5 py-0.5 rounded border border-emerald-200/60" title="Thư mục chứa file: ${escapeHtml(folderPath)}">
-                                <i class="fa-solid fa-folder-open text-amber-500 text-[8.5px] shrink-0"></i>
-                                <span class="truncate">${escapeHtml(folderPath)}</span>
-                            </div>
-                        </div>
-                        ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[10px] mt-1 shrink-0"></i>' : ''}
+                    <div class="truncate flex-1 pr-1 text-left" title="${escapeHtml(pt.name)}">
+                        ${escapeHtml(pt.name)}
                     </div>
-                    <div class="px-2 py-1 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[10px]">
-                        <button type="button" class="btn-clone-matrix-type text-slate-600 hover:text-indigo-600 font-semibold flex items-center gap-1 cursor-pointer transition-colors" title="Nhân bản quy trình này để tạo bản biến thể mới">
-                            <i class="fa-regular fa-copy text-[9.5px]"></i>
-                            <span>Nhân bản</span>
+                    <div class="flex items-center space-x-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button type="button" class="btn-clone-matrix-type text-slate-400 hover:text-indigo-600 p-0.5" title="Nhân bản quy trình">
+                            <i class="fa-regular fa-copy text-[10px]"></i>
                         </button>
                         ${!isDefault ? `
-                            <button type="button" class="btn-delete-matrix-type text-slate-400 hover:text-rose-600 font-semibold flex items-center gap-1 cursor-pointer transition-colors" title="Xóa quy trình tự tạo này">
-                                <i class="fa-regular fa-trash-can text-[9.5px]"></i>
-                                <span>Xóa</span>
+                            <button type="button" class="btn-delete-matrix-type text-slate-400 hover:text-rose-600 p-0.5" title="Xóa quy trình">
+                                <i class="fa-regular fa-trash-can text-[10px]"></i>
                             </button>
-                        ` : `
-                            <span class="text-[9px] text-slate-400 italic">Mặc định gốc</span>
-                        `}
+                        ` : ''}
                     </div>
+                    ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[9.5px] ml-1 shrink-0 group-hover:hidden"></i>' : ''}
                 `;
 
-                card.querySelector('[data-action="select"]')?.addEventListener("click", () => {
+                card.addEventListener("click", () => {
                     saveCurrentAdminInputs();
                     activeAdminTypeId = pt.id;
                     renderAdminMatrixModal();
@@ -8256,54 +8242,38 @@
             });
         } else {
             // Implementation Types
-            IMPLEMENTATION_MATRIX.implementationTypes.forEach((it) => {
+            const sortedList = [...IMPLEMENTATION_MATRIX.implementationTypes].sort(sortWorkflowAZ);
+            if (!activeAdminImplTypeId || !sortedList.some(it => it.id === activeAdminImplTypeId)) {
+                activeAdminImplTypeId = sortedList[0]?.id;
+            }
+
+            sortedList.forEach((it) => {
                 const card = document.createElement("div");
                 const isActive = it.id === activeAdminImplTypeId;
                 const isDefault = DEFAULT_IMPLEMENTATION_MATRIX.implementationTypes.some(d => d.id === it.id);
-                const folderPath = getWorkflowTemplateFolder(it, "implementation");
 
                 card.className = isActive 
-                    ? "w-full rounded-lg bg-emerald-50/90 border-2 border-emerald-500 font-bold text-emerald-950 text-[11px] shadow-2xs transition-all overflow-hidden"
-                    : "w-full rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-[11px] transition-all overflow-hidden";
-
-                const docsCount = (it.documents || []).length;
-                const tplsCount = (it.documents || []).filter(d => Boolean(d.templateFile && d.templateFile.trim() !== "")).length;
+                    ? "group w-full flex items-center justify-between px-2.5 py-1.5 rounded bg-emerald-50 text-emerald-950 font-bold border-l-3 border-emerald-600 border border-emerald-300 text-xs shadow-2xs transition-all cursor-pointer"
+                    : "group w-full flex items-center justify-between px-2.5 py-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 font-medium border border-slate-200 text-xs transition-all cursor-pointer";
 
                 card.innerHTML = `
-                    <div class="p-2 cursor-pointer flex items-start justify-between select-none" data-action="select">
-                        <div class="min-w-0 pr-1 w-full">
-                            <div class="truncate font-bold">${escapeHtml(it.name)}</div>
-                            <div class="text-[9.5px] text-slate-500 font-normal flex items-center gap-1.5 mt-0.5">
-                                <span>${docsCount} mẫu văn bản</span>
-                                <span>•</span>
-                                <span class="${tplsCount === docsCount ? 'text-emerald-700 font-bold' : (tplsCount > 0 ? 'text-teal-700' : 'text-amber-700 font-bold')}">
-                                    ${tplsCount}/${docsCount} có mẫu
-                                </span>
-                            </div>
-                            <div class="text-[9px] text-emerald-800 font-mono flex items-center gap-1 mt-1 truncate bg-emerald-50/70 px-1.5 py-0.5 rounded border border-emerald-200/60" title="Thư mục chứa file: ${escapeHtml(folderPath)}">
-                                <i class="fa-solid fa-folder-open text-amber-500 text-[8.5px] shrink-0"></i>
-                                <span class="truncate">${escapeHtml(folderPath)}</span>
-                            </div>
-                        </div>
-                        ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[10px] mt-1 shrink-0"></i>' : ''}
+                    <div class="truncate flex-1 pr-1 text-left" title="${escapeHtml(it.name)}">
+                        ${escapeHtml(it.name)}
                     </div>
-                    <div class="px-2 py-1 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-[10px]">
-                        <button type="button" class="btn-clone-matrix-type text-slate-600 hover:text-indigo-600 font-semibold flex items-center gap-1 cursor-pointer transition-colors" title="Nhân bản quy trình này để tạo bản biến thể mới">
-                            <i class="fa-regular fa-copy text-[9.5px]"></i>
-                            <span>Nhân bản</span>
+                    <div class="flex items-center space-x-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button type="button" class="btn-clone-matrix-type text-slate-400 hover:text-indigo-600 p-0.5" title="Nhân bản quy trình">
+                            <i class="fa-regular fa-copy text-[10px]"></i>
                         </button>
                         ${!isDefault ? `
-                            <button type="button" class="btn-delete-matrix-type text-slate-400 hover:text-rose-600 font-semibold flex items-center gap-1 cursor-pointer transition-colors" title="Xóa quy trình tự tạo này">
-                                <i class="fa-regular fa-trash-can text-[9.5px]"></i>
-                                <span>Xóa</span>
+                            <button type="button" class="btn-delete-matrix-type text-slate-400 hover:text-rose-600 p-0.5" title="Xóa quy trình">
+                                <i class="fa-regular fa-trash-can text-[10px]"></i>
                             </button>
-                        ` : `
-                            <span class="text-[9px] text-slate-400 italic">Mặc định gốc</span>
-                        `}
+                        ` : ''}
                     </div>
+                    ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[9.5px] ml-1 shrink-0 group-hover:hidden"></i>' : ''}
                 `;
 
-                card.querySelector('[data-action="select"]')?.addEventListener("click", () => {
+                card.addEventListener("click", () => {
                     saveCurrentAdminInputs();
                     activeAdminImplTypeId = it.id;
                     renderAdminMatrixModal();
