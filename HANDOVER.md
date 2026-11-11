@@ -160,6 +160,17 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
   5. **Khắc phục triệt để lỗi bộ gõ tiếng Việt (IME Composition):** Lắng nghe sự kiện `compositionstart` và `compositionend`, chỉ chuẩn hóa mã thẻ khi kết thúc gõ hoặc khi rời chuột (`blur`), gõ tiếng Việt hoàn toàn tự nhiên không bị lỗi chèn dấu gạch dưới `_`.
 * **Xác thực:** Kiểm thử tự động trên Chrome CDP (`scratch/test_preview_and_dictionary_scan.py`): Quét và tự động nhận diện thành công 10/10 biến từ Từ điển và cấu trúc văn bản; hộp gợi ý biến hiển thị đầy đủ trên Tab 3; chế độ xem thử thay thế thành công 100% dữ liệu thực cho biến mới và căn cứ quyết định. Ảnh minh chứng: `verify_preview_and_dictionary_scan.png`.
 
+### 9. Lỗi: Khung soạn thảo Canvas A4 bên phải bị trắng/mất giao diện khi tải file Word lên
+* **Nguyên nhân:**
+  Trong quá trình di chuyển hộp gợi ý biến `#contextualRecommendedVarsBox` lên vị trí cố định trên cùng, vô tình để sót một thẻ đóng `</div>` dư ở dòng 484 trong `template-tool.html`. Thẻ đóng dư này đã đóng sớm container cột trái (`lg:col-span-5`), khiến container cột phải (`lg:col-span-7` chứa toàn bộ khung soạn thảo Canvas A4, thanh công cụ, các nút chuyển chế độ xem và bộ lật trang) bị đẩy văng ra khỏi lưới CSS Grid `grid-cols-12` và đóng sớm container `#singleWorkspace`. Kết quả là toàn bộ nửa bên phải màn hình bị trắng tinh.
+* **Xử lý:**
+  1. Loại bỏ thẻ đóng `</div>` dư thừa, kiểm tra cân bằng 100% tất cả các thẻ `div` trong toàn bộ tệp `template-tool.html` (kết quả phân tích DOM: `Unclosed divs: 0`, `Extra close: 0`).
+  2. Khôi phục hoàn toàn cấu trúc lưới 2 cột chuẩn mực:
+     - **Cột trái (5/12):** Chứa Hộp gợi ý & độ phủ biến cố định trên cùng, 3 Tab điều hướng (1. Biến chữ, 2. Biến bảng, 3. Đã gán), nút Gợi ý từ Từ điển và Danh mục biến.
+     - **Cột phải (7/12):** Chứa Thanh công cụ chuyển đổi Khung mẫu/Xem thử, Bộ chuyển trang (Trang X/Y), Nút phóng to/thu nhỏ, Nút hoàn tác/làm lại (Ctrl+Z/Ctrl+Y), Nút ngắt trang A4 và Tờ giấy A4 Canvas (`documentContentDisplay`) hỗ trợ chỉnh sửa trực tiếp (`contenteditable="true"`).
+  3. Nâng cache-buster lên `template-tool.js?v=20261111_v5`.
+* **Xác thực:** Kiểm thử tự động trên Chrome CDP (`scratch/test_docx_preview_restored.py`): Khung Canvas hiển thị đầy đủ với kích thước 763x1050px (chuẩn A4), nhận diện 11 biến, hỗ trợ chỉnh sửa `isEditable: True`. Ảnh minh chứng: `verify_docx_preview_restored.png`.
+
 ---
 
 ## ⚠️ 4. TRẠNG THÁI HIỆN TẠI & CÓ LỖI NÀO ĐANG VƯỚNG KHÔNG?
@@ -176,6 +187,7 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
   * Test Case 6 (Bảo tồn định dạng Word & Bảng biểu): Đạt 100% (Giữ nguyên bảng không viền 2 cột, bảng báo giá có viền, căn giữa, in đậm/nghiêng).
   * Test Case 7 (Xóa biến đa năng & Hoàn tác Undo/Redo Ctrl+Z): Đạt 100% (Xóa biến qua nút `×`, menu popover, Floating menu; hoàn tác phục hồi trạng thái bằng nút và phím tắt `Ctrl+Z`/`Ctrl+Y`).
   * Test Case 8 (Xem thử dữ liệu biến mới & Quét từ điển Thông tin chung): Đạt 100% (Nhận diện tự động 10 biến từ Từ điển; hiển thị liên tục hộp gợi ý; xem thử hiển thị đầy đủ dữ liệu thật).
+  * Test Case 9 (Khôi phục toàn vẹn khung Canvas soạn thảo A4): Đạt 100% (Khung Canvas rộng 763x1050px hiển thị đầy đủ bên phải, bố cục 2 cột hoàn hảo, cho phép chỉnh sửa trực tiếp).
 
 ---
 
