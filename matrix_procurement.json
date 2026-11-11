@@ -8,163 +8,6 @@
   ],
   "procurementTypes": [
     {
-      "id": "duoi_50_trieu",
-      "code": "D50",
-      "name": "Mua sắm (Dưới 50 triệu)",
-      "badge": "< 50 triệu",
-      "badgeColor": "emerald",
-      "description": "Áp dụng mua sắm tài sản, thiết bị, sửa chữa thường xuyên dưới 50 triệu đồng theo dự toán nội bộ.",
-      "threshold": 50000000,
-      "phases": [
-        {
-          "phaseId": "chuan_bi",
-          "phaseName": "Giai đoạn Chuẩn bị",
-          "documents": [
-            {
-              "id": "d50_1",
-              "code": "01.TTr-MS",
-              "name": "01. Tờ trình phê duyệt chủ trương và dự toán",
-              "desc": "Tờ trình đơn vị đề xuất mua sắm hàng hóa / sửa chữa",
-              "requiredVars": [
-                "TEN_DON_VI",
-                "SO_TO_TRINH",
-                "NGAY_TO_TRINH",
-                "TEN_HANG_MUC",
-                "LY_DO_MUA_SAM",
-                "TONG_MUC_DAU_TU",
-                "NGUON_VON",
-                "TRUONG_DON_VI"
-              ]
-            },
-            {
-              "id": "d50_2",
-              "code": "02.BC-MS",
-              "name": "02. Báo cáo thẩm định & phê duyệt mua sắm",
-              "desc": "Báo cáo phê duyệt kết quả mua sắm dưới 50 triệu",
-              "requiredVars": [
-                "TEN_DON_VI",
-                "SO_BAO_CAO",
-                "NGAY_BAO_CAO",
-                "TEN_HANG_MUC",
-                "TEN_NHA_THAU",
-                "MA_SO_THUE",
-                "GIA_TRI_MUA_SAM",
-                "NGUOI_PHE_DUYET"
-              ]
-            }
-          ]
-        },
-        {
-          "phaseId": "thuc_hien",
-          "phaseName": "Giai đoạn Ký kết & Nghiệm thu",
-          "documents": [
-            {
-              "id": "d50_3",
-              "code": "03.HD-KT",
-              "name": "03. Hợp đồng kinh tế / Đơn đặt hàng",
-              "desc": "Hợp đồng mua bán hoặc sửa chữa",
-              "requiredVars": [
-                "TEN_DON_VI",
-                "DAI_DIEN_BEN_A",
-                "TEN_NHA_THAU",
-                "DAI_DIEN_BEN_B",
-                "GIA_TRI_HOP_DONG",
-                "THOI_GIAN_THUC_HIEN"
-              ]
-            },
-            {
-              "id": "d50_4",
-              "code": "04.BB-NT",
-              "name": "04. Biên bản nghiệm thu bàn giao và thanh lý",
-              "desc": "Biên bản bàn giao thiết bị / hoàn thành sửa chữa",
-              "requiredVars": [
-                "TEN_DON_VI",
-                "TEN_NHA_THAU",
-                "NGAY_NGHIEM_THU",
-                "NOI_DUNG_CONG_VIEC",
-                "GIA_TRI_QUYET_TOAN"
-              ]
-            }
-          ]
-        }
-      ],
-      "folder": "templates/Hinh_thuc_LCNT/Mua_sam_duoi_50tr"
-    },
-    {
-      "id": "duoi_100_trieu",
-      "code": "D100",
-      "name": "Xây dựng - Dưới 100tr",
-      "badge": "50tr - 100tr",
-      "badgeColor": "teal",
-      "description": "Áp dụng chỉ định thầu siêu nhỏ không qua mạng theo Khoản 4 Điều 23 Luật Đấu thầu 2023.",
-      "threshold": 100000000,
-      "phases": [
-        {
-          "phaseId": "chuan_bi",
-          "phaseName": "Giai đoạn Chuẩn bị",
-          "documents": [
-            {
-              "id": "d100_1",
-              "code": "01.TTr-KHLCNT",
-              "name": "01. Tờ trình phê duyệt Kế hoạch LCNT",
-              "desc": "Tờ trình phê duyệt KHLCNT gói mua sắm thường xuyên",
-              "requiredVars": [
-                "TEN_CHU_DAU_TU",
-                "TEN_GOI_THAU",
-                "GIA_GOI_THAU",
-                "HINH_THUC_LCNT",
-                "NGUOI_TRINH"
-              ]
-            },
-            {
-              "id": "d100_2",
-              "code": "02.QD-KHLCNT",
-              "name": "02. Quyết định phê duyệt Kế hoạch LCNT",
-              "desc": "Quyết định phê duyệt của Người có thẩm quyền",
-              "requiredVars": [
-                "TEN_CHU_DAU_TU",
-                "SO_QUYET_DINH",
-                "NGAY_QUYET_DINH",
-                "TEN_GOI_THAU",
-                "NGUOI_KY_CDT"
-              ]
-            }
-          ]
-        },
-        {
-          "phaseId": "thuc_hien",
-          "phaseName": "Giai đoạn Ký kết & Thanh lý",
-          "documents": [
-            {
-              "id": "d100_3",
-              "code": "03.BB-TT",
-              "name": "03. Biên bản thương thảo hoàn thiện đơn hàng",
-              "desc": "Biên bản thống nhất giá và tiến độ giao hàng",
-              "requiredVars": [
-                "TEN_CHU_DAU_TU",
-                "TEN_NHA_THAU",
-                "GIA_THUONG_THAO",
-                "THOI_GIAN_GIAO_HANG"
-              ]
-            },
-            {
-              "id": "d100_4",
-              "code": "04.HD-KT",
-              "name": "04. Hợp đồng kinh tế và biên bản giao nhận",
-              "desc": "Hợp đồng kinh tế trọn gói",
-              "requiredVars": [
-                "TEN_CHU_DAU_TU",
-                "TEN_NHA_THAU",
-                "GIA_TRI_HOP_DONG",
-                "KHO_BAC_NHA_NUOC"
-              ]
-            }
-          ]
-        }
-      ],
-      "folder": "templates/Hinh_thuc_LCNT/Xay_dung_duoi_100tr"
-    },
-    {
       "id": "chao_gia_han_che",
       "code": "CGHC",
       "name": "Mua sắm - Chào giá hạn chế",
@@ -280,113 +123,6 @@
         }
       ],
       "folder": "templates/Hinh_thuc_LCNT/Mua_sam_chao_gia_han_che"
-    },
-    {
-      "id": "chi_dinh_thau_rut_gon",
-      "code": "CDTRG",
-      "name": "Xây dựng - Chỉ định thầu rút gọn",
-      "badge": "CĐT Rút Gọn",
-      "badgeColor": "emerald",
-      "description": "Quy trình chuẩn theo Điều 78 Nghị định 24/2024/NĐ-CP (Tư vấn, Xây lắp, Hàng hóa).",
-      "threshold": 1000000000,
-      "phases": [
-        {
-          "phaseId": "chuan_bi",
-          "phaseName": "Giai đoạn Chuẩn bị",
-          "documents": [
-            {
-              "id": "cdtrg_1",
-              "code": "01.TTr-KHLCNT",
-              "name": "01. Tờ trình phê duyệt Kế hoạch LCNT",
-              "desc": "Trình cấp thẩm quyền phê duyệt KHLCNT",
-              "requiredVars": [
-                "TEN_CHU_DAU_TU",
-                "TEN_DU_AN",
-                "TEN_GOI_THAU",
-                "GIA_GOI_THAU_SO"
-              ]
-            },
-            {
-              "id": "cdtrg_2",
-              "code": "02.QD-KHLCNT",
-              "name": "02. Quyết định phê duyệt Kế hoạch LCNT",
-              "desc": "Quyết định phê duyệt KHLCNT",
-              "requiredVars": [
-                "SO_QUYET_DINH_KHLCNT",
-                "NGAY_QUYET_DINH",
-                "NGUOI_KY_CDT"
-              ]
-            },
-            {
-              "id": "cdtrg_3",
-              "code": "03.GM-TT",
-              "name": "03. Giấy mời tham gia hoàn thiện hợp đồng",
-              "desc": "Gửi nhà thầu được chỉ định",
-              "requiredVars": [
-                "TEN_BAN_QUAN_LY_DU_AN",
-                "TEN_NHA_THAU",
-                "THOI_GIAN_HOP",
-                "DIA_DIEM_HOP"
-              ]
-            }
-          ]
-        },
-        {
-          "phaseId": "thuc_hien",
-          "phaseName": "Giai đoạn Hoàn thiện & Phê duyệt",
-          "documents": [
-            {
-              "id": "cdtrg_4",
-              "code": "04.BB-HT",
-              "name": "04. Biên bản hoàn thiện hợp đồng",
-              "desc": "Biên bản hoàn thiện điều khoản hợp đồng",
-              "requiredVars": [
-                "SO_BIEN_BAN_HOAN_THIEN",
-                "GIA_TRI_HOP_DONG_SO",
-                "GIA_TRI_HOP_DONG_CHU",
-                "DAI_DIEN_NHA_THAU"
-              ]
-            },
-            {
-              "id": "cdtrg_5",
-              "code": "05.TTr-KQLCNT",
-              "name": "05. Tờ trình phê duyệt kết quả chỉ định thầu",
-              "desc": "Trình phê duyệt chỉ định thầu",
-              "requiredVars": [
-                "SO_TO_TRINH",
-                "CO_QUAN_TRINH",
-                "TRUONG_BAN_DHDA",
-                "TEN_NHA_THAU"
-              ]
-            },
-            {
-              "id": "cdtrg_6",
-              "code": "06.QD-KQLCNT",
-              "name": "06. Quyết định phê duyệt kết quả chỉ định thầu",
-              "desc": "Quyết định phê duyệt trúng thầu",
-              "requiredVars": [
-                "SO_QUYET_DINH",
-                "NGUOI_KY_CDT",
-                "GIA_TRI_HOP_DONG_SO",
-                "THOI_GIAN_THUC_HIEN"
-              ]
-            },
-            {
-              "id": "cdtrg_7",
-              "code": "07.HD-KT",
-              "name": "07. Hợp đồng kinh tế",
-              "desc": "Hợp đồng kinh tế chính thức",
-              "requiredVars": [
-                "TEN_CHU_DAU_TU",
-                "TEN_NHA_THAU",
-                "GIA_TRI_HOP_DONG_SO",
-                "KHO_BAC_NHA_NUOC"
-              ]
-            }
-          ]
-        }
-      ],
-      "folder": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon"
     },
     {
       "id": "chao_gia_rong_rai",
@@ -515,6 +251,270 @@
           ]
         }
       ]
+    },
+    {
+      "id": "duoi_50_trieu",
+      "code": "D50",
+      "name": "Mua sắm - Dưới 50 triệu",
+      "badge": "< 50 triệu",
+      "badgeColor": "emerald",
+      "description": "Áp dụng mua sắm tài sản, thiết bị, sửa chữa thường xuyên dưới 50 triệu đồng theo dự toán nội bộ.",
+      "threshold": 50000000,
+      "phases": [
+        {
+          "phaseId": "chuan_bi",
+          "phaseName": "Giai đoạn Chuẩn bị",
+          "documents": [
+            {
+              "id": "d50_1",
+              "code": "01.TTr-MS",
+              "name": "01. Tờ trình phê duyệt chủ trương và dự toán",
+              "desc": "Tờ trình đơn vị đề xuất mua sắm hàng hóa / sửa chữa",
+              "requiredVars": [
+                "TEN_DON_VI",
+                "SO_TO_TRINH",
+                "NGAY_TO_TRINH",
+                "TEN_HANG_MUC",
+                "LY_DO_MUA_SAM",
+                "TONG_MUC_DAU_TU",
+                "NGUON_VON",
+                "TRUONG_DON_VI"
+              ]
+            },
+            {
+              "id": "d50_2",
+              "code": "02.BC-MS",
+              "name": "02. Báo cáo thẩm định & phê duyệt mua sắm",
+              "desc": "Báo cáo phê duyệt kết quả mua sắm dưới 50 triệu",
+              "requiredVars": [
+                "TEN_DON_VI",
+                "SO_BAO_CAO",
+                "NGAY_BAO_CAO",
+                "TEN_HANG_MUC",
+                "TEN_NHA_THAU",
+                "MA_SO_THUE",
+                "GIA_TRI_MUA_SAM",
+                "NGUOI_PHE_DUYET"
+              ]
+            }
+          ]
+        },
+        {
+          "phaseId": "thuc_hien",
+          "phaseName": "Giai đoạn Ký kết & Nghiệm thu",
+          "documents": [
+            {
+              "id": "d50_3",
+              "code": "03.HD-KT",
+              "name": "03. Hợp đồng kinh tế / Đơn đặt hàng",
+              "desc": "Hợp đồng mua bán hoặc sửa chữa",
+              "requiredVars": [
+                "TEN_DON_VI",
+                "DAI_DIEN_BEN_A",
+                "TEN_NHA_THAU",
+                "DAI_DIEN_BEN_B",
+                "GIA_TRI_HOP_DONG",
+                "THOI_GIAN_THUC_HIEN"
+              ]
+            },
+            {
+              "id": "d50_4",
+              "code": "04.BB-NT",
+              "name": "04. Biên bản nghiệm thu bàn giao và thanh lý",
+              "desc": "Biên bản bàn giao thiết bị / hoàn thành sửa chữa",
+              "requiredVars": [
+                "TEN_DON_VI",
+                "TEN_NHA_THAU",
+                "NGAY_NGHIEM_THU",
+                "NOI_DUNG_CONG_VIEC",
+                "GIA_TRI_QUYET_TOAN"
+              ]
+            }
+          ]
+        }
+      ],
+      "folder": "templates/Hinh_thuc_LCNT/Mua_sam_duoi_50tr"
+    },
+    {
+      "id": "chi_dinh_thau_rut_gon",
+      "code": "CDTRG",
+      "name": "Xây dựng - Chỉ định thầu rút gọn",
+      "badge": "CĐT Rút Gọn",
+      "badgeColor": "emerald",
+      "description": "Quy trình chuẩn theo Điều 78 Nghị định 24/2024/NĐ-CP (Tư vấn, Xây lắp, Hàng hóa).",
+      "threshold": 1000000000,
+      "phases": [
+        {
+          "phaseId": "chuan_bi",
+          "phaseName": "Giai đoạn Chuẩn bị",
+          "documents": [
+            {
+              "id": "cdtrg_1",
+              "code": "01.TTr-KHLCNT",
+              "name": "01. Tờ trình phê duyệt Kế hoạch LCNT",
+              "desc": "Trình cấp thẩm quyền phê duyệt KHLCNT",
+              "requiredVars": [
+                "TEN_CHU_DAU_TU",
+                "TEN_DU_AN",
+                "TEN_GOI_THAU",
+                "GIA_GOI_THAU_SO"
+              ]
+            },
+            {
+              "id": "cdtrg_2",
+              "code": "02.QD-KHLCNT",
+              "name": "02. Quyết định phê duyệt Kế hoạch LCNT",
+              "desc": "Quyết định phê duyệt KHLCNT",
+              "requiredVars": [
+                "SO_QUYET_DINH_KHLCNT",
+                "NGAY_QUYET_DINH",
+                "NGUOI_KY_CDT"
+              ]
+            },
+            {
+              "id": "cdtrg_3",
+              "code": "03.GM-TT",
+              "name": "03. Giấy mời tham gia hoàn thiện hợp đồng",
+              "desc": "Gửi nhà thầu được chỉ định",
+              "requiredVars": [
+                "TEN_BAN_QUAN_LY_DU_AN",
+                "TEN_NHA_THAU",
+                "THOI_GIAN_HOP",
+                "DIA_DIEM_HOP"
+              ]
+            }
+          ]
+        },
+        {
+          "phaseId": "thuc_hien",
+          "phaseName": "Giai đoạn Hoàn thiện & Phê duyệt",
+          "documents": [
+            {
+              "id": "cdtrg_4",
+              "code": "04.BB-HT",
+              "name": "04. Biên bản hoàn thiện hợp đồng",
+              "desc": "Biên bản hoàn thiện điều khoản hợp đồng",
+              "requiredVars": [
+                "SO_BIEN_BAN_HOAN_THIEN",
+                "GIA_TRI_HOP_DONG_SO",
+                "GIA_TRI_HOP_DONG_CHU",
+                "DAI_DIEN_NHA_THAU"
+              ]
+            },
+            {
+              "id": "cdtrg_5",
+              "code": "05.TTr-KQLCNT",
+              "name": "05. Tờ trình phê duyệt kết quả chỉ định thầu",
+              "desc": "Trình phê duyệt chỉ định thầu",
+              "requiredVars": [
+                "SO_TO_TRINH",
+                "CO_QUAN_TRINH",
+                "TRUONG_BAN_DHDA",
+                "TEN_NHA_THAU"
+              ]
+            },
+            {
+              "id": "cdtrg_6",
+              "code": "06.QD-KQLCNT",
+              "name": "06. Quyết định phê duyệt kết quả chỉ định thầu",
+              "desc": "Quyết định phê duyệt trúng thầu",
+              "requiredVars": [
+                "SO_QUYET_DINH",
+                "NGUOI_KY_CDT",
+                "GIA_TRI_HOP_DONG_SO",
+                "THOI_GIAN_THUC_HIEN"
+              ]
+            },
+            {
+              "id": "cdtrg_7",
+              "code": "07.HD-KT",
+              "name": "07. Hợp đồng kinh tế",
+              "desc": "Hợp đồng kinh tế chính thức",
+              "requiredVars": [
+                "TEN_CHU_DAU_TU",
+                "TEN_NHA_THAU",
+                "GIA_TRI_HOP_DONG_SO",
+                "KHO_BAC_NHA_NUOC"
+              ]
+            }
+          ]
+        }
+      ],
+      "folder": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon"
+    },
+    {
+      "id": "duoi_100_trieu",
+      "code": "D100",
+      "name": "Xây dựng - Dưới 100tr",
+      "badge": "50tr - 100tr",
+      "badgeColor": "teal",
+      "description": "Áp dụng chỉ định thầu siêu nhỏ không qua mạng theo Khoản 4 Điều 23 Luật Đấu thầu 2023.",
+      "threshold": 100000000,
+      "phases": [
+        {
+          "phaseId": "chuan_bi",
+          "phaseName": "Giai đoạn Chuẩn bị",
+          "documents": [
+            {
+              "id": "d100_1",
+              "code": "01.TTr-KHLCNT",
+              "name": "01. Tờ trình phê duyệt Kế hoạch LCNT",
+              "desc": "Tờ trình phê duyệt KHLCNT gói mua sắm thường xuyên",
+              "requiredVars": [
+                "TEN_CHU_DAU_TU",
+                "TEN_GOI_THAU",
+                "GIA_GOI_THAU",
+                "HINH_THUC_LCNT",
+                "NGUOI_TRINH"
+              ]
+            },
+            {
+              "id": "d100_2",
+              "code": "02.QD-KHLCNT",
+              "name": "02. Quyết định phê duyệt Kế hoạch LCNT",
+              "desc": "Quyết định phê duyệt của Người có thẩm quyền",
+              "requiredVars": [
+                "TEN_CHU_DAU_TU",
+                "SO_QUYET_DINH",
+                "NGAY_QUYET_DINH",
+                "TEN_GOI_THAU",
+                "NGUOI_KY_CDT"
+              ]
+            }
+          ]
+        },
+        {
+          "phaseId": "thuc_hien",
+          "phaseName": "Giai đoạn Ký kết & Thanh lý",
+          "documents": [
+            {
+              "id": "d100_3",
+              "code": "03.BB-TT",
+              "name": "03. Biên bản thương thảo hoàn thiện đơn hàng",
+              "desc": "Biên bản thống nhất giá và tiến độ giao hàng",
+              "requiredVars": [
+                "TEN_CHU_DAU_TU",
+                "TEN_NHA_THAU",
+                "GIA_THUONG_THAO",
+                "THOI_GIAN_GIAO_HANG"
+              ]
+            },
+            {
+              "id": "d100_4",
+              "code": "04.HD-KT",
+              "name": "04. Hợp đồng kinh tế và biên bản giao nhận",
+              "desc": "Hợp đồng kinh tế trọn gói",
+              "requiredVars": [
+                "TEN_CHU_DAU_TU",
+                "TEN_NHA_THAU",
+                "GIA_TRI_HOP_DONG",
+                "KHO_BAC_NHA_NUOC"
+              ]
+            }
+          ]
+        }
+      ],
+      "folder": "templates/Hinh_thuc_LCNT/Xay_dung_duoi_100tr"
     },
     {
       "id": "dau_thau_rong_rai_hh_xl",

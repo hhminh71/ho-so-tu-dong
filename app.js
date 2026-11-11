@@ -3,7 +3,7 @@
     // -------------------------------------------------------------
     // Master Procurement Matrix (Embedded + Async Sync)
     // -------------------------------------------------------------
-    let PROCUREMENT_MATRIX = {"system": "Hệ thống Quản lý & Tự động xuất Hồ sơ Mua sắm, Xây lắp", "version": "3.0", "legalBases": ["Luật Đấu thầu số 22/2023/QH15 ngày 23/06/2023", "Nghị định số 24/2024/NĐ-CP ngày 27/02/2024 của Chính phủ", "Nghị định số 30/2020/NĐ-CP ngày 05/03/2020 về công tác văn thư"], "procurementTypes": [{"id": "duoi_50_trieu", "code": "D50", "name": "Mua sắm (Dưới 50 triệu)", "badge": "< 50 triệu", "badgeColor": "emerald", "description": "Áp dụng mua sắm tài sản, thiết bị, sửa chữa thường xuyên dưới 50 triệu đồng theo dự toán nội bộ.", "threshold": 50000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "d50_1", "code": "01.TTr-MS", "name": "01. Tờ trình phê duyệt chủ trương và dự toán", "desc": "Tờ trình đơn vị đề xuất mua sắm hàng hóa / sửa chữa", "requiredVars": ["TEN_DON_VI", "SO_TO_TRINH", "NGAY_TO_TRINH", "TEN_HANG_MUC", "LY_DO_MUA_SAM", "TONG_MUC_DAU_TU", "NGUON_VON", "TRUONG_DON_VI"]}, {"id": "d50_2", "code": "02.BC-MS", "name": "02. Báo cáo thẩm định & phê duyệt mua sắm", "desc": "Báo cáo phê duyệt kết quả mua sắm dưới 50 triệu", "requiredVars": ["TEN_DON_VI", "SO_BAO_CAO", "NGAY_BAO_CAO", "TEN_HANG_MUC", "TEN_NHA_THAU", "MA_SO_THUE", "GIA_TRI_MUA_SAM", "NGUOI_PHE_DUYET"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Ký kết & Nghiệm thu", "documents": [{"id": "d50_3", "code": "03.HD-KT", "name": "03. Hợp đồng kinh tế / Đơn đặt hàng", "desc": "Hợp đồng mua bán hoặc sửa chữa", "requiredVars": ["TEN_DON_VI", "DAI_DIEN_BEN_A", "TEN_NHA_THAU", "DAI_DIEN_BEN_B", "GIA_TRI_HOP_DONG", "THOI_GIAN_THUC_HIEN"]}, {"id": "d50_4", "code": "04.BB-NT", "name": "04. Biên bản nghiệm thu bàn giao và thanh lý", "desc": "Biên bản bàn giao thiết bị / hoàn thành sửa chữa", "requiredVars": ["TEN_DON_VI", "TEN_NHA_THAU", "NGAY_NGHIEM_THU", "NOI_DUNG_CONG_VIEC", "GIA_TRI_QUYET_TOAN"]}]}], "folder": "templates/Hinh_thuc_LCNT/Mua_sam_duoi_50tr"}, {"id": "duoi_100_trieu", "code": "D100", "name": "Xây dựng - Dưới 100tr", "badge": "50tr - 100tr", "badgeColor": "teal", "description": "Áp dụng chỉ định thầu siêu nhỏ không qua mạng theo Khoản 4 Điều 23 Luật Đấu thầu 2023.", "threshold": 100000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "d100_1", "code": "01.TTr-KHLCNT", "name": "01. Tờ trình phê duyệt Kế hoạch LCNT", "desc": "Tờ trình phê duyệt KHLCNT gói mua sắm thường xuyên", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_GOI_THAU", "GIA_GOI_THAU", "HINH_THUC_LCNT", "NGUOI_TRINH"]}, {"id": "d100_2", "code": "02.QD-KHLCNT", "name": "02. Quyết định phê duyệt Kế hoạch LCNT", "desc": "Quyết định phê duyệt của Người có thẩm quyền", "requiredVars": ["TEN_CHU_DAU_TU", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "TEN_GOI_THAU", "NGUOI_KY_CDT"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Ký kết & Thanh lý", "documents": [{"id": "d100_3", "code": "03.BB-TT", "name": "03. Biên bản thương thảo hoàn thiện đơn hàng", "desc": "Biên bản thống nhất giá và tiến độ giao hàng", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU", "GIA_THUONG_THAO", "THOI_GIAN_GIAO_HANG"]}, {"id": "d100_4", "code": "04.HD-KT", "name": "04. Hợp đồng kinh tế và biên bản giao nhận", "desc": "Hợp đồng kinh tế trọn gói", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG", "KHO_BAC_NHA_NUOC"]}]}], "folder": "templates/Hinh_thuc_LCNT/Xay_dung_duoi_100tr"}, {"id": "chao_gia_han_che", "code": "CGHC", "name": "Mua sắm - Chào giá hạn chế", "badge": "Chào giá NB", "badgeColor": "cyan", "description": "Gửi thư mời chào giá đến ít nhất 3 nhà thầu có năng lực để so sánh giá cạnh tranh.", "threshold": 500000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "cghc_1", "code": "01.TTr-CT", "name": "01. Tờ trình phê duyệt chủ trương chào giá", "desc": "Tờ trình chủ trương mua sắm cạnh tranh", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_GOI_THAU", "GIA_GOI_THAU"]}, {"id": "cghc_2", "code": "02.BC-MS", "name": "02. Báo cáo đề xuất phương án chào giá hạn chế", "desc": "Đề xuất danh sách ít nhất 3 nhà thầu", "requiredVars": ["TEN_CHU_DAU_TU", "DANH_SACH_3_NHA_THAU"]}, {"id": "cghc_3", "code": "03.TB-CG", "name": "03. Thư mời chào giá kèm bảng yêu cầu kỹ thuật", "desc": "Gửi các nhà thầu nộp thư báo giá", "requiredVars": ["TEN_NHA_THAU", "HAN_NOP_BAO_GIA", "YEU_CAU_KY_THUAT"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Đánh giá & Trao thầu", "documents": [{"id": "cghc_4", "code": "04.BB-MT", "name": "04. Biên bản mở thư chào giá", "desc": "Biên bản mở niêm phong các báo giá", "requiredVars": ["THOI_GIAN_MO_THAU", "DANH_SACH_GIA_CHAO"]}, {"id": "cghc_5", "code": "05.BB-DG", "name": "05. Biên bản họp đánh giá so sánh báo giá", "desc": "So sánh kỹ thuật và đơn giá", "requiredVars": ["TO_CHUYEN_GIA", "DON_VI_GIA_THAP_NHAT"]}, {"id": "cghc_6", "code": "06.BB-TT", "name": "06. Biên bản thương thảo hợp đồng", "desc": "Thương thảo với đơn vị có giá tốt nhất", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_THUONG_THAO"]}, {"id": "cghc_7", "code": "07.BC-DG", "name": "07. Báo cáo đánh giá kết quả chào giá", "desc": "Báo cáo trình lãnh đạo phê duyệt", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_DE_NGHI"]}, {"id": "cghc_8", "code": "08.TB-KQ", "name": "08. Thông báo kết quả chào giá", "desc": "Thông báo gửi các đơn vị tham gia", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_TRUNG_THAU"]}, {"id": "cghc_9", "code": "09.HD-KT", "name": "09. Hợp đồng kinh tế", "desc": "Hợp đồng kinh tế ký kết", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU_TRUNG", "GIA_TRI_HOP_DONG"]}]}], "folder": "templates/Hinh_thuc_LCNT/Mua_sam_chao_gia_han_che"}, {"id": "chi_dinh_thau_rut_gon", "code": "CDTRG", "name": "Xây dựng - Chỉ định thầu rút gọn", "badge": "CĐT Rút Gọn", "badgeColor": "emerald", "description": "Quy trình chuẩn theo Điều 78 Nghị định 24/2024/NĐ-CP (Tư vấn, Xây lắp, Hàng hóa).", "threshold": 1000000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "cdtrg_1", "code": "01.TTr-KHLCNT", "name": "01. Tờ trình phê duyệt Kế hoạch LCNT", "desc": "Trình cấp thẩm quyền phê duyệt KHLCNT", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_DU_AN", "TEN_GOI_THAU", "GIA_GOI_THAU_SO"]}, {"id": "cdtrg_2", "code": "02.QD-KHLCNT", "name": "02. Quyết định phê duyệt Kế hoạch LCNT", "desc": "Quyết định phê duyệt KHLCNT", "requiredVars": ["SO_QUYET_DINH_KHLCNT", "NGAY_QUYET_DINH", "NGUOI_KY_CDT"]}, {"id": "cdtrg_3", "code": "03.GM-TT", "name": "03. Giấy mời tham gia hoàn thiện hợp đồng", "desc": "Gửi nhà thầu được chỉ định", "requiredVars": ["TEN_BAN_QUAN_LY_DU_AN", "TEN_NHA_THAU", "THOI_GIAN_HOP", "DIA_DIEM_HOP"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Hoàn thiện & Phê duyệt", "documents": [{"id": "cdtrg_4", "code": "04.BB-HT", "name": "04. Biên bản hoàn thiện hợp đồng", "desc": "Biên bản hoàn thiện điều khoản hợp đồng", "requiredVars": ["SO_BIEN_BAN_HOAN_THIEN", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "DAI_DIEN_NHA_THAU"]}, {"id": "cdtrg_5", "code": "05.TTr-KQLCNT", "name": "05. Tờ trình phê duyệt kết quả chỉ định thầu", "desc": "Trình phê duyệt chỉ định thầu", "requiredVars": ["SO_TO_TRINH", "CO_QUAN_TRINH", "TRUONG_BAN_DHDA", "TEN_NHA_THAU"]}, {"id": "cdtrg_6", "code": "06.QD-KQLCNT", "name": "06. Quyết định phê duyệt kết quả chỉ định thầu", "desc": "Quyết định phê duyệt trúng thầu", "requiredVars": ["SO_QUYET_DINH", "NGUOI_KY_CDT", "GIA_TRI_HOP_DONG_SO", "THOI_GIAN_THUC_HIEN"]}, {"id": "cdtrg_7", "code": "07.HD-KT", "name": "07. Hợp đồng kinh tế", "desc": "Hợp đồng kinh tế chính thức", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO", "KHO_BAC_NHA_NUOC"]}]}], "folder": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon"}, {"id": "chao_gia_rong_rai", "code": "CGRR", "name": "Mua sắm - Chào giá rộng rãi", "folder": "templates/Hinh_thuc_LCNT/Mua_sam_chao_gia_rong_rai", "badge": "Chào giá RR", "badgeColor": "blue", "description": "Áp dụng phương thức chào giá cạnh tranh rộng rãi theo quy chế mua sắm và Luật Đấu thầu.", "threshold": 5000000000, "phases": [{"phaseId": "chuan_bi_cgrr", "phaseName": "Giai đoạn Chuẩn bị & Phát hành Yêu cầu báo giá", "documents": [{"id": "cgrr_1", "code": "01.TTr-CGRR", "name": "01. Tờ trình phê duyệt chủ trương và kế hoạch chào giá rộng rãi", "desc": "Tờ trình đơn vị đề xuất chào giá rộng rãi", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_GOI_THAU", "GIA_GOI_THAU"]}, {"id": "cgrr_2", "code": "02.QD-CGRR", "name": "02. Quyết định phê duyệt chủ trương và phương án chào giá", "desc": "Phê duyệt phương án chào giá rộng rãi", "requiredVars": ["SO_QUYET_DINH", "NGAY_QUYET_DINH", "NGUOI_KY_CDT"]}, {"id": "cgrr_3", "code": "03.TB-CGRR", "name": "03. Thông báo mời chào giá rộng rãi kèm Bảng yêu cầu kỹ thuật", "desc": "Thông báo công khai mời các nhà thầu gửi báo giá", "requiredVars": ["TEN_GOI_THAU", "HAN_NOP_BAO_GIA", "YEU_CAU_KY_THUAT"]}]}, {"phaseId": "danh_gia_trao_thau_cgrr", "phaseName": "Giai đoạn Đánh giá báo giá & Ký kết hợp đồng", "documents": [{"id": "cgrr_4", "code": "04.BB-MT", "name": "04. Biên bản mở các bản chào giá", "desc": "Biên bản mở công khai các hồ sơ báo giá", "requiredVars": ["THOI_GIAN_MO_THAU", "DANH_SACH_GIA_CHAO"]}, {"id": "cgrr_5", "code": "05.BB-DG", "name": "05. Biên bản họp đánh giá và so sánh báo giá", "desc": "Đánh giá đáp ứng kỹ thuật và xếp hạng giá", "requiredVars": ["TO_CHUYEN_GIA", "DON_VI_GIA_THAP_NHAT"]}, {"id": "cgrr_6", "code": "06.BB-TT", "name": "06. Biên bản thương thảo và hoàn thiện hợp đồng", "desc": "Thương thảo các điều khoản với đơn vị xếp hạng 1", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_THUONG_THAO"]}, {"id": "cgrr_7", "code": "07.BC-DG", "name": "07. Báo cáo đánh giá kết quả chào giá rộng rãi", "desc": "Báo cáo trình người có thẩm quyền phê duyệt", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_DE_NGHI"]}, {"id": "cgrr_8", "code": "08.QD-PD-KQ", "name": "08. Quyết định phê duyệt kết quả lựa chọn nhà thầu", "desc": "Quyết định phê duyệt kết quả chào giá", "requiredVars": ["SO_QUYET_DINH", "GIA_TRUNG_THAU_SO"]}, {"id": "cgrr_9", "code": "09.TB-KQ", "name": "09. Thông báo kết quả lựa chọn nhà thầu", "desc": "Thông báo công khai kết quả trúng thầu", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_TRUNG_THAU"]}, {"id": "cgrr_10", "code": "10.HD-KT", "name": "10. Hợp đồng kinh tế", "desc": "Hợp đồng kinh tế chính thức", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU_TRUNG", "GIA_TRI_HOP_DONG"]}]}]}, {"id": "dau_thau_rong_rai_hh_xl", "code": "DTRR", "name": "Xây dựng - Đấu thầu rộng rãi qua mạng", "badge": "Đấu Thầu Rộng Rãi", "badgeColor": "rose", "description": "Đầy đủ 23 biểu mẫu theo chuẩn Hệ thống Mạng Đấu thầu Quốc gia qua 6 giai đoạn (từ chuẩn bị đến ký HĐ).", "threshold": 100000000000, "phases": [{"phaseId": "giai_doan_1_hsmt", "phaseName": "GĐ 1: Chuẩn bị Hồ sơ mời thầu (E-HSMT)", "documents": [{"id": "dtrr_1", "code": "01.QD-TL", "name": "01. Quyết định thành lập Tổ chuyên gia và Tổ thẩm định", "desc": "Thành lập tổ chấm thầu", "requiredVars": ["TO_TRUONG_CHUYEN_GIA", "TO_TRUONG_THAM_DINH"]}, {"id": "dtrr_2", "code": "02.BB-HOP-TCG", "name": "02. Biên bản họp Tổ chuyên gia thông qua dự thảo E-HSMT", "desc": "Họp rà soát tiêu chuẩn mời thầu", "requiredVars": ["NOI_DUNG_DU_THAO"]}, {"id": "dtrr_3", "code": "03.TTr-HSMT", "name": "03. Tờ trình đề nghị thẩm định, phê duyệt E-HSMT", "desc": "Trình thẩm định E-HSMT", "requiredVars": ["TEN_GOI_THAU", "GIA_GOI_THAU"]}, {"id": "dtrr_4", "code": "04.BB-HOP-TTD", "name": "04. Biên bản họp Tổ thẩm định E-HSMT", "desc": "Họp thẩm định E-HSMT", "requiredVars": ["KET_QUA_HOP_THAM_DINH"]}, {"id": "dtrr_5", "code": "05.BC-TD-HSMT", "name": "05. Báo cáo thẩm định E-HSMT", "desc": "Báo cáo thẩm định đạt yêu cầu", "requiredVars": ["KET_LUAN_THAM_DINH"]}, {"id": "dtrr_6", "code": "06.QD-PD-HSMT", "name": "06. Quyết định phê duyệt E-HSMT", "desc": "Phê duyệt để đăng tải mạng", "requiredVars": ["SO_QD_HSMT", "NGAY_KY"]}]}, {"phaseId": "giai_doan_2_to_chuc", "phaseName": "GĐ 2: Tổ chức Lựa chọn nhà thầu & Mở thầu", "documents": [{"id": "dtrr_7", "code": "07.TB-MT", "name": "07. Thông báo mời thầu (E-TBMT)", "desc": "Thông báo phát hành hồ sơ mời thầu", "requiredVars": ["SO_E_TBMT", "THOI_DIEM_DONG_THAU"]}, {"id": "dtrr_8", "code": "08.VB-LAM-RO", "name": "08. Văn bản làm rõ E-HSMT (nếu có)", "desc": "Giải đáp thắc mắc của nhà thầu", "requiredVars": ["NOI_DUNG_LAM_RO"]}, {"id": "dtrr_9", "code": "09.QD-SUA-DOI", "name": "09. Quyết định sửa đổi E-HSMT (nếu có)", "desc": "Điều chỉnh hồ sơ mời thầu", "requiredVars": ["NOI_DUNG_SUA_DOI"]}, {"id": "dtrr_10", "code": "10.BB-MO-THAU", "name": "10. Biên bản mở thầu điện tử", "desc": "Trích xuất danh sách nhà thầu dự thầu", "requiredVars": ["DANH_SACH_NHA_THAU_DU_THAU"]}]}, {"phaseId": "giai_doan_3_danh_gia", "phaseName": "GĐ 3: Đánh giá Hồ sơ dự thầu (E-HSDT)", "documents": [{"id": "dtrr_11", "code": "11.BB-HOP-PC", "name": "11. Biên bản họp Tổ chuyên gia phân công nhiệm vụ", "desc": "Phân công tổ viên chấm điểm", "requiredVars": ["PHAN_CONG_CHAM_THAU"]}, {"id": "dtrr_12", "code": "12.VB-LR-HSDT", "name": "12. Văn bản yêu cầu làm rõ E-HSDT (nếu có)", "desc": "Làm rõ hồ sơ dự thầu", "requiredVars": ["YEU_CAU_LAM_RO_HSDT"]}, {"id": "dtrr_13", "code": "13.BB-HOP-KQ", "name": "13. Biên bản họp Tổ chuyên gia thông qua kết quả chấm thầu", "desc": "Thống nhất xếp hạng nhà thầu", "requiredVars": ["XEP_HANG_NHA_THAU"]}, {"id": "dtrr_14", "code": "14.BC-DG-HSDT", "name": "14. Báo cáo đánh giá Hồ sơ dự thầu (E-HSDT)", "desc": "Báo cáo chấm thầu chính thức", "requiredVars": ["NHA_THAU_XEP_HANG_1"]}]}, {"phaseId": "giai_doan_4_thuong_thao", "phaseName": "GĐ 4: Thương thảo và Hoàn thiện hợp đồng", "documents": [{"id": "dtrr_15", "code": "15.GM-TT", "name": "15. Văn bản mời nhà thầu xếp hạng nhất vào thương thảo", "desc": "Mời thương thảo", "requiredVars": ["TEN_NHA_THAU_HANG_1", "LICH_THUONG_THAO"]}, {"id": "dtrr_16", "code": "16.BB-TT", "name": "16. Biên bản thương thảo hợp đồng", "desc": "Thương thảo các điều khoản", "requiredVars": ["GIA_THUONG_THAO_CUOI_CUNG"]}, {"id": "dtrr_17", "code": "17.BB-HT", "name": "17. Biên bản hoàn thiện hợp đồng", "desc": "Rà soát điều kiện hợp đồng", "requiredVars": ["GIA_TRI_HOP_DONG_THONG_NHAT"]}]}, {"phaseId": "giai_doan_5_phe_duyet", "phaseName": "GĐ 5: Thẩm định và Phê duyệt Kết quả LCNT", "documents": [{"id": "dtrr_18", "code": "18.TTr-KQLCNT", "name": "18. Tờ trình đề nghị thẩm định, phê duyệt Kết quả LCNT", "desc": "Trình phê duyệt trúng thầu", "requiredVars": ["TEN_DON_VI_TRUNG_THAU", "GIA_TRUNG_THAU"]}, {"id": "dtrr_19", "code": "19.BB-HOP-TTD", "name": "19. Biên bản họp Tổ thẩm định Kết quả LCNT", "desc": "Họp thẩm định kết quả", "requiredVars": ["Y_KIEN_TO_THAM_DINH"]}, {"id": "dtrr_20", "code": "20.BC-TD-KQ", "name": "20. Báo cáo thẩm định Kết quả LCNT", "desc": "Báo cáo thẩm định", "requiredVars": ["KET_LUAN_THAM_DINH_KQLCNT"]}, {"id": "dtrr_21", "code": "21.QD-PD-KQ", "name": "21. Quyết định phê duyệt Kết quả lựa chọn nhà thầu", "desc": "Quyết định phê duyệt trúng thầu chính thức", "requiredVars": ["SO_QUYET_DINH", "GIA_TRUNG_THAU_SO"]}]}, {"phaseId": "giai_doan_6_hop_dong", "phaseName": "GĐ 6: Công khai Kết quả & Ký kết Hợp đồng", "documents": [{"id": "dtrr_22", "code": "22.TB-KQ", "name": "22. Thông báo Kết quả lựa chọn nhà thầu", "desc": "Đăng tải kết quả trên mạng đấu thầu", "requiredVars": ["TEN_NHA_THAU_TRUNG_THAU"]}, {"id": "dtrr_23", "code": "23.HD-KT", "name": "23. Hợp đồng kinh tế chính thức (kèm phụ lục)", "desc": "Hợp đồng kinh tế xây lắp/mua sắm", "requiredVars": ["GIA_TRI_HOP_DONG", "BAO_DAM_THUC_HIEN_HD"]}]}], "folder": "templates/Hinh_thuc_LCNT/Xay_dung_dau_thau_rong_rai_qua_mang"}]};
+    let PROCUREMENT_MATRIX = {"system": "Hệ thống Quản lý & Tự động xuất Hồ sơ Mua sắm, Xây lắp", "version": "3.0", "legalBases": ["Luật Đấu thầu số 22/2023/QH15 ngày 23/06/2023", "Nghị định số 24/2024/NĐ-CP ngày 27/02/2024 của Chính phủ", "Nghị định số 30/2020/NĐ-CP ngày 05/03/2020 về công tác văn thư"], "procurementTypes": [{"id": "chao_gia_han_che", "code": "CGHC", "name": "Mua sắm - Chào giá hạn chế", "badge": "Chào giá NB", "badgeColor": "cyan", "description": "Gửi thư mời chào giá đến ít nhất 3 nhà thầu có năng lực để so sánh giá cạnh tranh.", "threshold": 500000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "cghc_1", "code": "01.TTr-CT", "name": "01. Tờ trình phê duyệt chủ trương chào giá", "desc": "Tờ trình chủ trương mua sắm cạnh tranh", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_GOI_THAU", "GIA_GOI_THAU"]}, {"id": "cghc_2", "code": "02.BC-MS", "name": "02. Báo cáo đề xuất phương án chào giá hạn chế", "desc": "Đề xuất danh sách ít nhất 3 nhà thầu", "requiredVars": ["TEN_CHU_DAU_TU", "DANH_SACH_3_NHA_THAU"]}, {"id": "cghc_3", "code": "03.TB-CG", "name": "03. Thư mời chào giá kèm bảng yêu cầu kỹ thuật", "desc": "Gửi các nhà thầu nộp thư báo giá", "requiredVars": ["TEN_NHA_THAU", "HAN_NOP_BAO_GIA", "YEU_CAU_KY_THUAT"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Đánh giá & Trao thầu", "documents": [{"id": "cghc_4", "code": "04.BB-MT", "name": "04. Biên bản mở thư chào giá", "desc": "Biên bản mở niêm phong các báo giá", "requiredVars": ["THOI_GIAN_MO_THAU", "DANH_SACH_GIA_CHAO"]}, {"id": "cghc_5", "code": "05.BB-DG", "name": "05. Biên bản họp đánh giá so sánh báo giá", "desc": "So sánh kỹ thuật và đơn giá", "requiredVars": ["TO_CHUYEN_GIA", "DON_VI_GIA_THAP_NHAT"]}, {"id": "cghc_6", "code": "06.BB-TT", "name": "06. Biên bản thương thảo hợp đồng", "desc": "Thương thảo với đơn vị có giá tốt nhất", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_THUONG_THAO"]}, {"id": "cghc_7", "code": "07.BC-DG", "name": "07. Báo cáo đánh giá kết quả chào giá", "desc": "Báo cáo trình lãnh đạo phê duyệt", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_DE_NGHI"]}, {"id": "cghc_8", "code": "08.TB-KQ", "name": "08. Thông báo kết quả chào giá", "desc": "Thông báo gửi các đơn vị tham gia", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_TRUNG_THAU"]}, {"id": "cghc_9", "code": "09.HD-KT", "name": "09. Hợp đồng kinh tế", "desc": "Hợp đồng kinh tế ký kết", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU_TRUNG", "GIA_TRI_HOP_DONG"]}]}], "folder": "templates/Hinh_thuc_LCNT/Mua_sam_chao_gia_han_che"}, {"id": "chao_gia_rong_rai", "code": "CGRR", "name": "Mua sắm - Chào giá rộng rãi", "folder": "templates/Hinh_thuc_LCNT/Mua_sam_chao_gia_rong_rai", "badge": "Chào giá RR", "badgeColor": "blue", "description": "Áp dụng phương thức chào giá cạnh tranh rộng rãi theo quy chế mua sắm và Luật Đấu thầu.", "threshold": 5000000000, "phases": [{"phaseId": "chuan_bi_cgrr", "phaseName": "Giai đoạn Chuẩn bị & Phát hành Yêu cầu báo giá", "documents": [{"id": "cgrr_1", "code": "01.TTr-CGRR", "name": "01. Tờ trình phê duyệt chủ trương và kế hoạch chào giá rộng rãi", "desc": "Tờ trình đơn vị đề xuất chào giá rộng rãi", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_GOI_THAU", "GIA_GOI_THAU"]}, {"id": "cgrr_2", "code": "02.QD-CGRR", "name": "02. Quyết định phê duyệt chủ trương và phương án chào giá", "desc": "Phê duyệt phương án chào giá rộng rãi", "requiredVars": ["SO_QUYET_DINH", "NGAY_QUYET_DINH", "NGUOI_KY_CDT"]}, {"id": "cgrr_3", "code": "03.TB-CGRR", "name": "03. Thông báo mời chào giá rộng rãi kèm Bảng yêu cầu kỹ thuật", "desc": "Thông báo công khai mời các nhà thầu gửi báo giá", "requiredVars": ["TEN_GOI_THAU", "HAN_NOP_BAO_GIA", "YEU_CAU_KY_THUAT"]}]}, {"phaseId": "danh_gia_trao_thau_cgrr", "phaseName": "Giai đoạn Đánh giá báo giá & Ký kết hợp đồng", "documents": [{"id": "cgrr_4", "code": "04.BB-MT", "name": "04. Biên bản mở các bản chào giá", "desc": "Biên bản mở công khai các hồ sơ báo giá", "requiredVars": ["THOI_GIAN_MO_THAU", "DANH_SACH_GIA_CHAO"]}, {"id": "cgrr_5", "code": "05.BB-DG", "name": "05. Biên bản họp đánh giá và so sánh báo giá", "desc": "Đánh giá đáp ứng kỹ thuật và xếp hạng giá", "requiredVars": ["TO_CHUYEN_GIA", "DON_VI_GIA_THAP_NHAT"]}, {"id": "cgrr_6", "code": "06.BB-TT", "name": "06. Biên bản thương thảo và hoàn thiện hợp đồng", "desc": "Thương thảo các điều khoản với đơn vị xếp hạng 1", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_THUONG_THAO"]}, {"id": "cgrr_7", "code": "07.BC-DG", "name": "07. Báo cáo đánh giá kết quả chào giá rộng rãi", "desc": "Báo cáo trình người có thẩm quyền phê duyệt", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_DE_NGHI"]}, {"id": "cgrr_8", "code": "08.QD-PD-KQ", "name": "08. Quyết định phê duyệt kết quả lựa chọn nhà thầu", "desc": "Quyết định phê duyệt kết quả chào giá", "requiredVars": ["SO_QUYET_DINH", "GIA_TRUNG_THAU_SO"]}, {"id": "cgrr_9", "code": "09.TB-KQ", "name": "09. Thông báo kết quả lựa chọn nhà thầu", "desc": "Thông báo công khai kết quả trúng thầu", "requiredVars": ["TEN_NHA_THAU_TRUNG", "GIA_TRUNG_THAU"]}, {"id": "cgrr_10", "code": "10.HD-KT", "name": "10. Hợp đồng kinh tế", "desc": "Hợp đồng kinh tế chính thức", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU_TRUNG", "GIA_TRI_HOP_DONG"]}]}]}, {"id": "duoi_50_trieu", "code": "D50", "name": "Mua sắm - Dưới 50 triệu", "badge": "< 50 triệu", "badgeColor": "emerald", "description": "Áp dụng mua sắm tài sản, thiết bị, sửa chữa thường xuyên dưới 50 triệu đồng theo dự toán nội bộ.", "threshold": 50000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "d50_1", "code": "01.TTr-MS", "name": "01. Tờ trình phê duyệt chủ trương và dự toán", "desc": "Tờ trình đơn vị đề xuất mua sắm hàng hóa / sửa chữa", "requiredVars": ["TEN_DON_VI", "SO_TO_TRINH", "NGAY_TO_TRINH", "TEN_HANG_MUC", "LY_DO_MUA_SAM", "TONG_MUC_DAU_TU", "NGUON_VON", "TRUONG_DON_VI"]}, {"id": "d50_2", "code": "02.BC-MS", "name": "02. Báo cáo thẩm định & phê duyệt mua sắm", "desc": "Báo cáo phê duyệt kết quả mua sắm dưới 50 triệu", "requiredVars": ["TEN_DON_VI", "SO_BAO_CAO", "NGAY_BAO_CAO", "TEN_HANG_MUC", "TEN_NHA_THAU", "MA_SO_THUE", "GIA_TRI_MUA_SAM", "NGUOI_PHE_DUYET"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Ký kết & Nghiệm thu", "documents": [{"id": "d50_3", "code": "03.HD-KT", "name": "03. Hợp đồng kinh tế / Đơn đặt hàng", "desc": "Hợp đồng mua bán hoặc sửa chữa", "requiredVars": ["TEN_DON_VI", "DAI_DIEN_BEN_A", "TEN_NHA_THAU", "DAI_DIEN_BEN_B", "GIA_TRI_HOP_DONG", "THOI_GIAN_THUC_HIEN"]}, {"id": "d50_4", "code": "04.BB-NT", "name": "04. Biên bản nghiệm thu bàn giao và thanh lý", "desc": "Biên bản bàn giao thiết bị / hoàn thành sửa chữa", "requiredVars": ["TEN_DON_VI", "TEN_NHA_THAU", "NGAY_NGHIEM_THU", "NOI_DUNG_CONG_VIEC", "GIA_TRI_QUYET_TOAN"]}]}], "folder": "templates/Hinh_thuc_LCNT/Mua_sam_duoi_50tr"}, {"id": "chi_dinh_thau_rut_gon", "code": "CDTRG", "name": "Xây dựng - Chỉ định thầu rút gọn", "badge": "CĐT Rút Gọn", "badgeColor": "emerald", "description": "Quy trình chuẩn theo Điều 78 Nghị định 24/2024/NĐ-CP (Tư vấn, Xây lắp, Hàng hóa).", "threshold": 1000000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "cdtrg_1", "code": "01.TTr-KHLCNT", "name": "01. Tờ trình phê duyệt Kế hoạch LCNT", "desc": "Trình cấp thẩm quyền phê duyệt KHLCNT", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_DU_AN", "TEN_GOI_THAU", "GIA_GOI_THAU_SO"]}, {"id": "cdtrg_2", "code": "02.QD-KHLCNT", "name": "02. Quyết định phê duyệt Kế hoạch LCNT", "desc": "Quyết định phê duyệt KHLCNT", "requiredVars": ["SO_QUYET_DINH_KHLCNT", "NGAY_QUYET_DINH", "NGUOI_KY_CDT"]}, {"id": "cdtrg_3", "code": "03.GM-TT", "name": "03. Giấy mời tham gia hoàn thiện hợp đồng", "desc": "Gửi nhà thầu được chỉ định", "requiredVars": ["TEN_BAN_QUAN_LY_DU_AN", "TEN_NHA_THAU", "THOI_GIAN_HOP", "DIA_DIEM_HOP"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Hoàn thiện & Phê duyệt", "documents": [{"id": "cdtrg_4", "code": "04.BB-HT", "name": "04. Biên bản hoàn thiện hợp đồng", "desc": "Biên bản hoàn thiện điều khoản hợp đồng", "requiredVars": ["SO_BIEN_BAN_HOAN_THIEN", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "DAI_DIEN_NHA_THAU"]}, {"id": "cdtrg_5", "code": "05.TTr-KQLCNT", "name": "05. Tờ trình phê duyệt kết quả chỉ định thầu", "desc": "Trình phê duyệt chỉ định thầu", "requiredVars": ["SO_TO_TRINH", "CO_QUAN_TRINH", "TRUONG_BAN_DHDA", "TEN_NHA_THAU"]}, {"id": "cdtrg_6", "code": "06.QD-KQLCNT", "name": "06. Quyết định phê duyệt kết quả chỉ định thầu", "desc": "Quyết định phê duyệt trúng thầu", "requiredVars": ["SO_QUYET_DINH", "NGUOI_KY_CDT", "GIA_TRI_HOP_DONG_SO", "THOI_GIAN_THUC_HIEN"]}, {"id": "cdtrg_7", "code": "07.HD-KT", "name": "07. Hợp đồng kinh tế", "desc": "Hợp đồng kinh tế chính thức", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO", "KHO_BAC_NHA_NUOC"]}]}], "folder": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon"}, {"id": "duoi_100_trieu", "code": "D100", "name": "Xây dựng - Dưới 100tr", "badge": "50tr - 100tr", "badgeColor": "teal", "description": "Áp dụng chỉ định thầu siêu nhỏ không qua mạng theo Khoản 4 Điều 23 Luật Đấu thầu 2023.", "threshold": 100000000, "phases": [{"phaseId": "chuan_bi", "phaseName": "Giai đoạn Chuẩn bị", "documents": [{"id": "d100_1", "code": "01.TTr-KHLCNT", "name": "01. Tờ trình phê duyệt Kế hoạch LCNT", "desc": "Tờ trình phê duyệt KHLCNT gói mua sắm thường xuyên", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_GOI_THAU", "GIA_GOI_THAU", "HINH_THUC_LCNT", "NGUOI_TRINH"]}, {"id": "d100_2", "code": "02.QD-KHLCNT", "name": "02. Quyết định phê duyệt Kế hoạch LCNT", "desc": "Quyết định phê duyệt của Người có thẩm quyền", "requiredVars": ["TEN_CHU_DAU_TU", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "TEN_GOI_THAU", "NGUOI_KY_CDT"]}]}, {"phaseId": "thuc_hien", "phaseName": "Giai đoạn Ký kết & Thanh lý", "documents": [{"id": "d100_3", "code": "03.BB-TT", "name": "03. Biên bản thương thảo hoàn thiện đơn hàng", "desc": "Biên bản thống nhất giá và tiến độ giao hàng", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU", "GIA_THUONG_THAO", "THOI_GIAN_GIAO_HANG"]}, {"id": "d100_4", "code": "04.HD-KT", "name": "04. Hợp đồng kinh tế và biên bản giao nhận", "desc": "Hợp đồng kinh tế trọn gói", "requiredVars": ["TEN_CHU_DAU_TU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG", "KHO_BAC_NHA_NUOC"]}]}], "folder": "templates/Hinh_thuc_LCNT/Xay_dung_duoi_100tr"}, {"id": "dau_thau_rong_rai_hh_xl", "code": "DTRR", "name": "Xây dựng - Đấu thầu rộng rãi qua mạng", "badge": "Đấu Thầu Rộng Rãi", "badgeColor": "rose", "description": "Đầy đủ 23 biểu mẫu theo chuẩn Hệ thống Mạng Đấu thầu Quốc gia qua 6 giai đoạn (từ chuẩn bị đến ký HĐ).", "threshold": 100000000000, "phases": [{"phaseId": "giai_doan_1_hsmt", "phaseName": "GĐ 1: Chuẩn bị Hồ sơ mời thầu (E-HSMT)", "documents": [{"id": "dtrr_1", "code": "01.QD-TL", "name": "01. Quyết định thành lập Tổ chuyên gia và Tổ thẩm định", "desc": "Thành lập tổ chấm thầu", "requiredVars": ["TO_TRUONG_CHUYEN_GIA", "TO_TRUONG_THAM_DINH"]}, {"id": "dtrr_2", "code": "02.BB-HOP-TCG", "name": "02. Biên bản họp Tổ chuyên gia thông qua dự thảo E-HSMT", "desc": "Họp rà soát tiêu chuẩn mời thầu", "requiredVars": ["NOI_DUNG_DU_THAO"]}, {"id": "dtrr_3", "code": "03.TTr-HSMT", "name": "03. Tờ trình đề nghị thẩm định, phê duyệt E-HSMT", "desc": "Trình thẩm định E-HSMT", "requiredVars": ["TEN_GOI_THAU", "GIA_GOI_THAU"]}, {"id": "dtrr_4", "code": "04.BB-HOP-TTD", "name": "04. Biên bản họp Tổ thẩm định E-HSMT", "desc": "Họp thẩm định E-HSMT", "requiredVars": ["KET_QUA_HOP_THAM_DINH"]}, {"id": "dtrr_5", "code": "05.BC-TD-HSMT", "name": "05. Báo cáo thẩm định E-HSMT", "desc": "Báo cáo thẩm định đạt yêu cầu", "requiredVars": ["KET_LUAN_THAM_DINH"]}, {"id": "dtrr_6", "code": "06.QD-PD-HSMT", "name": "06. Quyết định phê duyệt E-HSMT", "desc": "Phê duyệt để đăng tải mạng", "requiredVars": ["SO_QD_HSMT", "NGAY_KY"]}]}, {"phaseId": "giai_doan_2_to_chuc", "phaseName": "GĐ 2: Tổ chức Lựa chọn nhà thầu & Mở thầu", "documents": [{"id": "dtrr_7", "code": "07.TB-MT", "name": "07. Thông báo mời thầu (E-TBMT)", "desc": "Thông báo phát hành hồ sơ mời thầu", "requiredVars": ["SO_E_TBMT", "THOI_DIEM_DONG_THAU"]}, {"id": "dtrr_8", "code": "08.VB-LAM-RO", "name": "08. Văn bản làm rõ E-HSMT (nếu có)", "desc": "Giải đáp thắc mắc của nhà thầu", "requiredVars": ["NOI_DUNG_LAM_RO"]}, {"id": "dtrr_9", "code": "09.QD-SUA-DOI", "name": "09. Quyết định sửa đổi E-HSMT (nếu có)", "desc": "Điều chỉnh hồ sơ mời thầu", "requiredVars": ["NOI_DUNG_SUA_DOI"]}, {"id": "dtrr_10", "code": "10.BB-MO-THAU", "name": "10. Biên bản mở thầu điện tử", "desc": "Trích xuất danh sách nhà thầu dự thầu", "requiredVars": ["DANH_SACH_NHA_THAU_DU_THAU"]}]}, {"phaseId": "giai_doan_3_danh_gia", "phaseName": "GĐ 3: Đánh giá Hồ sơ dự thầu (E-HSDT)", "documents": [{"id": "dtrr_11", "code": "11.BB-HOP-PC", "name": "11. Biên bản họp Tổ chuyên gia phân công nhiệm vụ", "desc": "Phân công tổ viên chấm điểm", "requiredVars": ["PHAN_CONG_CHAM_THAU"]}, {"id": "dtrr_12", "code": "12.VB-LR-HSDT", "name": "12. Văn bản yêu cầu làm rõ E-HSDT (nếu có)", "desc": "Làm rõ hồ sơ dự thầu", "requiredVars": ["YEU_CAU_LAM_RO_HSDT"]}, {"id": "dtrr_13", "code": "13.BB-HOP-KQ", "name": "13. Biên bản họp Tổ chuyên gia thông qua kết quả chấm thầu", "desc": "Thống nhất xếp hạng nhà thầu", "requiredVars": ["XEP_HANG_NHA_THAU"]}, {"id": "dtrr_14", "code": "14.BC-DG-HSDT", "name": "14. Báo cáo đánh giá Hồ sơ dự thầu (E-HSDT)", "desc": "Báo cáo chấm thầu chính thức", "requiredVars": ["NHA_THAU_XEP_HANG_1"]}]}, {"phaseId": "giai_doan_4_thuong_thao", "phaseName": "GĐ 4: Thương thảo và Hoàn thiện hợp đồng", "documents": [{"id": "dtrr_15", "code": "15.GM-TT", "name": "15. Văn bản mời nhà thầu xếp hạng nhất vào thương thảo", "desc": "Mời thương thảo", "requiredVars": ["TEN_NHA_THAU_HANG_1", "LICH_THUONG_THAO"]}, {"id": "dtrr_16", "code": "16.BB-TT", "name": "16. Biên bản thương thảo hợp đồng", "desc": "Thương thảo các điều khoản", "requiredVars": ["GIA_THUONG_THAO_CUOI_CUNG"]}, {"id": "dtrr_17", "code": "17.BB-HT", "name": "17. Biên bản hoàn thiện hợp đồng", "desc": "Rà soát điều kiện hợp đồng", "requiredVars": ["GIA_TRI_HOP_DONG_THONG_NHAT"]}]}, {"phaseId": "giai_doan_5_phe_duyet", "phaseName": "GĐ 5: Thẩm định và Phê duyệt Kết quả LCNT", "documents": [{"id": "dtrr_18", "code": "18.TTr-KQLCNT", "name": "18. Tờ trình đề nghị thẩm định, phê duyệt Kết quả LCNT", "desc": "Trình phê duyệt trúng thầu", "requiredVars": ["TEN_DON_VI_TRUNG_THAU", "GIA_TRUNG_THAU"]}, {"id": "dtrr_19", "code": "19.BB-HOP-TTD", "name": "19. Biên bản họp Tổ thẩm định Kết quả LCNT", "desc": "Họp thẩm định kết quả", "requiredVars": ["Y_KIEN_TO_THAM_DINH"]}, {"id": "dtrr_20", "code": "20.BC-TD-KQ", "name": "20. Báo cáo thẩm định Kết quả LCNT", "desc": "Báo cáo thẩm định", "requiredVars": ["KET_LUAN_THAM_DINH_KQLCNT"]}, {"id": "dtrr_21", "code": "21.QD-PD-KQ", "name": "21. Quyết định phê duyệt Kết quả lựa chọn nhà thầu", "desc": "Quyết định phê duyệt trúng thầu chính thức", "requiredVars": ["SO_QUYET_DINH", "GIA_TRUNG_THAU_SO"]}]}, {"phaseId": "giai_doan_6_hop_dong", "phaseName": "GĐ 6: Công khai Kết quả & Ký kết Hợp đồng", "documents": [{"id": "dtrr_22", "code": "22.TB-KQ", "name": "22. Thông báo Kết quả lựa chọn nhà thầu", "desc": "Đăng tải kết quả trên mạng đấu thầu", "requiredVars": ["TEN_NHA_THAU_TRUNG_THAU"]}, {"id": "dtrr_23", "code": "23.HD-KT", "name": "23. Hợp đồng kinh tế chính thức (kèm phụ lục)", "desc": "Hợp đồng kinh tế xây lắp/mua sắm", "requiredVars": ["GIA_TRI_HOP_DONG", "BAO_DAM_THUC_HIEN_HD"]}]}], "folder": "templates/Hinh_thuc_LCNT/Xay_dung_dau_thau_rong_rai_qua_mang"}]};
     const DEFAULT_PROCUREMENT_MATRIX = JSON.parse(JSON.stringify(PROCUREMENT_MATRIX));
 
     // -------------------------------------------------------------
@@ -97,11 +97,11 @@
                 } else {
                     // Tự động chuẩn hóa / đồng bộ tên các quy trình chuẩn mặc định từ hệ thống (khớp 100% với 6 thư mục local thực tế)
                     const CANONICAL_PROCUREMENT_MAP = {
-                        "duoi_50_trieu": { name: "Mua sắm (Dưới 50 triệu)", folder: "templates/Hinh_thuc_LCNT/Mua_sam_duoi_50tr" },
-                        "duoi_100_trieu": { name: "Xây dựng - Dưới 100tr", folder: "templates/Hinh_thuc_LCNT/Xay_dung_duoi_100tr" },
                         "chao_gia_han_che": { name: "Mua sắm - Chào giá hạn chế", folder: "templates/Hinh_thuc_LCNT/Mua_sam_chao_gia_han_che" },
-                        "chi_dinh_thau_rut_gon": { name: "Xây dựng - Chỉ định thầu rút gọn", folder: "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon" },
                         "chao_gia_rong_rai": { name: "Mua sắm - Chào giá rộng rãi", folder: "templates/Hinh_thuc_LCNT/Mua_sam_chao_gia_rong_rai" },
+                        "duoi_50_trieu": { name: "Mua sắm - Dưới 50 triệu", folder: "templates/Hinh_thuc_LCNT/Mua_sam_duoi_50tr" },
+                        "chi_dinh_thau_rut_gon": { name: "Xây dựng - Chỉ định thầu rút gọn", folder: "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon" },
+                        "duoi_100_trieu": { name: "Xây dựng - Dưới 100tr", folder: "templates/Hinh_thuc_LCNT/Xay_dung_duoi_100tr" },
                         "dau_thau_rong_rai_hh_xl": { name: "Xây dựng - Đấu thầu rộng rãi qua mạng", folder: "templates/Hinh_thuc_LCNT/Xay_dung_dau_thau_rong_rai_qua_mang" }
                     };
                     let hasMigration = false;
@@ -123,7 +123,8 @@
                             hasMigration = true;
                         } else if (CANONICAL_PROCUREMENT_MAP[pt.id]) {
                             const canonical = CANONICAL_PROCUREMENT_MAP[pt.id];
-                            if (pt.name !== canonical.name) {
+                            // Chỉ cập nhật nếu tên còn dính số thứ tự "1. Mua sắm", "2. Mua sắm" từ template cũ
+                            if (/^\d+[\.\s]/.test(pt.name || "")) {
                                 pt.name = canonical.name;
                                 hasMigration = true;
                             }
@@ -1180,7 +1181,7 @@
                             <div class="col-span-2 mt-0.5">
                                 <span class="text-slate-400 block text-[9px] uppercase font-bold">Phương thức LCNT định hướng</span>
                                 <select class="pkg-procurement-select w-full bg-white border border-slate-300 rounded px-1 py-0 h-5 text-[10px] font-bold text-emerald-950 mt-0.2 cursor-pointer" data-pkg-idx="${idx}">
-                                    ${[...PROCUREMENT_MATRIX.procurementTypes].sort(sortWorkflowAZ).map(pt => `<option value="${pt.id}" ${pt.id === (pkg.procurementTypeId || "chi_dinh_thau_rut_gon") ? "selected" : ""}>${pt.name}</option>`).join("")}
+                                    ${PROCUREMENT_MATRIX.procurementTypes.map(pt => `<option value="${pt.id}" ${pt.id === (pkg.procurementTypeId || "chi_dinh_thau_rut_gon") ? "selected" : ""}>${pt.name}</option>`).join("")}
                                 </select>
                             </div>
                         </div>
@@ -8219,14 +8220,14 @@
         if (!matrixTypesList) return;
         matrixTypesList.innerHTML = "";
 
-        // 1. Render Left Column List: Thon gọn, chỉ thể hiện tên, sắp xếp A-Z
+        // 1. Render Left Column List: Cho phép điều chỉnh thứ tự Lên / Xuống (↑ / ↓)
         if (activeAdminCategory === "procurement") {
-            const sortedList = [...PROCUREMENT_MATRIX.procurementTypes].sort(sortWorkflowAZ);
-            if (!activeAdminTypeId || !sortedList.some(pt => pt.id === activeAdminTypeId)) {
-                activeAdminTypeId = sortedList[0]?.id;
+            const list = PROCUREMENT_MATRIX.procurementTypes;
+            if (!activeAdminTypeId || !list.some(pt => pt.id === activeAdminTypeId)) {
+                activeAdminTypeId = list[0]?.id;
             }
 
-            sortedList.forEach((pt) => {
+            list.forEach((pt, idx) => {
                 const card = document.createElement("div");
                 const isActive = pt.id === activeAdminTypeId;
                 const isDefault = DEFAULT_PROCUREMENT_MATRIX.procurementTypes.some(d => d.id === pt.id);
@@ -8236,26 +8237,44 @@
                     : "group w-full flex items-center justify-between px-2.5 py-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 font-medium border border-slate-200 text-xs transition-all cursor-pointer";
 
                 card.innerHTML = `
-                    <div class="truncate flex-1 pr-1 text-left" title="${escapeHtml(pt.name)}">
+                    <div class="truncate flex-1 pr-1 text-left select-none" title="${escapeHtml(pt.name)}">
                         ${escapeHtml(pt.name)}
                     </div>
-                    <div class="flex items-center space-x-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button type="button" class="btn-clone-matrix-type text-slate-400 hover:text-indigo-600 p-0.5" title="Nhân bản quy trình">
-                            <i class="fa-regular fa-copy text-[10px]"></i>
+                    <div class="flex items-center space-x-0.5 shrink-0">
+                        <button type="button" class="btn-move-wf-up w-5 h-5 rounded hover:bg-slate-200 text-slate-400 hover:text-emerald-700 disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-slate-400 flex items-center justify-center transition-colors" ${idx === 0 ? "disabled" : ""} title="Di chuyển lên trên">
+                            <i class="fa-solid fa-arrow-up text-[9px]"></i>
                         </button>
-                        ${!isDefault ? `
-                            <button type="button" class="btn-delete-matrix-type text-slate-400 hover:text-rose-600 p-0.5" title="Xóa quy trình">
-                                <i class="fa-regular fa-trash-can text-[10px]"></i>
+                        <button type="button" class="btn-move-wf-down w-5 h-5 rounded hover:bg-slate-200 text-slate-400 hover:text-emerald-700 disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-slate-400 flex items-center justify-center transition-colors" ${idx === list.length - 1 ? "disabled" : ""} title="Di chuyển xuống dưới">
+                            <i class="fa-solid fa-arrow-down text-[9px]"></i>
+                        </button>
+                        <div class="flex items-center space-x-0.5 opacity-0 group-hover:opacity-100 transition-opacity pl-0.5 border-l border-slate-200">
+                            <button type="button" class="btn-clone-matrix-type text-slate-400 hover:text-indigo-600 p-0.5" title="Nhân bản quy trình">
+                                <i class="fa-regular fa-copy text-[10px]"></i>
                             </button>
-                        ` : ''}
+                            ${!isDefault ? `
+                                <button type="button" class="btn-delete-matrix-type text-slate-400 hover:text-rose-600 p-0.5" title="Xóa quy trình">
+                                    <i class="fa-regular fa-trash-can text-[10px]"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                        ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[9.5px] ml-0.5 shrink-0 group-hover:hidden"></i>' : ''}
                     </div>
-                    ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[9.5px] ml-1 shrink-0 group-hover:hidden"></i>' : ''}
                 `;
 
                 card.addEventListener("click", () => {
                     saveCurrentAdminInputs();
                     activeAdminTypeId = pt.id;
                     renderAdminMatrixModal();
+                });
+
+                card.querySelector('.btn-move-wf-up')?.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    moveProcurementWorkflow(idx, -1);
+                });
+
+                card.querySelector('.btn-move-wf-down')?.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    moveProcurementWorkflow(idx, 1);
                 });
 
                 card.querySelector('.btn-clone-matrix-type')?.addEventListener("click", (e) => {
@@ -8272,12 +8291,12 @@
             });
         } else {
             // Implementation Types
-            const sortedList = [...IMPLEMENTATION_MATRIX.implementationTypes].sort(sortWorkflowAZ);
-            if (!activeAdminImplTypeId || !sortedList.some(it => it.id === activeAdminImplTypeId)) {
-                activeAdminImplTypeId = sortedList[0]?.id;
+            const list = IMPLEMENTATION_MATRIX.implementationTypes;
+            if (!activeAdminImplTypeId || !list.some(it => it.id === activeAdminImplTypeId)) {
+                activeAdminImplTypeId = list[0]?.id;
             }
 
-            sortedList.forEach((it) => {
+            list.forEach((it, idx) => {
                 const card = document.createElement("div");
                 const isActive = it.id === activeAdminImplTypeId;
                 const isDefault = DEFAULT_IMPLEMENTATION_MATRIX.implementationTypes.some(d => d.id === it.id);
@@ -8287,26 +8306,44 @@
                     : "group w-full flex items-center justify-between px-2.5 py-1.5 rounded bg-white hover:bg-slate-50 text-slate-700 font-medium border border-slate-200 text-xs transition-all cursor-pointer";
 
                 card.innerHTML = `
-                    <div class="truncate flex-1 pr-1 text-left" title="${escapeHtml(it.name)}">
+                    <div class="truncate flex-1 pr-1 text-left select-none" title="${escapeHtml(it.name)}">
                         ${escapeHtml(it.name)}
                     </div>
-                    <div class="flex items-center space-x-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button type="button" class="btn-clone-matrix-type text-slate-400 hover:text-indigo-600 p-0.5" title="Nhân bản quy trình">
-                            <i class="fa-regular fa-copy text-[10px]"></i>
+                    <div class="flex items-center space-x-0.5 shrink-0">
+                        <button type="button" class="btn-move-wf-up w-5 h-5 rounded hover:bg-slate-200 text-slate-400 hover:text-emerald-700 disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-slate-400 flex items-center justify-center transition-colors" ${idx === 0 ? "disabled" : ""} title="Di chuyển lên trên">
+                            <i class="fa-solid fa-arrow-up text-[9px]"></i>
                         </button>
-                        ${!isDefault ? `
-                            <button type="button" class="btn-delete-matrix-type text-slate-400 hover:text-rose-600 p-0.5" title="Xóa quy trình">
-                                <i class="fa-regular fa-trash-can text-[10px]"></i>
+                        <button type="button" class="btn-move-wf-down w-5 h-5 rounded hover:bg-slate-200 text-slate-400 hover:text-emerald-700 disabled:opacity-20 disabled:hover:bg-transparent disabled:hover:text-slate-400 flex items-center justify-center transition-colors" ${idx === list.length - 1 ? "disabled" : ""} title="Di chuyển xuống dưới">
+                            <i class="fa-solid fa-arrow-down text-[9px]"></i>
+                        </button>
+                        <div class="flex items-center space-x-0.5 opacity-0 group-hover:opacity-100 transition-opacity pl-0.5 border-l border-slate-200">
+                            <button type="button" class="btn-clone-matrix-type text-slate-400 hover:text-indigo-600 p-0.5" title="Nhân bản quy trình">
+                                <i class="fa-regular fa-copy text-[10px]"></i>
                             </button>
-                        ` : ''}
+                            ${!isDefault ? `
+                                <button type="button" class="btn-delete-matrix-type text-slate-400 hover:text-rose-600 p-0.5" title="Xóa quy trình">
+                                    <i class="fa-regular fa-trash-can text-[10px]"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                        ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[9.5px] ml-0.5 shrink-0 group-hover:hidden"></i>' : ''}
                     </div>
-                    ${isActive ? '<i class="fa-solid fa-chevron-right text-emerald-600 text-[9.5px] ml-1 shrink-0 group-hover:hidden"></i>' : ''}
                 `;
 
                 card.addEventListener("click", () => {
                     saveCurrentAdminInputs();
                     activeAdminImplTypeId = it.id;
                     renderAdminMatrixModal();
+                });
+
+                card.querySelector('.btn-move-wf-up')?.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    moveImplementationWorkflow(idx, -1);
+                });
+
+                card.querySelector('.btn-move-wf-down')?.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    moveImplementationWorkflow(idx, 1);
                 });
 
                 card.querySelector('.btn-clone-matrix-type')?.addEventListener("click", (e) => {
@@ -8736,6 +8773,13 @@
         });
     }
 
+    const btnSortMatrixAZ = document.getElementById("btnSortMatrixAZ");
+    if (btnSortMatrixAZ) {
+        btnSortMatrixAZ.addEventListener("click", () => {
+            sortActiveMatrixTypesAZ();
+        });
+    }
+
     const btnCopyMatrixFolder = document.getElementById("btnCopyMatrixFolder");
     if (btnCopyMatrixFolder) {
         btnCopyMatrixFolder.addEventListener("click", () => {
@@ -8833,6 +8877,64 @@
                 showToast("Đã khôi phục Ma trận LCNT & Quy trình Triển khai về mặc định ban đầu!", "info");
             }
         });
+    }
+
+    // =============================================================
+    // WORKFLOW REORDERING (UP / DOWN / SORT A-Z)
+    // =============================================================
+    function moveProcurementWorkflow(idx, direction) {
+        saveCurrentAdminInputs();
+        const list = PROCUREMENT_MATRIX.procurementTypes;
+        const targetIdx = idx + direction;
+        if (targetIdx < 0 || targetIdx >= list.length) return;
+        const item = list[idx];
+        list.splice(idx, 1);
+        list.splice(targetIdx, 0, item);
+        activeAdminTypeId = item.id;
+        try {
+            localStorage.setItem("ho_so_tu_dong_matrix_custom", JSON.stringify(PROCUREMENT_MATRIX));
+            window.dispatchEvent(new Event("storage"));
+        } catch (e) {}
+        initProcurementTypeSelector();
+        renderAdminMatrixModal();
+        showToast(`Đã chuyển quy trình: ${item.name}`);
+    }
+
+    function moveImplementationWorkflow(idx, direction) {
+        saveCurrentAdminInputs();
+        const list = IMPLEMENTATION_MATRIX.implementationTypes;
+        const targetIdx = idx + direction;
+        if (targetIdx < 0 || targetIdx >= list.length) return;
+        const item = list[idx];
+        list.splice(idx, 1);
+        list.splice(targetIdx, 0, item);
+        activeAdminImplTypeId = item.id;
+        try {
+            localStorage.setItem("ho_so_tu_dong_impl_matrix_custom", JSON.stringify(IMPLEMENTATION_MATRIX));
+            window.dispatchEvent(new Event("storage"));
+        } catch (e) {}
+        renderAdminMatrixModal();
+        showToast(`Đã chuyển quy trình: ${item.name}`);
+    }
+
+    function sortActiveMatrixTypesAZ() {
+        saveCurrentAdminInputs();
+        if (activeAdminCategory === "procurement") {
+            PROCUREMENT_MATRIX.procurementTypes.sort(sortWorkflowAZ);
+            try {
+                localStorage.setItem("ho_so_tu_dong_matrix_custom", JSON.stringify(PROCUREMENT_MATRIX));
+                window.dispatchEvent(new Event("storage"));
+            } catch (e) {}
+            initProcurementTypeSelector();
+        } else {
+            IMPLEMENTATION_MATRIX.implementationTypes.sort(sortWorkflowAZ);
+            try {
+                localStorage.setItem("ho_so_tu_dong_impl_matrix_custom", JSON.stringify(IMPLEMENTATION_MATRIX));
+                window.dispatchEvent(new Event("storage"));
+            } catch (e) {}
+        }
+        renderAdminMatrixModal();
+        showToast("Đã sắp xếp danh sách theo bảng chữ cái A-Z");
     }
 
     // =============================================================
