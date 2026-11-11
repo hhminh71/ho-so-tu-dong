@@ -212,6 +212,34 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
   * Test Case 8 (Xem thử dữ liệu biến mới & Quét từ điển Thông tin chung): Đạt 100% (Nhận diện tự động 10 biến từ Từ điển; hiển thị liên tục hộp gợi ý; xem thử hiển thị đầy đủ dữ liệu thật).
   * Test Case 9 (Khôi phục toàn vẹn khung Canvas soạn thảo A4): Đạt 100% (Khung Canvas rộng 763x1050px hiển thị đầy đủ bên phải, bố cục 2 cột hoàn hảo, cho phép chỉnh sửa trực tiếp).
   * Test Case 10 (Bảng nhập biến chuẩn Từ điển & Thay thế prompt): Đạt 100% (Mở modal Từ điển từ vùng chọn Canvas, Tab 3 và Tab 1; tự động điền nhãn, sinh mã TAG chuẩn, kiểm tra trùng lặp, thay thế vùng chọn/toàn văn bản, đồng bộ Từ điển toàn hệ thống).
+  * Test Case 11 (Combobox gợi ý tên trường hiện có & Tìm kiếm tiếng Việt không dấu): Đạt 100% (Xổ danh sách biến Từ điển khi gõ/focus, tìm kiếm không dấu "phong ban" -> {PHONG_BAN_THUC_HIEN}, "chu dau tu" -> {TEN_CHU_DAU_TU}; chọn biến tự động điền TAG, nhóm, phạm vi; hỗ trợ tái sử dụng biến an toàn không bị chặn trùng lặp; điều hướng bàn phím mũi tên và Enter mượt mà).
+
+---
+
+### 11. Tính năng: Combobox gợi ý tên trường hiện có & Tìm kiếm tiếng Việt không dấu trong Modal Từ điển
+* **Yêu cầu người dùng:** Trong ô "Tên trường dữ liệu", cần xổ ra danh sách các tên trường hiện đang có trong Từ điển và hỗ trợ tìm kiếm tiếng Việt không dấu để người dùng nhanh chóng tái sử dụng biến chuẩn, tránh tạo biến mới trùng lặp/rác biến.
+* **Xử lý:**
+  1. **Nâng cấp UI ô nhập Tên trường (`template-tool.html`):**
+     - Đặt ô nhập trong container `relative` kèm nút chevron toggle `#btnToggleLabelDropdown`.
+     - Thêm dropdown `#editVarLabelSuggestionsDropdown` dạng menu nổi với bộ đếm biến, icon phân loại và thanh cuộn mượt mà.
+     - Thêm huy hiệu `#editVarLabelMatchedBadge`: Hiển thị màu xanh lá *"Khớp: {TAG}"* khi tên trường khớp với một biến đã có trong Từ điển chuẩn.
+  2. **Thuật toán Chuẩn hóa & Tìm kiếm không dấu (`template-tool.js`):**
+     - Xây dựng hàm `removeVietnameseTones(str)` loại bỏ toàn bộ dấu thanh tiếng Việt (kể cả dấu tổ hợp NFD).
+     - Xây dựng hàm `searchCatalogVariables(query)` chấm điểm khớp theo độ ưu tiên (khớp chính xác > bắt đầu bằng > chứa từ khóa > khớp tất cả các từ đơn lẻ không dấu).
+     - Kết quả hiển thị cả Tên tiếng Việt, mã thẻ `{TAG}`, tên phân nhóm (A-J), phạm vi (Tầng 1/2) và giá trị ví dụ.
+     - Nếu từ khóa mới chưa có trong Từ điển, hiển thị mục tác vụ: `➕ Tạo biến mới: "[tên vừa gõ]" (Bấm để tạo mới)`.
+  3. **Hỗ trợ Điều hướng Phím tắt & Thao tác UX:**
+     - Phím `ArrowDown` / `ArrowUp` để di chuyển vệt chọn trong danh sách.
+     - Phím `Enter` để chọn mục đang highlight.
+     - Phím `Escape` hoặc click ra ngoài để đóng danh sách gợi ý.
+  4. **Cho phép Tái sử dụng Biến an toàn (Reusability without Collision Error):**
+     - Nâng cấp `validateVariableInputs()`: Nhận diện khi người dùng đang ở chế độ gán biến cho văn bản (`mode: "selection"` hoặc `mode: "add_to_doc"`), việc chọn một mã `{TAG}` đã có trong Từ điển được coi là **Hợp lệ 100%** (hiển thị banner xanh *"✅ Sử dụng biến có sẵn trong Từ điển"* và cho phép lưu ngay) thay vì báo lỗi trùng lặp.
+  5. Nâng cache-buster lên `template-tool.js?v=20261111_v7`.
+* **Xác thực:** Kiểm thử tự động trên Chrome CDP (`scratch/test_unaccented_search_combobox.py`):
+  - Tìm kiếm không dấu `"phong ban"`: Dropdown hiển thị đúng 2 biến `{TEN_BAN_QUAN_LY_DU_AN}` và `{PHONG_BAN_THUC_HIEN}`.
+  - Tìm kiếm không dấu `"chu dau tu"`: Dropdown hiển thị đúng 2 biến `{TEN_CHU_DAU_TU}` và `{TEN_CHU_DAU_TU_VIET_HOA}`.
+  - Chọn biến `{PHONG_BAN_THUC_HIEN}`: Tự động điền nhãn *"Phòng/Ban thực hiện (*)"*, mã thẻ `{PHONG_BAN_THUC_HIEN}`, nhóm A, hiện huy hiệu khớp màu xanh.
+  - Bấm `[Lưu biến xạ]`: Thay thế vùng chọn trên Canvas thành `{PHONG_BAN_THUC_HIEN}×`, cập nhật danh mục mapping và đóng modal thành công. Ảnh minh chứng: `verify_unaccented_search_combobox.png`.
 
 ---
 

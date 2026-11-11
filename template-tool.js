@@ -5145,25 +5145,234 @@
             if (btnDelete) btnDelete.classList.add("hidden");
         }
 
+        updateLabelMatchedBadge(labelInput ? labelInput.value : "");
+        document.getElementById("editVarLabelSuggestionsDropdown")?.classList.add("hidden");
+
         validateVariableInputs();
         modal.classList.remove("hidden");
         setTimeout(() => {
-            if (options.mode === "selection") tagInput?.focus();
-            else if (!tagToEdit) labelInput?.focus();
-            else tagInput?.focus();
+            labelInput?.focus();
         }, 100);
     }
 
     function closeEditVariableModal() {
         const modal = document.getElementById("modalEditVariable");
         if (modal) modal.classList.add("hidden");
+        document.getElementById("editVarLabelSuggestionsDropdown")?.classList.add("hidden");
+        document.getElementById("editVarLabelMatchedBadge")?.classList.add("hidden");
         activeEditingMappingIdx = null;
         currentEditVarContext = null;
     }
     window.closeEditVariableModal = closeEditVariableModal;
     window.openEditVariableModal = openEditVariableModal;
 
-        function slugifyToUpperSnake(str) {
+    // -------------------------------------------------------------
+    // Tìm kiếm Tiếng Việt không dấu & Autocomplete Dropdown cho Từ điển
+    // -------------------------------------------------------------
+    let selectedSuggestionIndex = -1;
+
+    function removeVietnameseTones(str) {
+        if (!str) return "";
+        str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+        str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+        str = str.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+        str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+        str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+        str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+        str = str.replace(/đ/g, "d");
+        str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, "A");
+        str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, "E");
+        str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, "I");
+        str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, "O");
+        str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, "U");
+        str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
+        str = str.replace(/Đ/g, "D");
+        str = str.replace(/\u0300|\u0301|\u0303|\u0309|\u0323/g, "");
+        str = str.replace(/\u02C6|\u0306|\u031B/g, "");
+        return str.trim();
+    }
+
+    function searchCatalogVariables(query = "") {
+        if (!Array.isArray(MASTER_VARIABLES_CATALOG) || MASTER_VARIABLES_CATALOG.length === 0) return [];
+        const qRaw = (query || "").trim();
+        if (!qRaw) {
+            return MASTER_VARIABLES_CATALOG.slice(0, 30);
+        }
+
+        const qNorm = removeVietnameseTones(qRaw.toLowerCase());
+        const qUpper = qRaw.toUpperCase();
+        const tokens = qNorm.split(/\s+/).filter(Boolean);
+
+        const scored = [];
+        MASTER_VARIABLES_CATALOG.forEach(v => {
+            const label = v.label || "";
+            const tag = v.tag || "";
+            const labelNorm = removeVietnameseTones(label.toLowerCase());
+            const tagLower = tag.toLowerCase();
+
+            let score = 0;
+            if (labelNorm === qNorm) score += 100;
+            if (tag === qUpper) score += 100;
+            if (labelNorm.startsWith(qNorm)) score += 50;
+            if (tagLower.startsWith(qNorm)) score += 40;
+            if (labelNorm.includes(qNorm)) score += 30;
+            if (tagLower.includes(qNorm)) score += 20;
+
+            const allTokensMatch = tokens.length > 0 && tokens.every(tok => labelNorm.includes(tok) || tagLower.includes(tok));
+            if (allTokensMatch) score += 25;
+
+            if (score > 0) {
+                scored.push({ item: v, score });
+            }
+        });
+
+        scored.sort((a, b) => b.score - a.score);
+        return scored.map(s => s.item).slice(0, 25);
+    }
+
+    function renderLabelSuggestions(query = "") {
+        const dropdown = document.getElementById("editVarLabelSuggestionsDropdown");
+        const list = document.getElementById("editVarLabelSuggestionsList");
+        const countBadge = document.getElementById("lblSuggestionsCount");
+        if (!dropdown || !list) return;
+
+        const results = searchCatalogVariables(query);
+        selectedSuggestionIndex = -1;
+
+        if (countBadge) countBadge.textContent = `${results.length} biến`;
+
+        let html = "";
+        if (results.length === 0) {
+            html += `
+                <div class="p-2.5 text-center text-slate-500 text-[11px]">
+                    <i class="fa-solid fa-circle-info text-amber-500 mr-1"></i>
+                    Không có biến nào khớp từ khóa "<b>${escapeHtml(query)}</b>"
+                </div>
+            `;
+        } else {
+            results.forEach((v, idx) => {
+                const groupShort = (v.group || "A").substring(0, 16);
+                html += `
+                    <div class="label-suggestion-item p-2 rounded hover:bg-emerald-50 cursor-pointer transition-colors border border-transparent hover:border-emerald-200 flex items-center justify-between gap-2" data-tag="${v.tag}" data-idx="${idx}">
+                        <div class="flex-1 min-w-0">
+                            <div class="font-bold text-slate-900 truncate text-[11px]">${escapeHtml(v.label)}</div>
+                            <div class="text-[9.5px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                                <span class="text-amber-800 bg-amber-100/70 px-1 rounded font-medium">${escapeHtml(groupShort)}</span>
+                                <span>•</span>
+                                <span>${v.isGeneral ? "Tầng 1 (Chung)" : "Tầng 2 (Gói)"}</span>
+                                ${v.example ? `<span class="truncate max-w-[120px] text-slate-400">• VD: ${escapeHtml(v.example)}</span>` : ""}
+                            </div>
+                        </div>
+                        <span class="font-mono font-bold text-[10.5px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300 shrink-0">
+                            {${v.tag}}
+                        </span>
+                    </div>
+                `;
+            });
+        }
+
+        const qUpper = query.trim().toUpperCase().replace(/[^A-Z0-9_]/g, "_");
+        const exactMatch = results.some(v => v.label.toLowerCase() === query.trim().toLowerCase() || v.tag === qUpper);
+        if (query.trim() && !exactMatch) {
+            html += `
+                <div id="itemCreateNewVarFromQuery" class="p-2 mt-1 rounded bg-indigo-50/80 hover:bg-indigo-100/90 text-indigo-900 cursor-pointer border border-indigo-200 flex items-center justify-between gap-2 transition-colors">
+                    <div class="flex items-center gap-1.5 text-[11px] font-bold">
+                        <i class="fa-solid fa-plus-circle text-indigo-600"></i>
+                        <span>Tạo biến mới: "<b>${escapeHtml(query.trim())}</b>"</span>
+                    </div>
+                    <span class="text-[10px] text-indigo-700 font-mono font-semibold">
+                        [Bấm để tạo mới]
+                    </span>
+                </div>
+            `;
+        }
+
+        list.innerHTML = html;
+        dropdown.classList.remove("hidden");
+
+        list.querySelectorAll(".label-suggestion-item").forEach(el => {
+            el.addEventListener("mousedown", (e) => {
+                e.preventDefault();
+                const tag = el.getAttribute("data-tag");
+                selectSuggestedVariable(tag);
+            });
+        });
+
+        const btnCreateNew = list.querySelector("#itemCreateNewVarFromQuery");
+        if (btnCreateNew) {
+            btnCreateNew.addEventListener("mousedown", (e) => {
+                e.preventDefault();
+                dropdown.classList.add("hidden");
+                autoSuggestTagFromLabel();
+                validateVariableInputs();
+            });
+        }
+    }
+
+    function selectSuggestedVariable(tag) {
+        if (!tag) return;
+        const v = MASTER_VARIABLES_CATALOG.find(item => item.tag === tag);
+        if (!v) return;
+
+        const labelInput = document.getElementById("editVarLabelInput");
+        const tagInput = document.getElementById("editVarTagInput");
+        const tagPreview = document.getElementById("editVarTagPreview");
+        const groupSelect = document.getElementById("editVarGroupSelect");
+        const scopeSelect = document.getElementById("editVarScopeSelect");
+        const exampleInput = document.getElementById("editVarExampleInput");
+        const matchedBadge = document.getElementById("editVarLabelMatchedBadge");
+        const dropdown = document.getElementById("editVarLabelSuggestionsDropdown");
+
+        if (labelInput) labelInput.value = v.label;
+        if (tagInput) tagInput.value = v.tag;
+        if (tagPreview) tagPreview.textContent = `{${v.tag}}`;
+        if (groupSelect && v.groupKey) groupSelect.value = v.groupKey;
+        if (scopeSelect) scopeSelect.value = v.isGeneral ? "general" : "package";
+        if (exampleInput && !exampleInput.value) exampleInput.value = v.example || "";
+
+        if (matchedBadge) {
+            matchedBadge.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i><span>Khớp: {${v.tag}}</span>`;
+            matchedBadge.classList.remove("hidden");
+        }
+
+        if (dropdown) dropdown.classList.add("hidden");
+
+        validateVariableInputs();
+        if (typeof showToast === "function") {
+            showToast(`Đã chọn biến Từ điển: "${v.label}" {${v.tag}}`, "success");
+        }
+    }
+
+    function updateLabelMatchedBadge(currentLabel = "") {
+        const matchedBadge = document.getElementById("editVarLabelMatchedBadge");
+        if (!matchedBadge) return;
+        const trimmed = (currentLabel || "").trim();
+        if (!trimmed) {
+            matchedBadge.classList.add("hidden");
+            return;
+        }
+
+        const exact = MASTER_VARIABLES_CATALOG.find(v => v.label.toLowerCase() === trimmed.toLowerCase());
+        if (exact) {
+            matchedBadge.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i><span>Khớp: {${exact.tag}}</span>`;
+            matchedBadge.classList.remove("hidden");
+        } else {
+            matchedBadge.classList.add("hidden");
+        }
+    }
+
+    function updateSuggestionHighlight(items) {
+        items.forEach((item, idx) => {
+            if (idx === selectedSuggestionIndex) {
+                item.classList.add("bg-emerald-100", "border-emerald-300");
+                item.scrollIntoView({ block: "nearest" });
+            } else {
+                item.classList.remove("bg-emerald-100", "border-emerald-300");
+            }
+        });
+    }
+
+    function slugifyToUpperSnake(str) {
         if (!str) return "";
         return str.normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "")
@@ -5281,6 +5490,7 @@
         const btnSave = document.getElementById("btnSaveEditVar");
 
         if (!tagInput || !labelInput || !btnSave) return;
+        updateLabelMatchedBadge(labelInput.value);
 
         if (!tagInput.dataset.hasImeListener) {
             tagInput.dataset.hasImeListener = "true";
@@ -5320,8 +5530,25 @@
             tagInput.className = "w-full pl-6 pr-6 py-1.5 bg-slate-50 border border-slate-300 rounded text-xs text-slate-900 font-mono font-bold uppercase focus:bg-white focus:ring-1 focus:ring-emerald-500";
         } else {
             conflictingVar = isTagInUse(cleanTag, origTag);
+            const isReusingExistingVarInDoc = conflictingVar && currentEditVarContext && (currentEditVarContext.mode === "selection" || currentEditVarContext.mode === "add_to_doc");
 
-            if (conflictingVar) {
+            if (conflictingVar && isReusingExistingVarInDoc) {
+                // Tái sử dụng biến có sẵn trong Từ điển cho văn bản (rất khuyến khích để tránh trùng lặp)
+                isTagValid = true;
+                isDuplicate = false;
+                if (tagFeedback) {
+                    tagFeedback.className = "mt-1 p-2 rounded text-[11px] bg-emerald-50 text-emerald-900 border border-emerald-300 flex items-start gap-2 shadow-2xs";
+                    tagFeedback.innerHTML = `
+                        <i class="fa-solid fa-circle-check text-emerald-600 mt-0.5 shrink-0 text-sm"></i>
+                        <div class="flex-1">
+                            <div><b>✅ Sử dụng biến có sẵn trong Từ điển:</b> Mã <code>{${cleanTag}}</code> (<em>"${conflictingVar.label}"</em>) sẽ được gán vào vị trí văn bản này.</div>
+                            <div class="text-[10px] text-emerald-800 mt-0.5">Biến này thuộc ${conflictingVar.group || "Từ điển"} và sẽ tự động đồng bộ dữ liệu chuẩn toàn hệ thống.</div>
+                        </div>
+                    `;
+                    tagFeedback.classList.remove("hidden");
+                }
+                tagInput.className = "w-full pl-6 pr-6 py-1.5 bg-emerald-50/50 border border-emerald-400 rounded text-xs text-emerald-950 font-mono font-bold uppercase focus:bg-white focus:ring-1 focus:ring-emerald-500";
+            } else if (conflictingVar) {
                 isDuplicate = true;
                 const candidates = generateCandidateTags(cleanTag, origTag);
                 const sampleName = label || "Phòng triển khai";
@@ -5669,7 +5896,69 @@
     if (editVarTagInput) editVarTagInput.oninput = validateVariableInputs;
 
     const editVarLabelInput = document.getElementById("editVarLabelInput");
-    if (editVarLabelInput) editVarLabelInput.oninput = validateVariableInputs;
+    const editVarLabelSuggestionsDropdown = document.getElementById("editVarLabelSuggestionsDropdown");
+    const btnToggleLabelDropdown = document.getElementById("btnToggleLabelDropdown");
+
+    if (editVarLabelInput) {
+        editVarLabelInput.addEventListener("input", () => {
+            renderLabelSuggestions(editVarLabelInput.value);
+            updateLabelMatchedBadge(editVarLabelInput.value);
+            validateVariableInputs();
+        });
+
+        editVarLabelInput.addEventListener("focus", () => {
+            renderLabelSuggestions(editVarLabelInput.value);
+        });
+
+        editVarLabelInput.addEventListener("blur", () => {
+            setTimeout(() => {
+                editVarLabelSuggestionsDropdown?.classList.add("hidden");
+            }, 250);
+        });
+
+        editVarLabelInput.addEventListener("keydown", (e) => {
+            if (!editVarLabelSuggestionsDropdown || editVarLabelSuggestionsDropdown.classList.contains("hidden")) {
+                if (e.key === "ArrowDown") {
+                    renderLabelSuggestions(editVarLabelInput.value);
+                    e.preventDefault();
+                }
+                return;
+            }
+
+            const items = editVarLabelSuggestionsDropdown.querySelectorAll(".label-suggestion-item, #itemCreateNewVarFromQuery");
+            if (items.length === 0) return;
+
+            if (e.key === "ArrowDown") {
+                e.preventDefault();
+                selectedSuggestionIndex = (selectedSuggestionIndex + 1) % items.length;
+                updateSuggestionHighlight(items);
+            } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                selectedSuggestionIndex = (selectedSuggestionIndex - 1 + items.length) % items.length;
+                updateSuggestionHighlight(items);
+            } else if (e.key === "Enter" && selectedSuggestionIndex >= 0) {
+                e.preventDefault();
+                items[selectedSuggestionIndex]?.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true }));
+            } else if (e.key === "Escape") {
+                editVarLabelSuggestionsDropdown.classList.add("hidden");
+                selectedSuggestionIndex = -1;
+            }
+        });
+    }
+
+    if (btnToggleLabelDropdown) {
+        btnToggleLabelDropdown.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!editVarLabelSuggestionsDropdown) return;
+            if (editVarLabelSuggestionsDropdown.classList.contains("hidden")) {
+                renderLabelSuggestions(editVarLabelInput ? editVarLabelInput.value : "");
+                editVarLabelInput?.focus();
+            } else {
+                editVarLabelSuggestionsDropdown.classList.add("hidden");
+            }
+        };
+    }
 
     const btnSaveEditVar = document.getElementById("btnSaveEditVar");
     if (btnSaveEditVar) btnSaveEditVar.onclick = saveVariableChanges;
