@@ -31,6 +31,11 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
      * Nút **[+ Chèn X biến thiếu]**: 1-chạm tự động chèn đồng loạt tất cả các biến bắt buộc còn thiếu vào văn bản.
    * **Popup Gán Biến Nhanh Thông Minh (Dynamic Selection Menu):** Khi bôi đen bất kỳ đoạn chữ nào trên Canvas, menu nổi tự động hiển thị 5 biến được khuyến nghị nhất cho loại văn bản đó để người dùng gán chỉ trong 1-click.
    * **Phản hồi thời gian thực (Debounced Input):** Mọi thao tác gõ chữ, xóa hoặc chèn trên Canvas đều tự động kích hoạt bộ đếm và cập nhật trạng thái checklist tức thì (độ trễ 300ms).
+5. **Cơ chế Tải File Word Riêng Lẻ Trực Tiếp (Single Upload), Kéo - Thả (Drag & Drop) và So Khớp Tiếng Việt Thông Minh:**
+   * Thêm nút nạp file riêng **`[📤 Tải file Word (.docx) lên]`** ngay trên thanh công cụ xem chi tiết văn bản (`#singleWorkspace`), cho phép nạp 1-chạm đúng văn bản đang chọn.
+   * Hỗ trợ thao tác kéo-thả trực tiếp file Word (.docx) vào lòng trang Canvas.
+   * Bộ so khớp tiếng Việt thông minh (`findBestMatchingDoc`) tự động nhận diện số thứ tự (`01`, `02`) và từ khóa loại văn bản ("báo cáo", "tờ trình", "thẩm định", "mua sắm") để gán đúng văn bản ngay cả khi tải hàng loạt.
+   * Tự động trích xuất cấu trúc văn bản, gán thẻ biến tự động, hiển thị Badge `[File vừa tải lên]` (xanh ngọc) và cập nhật thanh khuyến nghị tức thì.
 
 ---
 
@@ -40,8 +45,9 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
 | :--- | :---: | :--- |
 | [`app.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/app.js) | **NÂNG CẤP** | Cập nhật ma trận `DEFAULT_IMPLEMENTATION_MATRIX` và `prebuiltDocxMap` theo đường dẫn 2 tầng; loại bỏ mẫu giả; bổ sung hàm `hasDocTemplate(docObj)`; hiển thị Badge trạng thái mẫu và chặn xuất Word rỗng; ưu tiên tham số URL `workflow`, `doc`, `tab=docs` khi khởi động. |
 | [`index.html`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/index.html) | **NÂNG CẤP** | Bổ sung `#docTemplateStatusBadge` hiển thị trạng thái mẫu thời gian thực cạnh bộ chọn văn bản; cập nhật cache-buster lên `app.js?v=20261110_v3`. |
-| [`template-tool.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.js) | **NÂNG CẤP** | Bổ sung `STUDIO_DOC_VAR_MAP` và `getStudioRecommendedVarsForDoc`; cơ chế quét độ phủ biến thời gian thực `renderContextualRecommendedVars`; cuộn và highlight biến `highlightTagInCanvas`; tự động chèn đồng loạt `insertAllMissingRecommended`; menu gán biến động khi bôi đen chữ `updateSelectionMenuWithRecommended` và `applyTagToSelection`. |
-| [`template-tool.html`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.html) | **NÂNG CẤP** | Thêm khối giao diện `#contextualRecommendedVarsBox` trên đầu Sidebar trái, badge `#recommendedCoverageBadge`, nút `#btnInsertAllMissingRecommended`, danh sách chip `#contextualRecommendedChips`; nâng cache-buster lên `template-tool.js?v=20261111_v1`. |
+| [`template-tool.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.js) | **NÂNG CẤP** | Bổ sung `STUDIO_DOC_VAR_MAP` và `getStudioRecommendedVarsForDoc`; cơ chế quét độ phủ biến thời gian thực `renderContextualRecommendedVars`; cuộn và highlight biến `highlightTagInCanvas`; tự động chèn đồng loạt `insertAllMissingRecommended`; menu gán biến động khi bôi đen chữ `updateSelectionMenuWithRecommended` và `applyTagToSelection`; bổ sung nạp file riêng `loadFileForSingleDocument`, kéo-thả canvas, so khớp tiếng Việt thông minh `findBestMatchingDoc`, nhận diện thực thể mở rộng cho Báo cáo (`SO_BAO_CAO`, `NGAY_BAO_CAO_FULL`, `MA_SO_THUE`, `GIA_TRI_HOP_DONG_SO`). |
+| [`template-tool.html`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.html) | **NÂNG CẤP** | Thêm khối giao diện `#contextualRecommendedVarsBox` trên đầu Sidebar trái, badge `#recommendedCoverageBadge`, nút `#btnInsertAllMissingRecommended`, danh sách chip `#contextualRecommendedChips`; thêm nút nạp file Word riêng `#btnUploadSingleDocx` trên thanh công cụ xem chi tiết; nâng cache-buster lên `template-tool.js?v=20261111_v2`. |
+| `scratch/test_single_upload_flow.py` | **MỚI** | Script kiểm thử tự động quy trình nạp file Word riêng lẻ, so khớp tiếng Việt và nhận diện thẻ trên Studio qua Chrome CDP. |
 | [`templates_data.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/templates_data.js) | **NÂNG CẤP** | Bổ sung các alias keys lồng thư mục cho 7 file Base64, bảo đảm tra cứu tức thì trên mọi giao thức (kể cả `file:///`). |
 | `templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/` | **MỚI** | Chứa 2 file Word thực tế: `01_To_trinh_KHLCNT.docx`, `02_Quyet_dinh_KHLCNT.docx`. |
 | `templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/` | **MỚI** | Chứa 5 file Word thực tế: `1_Giay_moi_tham_gia.docx`, `2_Bien_ban_hoan_thien_hop_dong.docx`, `3_To_trinh_chi_dinh_thau.docx`, `4_Quyet_dinh_chi_dinh_thau.docx`, `07_Hop_dong_kinh_te.docx`. |
@@ -67,18 +73,32 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
 * **Nguyên nhân:** Khối lệnh lặp vô tình rơi ra ngoài thân hàm `getDocTemplateArrayBuffer()`.
 * **Xử lý:** Đã gỡ bỏ khối mã trùng lặp, mã nguồn sạch sẽ và vượt qua toàn bộ kiểm thử cú pháp (0 lỗi).
 
+### 5. Lỗi: Khi tải file Word thực tế (ví dụ: Báo cáo mua sắm), văn bản không hiện ra để điều chỉnh và gợi ý tag
+* **Nguyên nhân:**
+  1. **Khớp từ khóa quá cứng nhắc:** Mã nguồn cũ yêu cầu tên file phải chứa nguyên văn toàn bộ chuỗi tên dài `"02. báo cáo thẩm định & phê duyệt mua sắm"`. Vì vậy, các file thông thường như `Báo cáo mua sắm.docx`, `Báo cáo thẩm định.docx`, `02_Bao_cao.docx` bị chấm 0 điểm và fallback bị gán nhầm sang văn bản số 1 (`01. Tờ trình`).
+  2. **Thiếu nút tải file riêng lẻ trong giao diện Soát chi tiết 1 văn bản (Single View):** Người dùng chỉ thấy nút tải hàng loạt ở đầu trang, và sau khi tải xong hệ thống chỉ gọi `renderBatchTable()` mà không tự động chuyển và nạp văn bản lên Canvas Single View.
+  3. **Xung đột bản thảo cũ (`workingDraftHtml`):** Khung mẫu mặc định trước đó vẫn còn lưu trong bộ nhớ tạm khiến Canvas không ưu tiên hiển thị các đoạn văn từ file Word mới tải lên.
+* **Xử lý:**
+  1. Thêm nút trực quan **`[📤 Tải file Word (.docx) lên]`** (`#btnUploadSingleDocx`) ngay trên thanh công cụ của chế độ Single View, cho phép nạp 1-chạm file Word cho đúng văn bản đang chọn.
+  2. Xây dựng thuật toán **So khớp tiếng Việt thông minh (`findBestMatchingDoc`)**: Tự động bóc tách số thứ tự (`01`, `02`, `1`, `2`), từ viết tắt (`BC`, `TTr`, `QĐ`, `HĐ`, `BB`), loại văn bản ("báo cáo", "tờ trình", "hợp đồng", "thẩm định", "mua sắm") và tính điểm trọng số theo ngữ nghĩa không dấu.
+  3. Bổ sung **Kéo - Thả file Word trực tiếp (Drag & Drop)** lên vùng Canvas soạn thảo (`#docViewerWrapper`).
+  4. Mở rộng bộ nhận diện thực thể (`detectEntitiesForDocument`) cho Báo cáo (`SO_BAO_CAO`, `NGAY_BAO_CAO_FULL`, `MA_SO_THUE`, `GIA_TRI_HOP_DONG_SO`).
+  5. Xóa sạch bản thảo cũ khi nạp file mới, tự động render nội dung file Word lên Canvas, gán thẻ biến tự động, hiển thị Badge `[File vừa tải lên]` (xanh lá) và cập nhật ngay độ phủ biến trên thanh Khuyến nghị.
+* **Xác thực:** Kiểm thử thành công 100% bằng script CDP headless Chrome (`scratch/test_single_upload_flow.py`), ảnh minh chứng: `verify_uploaded_file_view.png`.
+
 ---
 
 ## ⚠️ 4. TRẠNG THÁI HIỆN TẠI & CÓ LỖI NÀO ĐANG VƯỚNG KHÔNG?
 
 * **Lỗi tồn đọng nghiêm trọng (Blocker/Critical):** **0 LỖI.**
-* **Tình trạng mã nguồn:** Sạch sẽ, không có xung đột Git. Toàn bộ mã nguồn đã được commit và push lên `origin/main` (Commit mới nhất: `999ba55`).
+* **Tình trạng mã nguồn:** Sạch sẽ, không có xung đột Git. Toàn bộ mã nguồn đã được commit và push lên `origin/main` (Commit mới nhất: `dc92a86`).
 * **Hệ thống Server cục bộ:** Đang chạy một phiên bản HTTP Server nền tại cổng 8000.
 * **Kết quả Kiểm thử Tự động (End-to-End Headless Chrome CDP):**
   * Test Case 1 (Văn bản chưa có mẫu): Đạt 100% (Hiện badge vàng cảnh báo, nút "Tạo mẫu Studio", chặn xuất Word rỗng).
   * Test Case 2 (Văn bản có mẫu sẵn): Đạt 100% (Hiện badge xanh, nút "Sửa mẫu Studio").
   * Test Case 3 (Khởi tạo mẫu mới từ Studio): Đạt 100% (Hiện khung mẫu NĐ 30/2020, lưu thành công vào localStorage dưới dạng Word .docx).
   * Test Case 4 (Đồng bộ ngược về index.html): Đạt 100% (Lập tức nhận diện "Mẫu tùy biến" màu vàng kim và nút "Sửa mẫu Studio").
+  * Test Case 5 (Nạp file Word riêng & Gán tag Báo cáo mua sắm): Đạt 100% (Nhận diện đúng `d50_2`, nạp 9 thực thể tự động, thanh gợi ý hiển thị Có 8/18 biến).
 
 ---
 
