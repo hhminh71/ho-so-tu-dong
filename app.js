@@ -95,6 +95,29 @@
                 if (rawStr.includes('"templates/01_To_trinh') || rawStr.includes('"templates/07_Hop_dong')) {
                     localStorage.removeItem("ho_so_tu_dong_matrix_custom");
                 } else {
+                    // Tự động chuẩn hóa / đồng bộ tên các quy trình chuẩn mặc định từ hệ thống
+                    const CANONICAL_PROCUREMENT_NAMES = {
+                        "duoi_50_trieu": "1. Mua sắm siêu rút gọn (Dưới 50 triệu)",
+                        "duoi_100_trieu": "2. Mua sắm thường xuyên 50tr - 100tr (Khoản 4 Điều 23)",
+                        "chao_gia_han_che": "3. Chào giá cạnh tranh hạn chế (Nội bộ)",
+                        "chi_dinh_thau_rut_gon": "4. Chỉ định thầu rút gọn (Tư vấn < 500tr; XL/HH < 1 tỷ)",
+                        "chi_dinh_thau_thong_thuong": "5. Chỉ định thầu quy trình thông thường (HSYC & HSDX)",
+                        "dau_thau_rong_rai_hh_xl": "6. Đấu thầu rộng rãi qua mạng (E-HSMT Xây lắp & Mua sắm)"
+                    };
+                    let hasMigration = false;
+                    parsedCustom.procurementTypes.forEach(pt => {
+                        if (CANONICAL_PROCUREMENT_NAMES[pt.id] && pt.name !== CANONICAL_PROCUREMENT_NAMES[pt.id]) {
+                            if (pt.id === "duoi_50_trieu" && (pt.name.includes("Dưới 50 triệu") || pt.name.includes("Mua sắm"))) {
+                                pt.name = CANONICAL_PROCUREMENT_NAMES[pt.id];
+                                hasMigration = true;
+                            }
+                        }
+                    });
+                    if (hasMigration) {
+                        try {
+                            localStorage.setItem("ho_so_tu_dong_matrix_custom", JSON.stringify(parsedCustom));
+                        } catch (e) {}
+                    }
                     PROCUREMENT_MATRIX = parsedCustom;
                 }
             }
