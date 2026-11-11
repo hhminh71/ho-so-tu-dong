@@ -21,6 +21,16 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
    * Tại `template-tool.html` (Template Studio 2.0): Bảng danh sách văn bản hiển thị nút `[Tạo mẫu mới]`. Khi mở văn bản chưa có file, Studio tự động tạo sẵn một **Khung mẫu văn bản hành chính Việt Nam chuẩn Nghị định 30/2020/NĐ-CP** (Quốc hiệu, Tiêu ngữ, Tên cơ quan, Số VB, Địa danh, Tên văn bản, Căn cứ pháp lý, Các điều khoản, Chữ ký) kèm sẵn các thẻ biến `{TAG}` tương ứng.
    * Khi người dùng bấm **"⚡ Áp dụng làm Mẫu Chuẩn"**, hệ thống tự động biên dịch trực tiếp Canvas HTML thành file Word `.docx` chuẩn OpenXML (phông chữ Times New Roman 13pt, căn lề A4 chuẩn, giãn dòng 1.5), lưu đồng thời vào `localStorage` (`ho_so_custom_template_<id>` và `ho_so_custom_template_html_<id>`).
    * Quay lại trang `index.html`: Văn bản vừa tạo lập tức chuyển sang trạng thái `[✓ Mẫu tùy biến]` và sẵn sàng xuất file Word riêng lẻ hoặc đóng gói toàn bộ gói thầu ZIP!
+4. **Cơ chế Gợi ý Biến Xạ Theo Ngữ Cảnh & Danh Sách Kiểm Tra Độ Phủ Biến (Real-time Coverage Checklist) trong Studio 2.0:**
+   * **Nhận diện ngữ cảnh văn bản tự động:** Studio tự động tra cứu danh mục biến đặc thù cho từng loại văn bản qua `STUDIO_DOC_VAR_MAP` và `docObj.requiredVars` (đồng bộ hoàn toàn với `DOC_VAR_MAP` của `app.js`).
+   * **Bảng gợi ý & Độ phủ biến thời gian thực (`#contextualRecommendedVarsBox`):**
+     * Hiển thị Badge thống kê: `[Có X/Y biến]` (nền hổ phách) hoặc `[✓ Đầy đủ (X/X)]` (nền xanh lá).
+     * Tự động phân loại biến:
+       * Biến đã có trên Canvas hiển thị chip màu xanh lá kèm biểu tượng `✓`. Khi bấm vào chip, trang tự động cuộn và nhấp nháy hiệu ứng viền sáng (ring pulse) tại vị trí biến đó trên Canvas.
+       * Biến còn thiếu hiển thị chip màu hổ phách kèm biểu tượng `+`. Bấm 1-chạm sẽ chèn ngay mã `{TAG}` vào vị trí con trỏ và chip lập tức chuyển sang màu xanh lá `✓`.
+     * Nút **[+ Chèn X biến thiếu]**: 1-chạm tự động chèn đồng loạt tất cả các biến bắt buộc còn thiếu vào văn bản.
+   * **Popup Gán Biến Nhanh Thông Minh (Dynamic Selection Menu):** Khi bôi đen bất kỳ đoạn chữ nào trên Canvas, menu nổi tự động hiển thị 5 biến được khuyến nghị nhất cho loại văn bản đó để người dùng gán chỉ trong 1-click.
+   * **Phản hồi thời gian thực (Debounced Input):** Mọi thao tác gõ chữ, xóa hoặc chèn trên Canvas đều tự động kích hoạt bộ đếm và cập nhật trạng thái checklist tức thì (độ trễ 300ms).
 
 ---
 
@@ -30,8 +40,8 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
 | :--- | :---: | :--- |
 | [`app.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/app.js) | **NÂNG CẤP** | Cập nhật ma trận `DEFAULT_IMPLEMENTATION_MATRIX` và `prebuiltDocxMap` theo đường dẫn 2 tầng; loại bỏ mẫu giả; bổ sung hàm `hasDocTemplate(docObj)`; hiển thị Badge trạng thái mẫu và chặn xuất Word rỗng; ưu tiên tham số URL `workflow`, `doc`, `tab=docs` khi khởi động. |
 | [`index.html`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/index.html) | **NÂNG CẤP** | Bổ sung `#docTemplateStatusBadge` hiển thị trạng thái mẫu thời gian thực cạnh bộ chọn văn bản; cập nhật cache-buster lên `app.js?v=20261110_v3`. |
-| [`template-tool.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.js) | **NÂNG CẤP** | Đồng bộ ma trận 2 tầng; cập nhật `BUILTIN_DOCX_FILE_MAP` chỉ trỏ tới 7 file thực tế; loại bỏ fallback tải `01_To_trinh_KHLCNT.docx` cho văn bản chưa có mẫu; bổ sung hàm `generateDefaultDocumentScaffold()` tạo khung mẫu NĐ 30/2020; bổ sung trình tạo file Word chuẩn OpenXML `createDocxFromCanvasHtml()`; bổ sung nút `[Tạo mẫu mới]` trong bảng Batch. |
-| [`template-tool.html`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.html) | **NÂNG CẤP** | Chỉnh sửa nhãn mặc định an toàn cho Badge tên file; cập nhật cache-buster lên `template-tool.js?v=20261110_v2`. |
+| [`template-tool.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.js) | **NÂNG CẤP** | Bổ sung `STUDIO_DOC_VAR_MAP` và `getStudioRecommendedVarsForDoc`; cơ chế quét độ phủ biến thời gian thực `renderContextualRecommendedVars`; cuộn và highlight biến `highlightTagInCanvas`; tự động chèn đồng loạt `insertAllMissingRecommended`; menu gán biến động khi bôi đen chữ `updateSelectionMenuWithRecommended` và `applyTagToSelection`. |
+| [`template-tool.html`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/template-tool.html) | **NÂNG CẤP** | Thêm khối giao diện `#contextualRecommendedVarsBox` trên đầu Sidebar trái, badge `#recommendedCoverageBadge`, nút `#btnInsertAllMissingRecommended`, danh sách chip `#contextualRecommendedChips`; nâng cache-buster lên `template-tool.js?v=20261111_v1`. |
 | [`templates_data.js`](file:///I:/My%20Drive/APP/Projects/ho-so-tu-dong/templates_data.js) | **NÂNG CẤP** | Bổ sung các alias keys lồng thư mục cho 7 file Base64, bảo đảm tra cứu tức thì trên mọi giao thức (kể cả `file:///`). |
 | `templates/Quy_trinh_trien_khai/Trien_khai_sua_chua/` | **MỚI** | Chứa 2 file Word thực tế: `01_To_trinh_KHLCNT.docx`, `02_Quyet_dinh_KHLCNT.docx`. |
 | `templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/` | **MỚI** | Chứa 5 file Word thực tế: `1_Giay_moi_tham_gia.docx`, `2_Bien_ban_hoan_thien_hop_dong.docx`, `3_To_trinh_chi_dinh_thau.docx`, `4_Quyet_dinh_chi_dinh_thau.docx`, `07_Hop_dong_kinh_te.docx`. |
