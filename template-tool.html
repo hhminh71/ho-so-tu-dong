@@ -461,9 +461,15 @@
                     <div id="viewPaletteTextVars" class="flex flex-col flex-1 min-h-0 p-2 space-y-2">
                         <!-- Search & Quick Actions -->
                         <div class="space-y-1.5 shrink-0">
-                            <div class="relative">
-                                <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2 text-slate-400 text-xs"></i>
-                                <input id="paletteVarsSearchInput" type="text" placeholder="Tìm theo tên hoặc mã thẻ {TAG}..." class="w-full pl-7 pr-2.5 py-1 bg-slate-50 border border-slate-300 rounded text-xs text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                            <div class="flex items-center gap-1.5">
+                                <div class="relative flex-1">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2 text-slate-400 text-xs"></i>
+                                    <input id="paletteVarsSearchInput" type="text" placeholder="Tìm theo tên hoặc mã thẻ {TAG}..." class="w-full pl-7 pr-2.5 py-1 bg-slate-50 border border-slate-300 rounded text-xs text-slate-800 focus:bg-white focus:ring-1 focus:ring-emerald-500">
+                                </div>
+                                <button id="btnOpenAddVarModalFromPalette" type="button" class="px-2 py-1 text-[10.5px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded flex items-center gap-1 cursor-pointer transition-colors shadow-2xs shrink-0" title="Định nghĩa thêm biến mới vào Từ điển chuẩn">
+                                    <i class="fa-solid fa-plus text-[10px] text-emerald-600"></i>
+                                    <span>+ Biến mới</span>
+                                </button>
                             </div>
                             
                             <!-- Category Filter Chips -->
@@ -848,7 +854,7 @@
                     </div>
                     <div>
                         <h3 id="modalEditVariableTitle" class="font-bold text-slate-900 text-sm">Điều Chỉnh Biến Xạ &amp; Mã Thẻ {TAG}</h3>
-                        <p class="text-[10.5px] text-slate-500">Tự động rà soát trùng lặp và đồng bộ toàn hệ thống</p>
+                        <p class="text-[10.5px] text-slate-500" id="modalEditVariableSubtitle">Tự động rà soát trùng lặp và đồng bộ toàn hệ thống</p>
                     </div>
                 </div>
                 <button id="btnCloseEditVarModal" type="button" class="text-slate-400 hover:text-slate-600 text-lg cursor-pointer px-1.5 py-0.5 rounded hover:bg-slate-100">&times;</button>
@@ -856,6 +862,18 @@
 
             <!-- Form Body -->
             <div class="space-y-2.5">
+                <!-- Selection context banner (khi mở từ vùng chọn văn bản trên Canvas) -->
+                <div id="editVarSelectionBanner" class="p-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-950 text-[11px] hidden space-y-1">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold flex items-center gap-1.5 text-emerald-900">
+                            <i class="fa-solid fa-highlighter text-emerald-600"></i>
+                            <span>Chuỗi văn bản đang chọn trong Word:</span>
+                        </span>
+                        <span class="text-[9.5px] bg-emerald-200/80 text-emerald-900 font-bold px-1.5 py-0.2 rounded">Từ vùng chọn</span>
+                    </div>
+                    <div id="editVarSelectionText" class="font-bold text-emerald-900 break-words bg-white/90 px-2 py-1 rounded border border-emerald-300 font-mono text-[11px] max-h-16 overflow-y-auto"></div>
+                </div>
+
                 <!-- Hidden original tag -->
                 <input type="hidden" id="editVarOriginalTag">
 
@@ -919,9 +937,24 @@
                     </div>
                 </div>
 
+                <!-- Phạm vi gán biến vào văn bản (khi mở từ vùng chọn) -->
+                <div id="editVarApplyScopeRow" class="hidden p-2 rounded bg-slate-50 border border-slate-200 text-[11px] space-y-1">
+                    <span class="font-bold text-slate-700 block">Thực hiện thay thế trong văn bản:</span>
+                    <div class="flex items-center gap-4">
+                        <label class="flex items-center gap-1.5 cursor-pointer text-slate-800 font-medium">
+                            <input type="radio" name="editVarApplyOption" value="selected" checked class="text-emerald-600 focus:ring-emerald-500">
+                            <span>Chỉ thay thế vị trí này</span>
+                        </label>
+                        <label class="flex items-center gap-1.5 cursor-pointer text-slate-800 font-medium">
+                            <input type="radio" name="editVarApplyOption" value="all" class="text-emerald-600 focus:ring-emerald-500">
+                            <span>Thay thế tất cả vị trí trùng chuỗi này</span>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Ví dụ minh họa / Gợi ý -->
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-700 mb-0.5">Giá trị ví dụ / gợi ý</label>
+                    <label class="block text-[11px] font-bold text-slate-700 mb-0.5" id="editVarExampleLabel">Giá trị ví dụ / gợi ý</label>
                     <input id="editVarExampleInput" type="text" placeholder="Ví dụ: Trưởng phòng Kỹ thuật hạ tầng" class="w-full px-2.5 py-1 bg-slate-50 border border-slate-300 rounded text-xs text-slate-700">
                 </div>
             </div>
@@ -1023,6 +1056,6 @@
     <!-- Cấu hình hệ thống toàn cục (Tự động đồng bộ cho mọi trình duyệt & Tab ẩn danh) -->
     <script src="config.js?v=20261106_v1"></script>
     <script src="templates_data.js"></script>
-    <script src="template-tool.js?v=20261111_v5"></script>
+    <script src="template-tool.js?v=20261111_v6"></script>
 </body>
 </html>

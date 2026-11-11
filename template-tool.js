@@ -4285,11 +4285,20 @@
     const btnQuickCustomTag = document.getElementById("btnQuickCustomTag");
     if (btnQuickCustomTag) {
         btnQuickCustomTag.onclick = () => {
+            const sel = window.getSelection();
+            if ((!selectedTextToTag || !selectedTextToTag.trim()) && sel && !sel.isCollapsed && documentContentDisplay && documentContentDisplay.contains(sel.anchorNode)) {
+                selectedTextToTag = sel.toString().trim();
+            }
             if (!selectedTextToTag) return;
-            const customTag = prompt("Nhập tên mã thẻ chèn (viết HOA, ví dụ: SO_DIEN_THOAI_CDT):", "BIEN_MOI");
-            if (!customTag || !customTag.trim()) return;
-            const cleanTag = customTag.trim().toUpperCase().replace(/[^A-Z0-9_]/g, "_");
-            applyTagToSelection(cleanTag);
+            let savedRange = null;
+            if (sel && sel.rangeCount > 0 && documentContentDisplay && documentContentDisplay.contains(sel.anchorNode)) {
+                savedRange = sel.getRangeAt(0).cloneRange();
+            }
+            openEditVariableModal(null, null, {
+                mode: "selection",
+                selectedText: selectedTextToTag,
+                savedRange: savedRange
+            });
         };
     }
 
@@ -4300,24 +4309,17 @@
                 showToast("Văn bản này chưa có file Word để thêm biến!", "error");
                 return;
             }
-            const origText = prompt("Nhập chuỗi văn bản gốc cần thay thế trong file Word:");
-            if (!origText || !origText.trim()) return;
-            const customTag = prompt("Nhập tên mã thẻ chèn {TAG} (viết HOA, ví dụ: DIA_CHI_CHI_NHANH):", "BIEN_MOI");
-            if (!customTag || !customTag.trim()) return;
-            const cleanTag = customTag.trim().toUpperCase().replace(/[^A-Z0-9_]/g, "_");
-
-            item.mappings = item.mappings || [];
-            item.mappings.push({
-                tag: cleanTag,
-                originalText: origText.trim(),
-                tier: 2,
-                reason: "Thêm thủ công",
-                count: 1
+            openEditVariableModal(null, null, {
+                mode: "add_to_doc",
+                addToCurrentDoc: true
             });
-            renderSingleMappingRows(item);
-            renderCanvasContent(item);
-            renderBatchTable();
-            showToast(`Đã thêm biến {${cleanTag}}!`);
+        };
+    }
+
+    const btnOpenAddVarModalFromPalette = document.getElementById("btnOpenAddVarModalFromPalette");
+    if (btnOpenAddVarModalFromPalette) {
+        btnOpenAddVarModalFromPalette.onclick = () => {
+            openEditVariableModal(null, null, { mode: "catalog" });
         };
     }
 
@@ -4971,9 +4973,65 @@
 
     // (slugifyToUpperSnake declared below)
 
-    function openEditVariableModal(tagToEdit = null, mappingIdx = null) {
+    let currentEditVarContext = null;
+
+    function replaceTextWithBadgeAcrossNodes(rootEl, searchStr, tag, isTable = false) {
+        if (!rootEl || !searchStr) return 0;
+        const walker = document.createTreeWalker(rootEl, NodeFilter.SHOW_TEXT, {
+            acceptNode: function(node) {
+                if (node.parentElement && (
+                    node.parentElement.classList.contains("tag-badge") || 
+                    node.parentElement.classList.contains("tag-table-badge") || 
+                    node.parentElement.closest("#selectionMenu") ||
+                    node.parentElement.closest("#tagActionPopover")
+                )) {
+                    return NodeFilter.FILTER_REJECT;
+                }
+                if (node.nodeValue && node.nodeValue.includes(searchStr)) {
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+                return NodeFilter.FILTER_SKIP;
+            }
+        });
+
+        const matchedNodes = [];
+        while (walker.nextNode()) {
+            matchedNodes.push(walker.currentNode);
+        }
+
+        let count = 0;
+        for (const textNode of matchedNodes) {
+            let parent = textNode.parentNode;
+            if (!parent) continue;
+            let content = textNode.nodeValue;
+            let idx = content.indexOf(searchStr);
+            if (idx !== -1) {
+                count++;
+                const before = content.substring(0, idx);
+                const after = content.substring(idx + searchStr.length);
+
+                const badge = document.createElement("span");
+                badge.className = isTable ? "tag-table-badge" : "tag-badge";
+                badge.setAttribute("data-tag", tag);
+                badge.setAttribute("contenteditable", "false");
+                badge.innerHTML = `{${tag}}<span class="btn-remove-tag" data-tag="${tag}" title="Xóa biến này" contenteditable="false">×</span>`;
+
+                const fragment = document.createDocumentFragment();
+                if (before) fragment.appendChild(document.createTextNode(before));
+                fragment.appendChild(badge);
+                fragment.appendChild(document.createTextNode(" "));
+                if (after) fragment.appendChild(document.createTextNode(after));
+
+                parent.replaceChild(fragment, textNode);
+            }
+        }
+        return count;
+    }
+
+    function openEditVariableModal(tagToEdit = null, mappingIdx = null, options = {}) {
         const modal = document.getElementById("modalEditVariable");
         const title = document.getElementById("modalEditVariableTitle");
+        const subtitle = document.getElementById("modalEditVariableSubtitle");
         const origTagInput = document.getElementById("editVarOriginalTag");
         const labelInput = document.getElementById("editVarLabelInput");
         const tagInput = document.getElementById("editVarTagInput");
@@ -4981,16 +5039,33 @@
         const groupSelect = document.getElementById("editVarGroupSelect");
         const scopeSelect = document.getElementById("editVarScopeSelect");
         const exampleInput = document.getElementById("editVarExampleInput");
+        const exampleLabel = document.getElementById("editVarExampleLabel");
         const btnDelete = document.getElementById("btnDeleteCustomVar");
+        const bannerSelection = document.getElementById("editVarSelectionBanner");
+        const bannerText = document.getElementById("editVarSelectionText");
+        const applyScopeRow = document.getElementById("editVarApplyScopeRow");
 
         if (!modal) return;
         activeEditingMappingIdx = mappingIdx;
+        currentEditVarContext = {
+            mode: options.mode || (tagToEdit ? "edit" : "catalog"),
+            selectedText: options.selectedText || "",
+            savedRange: options.savedRange || null,
+            addToCurrentDoc: !!options.addToCurrentDoc,
+            mappingIdx: mappingIdx
+        };
+
+        // Reset banners
+        if (bannerSelection) bannerSelection.classList.add("hidden");
+        if (applyScopeRow) applyScopeRow.classList.add("hidden");
+        if (exampleLabel) exampleLabel.textContent = "Giá trị ví dụ / gợi ý";
 
         if (tagToEdit) {
             const cleanTag = tagToEdit.replace(/^[{]+|[}]+$/g, "");
             const v = MASTER_VARIABLES_CATALOG.find(item => item.tag === cleanTag);
 
-            if (title) title.textContent = `Điều Chỉnh Biến Xạ {${cleanTag}}`;
+            if (title) title.innerHTML = `<i class="fa-solid fa-pen-to-square text-indigo-600 mr-1.5"></i>Điều Chỉnh Biến Xạ {${cleanTag}}`;
+            if (subtitle) subtitle.textContent = "Tự động rà soát trùng lặp và đồng bộ toàn hệ thống";
             if (origTagInput) origTagInput.value = cleanTag;
             if (labelInput) labelInput.value = v ? v.label : cleanTag;
             if (tagInput) tagInput.value = cleanTag;
@@ -5003,8 +5078,63 @@
                 if (v && (v.groupKey === "J" || v.isCustom)) btnDelete.classList.remove("hidden");
                 else btnDelete.classList.add("hidden");
             }
+        } else if (options.mode === "selection" && options.selectedText) {
+            const rawSelected = options.selectedText.trim();
+            if (title) title.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-emerald-600 mr-1.5"></i>Thêm Biến Mới Từ Vùng Chọn & Vào Từ Điển`;
+            if (subtitle) subtitle.textContent = "Chuẩn hóa biến xạ từ Từ điển và tự động gán vào tài liệu Word";
+            if (origTagInput) origTagInput.value = "";
+            
+            if (bannerSelection && bannerText) {
+                bannerText.textContent = rawSelected;
+                bannerSelection.classList.remove("hidden");
+            }
+            if (applyScopeRow) {
+                applyScopeRow.classList.remove("hidden");
+                const radioFirst = document.querySelector('input[name="editVarApplyOption"][value="selected"]');
+                if (radioFirst) radioFirst.checked = true;
+            }
+            if (exampleLabel) exampleLabel.textContent = "Chuỗi văn bản gốc thực tế trong Word:";
+
+            const cleanLabel = rawSelected.length > 60 ? (rawSelected.substring(0, 57) + "...") : rawSelected;
+            if (labelInput) labelInput.value = cleanLabel;
+
+            const baseTag = slugifyToUpperSnake(cleanLabel.length > 35 ? cleanLabel.substring(0, 35) : cleanLabel);
+            const isConflicted = isTagInUse(baseTag);
+            let safeTag = baseTag || "BIEN_MOI";
+            if (isConflicted) {
+                const candidates = generateCandidateTags(baseTag);
+                safeTag = candidates.length > 0 ? candidates[0] : `${baseTag}_1`;
+            }
+            if (tagInput) tagInput.value = safeTag;
+            if (tagPreview) tagPreview.textContent = `{${safeTag}}`;
+
+            let detectedGroup = "B";
+            if (/căn cứ|quyết định|nghị định|thông tư|luật/i.test(rawSelected)) detectedGroup = "I";
+            else if (/ngày\s+\d+|\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/i.test(rawSelected)) detectedGroup = "F";
+            else if (/đồng|vnđ|vnd|triệu|tỷ|\d{1,3}(?:\.\d{3}){2,}/i.test(rawSelected)) detectedGroup = "C";
+            else if (/nhà thầu|công ty|doanh nghiệp|chi nhánh/i.test(rawSelected)) detectedGroup = "D";
+            else if (/ban quản lý|chủ đầu tư|cảng hàng không|tổng công ty|phòng/i.test(rawSelected)) detectedGroup = "A";
+            else if (/số:?\s*[\d\w\/\-]+/i.test(rawSelected)) detectedGroup = "E";
+
+            if (groupSelect) groupSelect.value = detectedGroup;
+            if (scopeSelect) scopeSelect.value = (detectedGroup === "A" || detectedGroup === "I") ? "general" : "package";
+            if (exampleInput) exampleInput.value = rawSelected;
+            if (btnDelete) btnDelete.classList.add("hidden");
+        } else if (options.mode === "add_to_doc") {
+            if (title) title.innerHTML = `<i class="fa-solid fa-square-plus text-emerald-600 mr-1.5"></i>Thêm Biến Mới Vào Văn Bản & Từ Điển`;
+            if (subtitle) subtitle.textContent = "Tạo biến mới trong Từ điển và đưa vào danh sách biến của văn bản này";
+            if (origTagInput) origTagInput.value = "";
+            if (labelInput) labelInput.value = "";
+            if (tagInput) tagInput.value = "";
+            if (tagPreview) tagPreview.textContent = "{TAG}";
+            if (groupSelect) groupSelect.value = "B";
+            if (scopeSelect) scopeSelect.value = "package";
+            if (exampleInput) exampleInput.value = "";
+            if (exampleLabel) exampleLabel.textContent = "Chuỗi văn bản gốc cần thay thế (nếu có):";
+            if (btnDelete) btnDelete.classList.add("hidden");
         } else {
-            if (title) title.textContent = "Thêm Biến Xạ Mới & Mã Thẻ {TAG}";
+            if (title) title.innerHTML = `<i class="fa-solid fa-pen-ruler text-indigo-600 mr-1.5"></i>Thêm Biến Xạ Mới Vào Từ Điển Chuẩn`;
+            if (subtitle) subtitle.textContent = "Tự động rà soát trùng lặp và đồng bộ toàn hệ thống";
             if (origTagInput) origTagInput.value = "";
             if (labelInput) labelInput.value = "";
             if (tagInput) tagInput.value = "";
@@ -5018,7 +5148,8 @@
         validateVariableInputs();
         modal.classList.remove("hidden");
         setTimeout(() => {
-            if (!tagToEdit) labelInput?.focus();
+            if (options.mode === "selection") tagInput?.focus();
+            else if (!tagToEdit) labelInput?.focus();
             else tagInput?.focus();
         }, 100);
     }
@@ -5027,7 +5158,10 @@
         const modal = document.getElementById("modalEditVariable");
         if (modal) modal.classList.add("hidden");
         activeEditingMappingIdx = null;
+        currentEditVarContext = null;
     }
+    window.closeEditVariableModal = closeEditVariableModal;
+    window.openEditVariableModal = openEditVariableModal;
 
         function slugifyToUpperSnake(str) {
         if (!str) return "";
@@ -5291,6 +5425,7 @@
             return;
         }
 
+        // 1. Lưu hoặc cập nhật vào Từ điển MASTER_VARIABLES_CATALOG
         if (origTag) {
             const existing = MASTER_VARIABLES_CATALOG.find(v => v.tag.toUpperCase() === origTag);
             if (existing) {
@@ -5302,36 +5437,170 @@
                 existing.example = example;
             }
         } else {
-            const newStt = MASTER_VARIABLES_CATALOG.length + 1;
-            MASTER_VARIABLES_CATALOG.push({
-                stt: newStt,
-                groupKey: groupKey,
-                group: groupName,
-                label: label,
-                tag: newTag,
-                isGeneral: isGeneral,
-                example: example,
-                isCustom: true
-            });
+            const existing = MASTER_VARIABLES_CATALOG.find(v => v.tag.toUpperCase() === newTag);
+            if (existing) {
+                existing.label = label;
+                existing.group = groupName;
+                existing.groupKey = groupKey;
+                existing.isGeneral = isGeneral;
+                existing.example = example;
+            } else {
+                const newStt = MASTER_VARIABLES_CATALOG.length + 1;
+                MASTER_VARIABLES_CATALOG.push({
+                    stt: newStt,
+                    groupKey: groupKey,
+                    group: groupName,
+                    label: label,
+                    tag: newTag,
+                    isGeneral: isGeneral,
+                    example: example,
+                    isCustom: true
+                });
+            }
         }
 
-        // If editing an active document mapping in Single Editor
-        if (activeEditingMappingIdx !== null && state.activeDocId) {
-            const item = state.batchFiles[state.activeDocId];
-            if (item && item.mappings && item.mappings[activeEditingMappingIdx]) {
-                item.mappings[activeEditingMappingIdx].tag = newTag;
-                renderSingleMappingRows(item);
-                renderSingleDocumentPreview(item);
-                renderBatchTable();
+        // Đồng bộ vào ho_so_tu_dong_state_v3 để Trang Tạo Hồ Sơ cũng nhận diện được biến mới ngay
+        try {
+            const rawState = localStorage.getItem("ho_so_tu_dong_state_v3");
+            if (rawState) {
+                const appSt = JSON.parse(rawState);
+                appSt.customVariables = appSt.customVariables || {};
+                appSt.customVariables[newTag] = {
+                    tag: newTag,
+                    label: label,
+                    group: groupName,
+                    groupKey: groupKey,
+                    isGeneral: isGeneral,
+                    example: example,
+                    isCustom: true
+                };
+                localStorage.setItem("ho_so_tu_dong_state_v3", JSON.stringify(appSt));
             }
+        } catch (e) {
+            console.warn("Could not sync custom variable to ho_so_tu_dong_state_v3:", e);
+        }
+
+        // 2. Xử lý ngữ cảnh gọi modal
+        const ctx = currentEditVarContext || {};
+        const item = state.batchFiles[state.activeDocId];
+
+        if (ctx.mode === "selection" && ctx.selectedText) {
+            if (typeof pushUndoState === "function") {
+                pushUndoState(`Tạo & gán biến {${newTag}} từ vùng chọn`);
+            }
+
+            const applyOption = document.querySelector('input[name="editVarApplyOption"]:checked')?.value || "selected";
+            const isTable = newTag.startsWith("BANG_");
+
+            if (applyOption === "all") {
+                let replaceCount = 0;
+                if (documentContentDisplay) {
+                    replaceCount = replaceTextWithBadgeAcrossNodes(documentContentDisplay, ctx.selectedText, newTag, isTable);
+                }
+                if (item) {
+                    item.mappings = item.mappings || [];
+                    const existingMap = item.mappings.find(m => m.tag === newTag);
+                    if (existingMap) {
+                        existingMap.originalText = ctx.selectedText;
+                        existingMap.count = (existingMap.count || 0) + (replaceCount || 1);
+                    } else {
+                        item.mappings.push({
+                            tag: newTag,
+                            originalText: ctx.selectedText,
+                            tier: isGeneral ? 1 : 2,
+                            reason: "Gán từ Từ điển (Tất cả vị trí)",
+                            count: replaceCount || 1
+                        });
+                    }
+                }
+                showToast(`Đã tạo biến {${newTag}} và thay thế ${replaceCount || 1} vị trí trong văn bản!`, "success");
+            } else {
+                let targetRange = null;
+                const sel = window.getSelection();
+                if (sel && sel.rangeCount > 0 && documentContentDisplay && documentContentDisplay.contains(sel.anchorNode)) {
+                    targetRange = sel.getRangeAt(0);
+                } else if (ctx.savedRange) {
+                    targetRange = ctx.savedRange;
+                }
+
+                if (targetRange) {
+                    const badge = document.createElement("span");
+                    badge.className = isTable ? "tag-table-badge" : "tag-badge";
+                    badge.setAttribute("data-tag", newTag);
+                    badge.setAttribute("contenteditable", "false");
+                    badge.innerHTML = `{${newTag}}<span class="btn-remove-tag" data-tag="${newTag}" title="Xóa biến này" contenteditable="false">×</span>`;
+
+                    try {
+                        targetRange.deleteContents();
+                        targetRange.insertNode(badge);
+                        const spacer = document.createTextNode(" ");
+                        targetRange.setStartAfter(badge);
+                        targetRange.insertNode(spacer);
+                        targetRange.setStartAfter(spacer);
+                        targetRange.collapse(true);
+                        savedCursorRange = targetRange.cloneRange();
+                    } catch (e) {
+                        console.warn("Could not insert badge via Range, falling back to canvas re-render:", e);
+                    }
+                }
+
+                if (item) {
+                    item.mappings = item.mappings || [];
+                    const existingMap = item.mappings.find(m => m.tag === newTag);
+                    if (existingMap) {
+                        existingMap.originalText = ctx.selectedText;
+                        existingMap.count = (existingMap.count || 0) + 1;
+                    } else {
+                        item.mappings.push({
+                            tag: newTag,
+                            originalText: ctx.selectedText,
+                            tier: isGeneral ? 1 : 2,
+                            reason: "Gán từ Từ điển (Vùng chọn)",
+                            count: 1
+                        });
+                    }
+                }
+                showToast(`Đã tạo biến Từ điển {${newTag}} và gán vào văn bản!`, "success");
+            }
+
+            if (state.activeDocId && studioViewMode === "edit") {
+                workingDraftHtml[state.activeDocId] = cleanCanvasHtmlForStorage();
+            }
+            const selMenu = document.getElementById("selectionMenu");
+            if (selMenu) selMenu.classList.add("hidden");
+
+        } else if (ctx.mode === "add_to_doc" && item) {
+            item.mappings = item.mappings || [];
+            item.mappings.push({
+                tag: newTag,
+                originalText: example || label,
+                tier: isGeneral ? 1 : 2,
+                reason: "Thêm từ Từ điển",
+                count: 1
+            });
+            showToast(`Đã thêm biến {${newTag}} vào Từ điển và danh sách biến của văn bản!`, "success");
+        } else if (activeEditingMappingIdx !== null && item && item.mappings && item.mappings[activeEditingMappingIdx]) {
+            item.mappings[activeEditingMappingIdx].tag = newTag;
+            showToast(`Đã cập nhật biến {${newTag}}!`, "success");
+        } else {
+            showToast(`Đã lưu biến "${label}" với mã thẻ {${newTag}} vào Từ điển chuẩn!`, "success");
         }
 
         saveCatalogCustomizations();
 
-        renderStudioVarsTable();
+        if (item) {
+            renderSingleMappingRows(item);
+            renderBatchTable();
+            renderContextualRecommendedVars();
+        }
+
+        if (typeof renderPaletteTextVars === "function") renderPaletteTextVars();
+        if (typeof renderStudioVarsTable === "function") renderStudioVarsTable();
+        if (typeof updateStudioDictBadgeCounts === "function") updateStudioDictBadgeCounts();
+
         document.getElementById("modalEditVariable")?.classList.add("hidden");
         activeEditingMappingIdx = null;
-        showToast(`Đã lưu biến "${label}" với mã thẻ {${newTag}} thành công!`, "success");
+        currentEditVarContext = null;
     }
 
     const LS_VARS_CUSTOMIZATIONS_TS = "ho_so_vars_catalog_customizations_ts";

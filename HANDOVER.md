@@ -171,6 +171,29 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
   3. Nâng cache-buster lên `template-tool.js?v=20261111_v5`.
 * **Xác thực:** Kiểm thử tự động trên Chrome CDP (`scratch/test_docx_preview_restored.py`): Khung Canvas hiển thị đầy đủ với kích thước 763x1050px (chuẩn A4), nhận diện 11 biến, hỗ trợ chỉnh sửa `isEditable: True`. Ảnh minh chứng: `verify_docx_preview_restored.png`.
 
+### 10. Nâng cấp: Tích hợp Bảng nhập biến chuẩn của Từ điển khi tạo biến mới (Thay thế window.prompt() thô sơ)
+* **Yêu cầu người dùng:** Khi quét chọn vùng văn bản hoặc bấm thêm biến mới, không dùng hộp thoại `prompt()` mặc định của trình duyệt mà phải mở Bảng nhập biến chuẩn của Từ điển (đầy đủ Tên tiếng Việt, Mã thẻ {TAG}, gợi ý tự động, kiểm tra trùng lặp thời gian thực, Phân nhóm A-J, Phạm vi áp dụng Tầng 1/Tầng 2-3, Giá trị ví dụ/gốc).
+* **Xử lý:**
+  1. **Nâng cấp Modal Từ điển (`#modalEditVariable`) trong `template-tool.html`:**
+     - Bổ sung Banner ngữ cảnh vùng chọn (`#editVarSelectionBanner` & `#editVarSelectionText`): Hiển thị chuỗi văn bản gốc đang chọn trong Word.
+     - Bổ sung tùy chọn phạm vi thay thế (`#editVarApplyScopeRow`): Cho phép người dùng chọn *"Chỉ thay thế vị trí này"* hoặc *"Thay thế tất cả vị trí trùng khớp chuỗi này trong văn bản"*.
+     - Bổ sung nút `[+ Biến mới]` (`#btnOpenAddVarModalFromPalette`) ngay tại Tab 1 (Biến chữ) để cho phép thêm biến mới vào Từ điển chuẩn bất cứ lúc nào.
+  2. **Thay thế triệt để các lệnh `prompt()` trong `template-tool.js`:**
+     - Nút `+ Mới` trên Floating selection bar (`#btnQuickCustomTag`): Lưu `savedRange`, gọi `openEditVariableModal(null, null, { mode: 'selection', selectedText: ... })`. Tự động điền nhãn tiếng Việt, sinh mã `{TAG}` chuẩn không dấu UPPER_SNAKE, tự động nhận diện Phân nhóm (A. CĐT, C. Tài chính, D. Nhà thầu, F. Ngày, I. Căn cứ...).
+     - Nút `+ Thêm biến mới` trên Tab 3 (`#btnSingleAddCustomVar`): Gọi `openEditVariableModal(null, null, { mode: 'add_to_doc', addToCurrentDoc: true })`.
+     - Nút `+ Biến mới` trên Tab 1 (`#btnOpenAddVarModalFromPalette`): Gọi `openEditVariableModal(null, null, { mode: 'catalog' })`.
+  3. **Xử lý Lưu & Đồng bộ Toàn diện (`saveVariableChanges`):**
+     - Thêm/cập nhật biến mới vào `MASTER_VARIABLES_CATALOG` và lưu `localStorage` (`ho_so_vars_catalog_customizations_ts`).
+     - Đồng bộ vào `ho_so_tu_dong_state_v3` (`customVariables`) để Trang Tạo Hồ Sơ (`index.html`) nhận diện ngay lập tức mà không cần cấu hình lại.
+     - Áp dụng huy hiệu biến `{TAG}` vào văn bản: Hỗ trợ chèn tại vùng chọn chính xác qua Range, hoặc thay thế hàng loạt toàn bộ văn bản qua thuật toán TreeWalker an toàn (`replaceTextWithBadgeAcrossNodes`).
+     - Tự động ghi nhận mapping vào `item.mappings` của văn bản hiện hành.
+  4. Nâng cache-buster lên `template-tool.js?v=20261111_v6`.
+* **Xác thực:** Kiểm thử tự động trên Chrome CDP (`scratch/test_dictionary_modal_for_new_var.py`):
+  - Mở modal từ Tab 1 `[+ Biến mới]`: Tiêu đề *"Thêm Biến Xạ Mới Vào Từ Điển Chuẩn"*, subtitle *"Tự động rà soát trùng lặp và đồng bộ toàn hệ thống"*.
+  - Mở modal từ Tab 3 `[+ Thêm biến mới]`: Tiêu đề *"Thêm Biến Mới Vào Văn Bản & Từ Điển"*.
+  - Quét khối "BÁO CÁO MUA SẮM" trên Canvas và bấm `[+ Mới]`: Modal mở với banner vùng chọn *"BÁO CÁO MUA SẮM"*, mã tự sinh `{BAO_CAO_MUA_SAM}`, phân nhóm B, thanh chọn phạm vi thay thế hiển thị đầy đủ.
+  - Lưu biến: Modal đóng lại, huy hiệu `{TEN_BAO_CAO_MUA_SAM}×` được tạo trực tiếp trên Canvas A4, lưu thành công vào Từ điển (`MASTER_VARIABLES_CATALOG`) và danh mục mapping văn bản. Ảnh minh chứng: `verify_dictionary_modal_new_var.png`.
+
 ---
 
 ## ⚠️ 4. TRẠNG THÁI HIỆN TẠI & CÓ LỖI NÀO ĐANG VƯỚNG KHÔNG?
@@ -188,6 +211,7 @@ Hệ thống đã hoàn tất và kích hoạt thành công:
   * Test Case 7 (Xóa biến đa năng & Hoàn tác Undo/Redo Ctrl+Z): Đạt 100% (Xóa biến qua nút `×`, menu popover, Floating menu; hoàn tác phục hồi trạng thái bằng nút và phím tắt `Ctrl+Z`/`Ctrl+Y`).
   * Test Case 8 (Xem thử dữ liệu biến mới & Quét từ điển Thông tin chung): Đạt 100% (Nhận diện tự động 10 biến từ Từ điển; hiển thị liên tục hộp gợi ý; xem thử hiển thị đầy đủ dữ liệu thật).
   * Test Case 9 (Khôi phục toàn vẹn khung Canvas soạn thảo A4): Đạt 100% (Khung Canvas rộng 763x1050px hiển thị đầy đủ bên phải, bố cục 2 cột hoàn hảo, cho phép chỉnh sửa trực tiếp).
+  * Test Case 10 (Bảng nhập biến chuẩn Từ điển & Thay thế prompt): Đạt 100% (Mở modal Từ điển từ vùng chọn Canvas, Tab 3 và Tab 1; tự động điền nhãn, sinh mã TAG chuẩn, kiểm tra trùng lặp, thay thế vùng chọn/toàn văn bản, đồng bộ Từ điển toàn hệ thống).
 
 ---
 
