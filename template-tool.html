@@ -417,6 +417,27 @@
                                 <button type="button" data-cat="F" class="palette-cat-chip px-1.5 py-0.5 rounded-full font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer">F. Ngày</button>
                             </div>
 
+                            <!-- Contextual Recommended Variables & Coverage Box -->
+                            <div id="contextualRecommendedVarsBox" class="bg-gradient-to-r from-amber-50 to-orange-50/70 border border-amber-300/80 rounded-lg p-2 space-y-1.5 shrink-0 shadow-2xs">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-[11px] text-amber-950 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-amber-600 text-xs"></i>
+                                        <span>Biến khuyến nghị cho văn bản này:</span>
+                                    </span>
+                                    <div class="flex items-center gap-1">
+                                        <span id="recommendedCoverageBadge" class="text-[9.5px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300">
+                                            0/0 biến
+                                        </span>
+                                        <button id="btnInsertAllMissingRecommended" type="button" class="hidden px-1.5 py-0.2 text-[9px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 rounded cursor-pointer transition-colors" title="Chèn toàn bộ các biến còn thiếu vào vị trí con trỏ chuột">
+                                            + Chèn hết
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="contextualRecommendedChips" class="flex flex-wrap gap-1 max-h-24 overflow-y-auto pr-0.5">
+                                    <!-- Rendered dynamically by JS -->
+                                </div>
+                            </div>
+
                             <div class="text-[10px] text-slate-500 bg-emerald-50/70 p-1.5 rounded border border-emerald-200/80 flex items-center justify-between">
                                 <span>💡 <b>Cách dùng:</b> Click con trỏ vào trang văn bản bên phải, sau đó bấm <b>[+ Chèn]</b> để đặt mã biến vào đúng vị trí đó!</span>
                             </div>
@@ -557,11 +578,13 @@
                         <!-- Floating Selection Menu (Appears on text highlight) -->
                         <div id="selectionMenu" class="hidden absolute z-50 bg-slate-900 text-white rounded-lg py-1 px-1.5 selection-popup flex items-center space-x-1 text-xs shadow-2xl border border-slate-700">
                             <span class="text-slate-400 text-[10px] mr-1 font-semibold">Gán:</span>
-                            <button class="quick-tag-btn px-2 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white font-medium cursor-pointer transition-colors" data-var="TEN_DU_AN">Dự án</button>
-                            <button class="quick-tag-btn px-2 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white font-medium cursor-pointer transition-colors" data-var="TEN_GOI_THAU">Gói thầu</button>
-                            <button class="quick-tag-btn px-2 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white font-medium cursor-pointer transition-colors" data-var="TEN_NHA_THAU">Nhà thầu</button>
-                            <button class="quick-tag-btn px-2 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white font-medium cursor-pointer transition-colors" data-var="GIA_TRI_HOP_DONG_SO">Giá tiền</button>
-                            <button class="quick-tag-btn px-2 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white font-medium cursor-pointer transition-colors" data-var="NGUOI_KY_CDT">Người ký</button>
+                            <div id="selectionMenuDynamicButtons" class="flex items-center space-x-1">
+                                <button class="quick-tag-btn px-2 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white font-medium cursor-pointer transition-colors" data-var="TEN_DU_AN">Dự án</button>
+                                <button class="quick-tag-btn px-2 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white font-medium cursor-pointer transition-colors" data-var="TEN_GOI_THAU">Gói thầu</button>
+                                <button class="quick-tag-btn px-2 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white font-medium cursor-pointer transition-colors" data-var="TEN_NHA_THAU">Nhà thầu</button>
+                                <button class="quick-tag-btn px-2 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white font-medium cursor-pointer transition-colors" data-var="GIA_TRI_HOP_DONG_SO">Giá tiền</button>
+                                <button class="quick-tag-btn px-2 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white font-medium cursor-pointer transition-colors" data-var="NGUOI_KY_CDT">Người ký</button>
+                            </div>
                             <button id="btnQuickCustomTag" class="px-2 py-0.5 bg-indigo-700 hover:bg-indigo-600 rounded text-white font-bold cursor-pointer transition-colors">+ Mới</button>
                         </div>
                     </div>
@@ -920,6 +943,6 @@
     <!-- Cấu hình hệ thống toàn cục (Tự động đồng bộ cho mọi trình duyệt & Tab ẩn danh) -->
     <script src="config.js?v=20261106_v1"></script>
     <script src="templates_data.js"></script>
-    <script src="template-tool.js?v=20261110_v2"></script>
+    <script src="template-tool.js?v=20261111_v1"></script>
 </body>
 </html>

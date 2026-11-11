@@ -1281,6 +1281,9 @@
         savedCursorRange = range.cloneRange();
 
         showToast(`Đã chèn ${formattedTag} tại vị trí con trỏ!`);
+        if (typeof renderContextualRecommendedVars === "function") {
+            renderContextualRecommendedVars();
+        }
     }
 
     // Render Single Document View
@@ -1332,6 +1335,11 @@
 
         // Render A4 Canvas
         renderCanvasContent(item);
+
+        // Render Contextual Recommended Variables & Coverage
+        if (typeof renderContextualRecommendedVars === "function") {
+            renderContextualRecommendedVars();
+        }
     }
 
     function escapeHtml(str) {
@@ -1566,6 +1574,9 @@
             documentContentDisplay.style.zoom = studioZoomLevel;
         }
         setTimeout(updateStudioPagination, 100);
+        if (typeof renderContextualRecommendedVars === "function") {
+            renderContextualRecommendedVars();
+        }
     }
 
     // Convert raw HTML template tags into visible badges & page breaks
@@ -2081,6 +2092,393 @@
             studioZoomReset();
         }
     });
+
+
+    // =========================================================================
+    // CONTEXTUAL RECOMMENDED VARIABLES & REAL-TIME COVERAGE ENGINE (STUDIO 2.0)
+    // =========================================================================
+
+    const STUDIO_DOC_VAR_MAP = {
+        // 1. Mua sắm < 50tr
+        "d50_1": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CO_QUAN_TRINH", "SO_TO_TRINH", "NGAY_TO_TRINH", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_CONG_TRINH", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "NGUON_VON", "CHUC_VU_TRUONG_BAN", "TRUONG_BAN_DHDA", "CAN_CU_PHAP_LY_CHUNG"],
+        "d50_2": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_CONG_TRINH", "TEN_GOI_THAU", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "MA_SO_THUE", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY", "CAN_CU_PHAP_LY_CHUNG"],
+        "d50_3": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "DIA_CHI_TRU_SO", "TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "DAI_DIEN_NHA_THAU", "CHUC_VU_DAI_DIEN", "DIA_CHI_NHA_THAU", "MA_SO_THUE", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY", "NGAY_QUYET_DINH"],
+        "d50_4": ["TEN_CHU_DAU_TU", "TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "NGAY_BIEN_BAN", "TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "DAI_DIEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY"],
+
+        // 2. Mua sắm 50tr - 100tr
+        "d100_1": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CO_QUAN_TRINH", "CAP_QUYET_DINH_DAU_TU", "DIA_DANH", "TINH_THANH_PHO", "SO_TO_TRINH", "NGAY_TO_TRINH", "TEN_DU_AN", "TEN_CONG_TRINH", "NGUON_VON", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "HINH_THUC_LCNT", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "THOI_GIAN_TO_CHUC", "CHUC_VU_NGUOI_KY", "NGUOI_KY_CDT", "CAN_CU_PHAP_LY_CHUNG"],
+        "d100_2": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CAP_QUYET_DINH_DAU_TU", "DIA_DANH", "TINH_THANH_PHO", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "SO_TO_TRINH", "NGAY_TO_TRINH", "TEN_DU_AN", "TEN_CONG_TRINH", "NGUON_VON", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "HINH_THUC_LCNT", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "CHUC_VU_NGUOI_KY", "NGUOI_KY_CDT", "CAN_CU_PHAP_LY_CHUNG"],
+        "d100_3": ["TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "NGAY_BIEN_BAN", "TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "DAI_DIEN_NHA_THAU", "CHUC_VU_DAI_DIEN", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "THOI_GIAN_THUC_HIEN", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY"],
+        "d100_4": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "DIA_CHI_TRU_SO", "TEN_DU_AN", "TEN_GOI_THAU", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "DAI_DIEN_NHA_THAU", "CHUC_VU_DAI_DIEN", "DIA_CHI_NHA_THAU", "MA_SO_THUE", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "KHO_BAC_NHA_NUOC", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY"],
+
+        // 3. Chào giá hạn chế
+        "cghc_1": ["TEN_CHU_DAU_TU", "TEN_BAN_QUAN_LY_DU_AN", "SO_TO_TRINH", "NGAY_TO_TRINH", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "NGUON_VON", "TRUONG_BAN_DHDA", "CHUC_VU_TRUONG_BAN"],
+        "cghc_2": ["TEN_CHU_DAU_TU", "TEN_BAN_QUAN_LY_DU_AN", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY"],
+        "cghc_3": ["TEN_CHU_DAU_TU", "TEN_BAN_QUAN_LY_DU_AN", "SO_GIAY_MOI", "NGAY_GIAY_MOI", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "THOI_GIAN_HOP", "DIA_DIEM_HOP", "NGUOI_KY_CDT"],
+        "cghc_4": ["TEN_CHU_DAU_TU", "TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "BANG_DANH_GIA_HO_SO", "GIA_TRI_HOP_DONG_SO", "NGUOI_KY_CDT"],
+        "cghc_5": ["TEN_CHU_DAU_TU", "TEN_BAN_QUAN_LY_DU_AN", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO", "NGUOI_KY_CDT"],
+        "cghc_6": ["TEN_CHU_DAU_TU", "TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "DIA_CHI_TRU_SO", "TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "SO_HOP_DONG", "NGAY_HOP_DONG", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "THOI_GIAN_THUC_HIEN", "NGUOI_KY_CDT"],
+
+        // 4. Chỉ định thầu rút gọn (Chuẩn)
+        "cdtrg_1": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CO_QUAN_TRINH", "CAP_QUYET_DINH_DAU_TU", "DIA_DANH", "TINH_THANH_PHO", "SO_TO_TRINH", "NGAY_TO_TRINH", "TEN_DU_AN", "TEN_CONG_TRINH", "NGUON_VON", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "HINH_THUC_LCNT", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "THOI_GIAN_TO_CHUC", "CHUC_VU_NGUOI_KY", "NGUOI_KY_CDT", "CAN_CU_PHAP_LY_CHUNG"],
+        "cdtrg_2": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CAP_QUYET_DINH_DAU_TU", "DIA_DANH", "TINH_THANH_PHO", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "SO_TO_TRINH", "NGAY_TO_TRINH", "TEN_DU_AN", "TEN_CONG_TRINH", "NGUON_VON", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "HINH_THUC_LCNT", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "CHUC_VU_NGUOI_KY", "NGUOI_KY_CDT", "CAN_CU_PHAP_LY_CHUNG"],
+        "cdtrg_3": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "NGAY_GIAY_MOI", "TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "THOI_GIAN_HOP", "DIA_DIEM_HOP", "CHUC_VU_NGUOI_KY", "NGUOI_KY_CDT"],
+        "cdtrg_4": ["TEN_BAN_QUAN_LY_DU_AN", "DIA_DANH", "TINH_THANH_PHO", "SO_BIEN_BAN_HOAN_THIEN", "NGAY_BIEN_BAN", "NGAY_GIAY_MOI", "TEN_DU_AN", "TEN_GOI_THAU", "CAN_CU_PHAP_LY_CHUNG", "THOI_GIAN_HOP", "DIA_DIEM_HOP", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY", "TRUONG_BAN_DHDA", "CHUC_VU_TRUONG_BAN", "KE_TOAN_TRUONG", "CHUC_VU_KE_TOAN", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "TEN_NHA_THAU_VIET_TAT", "DAI_DIEN_NHA_THAU", "CHUC_VU_DAI_DIEN", "DIA_CHI_NHA_THAU", "MA_SO_THUE", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "GIA_TRI_GIAM_GIA", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "KHO_BAC_NHA_NUOC"],
+        "cdtrg_5": ["TEN_CHU_DAU_TU", "TEN_BAN_QUAN_LY_DU_AN", "CO_QUAN_TRINH", "SO_TO_TRINH", "NGAY_TO_TRINH", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_GOI_THAU", "CAN_CU_PHAP_LY_CHUNG", "SO_BIEN_BAN_HOAN_THIEN", "NGAY_BIEN_BAN", "TEN_NHA_THAU", "MA_SO_THUE", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "GIA_TRI_GIAM_GIA", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "NGUON_VON", "CHUC_VU_TRUONG_BAN", "TRUONG_BAN_DHDA"],
+        "cdtrg_6": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_GOI_THAU", "CAN_CU_PHAP_LY_CHUNG", "SO_TO_TRINH", "NGAY_TO_TRINH", "CO_QUAN_TRINH", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN", "NGUON_VON", "KHO_BAC_NHA_NUOC", "CHUC_VU_NGUOI_KY", "NGUOI_KY_CDT"],
+        "cdtrg_7": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_GOI_THAU", "SO_BIEN_BAN_HOAN_THIEN", "NGAY_BIEN_BAN", "DIA_DIEM_HOP", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY", "DIA_CHI_TRU_SO", "KHO_BAC_NHA_NUOC", "TEN_NHA_THAU", "TEN_NHA_THAU_VIET_HOA", "TEN_NHA_THAU_VIET_TAT", "DAI_DIEN_NHA_THAU", "CHUC_VU_DAI_DIEN", "DIA_CHI_NHA_THAU", "MA_SO_THUE", "GIA_TRI_HOP_DONG_SO", "GIA_TRI_HOP_DONG_CHU", "LOAI_HOP_DONG", "THOI_GIAN_THUC_HIEN"],
+
+        // 5. Thiết kế / Sửa chữa công trình (tk_sc_1..11)
+        "tk_sc_1": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CO_QUAN_TRINH", "SO_TO_TRINH", "NGAY_TO_TRINH", "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_CONG_TRINH", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "NGUON_VON", "CHUC_VU_TRUONG_BAN", "TRUONG_BAN_DHDA", "CAN_CU_PHAP_LY_CHUNG"],
+        "tk_sc_2": ["TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN", "CAP_QUYET_DINH_DAU_TU", "DIA_DANH", "TINH_THANH_PHO", "SO_QUYET_DINH", "NGAY_QUYET_DINH", "TEN_DU_AN", "TEN_CONG_TRINH", "NGUON_VON", "TEN_GOI_THAU", "GIA_GOI_THAU_SO", "GIA_GOI_THAU_CHU", "CHUC_VU_NGUOI_KY", "NGUOI_KY_CDT", "CAN_CU_PHAP_LY_CHUNG"]
+    };
+
+    function getStudioRecommendedVarsForDoc(docId, docObj) {
+        let varList = [];
+        if (STUDIO_DOC_VAR_MAP[docId]) {
+            varList = [...STUDIO_DOC_VAR_MAP[docId]];
+        } else if (docObj && Array.isArray(docObj.requiredVars) && docObj.requiredVars.length > 0) {
+            varList = [...docObj.requiredVars];
+        } else {
+            const wf = getCurrentWorkflow();
+            const found = wf?.documents?.find(d => d.id === docId);
+            if (found && Array.isArray(found.requiredVars) && found.requiredVars.length > 0) {
+                varList = [...found.requiredVars];
+            } else {
+                varList = [
+                    "TEN_CHU_DAU_TU", "TEN_CHU_DAU_TU_VIET_HOA", "TEN_BAN_QUAN_LY_DU_AN",
+                    "DIA_DANH", "TINH_THANH_PHO", "TEN_DU_AN", "TEN_GOI_THAU",
+                    "TEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO", "NGUOI_KY_CDT", "CHUC_VU_NGUOI_KY"
+                ];
+            }
+        }
+
+        // Tự động mở rộng các biến kèm theo dựa trên các tiền tố chuẩn
+        const set = new Set();
+        varList.forEach(t => {
+            const clean = (t || "").replace(/[{}]/g, "").trim().toUpperCase();
+            if (clean) set.add(clean);
+        });
+
+        const suffixes = ["TO_TRINH", "QUYET_DINH", "GIAY_MOI", "BIEN_BAN", "HOP_DONG"];
+        suffixes.forEach(sfx => {
+            if (set.has(`NGAY_${sfx}`) || set.has(`SO_${sfx}`) || (sfx === "BIEN_BAN" && set.has("SO_BIEN_BAN_HOAN_THIEN"))) {
+                set.add(`NGAY_${sfx}`);
+                if (sfx === "BIEN_BAN") set.add("SO_BIEN_BAN_HOAN_THIEN");
+                else set.add(`SO_${sfx}`);
+            }
+        });
+
+        return Array.from(set);
+    }
+
+    function renderContextualRecommendedVars() {
+        const box = document.getElementById("contextualRecommendedVarsBox");
+        const chipsContainer = document.getElementById("contextualRecommendedChips");
+        const badge = document.getElementById("recommendedCoverageBadge");
+        const btnInsertAll = document.getElementById("btnInsertAllMissingRecommended");
+        if (!box || !chipsContainer || !badge) return;
+
+        const wf = getCurrentWorkflow();
+        const docObj = wf?.documents?.find(d => d.id === state.activeDocId);
+        if (!docObj) {
+            box.classList.add("hidden");
+            return;
+        }
+        box.classList.remove("hidden");
+
+        const recommendedTags = getStudioRecommendedVarsForDoc(state.activeDocId, docObj);
+        if (!recommendedTags || recommendedTags.length === 0) {
+            box.classList.add("hidden");
+            return;
+        }
+
+        // Quét các thẻ biến hiện diện trên Canvas
+        const canvasContent = (documentContentDisplay ? (documentContentDisplay.innerText + " " + cleanCanvasHtmlForStorage()) : "");
+        const tagMatches = canvasContent.match(/\{([A-Z0-9_]+)\}/g) || [];
+        const presentTagsSet = new Set(tagMatches.map(m => m.replace(/[{}]/g, "").trim().toUpperCase()));
+
+        let presentCount = 0;
+        const missingTags = [];
+
+        const chipsHtml = recommendedTags.map(tag => {
+            const isPresent = presentTagsSet.has(tag);
+            if (isPresent) {
+                presentCount++;
+            } else {
+                missingTags.push(tag);
+            }
+
+            const catItem = (typeof MASTER_VARIABLES_CATALOG !== "undefined" && Array.isArray(MASTER_VARIABLES_CATALOG))
+                ? MASTER_VARIABLES_CATALOG.find(v => v.tag === tag)
+                : null;
+            const label = catItem ? catItem.label.replace(/\(\*\)/g, "").trim() : tag;
+
+            if (isPresent) {
+                return `
+                    <button type="button" 
+                        class="btn-rec-tag-chip inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200 cursor-pointer transition-all shadow-2xs" 
+                        data-tag="${tag}" 
+                        data-present="true"
+                        title="Đã có trong mẫu: {${tag}} (${label}) - Bấm để tìm & cuộn đến vị trí biến">
+                        <i class="fa-solid fa-check text-[9px] text-emerald-600"></i>
+                        <span>{${tag}}</span>
+                    </button>
+                `;
+            } else {
+                return `
+                    <button type="button" 
+                        class="btn-rec-tag-chip inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100/90 text-amber-900 border border-amber-300 hover:bg-amber-200 cursor-pointer transition-all shadow-2xs" 
+                        data-tag="${tag}" 
+                        data-present="false"
+                        title="Chưa có trong mẫu: {${tag}} (${label}) - Bấm để chèn ngay vào vị trí con trỏ">
+                        <i class="fa-solid fa-plus text-[9px] text-amber-700"></i>
+                        <span>{${tag}}</span>
+                    </button>
+                `;
+            }
+        }).join("");
+
+        chipsContainer.innerHTML = chipsHtml;
+
+        // Cập nhật nhãn thống kê độ phủ biến
+        const totalCount = recommendedTags.length;
+        if (presentCount === totalCount && totalCount > 0) {
+            badge.className = "text-[9.5px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-900 border border-emerald-400";
+            badge.innerHTML = `<i class="fa-solid fa-check-double text-[9px] text-emerald-700"></i> ✓ Đầy đủ (${presentCount}/${totalCount})`;
+            if (btnInsertAll) btnInsertAll.classList.add("hidden");
+        } else {
+            badge.className = "text-[9.5px] font-bold px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 border border-amber-300";
+            badge.textContent = `Có ${presentCount}/${totalCount} biến`;
+            if (btnInsertAll) {
+                btnInsertAll.classList.remove("hidden");
+                btnInsertAll.textContent = `+ Chèn ${missingTags.length} biến thiếu`;
+                btnInsertAll.onclick = () => {
+                    insertAllMissingRecommended(missingTags);
+                };
+            }
+        }
+
+        // Bắt sự kiện click từng chip biến
+        chipsContainer.querySelectorAll(".btn-rec-tag-chip").forEach(btn => {
+            btn.onclick = (e) => {
+                e.preventDefault();
+                const tag = btn.getAttribute("data-tag");
+                const isPresent = btn.getAttribute("data-present") === "true";
+                if (isPresent) {
+                    highlightTagInCanvas(tag);
+                } else {
+                    insertTagAtCursor(`{${tag}}`);
+                    renderContextualRecommendedVars();
+                }
+            };
+        });
+
+        // Cập nhật popup Selection Menu với các biến còn thiếu hoặc hàng đầu
+        updateSelectionMenuWithRecommended(missingTags.length > 0 ? missingTags : recommendedTags);
+    }
+
+    function highlightTagInCanvas(tag) {
+        if (!documentContentDisplay) return;
+        const cleanTag = tag.replace(/[{}]/g, "").trim().toUpperCase();
+        const formattedTag = `{${cleanTag}}`;
+
+        // 1. Tìm thẻ dạng badge
+        const badges = Array.from(documentContentDisplay.querySelectorAll(".tag-badge, .tag-table-badge"));
+        const match = badges.find(b => {
+            const text = b.textContent.trim().toUpperCase();
+            return text === formattedTag || text === cleanTag;
+        });
+
+        if (match) {
+            match.scrollIntoView({ behavior: "smooth", block: "center" });
+            match.classList.add("ring-4", "ring-emerald-400", "scale-125", "transition-all", "duration-300");
+            showToast(`Đã tìm thấy biến ${formattedTag} trong văn bản!`);
+            setTimeout(() => {
+                match.classList.remove("ring-4", "ring-emerald-400", "scale-125", "transition-all", "duration-300");
+            }, 1500);
+            return;
+        }
+
+        // 2. Tìm theo text nodes
+        const walker = document.createTreeWalker(documentContentDisplay, NodeFilter.SHOW_TEXT, null, false);
+        let node;
+        while ((node = walker.nextNode())) {
+            if (node.nodeValue && node.nodeValue.includes(formattedTag)) {
+                const parent = node.parentElement;
+                if (parent) {
+                    parent.scrollIntoView({ behavior: "smooth", block: "center" });
+                    parent.classList.add("bg-yellow-200", "transition-colors", "duration-500");
+                    showToast(`Đã định vị biến ${formattedTag} trong văn bản!`);
+                    setTimeout(() => {
+                        parent.classList.remove("bg-yellow-200", "transition-colors", "duration-500");
+                    }, 1500);
+                    return;
+                }
+            }
+        }
+
+        showToast(`Không tìm thấy thẻ ${formattedTag} trên trang!`, "info");
+    }
+
+    function insertAllMissingRecommended(missingTags) {
+        if (!Array.isArray(missingTags) || missingTags.length === 0 || !documentContentDisplay) return;
+
+        if (studioViewMode === "sample") {
+            const btnEdit = document.getElementById("btnViewModeTemplateEdit");
+            if (btnEdit) btnEdit.click();
+        }
+
+        documentContentDisplay.focus();
+        const sel = window.getSelection();
+        let range = savedCursorRange;
+
+        const p = document.createElement("p");
+        p.className = "mb-2 leading-relaxed text-slate-800 flex flex-wrap gap-1.5 items-center my-2 p-2 bg-amber-50/70 border border-dashed border-amber-300 rounded";
+
+        missingTags.forEach(tag => {
+            const badge = document.createElement("span");
+            const isTable = tag.startsWith("BANG_");
+            badge.className = isTable ? "tag-table-badge" : "tag-badge";
+            badge.textContent = `{${tag}}`;
+            badge.setAttribute("contenteditable", "false");
+            p.appendChild(badge);
+            p.appendChild(document.createTextNode(" "));
+        });
+
+        if (range && documentContentDisplay.contains(range.commonAncestorContainer)) {
+            sel.removeAllRanges();
+            sel.addRange(range);
+            range.deleteContents();
+            range.insertNode(p);
+            range.setStartAfter(p);
+            range.collapse(true);
+            savedCursorRange = range.cloneRange();
+        } else {
+            documentContentDisplay.appendChild(p);
+        }
+
+        if (state.activeDocId && studioViewMode === "edit") {
+            workingDraftHtml[state.activeDocId] = cleanCanvasHtmlForStorage();
+        }
+
+        renderContextualRecommendedVars();
+        showToast(`Đã tự động chèn ${missingTags.length} biến khuyến nghị vào văn bản!`);
+    }
+
+    function applyTagToSelection(tag) {
+        if (!selectedTextToTag) return;
+        const cleanTag = tag.replace(/[{}]/g, "").trim().toUpperCase();
+        const item = state.batchFiles[state.activeDocId];
+
+        if (item) {
+            item.mappings = item.mappings || [];
+            item.mappings.push({
+                tag: cleanTag,
+                originalText: selectedTextToTag,
+                tier: 2,
+                reason: "Gán thủ công từ vùng chọn",
+                count: 1
+            });
+            renderSingleMappingRows(item);
+            renderBatchTable();
+        }
+
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount > 0 && documentContentDisplay && documentContentDisplay.contains(sel.anchorNode)) {
+            const range = sel.getRangeAt(0);
+            const badge = document.createElement("span");
+            const isTable = cleanTag.startsWith("BANG_");
+            badge.className = isTable ? "tag-table-badge" : "tag-badge";
+            badge.textContent = `{${cleanTag}}`;
+            badge.setAttribute("contenteditable", "false");
+
+            range.deleteContents();
+            range.insertNode(badge);
+
+            const spacer = document.createTextNode(" ");
+            range.setStartAfter(badge);
+            range.insertNode(spacer);
+            range.setStartAfter(spacer);
+            range.collapse(true);
+            savedCursorRange = range.cloneRange();
+        } else if (item) {
+            renderCanvasContent(item);
+        }
+
+        if (state.activeDocId && studioViewMode === "edit") {
+            workingDraftHtml[state.activeDocId] = cleanCanvasHtmlForStorage();
+        }
+
+        const menu = document.getElementById("selectionMenu");
+        if (menu) menu.classList.add("hidden");
+
+        renderContextualRecommendedVars();
+        showToast(`Đã gán {${cleanTag}} cho chuỗi "${selectedTextToTag}"!`);
+    }
+
+    function updateSelectionMenuWithRecommended(tags) {
+        const container = document.getElementById("selectionMenuDynamicButtons");
+        if (!container) return;
+
+        const topTags = (Array.isArray(tags) && tags.length > 0)
+            ? tags.slice(0, 5)
+            : ["TEN_DU_AN", "TEN_GOI_THAU", "TEN_NHA_THAU", "GIA_TRI_HOP_DONG_SO", "NGUOI_KY_CDT"];
+
+        const labelMap = {
+            "TEN_DU_AN": "Dự án",
+            "TEN_GOI_THAU": "Gói thầu",
+            "TEN_NHA_THAU": "Nhà thầu",
+            "TEN_NHA_THAU_VIET_HOA": "Nhà thầu (HOA)",
+            "GIA_TRI_HOP_DONG_SO": "Giá HĐ",
+            "GIA_GOI_THAU_SO": "Giá gói",
+            "NGUOI_KY_CDT": "Người ký",
+            "CHUC_VU_NGUOI_KY": "Chức vụ",
+            "DIA_DANH": "Địa danh",
+            "SO_TO_TRINH": "Số TTr",
+            "NGAY_TO_TRINH": "Ngày TTr",
+            "SO_QUYET_DINH": "Số QĐ",
+            "NGAY_QUYET_DINH": "Ngày QĐ",
+            "SO_GIAY_MOI": "Số GM",
+            "NGAY_GIAY_MOI": "Ngày GM",
+            "SO_BIEN_BAN_HOAN_THIEN": "Số BB",
+            "NGAY_BIEN_BAN": "Ngày BB",
+            "SO_HOP_DONG": "Số HĐ",
+            "NGAY_HOP_DONG": "Ngày HĐ",
+            "TRUONG_BAN_DHDA": "Trưởng ban",
+            "MA_SO_THUE": "MST",
+            "CAN_CU_PHAP_LY_CHUNG": "Căn cứ",
+            "NGUON_VON": "Nguồn vốn",
+            "THOI_GIAN_THUC_HIEN": "Tiến độ",
+            "KHO_BAC_NHA_NUOC": "Kho bạc"
+        };
+
+        container.innerHTML = topTags.map(tag => {
+            let label = labelMap[tag];
+            if (!label) {
+                const catItem = (typeof MASTER_VARIABLES_CATALOG !== "undefined" && Array.isArray(MASTER_VARIABLES_CATALOG))
+                    ? MASTER_VARIABLES_CATALOG.find(v => v.tag === tag)
+                    : null;
+                label = catItem ? catItem.label.split("/")[0].replace(/\(\*\)/g, "").trim().slice(0, 10) : tag.slice(0, 10);
+            }
+            return `
+                <button class="quick-tag-btn px-2 py-0.5 bg-slate-800 hover:bg-emerald-600 rounded text-slate-200 hover:text-white font-medium cursor-pointer transition-colors" data-var="${tag}" title="{${tag}}">${label}</button>
+            `;
+        }).join("");
+
+        container.querySelectorAll(".quick-tag-btn").forEach(btn => {
+            btn.onclick = () => {
+                const tag = btn.getAttribute("data-var");
+                applyTagToSelection(tag);
+            };
+        });
+    }
+
+    window.getStudioRecommendedVarsForDoc = getStudioRecommendedVarsForDoc;
+    window.renderContextualRecommendedVars = renderContextualRecommendedVars;
+    window.highlightTagInCanvas = highlightTagInCanvas;
+    window.insertAllMissingRecommended = insertAllMissingRecommended;
+    window.applyTagToSelection = applyTagToSelection;
 
 
     // Palette Tab 1: Render Text Variables
@@ -2733,12 +3131,19 @@
         };
     });
 
-    // Save Selection in Canvas on any keyup/mouseup/selectionchange
+    // Save Selection in Canvas on any keyup/mouseup/selectionchange & real-time coverage updates
+    let canvasInputDebounceTimer = null;
     if (documentContentDisplay) {
         documentContentDisplay.addEventListener("input", () => {
             if (state.activeDocId && studioViewMode === "edit") {
                 workingDraftHtml[state.activeDocId] = cleanCanvasHtmlForStorage();
             }
+            if (canvasInputDebounceTimer) clearTimeout(canvasInputDebounceTimer);
+            canvasInputDebounceTimer = setTimeout(() => {
+                if (typeof renderContextualRecommendedVars === "function") {
+                    renderContextualRecommendedVars();
+                }
+            }, 300);
         });
         documentContentDisplay.addEventListener("keyup", saveCanvasSelection);
         documentContentDisplay.addEventListener("mouseup", saveCanvasSelection);
@@ -2774,47 +3179,18 @@
     document.querySelectorAll(".quick-tag-btn").forEach(btn => {
         btn.onclick = () => {
             const tag = btn.getAttribute("data-var");
-            const item = state.batchFiles[state.activeDocId];
-            if (!item || !selectedTextToTag) return;
-
-            item.mappings = item.mappings || [];
-            item.mappings.push({
-                tag: tag,
-                originalText: selectedTextToTag,
-                tier: 2,
-                reason: "Gán thủ công từ vùng chọn",
-                count: 1
-            });
-
-            selectionMenu.classList.add("hidden");
-            renderSingleMappingRows(item);
-            renderCanvasContent(item);
-            renderBatchTable();
-            showToast(`Đã gán {${tag}} cho chuỗi "${selectedTextToTag}"!`);
+            applyTagToSelection(tag);
         };
     });
 
     const btnQuickCustomTag = document.getElementById("btnQuickCustomTag");
     if (btnQuickCustomTag) {
         btnQuickCustomTag.onclick = () => {
-            const item = state.batchFiles[state.activeDocId];
-            if (!item || !selectedTextToTag) return;
+            if (!selectedTextToTag) return;
             const customTag = prompt("Nhập tên mã thẻ chèn (viết HOA, ví dụ: SO_DIEN_THOAI_CDT):", "BIEN_MOI");
             if (!customTag || !customTag.trim()) return;
             const cleanTag = customTag.trim().toUpperCase().replace(/[^A-Z0-9_]/g, "_");
-            item.mappings = item.mappings || [];
-            item.mappings.push({
-                tag: cleanTag,
-                originalText: selectedTextToTag,
-                tier: 2,
-                reason: "Tùy biến từ vùng chọn",
-                count: 1
-            });
-            selectionMenu.classList.add("hidden");
-            renderSingleMappingRows(item);
-            renderCanvasContent(item);
-            renderBatchTable();
-            showToast(`Đã gán thẻ {${cleanTag}} thành công!`);
+            applyTagToSelection(cleanTag);
         };
     }
 
