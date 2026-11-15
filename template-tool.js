@@ -3961,6 +3961,142 @@
         };
     }
 
+    // -------------------------------------------------------------
+    // Word Print Preview Controller for Template Studio (docx-preview Modal)
+    // -------------------------------------------------------------
+    let currentStudioWordBlob = null;
+    let currentStudioWordFileName = "";
+    let studioWordZoom = 1.0;
+
+    const btnStudioPreviewWordDocx = document.getElementById("btnStudioPreviewWordDocx");
+    const modalWordPrintPreview = document.getElementById("modalWordPrintPreview");
+    const btnCloseWordPreviewModal = document.getElementById("btnCloseWordPreviewModal");
+    const wordPreviewLoading = document.getElementById("wordPreviewLoading");
+    const wordPreviewDocxContainer = document.getElementById("wordPreviewDocxContainer");
+    const wordPreviewNoTemplateNotice = document.getElementById("wordPreviewNoTemplateNotice");
+    const wordPreviewNoTemplateMsg = document.getElementById("wordPreviewNoTemplateMsg");
+    const wordPreviewDocTitle = document.getElementById("wordPreviewDocTitle");
+    const wordPreviewDocCode = document.getElementById("wordPreviewDocCode");
+    const wordPreviewDocSubtitle = document.getElementById("wordPreviewDocSubtitle");
+    const btnWordPreviewDownloadDocx = document.getElementById("btnWordPreviewDownloadDocx");
+    const btnWordPreviewZoomIn = document.getElementById("btnWordPreviewZoomIn");
+    const btnWordPreviewZoomOut = document.getElementById("btnWordPreviewZoomOut");
+    const btnWordPreviewZoomReset = document.getElementById("btnWordPreviewZoomReset");
+    const btnWordPreviewZoomFit = document.getElementById("btnWordPreviewZoomFit");
+    const wordPreviewZoomLevel = document.getElementById("wordPreviewZoomLevel");
+    const btnWordPreviewCloseNotice = document.getElementById("btnWordPreviewCloseNotice");
+
+    function applyStudioWordZoom(zoom) {
+        studioWordZoom = Math.min(Math.max(zoom, 0.4), 2.5);
+        if (wordPreviewDocxContainer) {
+            wordPreviewDocxContainer.style.transform = `scale(${studioWordZoom})`;
+        }
+        if (wordPreviewZoomLevel) {
+            wordPreviewZoomLevel.textContent = `${Math.round(studioWordZoom * 100)}%`;
+        }
+    }
+
+    async function openStudioWordPrintPreview() {
+        if (!modalWordPrintPreview) return;
+        const docId = state.activeDocId;
+        const item = state.batchFiles[docId];
+        const wf = getCurrentWorkflow();
+        const docObj = (wf && wf.documents) ? wf.documents.find(d => d.id === docId) : { id: docId, name: docId, code: docId };
+
+        modalWordPrintPreview.classList.remove("hidden");
+        document.body.classList.add("overflow-hidden");
+
+        if (wordPreviewDocTitle) wordPreviewDocTitle.textContent = docObj.name || docObj.code;
+        if (wordPreviewDocCode) wordPreviewDocCode.textContent = docObj.code || "";
+        if (wordPreviewDocSubtitle) wordPreviewDocSubtitle.textContent = `Quy trình: ${wf ? wf.name : ""} • Bản in Word thật 100%`;
+
+        if (wordPreviewLoading) wordPreviewLoading.classList.remove("hidden");
+        if (wordPreviewNoTemplateNotice) wordPreviewNoTemplateNotice.classList.add("hidden");
+        if (wordPreviewDocxContainer) wordPreviewDocxContainer.innerHTML = "";
+        applyStudioWordZoom(1.0);
+
+        currentStudioWordBlob = null;
+        currentStudioWordFileName = `${docObj.code || "DOC"}_${(docObj.name || "Template").replace(/[^a-zA-Z0-9_À-ỹ]+/g, "_")}.docx`;
+
+        try {
+            let blob = null;
+            if (item && item.arrayBuffer) {
+                blob = await createTaggedDocxBlob(item.arrayBuffer, item.mappings || []);
+            } else {
+                const cleanHtml = cleanCanvasHtmlForStorage();
+                blob = await createDocxFromCanvasHtml(cleanHtml);
+            }
+            currentStudioWordBlob = blob;
+
+            if (typeof docx !== "undefined" && typeof docx.renderAsync === "function") {
+                await docx.renderAsync(blob, wordPreviewDocxContainer, null, {
+                    inWrapper: true,
+                    breakPages: true,
+                    ignoreWidth: false,
+                    ignoreHeight: false,
+                    ignoreFonts: false
+                });
+            } else {
+                throw new Error("Thư viện docx-preview chưa sẵn sàng");
+            }
+            if (wordPreviewLoading) wordPreviewLoading.classList.add("hidden");
+        } catch (err) {
+            console.error("Lỗi soi bản in Word trong Studio:", err);
+            if (wordPreviewLoading) wordPreviewLoading.classList.add("hidden");
+            if (wordPreviewNoTemplateNotice) wordPreviewNoTemplateNotice.classList.remove("hidden");
+            if (wordPreviewNoTemplateMsg) {
+                wordPreviewNoTemplateMsg.textContent = `Không thể kết xuất bản in Word: ${err.message}`;
+            }
+        }
+    }
+
+    function closeStudioWordPrintPreview() {
+        if (!modalWordPrintPreview) return;
+        modalWordPrintPreview.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+        if (wordPreviewDocxContainer) wordPreviewDocxContainer.innerHTML = "";
+        currentStudioWordBlob = null;
+    }
+
+    if (btnStudioPreviewWordDocx) {
+        btnStudioPreviewWordDocx.onclick = openStudioWordPrintPreview;
+    }
+    if (btnCloseWordPreviewModal) {
+        btnCloseWordPreviewModal.onclick = closeStudioWordPrintPreview;
+    }
+    if (btnWordPreviewCloseNotice) {
+        btnWordPreviewCloseNotice.onclick = closeStudioWordPrintPreview;
+    }
+    if (btnWordPreviewDownloadDocx) {
+        btnWordPreviewDownloadDocx.onclick = () => {
+            if (currentStudioWordBlob) {
+                saveAs(currentStudioWordBlob, currentStudioWordFileName || "Template.docx");
+                showToast(`Đã xuất template: ${currentStudioWordFileName}`);
+            } else if (btnDownloadSingleDocx) {
+                btnDownloadSingleDocx.click();
+            }
+        };
+    }
+    if (btnWordPreviewZoomIn) btnWordPreviewZoomIn.onclick = () => applyStudioWordZoom(studioWordZoom + 0.1);
+    if (btnWordPreviewZoomOut) btnWordPreviewZoomOut.onclick = () => applyStudioWordZoom(studioWordZoom - 0.1);
+    if (btnWordPreviewZoomReset) btnWordPreviewZoomReset.onclick = () => applyStudioWordZoom(1.0);
+    if (btnWordPreviewZoomFit) btnWordPreviewZoomFit.onclick = () => {
+        const scrollArea = document.getElementById("wordPreviewScrollArea");
+        const section = wordPreviewDocxContainer ? wordPreviewDocxContainer.querySelector("section.docx") : null;
+        if (scrollArea && section) {
+            const containerWidth = scrollArea.clientWidth - 48;
+            const sectionWidth = section.offsetWidth || 816;
+            if (sectionWidth > 0) {
+                applyStudioWordZoom(containerWidth / sectionWidth);
+            }
+        }
+    };
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modalWordPrintPreview && !modalWordPrintPreview.classList.contains("hidden")) {
+            closeStudioWordPrintPreview();
+        }
+    });
+
     // View Mode Toggle (Template Edit vs Sample Data)
     const btnViewModeTemplateEdit = document.getElementById("btnViewModeTemplateEdit");
     const btnViewModeSamplePreview = document.getElementById("btnViewModeSamplePreview");

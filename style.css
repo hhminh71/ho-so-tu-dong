@@ -621,3 +621,36 @@ tr.timeline-row-aura-red input {
     font-weight: 700 !important;
     box-shadow: 0 1px 3px rgba(79, 70, 229, 0.3) !important;
 }
+
+/* ============================================================= */
+/* DOCX-PREVIEW STYLES (MODAL SOI BẢN IN WORD CHUẨN XÁC 100%)    */
+/* ============================================================= */
+#wordPreviewDocxContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+#wordPreviewDocxContainer .docx-wrapper {
+    background: transparent !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: 24px !important;
+}
+
+#wordPreviewDocxContainer section.docx {
+    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5), 0 5px 15px rgba(0, 0, 0, 0.3) !important;
+    border-radius: 3px !important;
+    margin-bottom: 24px !important;
+    background: #ffffff !important;
+    box-sizing: border-box !important;
+    transition: transform 0.2s ease;
+}
+
+#wordPreviewDocxContainer section.docx:hover {
+    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.6), 0 8px 20px rgba(0, 0, 0, 0.4) !important;
+}

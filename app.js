@@ -7650,6 +7650,170 @@
     }
 
     // -------------------------------------------------------------
+    // Word Print Preview Controller (docx-preview Modal)
+    // -------------------------------------------------------------
+    let currentWordPreviewBlob = null;
+    let currentWordPreviewFileName = "";
+    let wordPreviewZoom = 1.0;
+
+    const modalWordPrintPreview = document.getElementById("modalWordPrintPreview");
+    const btnPreviewWordDocx = document.getElementById("btnPreviewWordDocx");
+    const btnCloseWordPreviewModal = document.getElementById("btnCloseWordPreviewModal");
+    const wordPreviewLoading = document.getElementById("wordPreviewLoading");
+    const wordPreviewDocxContainer = document.getElementById("wordPreviewDocxContainer");
+    const wordPreviewNoTemplateNotice = document.getElementById("wordPreviewNoTemplateNotice");
+    const wordPreviewNoTemplateMsg = document.getElementById("wordPreviewNoTemplateMsg");
+    const wordPreviewDocTitle = document.getElementById("wordPreviewDocTitle");
+    const wordPreviewDocCode = document.getElementById("wordPreviewDocCode");
+    const wordPreviewDocSubtitle = document.getElementById("wordPreviewDocSubtitle");
+    const btnWordPreviewDownloadDocx = document.getElementById("btnWordPreviewDownloadDocx");
+    const btnWordPreviewZoomIn = document.getElementById("btnWordPreviewZoomIn");
+    const btnWordPreviewZoomOut = document.getElementById("btnWordPreviewZoomOut");
+    const btnWordPreviewZoomReset = document.getElementById("btnWordPreviewZoomReset");
+    const btnWordPreviewZoomFit = document.getElementById("btnWordPreviewZoomFit");
+    const wordPreviewZoomLevel = document.getElementById("wordPreviewZoomLevel");
+    const btnWordPreviewGoStudio = document.getElementById("btnWordPreviewGoStudio");
+    const btnWordPreviewCloseNotice = document.getElementById("btnWordPreviewCloseNotice");
+
+    function applyWordPreviewZoom(zoom) {
+        wordPreviewZoom = Math.min(Math.max(zoom, 0.4), 2.5);
+        if (wordPreviewDocxContainer) {
+            wordPreviewDocxContainer.style.transform = `scale(${wordPreviewZoom})`;
+        }
+        if (wordPreviewZoomLevel) {
+            wordPreviewZoomLevel.textContent = `${Math.round(wordPreviewZoom * 100)}%`;
+        }
+    }
+
+    async function openWordPrintPreview(docObj) {
+        if (!docObj) docObj = getCurrentActiveDoc();
+        if (!docObj || !modalWordPrintPreview) return;
+
+        modalWordPrintPreview.classList.remove("hidden");
+        document.body.classList.add("overflow-hidden");
+
+        const procType = getCurrentProcurementType() || {};
+        if (wordPreviewDocTitle) wordPreviewDocTitle.textContent = docObj.name || docObj.code;
+        if (wordPreviewDocCode) wordPreviewDocCode.textContent = docObj.code || "";
+        if (wordPreviewDocSubtitle) wordPreviewDocSubtitle.textContent = `Văn bản: ${docObj.name} • Quy trình: ${procType.name || ""}`;
+
+        if (wordPreviewLoading) wordPreviewLoading.classList.remove("hidden");
+        if (wordPreviewNoTemplateNotice) wordPreviewNoTemplateNotice.classList.add("hidden");
+        if (wordPreviewDocxContainer) wordPreviewDocxContainer.innerHTML = "";
+        applyWordPreviewZoom(1.0);
+
+        currentWordPreviewBlob = null;
+        const currentPkg = appState.packages[appState.activePackageIndex] || { name: "GoiThau" };
+        const safeDocName = (docObj.code || "DOC").replace(/[^a-zA-Z0-9_-]/g, "_");
+        const safePkgName = (currentPkg?.name || "GoiThau").replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9]/g, "_");
+        currentWordPreviewFileName = `${safeDocName}_${safePkgName}.docx`;
+
+        if (!hasDocTemplate(docObj)) {
+            if (wordPreviewLoading) wordPreviewLoading.classList.add("hidden");
+            if (wordPreviewNoTemplateNotice) wordPreviewNoTemplateNotice.classList.remove("hidden");
+            if (wordPreviewNoTemplateMsg) {
+                wordPreviewNoTemplateMsg.textContent = `Văn bản "${docObj.name}" (${docObj.code}) hiện chưa có file mẫu Word .docx trong hệ thống. Bạn có thể mở Xưởng Template Studio để nạp mẫu hoặc tạo mẫu mới!`;
+            }
+            return;
+        }
+
+        try {
+            const data = getMergedData();
+            const blob = await renderDocxBlob(docObj.id, data);
+            currentWordPreviewBlob = blob;
+
+            if (typeof docx !== "undefined" && typeof docx.renderAsync === "function") {
+                await docx.renderAsync(blob, wordPreviewDocxContainer, null, {
+                    inWrapper: true,
+                    breakPages: true,
+                    ignoreWidth: false,
+                    ignoreHeight: false,
+                    ignoreFonts: false
+                });
+            } else {
+                throw new Error("Thư viện docx-preview chưa sẵn sàng trên trình duyệt.");
+            }
+            if (wordPreviewLoading) wordPreviewLoading.classList.add("hidden");
+        } catch (err) {
+            console.error("Lỗi soi bản in Word:", err);
+            if (wordPreviewLoading) wordPreviewLoading.classList.add("hidden");
+            if (wordPreviewNoTemplateNotice) wordPreviewNoTemplateNotice.classList.remove("hidden");
+            if (wordPreviewNoTemplateMsg) {
+                wordPreviewNoTemplateMsg.textContent = `Không thể kết xuất bản in Word: ${err.message}. Bạn có thể bấm [Tạo mẫu Studio] để kiểm tra lại cấu trúc file mẫu.`;
+            }
+        }
+    }
+
+    function closeWordPrintPreview() {
+        if (!modalWordPrintPreview) return;
+        modalWordPrintPreview.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+        if (wordPreviewDocxContainer) wordPreviewDocxContainer.innerHTML = "";
+        currentWordPreviewBlob = null;
+    }
+
+    window.openWordPrintPreview = openWordPrintPreview;
+    window.closeWordPrintPreview = closeWordPrintPreview;
+
+    if (btnPreviewWordDocx) {
+        btnPreviewWordDocx.addEventListener("click", () => {
+            const activeDoc = getCurrentActiveDoc();
+            if (activeDoc) openWordPrintPreview(activeDoc);
+        });
+    }
+
+    if (btnCloseWordPreviewModal) {
+        btnCloseWordPreviewModal.addEventListener("click", closeWordPrintPreview);
+    }
+
+    if (btnWordPreviewCloseNotice) {
+        btnWordPreviewCloseNotice.addEventListener("click", closeWordPrintPreview);
+    }
+
+    if (btnWordPreviewDownloadDocx) {
+        btnWordPreviewDownloadDocx.addEventListener("click", () => {
+            if (currentWordPreviewBlob) {
+                saveAs(currentWordPreviewBlob, currentWordPreviewFileName || "Van_ban.docx");
+                showToast(`Đã tải file Word: ${currentWordPreviewFileName}`);
+            } else {
+                const activeDoc = getCurrentActiveDoc();
+                if (btnExportSingleDoc) btnExportSingleDoc.click();
+            }
+        });
+    }
+
+    if (btnWordPreviewZoomIn) btnWordPreviewZoomIn.onclick = () => applyWordPreviewZoom(wordPreviewZoom + 0.1);
+    if (btnWordPreviewZoomOut) btnWordPreviewZoomOut.onclick = () => applyWordPreviewZoom(wordPreviewZoom - 0.1);
+    if (btnWordPreviewZoomReset) btnWordPreviewZoomReset.onclick = () => applyWordPreviewZoom(1.0);
+    if (btnWordPreviewZoomFit) btnWordPreviewZoomFit.onclick = () => {
+        const scrollArea = document.getElementById("wordPreviewScrollArea");
+        const section = wordPreviewDocxContainer ? wordPreviewDocxContainer.querySelector("section.docx") : null;
+        if (scrollArea && section) {
+            const containerWidth = scrollArea.clientWidth - 48;
+            const sectionWidth = section.offsetWidth || 816;
+            if (sectionWidth > 0) {
+                applyWordPreviewZoom(containerWidth / sectionWidth);
+            }
+        }
+    };
+
+    if (btnWordPreviewGoStudio) {
+        btnWordPreviewGoStudio.onclick = () => {
+            closeWordPrintPreview();
+            const activeDoc = getCurrentActiveDoc();
+            const wfId = appState.activeProcId || "";
+            const docId = activeDoc ? activeDoc.id : "";
+            window.location.href = `template-tool.html?workflow=${encodeURIComponent(wfId)}&doc=${encodeURIComponent(docId)}`;
+        };
+    }
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modalWordPrintPreview && !modalWordPrintPreview.classList.contains("hidden")) {
+            closeWordPrintPreview();
+        }
+    });
+
+    // -------------------------------------------------------------
     // Batch Export Modal Logic
     // -------------------------------------------------------------
     function updateBatchModalUI() {
