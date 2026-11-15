@@ -2359,11 +2359,16 @@
                     if (val) return val;
                 }
                 if (Array.isArray(savedAppState.packages)) {
+                    // Ưu tiên đọc gói thầu đang hoạt động (activePackageIndex)
+                    const activePkgIdx = savedAppState.activePackageIndex || 0;
+                    const activePkg = savedAppState.packages[activePkgIdx];
+                    if (activePkg) {
+                        const val = (activePkg.fields && activePkg.fields[cleanTag]) || activePkg[cleanTag];
+                        if (val && String(val).trim()) return String(val).trim();
+                    }
                     for (const pkg of savedAppState.packages) {
-                        if (pkg && pkg[cleanTag]) {
-                            const val = String(pkg[cleanTag]).trim();
-                            if (val) return val;
-                        }
+                        const val = (pkg.fields && pkg.fields[cleanTag]) || pkg[cleanTag];
+                        if (val && String(val).trim()) return String(val).trim();
                     }
                 }
             }
@@ -6466,21 +6471,6 @@
     if (modalCreateCustomTable) {
         setupSafeModalBackdropClose(modalCreateCustomTable, closeCreateCustomTableModal);
     }
-
-    // Cross-tab synchronization listener
-    window.addEventListener("storage", (e) => {
-        if (e.key === "ho_so_custom_table_defs") {
-            renderPaletteTableVars();
-            updateStudioDictBadgeCounts();
-            if (studioDictCurrentMode === "table") {
-                renderStudioDictTableView();
-            }
-            if (studioViewMode === "sample") {
-                const item = state.batchFiles[state.activeDocId];
-                if (item) renderCanvasContent(item);
-            }
-        }
-    });
 
     // Cross-tab synchronization listener
     window.addEventListener("storage", (e) => {

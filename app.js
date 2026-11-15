@@ -7672,11 +7672,15 @@
         batchDocumentsList.innerHTML = "";
         const docs = getAllDocsForCurrentType();
         docs.forEach(doc => {
+            const hasTpl = hasDocTemplate(doc);
             const label = document.createElement("label");
-            label.className = "flex items-center space-x-1.5 cursor-pointer text-[11px] p-1 rounded hover:bg-slate-100 font-medium text-slate-800";
+            label.className = `flex items-center space-x-1.5 cursor-pointer text-[11px] p-1 rounded hover:bg-slate-100 font-medium ${hasTpl ? 'text-slate-800' : 'text-slate-400'}`;
             label.innerHTML = `
-                <input type="checkbox" checked value="${doc.id}" data-code="${doc.code}" data-name="${doc.name}" class="doc-checkbox rounded text-emerald-600 focus:ring-emerald-500">
-                <span class="truncate" title="${doc.name}">${doc.code} - ${doc.name.replace(/^[0-9]+\.\s*/, '')}</span>
+                <input type="checkbox" ${hasTpl ? 'checked' : ''} value="${doc.id}" data-code="${doc.code}" data-name="${doc.name}" class="doc-checkbox rounded text-emerald-600 focus:ring-emerald-500">
+                <span class="truncate flex-1" title="${doc.name}">${doc.code} - ${doc.name.replace(/^[0-9]+\.\s*/, '')}</span>
+                <span class="text-[9px] px-1.5 py-0.5 rounded border font-semibold ${hasTpl ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}">
+                    ${hasTpl ? '✓ Có mẫu' : '⚠️ Chưa có mẫu'}
+                </span>
             `;
             batchDocumentsList.appendChild(label);
         });
@@ -7723,6 +7727,8 @@
             btnConfirmExportZip.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Đang đóng gói ZIP...</span>`;
 
             const zip = new JSZip();
+            let skippedDocs = [];
+            let successCount = 0;
 
             for (const pIdx of checkedPkgIndexes) {
                 const pkg = appState.packages[pIdx];
@@ -7735,10 +7741,23 @@
                 };
 
                 for (const doc of checkedDocs) {
-                    const docBlob = await renderDocxBlob(doc.id, merged);
-                    const safeFileName = `${doc.code.replace(/[^a-zA-Z0-9_-]/g, "_")}_${(doc.name || "VanBan").replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9]/g, "_")}.docx`;
-                    pkgFolder.file(safeFileName, docBlob);
+                    try {
+                        const docBlob = await renderDocxBlob(doc.id, merged);
+                        const safeFileName = `${doc.code.replace(/[^a-zA-Z0-9_-]/g, "_")}_${(doc.name || "VanBan").replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9]/g, "_")}.docx`;
+                        pkgFolder.file(safeFileName, docBlob);
+                        successCount++;
+                    } catch (docErr) {
+                        console.warn(`Bỏ qua văn bản ${doc.code} do chưa có mẫu:`, docErr);
+                        if (!skippedDocs.includes(doc.code)) {
+                            skippedDocs.push(doc.code);
+                        }
+                    }
                 }
+            }
+
+            if (successCount === 0) {
+                showToast("Không có văn bản nào có mẫu hợp lệ để xuất ZIP! Vui lòng tải lên mẫu văn bản hoặc chuẩn hóa trong Template Studio.", "warning");
+                return;
             }
 
             const zipBlob = await zip.generateAsync({ type: "blob" });
@@ -7747,7 +7766,11 @@
 
             saveAs(zipBlob, zipFileName);
             batchExportModal.classList.add("hidden");
-            showToast(`Đã xuất thành công ${checkedPkgIndexes.length * checkedDocs.length} văn bản vào ${zipFileName}!`);
+            if (skippedDocs.length > 0) {
+                showToast(`Đã xuất ${successCount} văn bản vào ${zipFileName}! (Bỏ qua do chưa có mẫu: ${skippedDocs.join(", ")})`, "info");
+            } else {
+                showToast(`Đã xuất thành công toàn bộ ${successCount} văn bản vào ${zipFileName}!`, "success");
+            }
         } catch (err) {
             console.error("Batch export error:", err);
             showToast("Lỗi khi xuất file ZIP: " + err.message, "error");
@@ -10499,7 +10522,7 @@
 
 
 
-    // Listen for storage events across tabs (e.g. custom tables created/deleted in Template Studio)
+    // Listen for storage events across tabs (e.g. custom tables or templates created in Template Studio)
     window.addEventListener("storage", (e) => {
         if (e.key === "ho_so_custom_table_defs") {
             try {
@@ -10508,6 +10531,13 @@
                 if (typeof renderDocumentPreview === "function") renderDocumentPreview();
             } catch (err) {
                 console.warn("Storage sync error in app.js:", err);
+            }
+        } else if (e.key && (e.key.startsWith("ho_so_custom_template_") || e.key === "ho_so_tu_dong_matrix_custom" || e.key === "ho_so_tu_dong_impl_matrix_custom")) {
+            try {
+                if (typeof renderDocTabs === "function") renderDocTabs();
+                if (typeof renderDocumentPreview === "function") renderDocumentPreview();
+            } catch (err) {
+                console.warn("Storage template sync error in app.js:", err);
             }
         }
     });
