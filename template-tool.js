@@ -2158,6 +2158,11 @@
         const wf = getCurrentWorkflow();
         const docObj = (wf && wf.documents) ? wf.documents.find(d => d.id === docId) : { id: docId, name: docId, code: docId };
 
+        const btnBack = document.getElementById("btnBackToMainApp");
+        if (btnBack) {
+            btnBack.href = `index.html?workflow=${encodeURIComponent(state.activeWorkflow || "")}&doc=${encodeURIComponent(docId || "")}#docs`;
+        }
+
         if (studioViewMode === "edit") {
             documentContentDisplay.contentEditable = "true";
             documentContentDisplay.classList.remove("bg-amber-50/20");
@@ -2196,9 +2201,9 @@
                 documentContentDisplay.innerHTML = formatTemplateHtmlWithBadges(scaffold);
             }
         } else {
-            // Chế độ "Xem Thử Dữ Liệu Thật"
+            // Chế độ "Xem Thử Dữ Liệu Thật" (Chuẩn Web & In ấn A4 giống 100% trang chủ)
             documentContentDisplay.contentEditable = "false";
-            documentContentDisplay.classList.add("bg-amber-50/20");
+            documentContentDisplay.classList.remove("bg-amber-50/20");
 
             let currentRawText = currentDraft || documentContentDisplay.innerHTML;
             if (!currentRawText || currentRawText.trim() === "" || currentRawText.includes("Chưa nạp được nội dung")) {
@@ -2206,16 +2211,7 @@
             }
 
             const sampleHtml = renderSampleDataPreview(currentRawText, item);
-            documentContentDisplay.innerHTML = `
-                <div class="mb-4 p-2.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg text-amber-900 text-xs flex items-center justify-between">
-                    <span class="flex items-center gap-1.5 font-bold">
-                        <i class="fa-solid fa-eye text-amber-600"></i>
-                        <span>Đang xem thử với dữ liệu thực tế mẫu. Bấm nút [Khung Mẫu ({TAG})] bên trên để tiếp tục chỉnh sửa.</span>
-                    </span>
-                    <span class="bg-amber-200/80 px-2 py-0.5 rounded text-[10px] font-mono font-bold">SAMPLE MODE</span>
-                </div>
-                ${sampleHtml}
-            `;
+            documentContentDisplay.innerHTML = sampleHtml;
         }
 
         // Apply active zoom and update page counts
@@ -2335,17 +2331,46 @@
         "TEN_KEM_SO_NGAY_QUYET_DINH": "Quyết định số 53/QĐ-HĐQT ngày 20/01/2025"
     };
 
+    function formatStudioDateVN(dateVal) {
+        if (!dateVal) return "";
+        let str = String(dateVal).trim();
+        if (str.startsWith("ngày ")) return str;
+        const d = new Date(str);
+        if (!isNaN(d.getTime()) && (str.includes("GMT") || str.includes("-") || str.includes("T"))) {
+            const day = String(d.getDate()).padStart(2, "0");
+            const month = String(d.getMonth() + 1).padStart(2, "0");
+            const year = d.getFullYear();
+            return `ngày ${day} tháng ${month} năm ${year}`;
+        }
+        if (str.includes("/")) {
+            const parts = str.split("/");
+            if (parts.length === 3) {
+                const day = parts[0].trim().padStart(2, "0");
+                const month = parts[1].trim().padStart(2, "0");
+                const year = parts[2].trim();
+                return `ngày ${day} tháng ${month} năm ${year}`;
+            }
+        }
+        return str;
+    }
+
     // Hàm phân giải dữ liệu hiển thị xem thử thông minh cho mọi loại biến (kể cả biến mới tạo)
     function resolvePreviewValueForTag(tag, item) {
         if (!tag) return "";
         const cleanTag = tag.replace(/[{}]/g, "").trim().toUpperCase();
+
+        const formatVal = (v) => {
+            if (!v) return "";
+            if (cleanTag.includes("NGAY_")) return formatStudioDateVN(v);
+            return String(v).trim();
+        };
 
         // 1. Dữ liệu chuỗi gốc (originalText) được gán thực tế từ tài liệu Word đang mở
         // Ưu tiên cao nhất vì đây là chữ thật người dùng đã chọn hoặc hệ thống bóc tách từ file Word
         if (item && Array.isArray(item.mappings)) {
             const m = item.mappings.find(map => map.tag && map.tag.toUpperCase() === cleanTag);
             if (m && m.originalText && String(m.originalText).trim()) {
-                return String(m.originalText).trim();
+                return formatVal(m.originalText);
             }
         }
 
@@ -2355,8 +2380,8 @@
             if (rawState) {
                 const savedAppState = JSON.parse(rawState);
                 if (savedAppState.generalInfo && savedAppState.generalInfo[cleanTag]) {
-                    const val = String(savedAppState.generalInfo[cleanTag]).trim();
-                    if (val) return val;
+                    const val = savedAppState.generalInfo[cleanTag];
+                    if (val) return formatVal(val);
                 }
                 if (Array.isArray(savedAppState.packages)) {
                     // Ưu tiên đọc gói thầu đang hoạt động (activePackageIndex)
@@ -2364,11 +2389,11 @@
                     const activePkg = savedAppState.packages[activePkgIdx];
                     if (activePkg) {
                         const val = (activePkg.fields && activePkg.fields[cleanTag]) || activePkg[cleanTag];
-                        if (val && String(val).trim()) return String(val).trim();
+                        if (val && String(val).trim()) return formatVal(val);
                     }
                     for (const pkg of savedAppState.packages) {
                         const val = (pkg.fields && pkg.fields[cleanTag]) || pkg[cleanTag];
-                        if (val && String(val).trim()) return String(val).trim();
+                        if (val && String(val).trim()) return formatVal(val);
                     }
                 }
             }
@@ -2380,16 +2405,16 @@
         if (typeof MASTER_VARIABLES_CATALOG !== "undefined" && Array.isArray(MASTER_VARIABLES_CATALOG)) {
             const v = MASTER_VARIABLES_CATALOG.find(cat => cat.tag && cat.tag.toUpperCase() === cleanTag);
             if (v) {
-                if (v.example && String(v.example).trim()) return String(v.example).trim();
-                if (v.defaultValue && String(v.defaultValue).trim()) return String(v.defaultValue).trim();
-                if (v.sampleValue && String(v.sampleValue).trim()) return String(v.sampleValue).trim();
-                if (v.label && String(v.label).trim()) return v.label.trim();
+                if (v.example && String(v.example).trim()) return formatVal(v.example);
+                if (v.defaultValue && String(v.defaultValue).trim()) return formatVal(v.defaultValue);
+                if (v.sampleValue && String(v.sampleValue).trim()) return formatVal(v.sampleValue);
+                if (v.label && String(v.label).trim()) return formatVal(v.label);
             }
         }
 
         // 4. Tra cứu trong Dữ liệu mẫu chuẩn hành chính (SAMPLE_ADMIN_DATA)
         if (SAMPLE_ADMIN_DATA && SAMPLE_ADMIN_DATA[cleanTag]) {
-            return SAMPLE_ADMIN_DATA[cleanTag];
+            return formatVal(SAMPLE_ADMIN_DATA[cleanTag]);
         }
 
         // 5. Mẫu định dạng thông minh dựa trên ngữ nghĩa của mã thẻ
@@ -2427,9 +2452,9 @@
             }
             const sampleVal = resolvePreviewValueForTag(tag, item);
             if (sampleVal) {
-                return `<span class="bg-emerald-50 text-emerald-950 font-semibold px-1 rounded border-b border-emerald-300" title="Biến: {${tag}}">${escapeHtml(sampleVal)}</span>`;
+                return `<span class="filled-val font-semibold" data-var-key="${tag}" title="Biến: {${tag}} (Rê chuột xem mã thẻ)">${escapeHtml(sampleVal)}</span>`;
             }
-            return `<span class="bg-amber-100 text-amber-900 px-1 rounded font-mono text-xs">{${tag}}</span>`;
+            return `<span class="placeholder-tag" data-var-key="${tag}" title="Biến chưa có dữ liệu: {${tag}}"><i class="fa-solid fa-pen-to-square text-[9px] text-amber-700"></i> {${tag}}</span>`;
         });
 
         return text;
@@ -3945,8 +3970,8 @@
             studioViewMode = "edit";
             btnViewModeTemplateEdit.className = "px-3 py-1 rounded bg-white text-emerald-900 shadow-2xs flex items-center gap-1.5 cursor-pointer transition-all";
             btnViewModeSamplePreview.className = "px-3 py-1 rounded text-slate-600 hover:text-indigo-800 flex items-center gap-1.5 cursor-pointer transition-all";
-            const item = state.batchFiles[state.activeDocId];
-            if (item) renderCanvasContent(item);
+            const item = state.batchFiles[state.activeDocId] || null;
+            renderCanvasContent(item);
         };
 
         btnViewModeSamplePreview.onclick = () => {
@@ -3956,8 +3981,8 @@
             studioViewMode = "sample";
             btnViewModeSamplePreview.className = "px-3 py-1 rounded bg-white text-indigo-900 shadow-2xs flex items-center gap-1.5 cursor-pointer transition-all";
             btnViewModeTemplateEdit.className = "px-3 py-1 rounded text-slate-600 hover:text-emerald-800 flex items-center gap-1.5 cursor-pointer transition-all";
-            const item = state.batchFiles[state.activeDocId];
-            if (item) renderCanvasContent(item);
+            const item = state.batchFiles[state.activeDocId] || null;
+            renderCanvasContent(item);
         };
     }
 
