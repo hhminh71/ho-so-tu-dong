@@ -580,7 +580,10 @@
         "cdtrg_4": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/2_Bien_ban_hoan_thien_hop_dong.docx",
         "cdtrg_5": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/3_To_trinh_chi_dinh_thau.docx",
         "cdtrg_6": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/4_Quyet_dinh_chi_dinh_thau.docx",
-        "cdtrg_7": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/07_Hop_dong_kinh_te.docx"
+        "cdtrg_7": "templates/Hinh_thuc_LCNT/Xay_dung_chi_dinh_thau_rut_gon/07_Hop_dong_kinh_te.docx",
+
+        // Mua sắm dưới 50 triệu
+        "d50_3": "templates/Hinh_thuc_LCNT/Mua_sam_duoi_50tr/03.HD-KT_Hop_dong_kinh_te.docx"
     };
 
     function hasDocTemplate(docObj) {

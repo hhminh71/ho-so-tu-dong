@@ -76,6 +76,67 @@ function doPost(e) {
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 
+    // Xử lý lưu File Mẫu Chuẩn lên Google Drive
+    if (action === "saveTemplateFile") {
+      const folderPath = payload.folder || "templates";
+      const fileName = payload.fileName || "template.docx";
+      let base64Data = payload.fileContentBase64 || payload.base64Data || "";
+
+      if (base64Data.indexOf(",") > -1) {
+        base64Data = base64Data.split(",")[1];
+      }
+
+      if (!base64Data) {
+        return createJsonResponse({ success: false, error: "Dữ liệu file Base64 rỗng!" });
+      }
+
+      const bytes = Utilities.base64Decode(base64Data);
+      const blob = Utilities.newBlob(bytes, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", fileName);
+
+      // Định vị thư mục cha chứa Sheet hiện tại hoặc Root Drive
+      let currentFolder;
+      try {
+        const parents = DriveApp.getFileById(ss.getId()).getParents();
+        if (parents.hasNext()) {
+          currentFolder = parents.next();
+        } else {
+          currentFolder = DriveApp.getRootFolder();
+        }
+      } catch (fErr) {
+        currentFolder = DriveApp.getRootFolder();
+      }
+
+      // Đi sâu theo đường dẫn thư mục tương đối (vd: templates/Hinh_thuc_LCNT/Mua_sam_duoi_50tr)
+      const parts = folderPath.replace(/\\/g, "/").split("/").filter(Boolean);
+      for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        const subFolders = currentFolder.getFoldersByName(part);
+        if (subFolders.hasNext()) {
+          currentFolder = subFolders.next();
+        } else {
+          currentFolder = currentFolder.createFolder(part);
+        }
+      }
+
+      // Xóa file cũ nếu trùng tên và tạo file mới
+      const existingFiles = currentFolder.getFilesByName(fileName);
+      while (existingFiles.hasNext()) {
+        try {
+          existingFiles.next().setTrashed(true);
+        } catch (delErr) {}
+      }
+      const newFile = currentFolder.createFile(blob);
+
+      return createJsonResponse({
+        success: true,
+        message: "Đã lưu và đồng bộ file lên Google Drive thành công!",
+        fileId: newFile.getId(),
+        fileName: fileName,
+        folder: folderPath,
+        timestamp: new Date().toISOString()
+      });
+    }
+
     // Cập nhật Từ điển biến (Sheet "Thông tin")
     if (payload.catalog && Array.isArray(payload.catalog)) {
       const wsInfo = getSheetByName(ss, ["Thông tin", "Thong tin", "Sheet2"]);

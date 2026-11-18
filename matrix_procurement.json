@@ -315,7 +315,8 @@
                 "DAI_DIEN_BEN_B",
                 "GIA_TRI_HOP_DONG",
                 "THOI_GIAN_THUC_HIEN"
-              ]
+              ],
+              "templateFile": "templates/Hinh_thuc_LCNT/Mua_sam_duoi_50tr/03.HD-KT_Hop_dong_kinh_te.docx"
             },
             {
               "id": "d50_4",

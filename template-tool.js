@@ -3902,7 +3902,69 @@
             }
 
             renderBatchTable();
-            showToast("⚡ Đã lưu làm Mẫu Chuẩn Hệ Thống! Trang Tạo Hồ Sơ sẽ lập tức dùng mẫu này.", "success");
+
+            // Tự động đồng bộ file vật lý vào thư mục ổ đĩa / Google Drive
+            const wf = getCurrentWorkflow();
+            const docObj = (wf && wf.documents) ? wf.documents.find(d => d.id === docId) : { id: docId, name: docId, code: docId };
+            const targetFolder = (wf && wf.folder) ? wf.folder : `templates/Hinh_thuc_LCNT/${state.activeWorkflow || "common"}`;
+            const safeDocCode = (docObj.code || docId).replace(/[^a-zA-Z0-9_-]/g, "_");
+            const safeDocName = (docObj.name || "Template").replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9]+/g, "_");
+            const finalFileName = `${safeDocCode}_${safeDocName}.docx`;
+
+            let syncedLocalDisk = false;
+            try {
+                const res = await fetch("/api/save-template-file", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        folder: targetFolder,
+                        fileName: finalFileName,
+                        docId: docId,
+                        workflowId: state.activeWorkflow || "",
+                        base64Data: b64
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.success) {
+                        syncedLocalDisk = true;
+                    }
+                }
+            } catch (netErr) {
+                // Đang chạy online hoặc không có local API
+            }
+
+            // Đồng bộ lên Google Drive qua Google Apps Script (nếu có cấu hình Web App URL)
+            let syncedGDriveCloud = false;
+            try {
+                const gsheetUrl = localStorage.getItem("ho_so_gsheet_url") || (typeof GSHEET_CONFIG !== "undefined" ? GSHEET_CONFIG.webAppUrl : "");
+                if (gsheetUrl && gsheetUrl.includes("/exec")) {
+                    await fetch(gsheetUrl, {
+                        method: "POST",
+                        mode: "no-cors",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            action: "saveTemplateFile",
+                            folder: targetFolder,
+                            fileName: finalFileName,
+                            docId: docId,
+                            base64Data: b64,
+                            fileContentBase64: b64
+                        })
+                    });
+                    syncedGDriveCloud = true;
+                }
+            } catch (cloudErr) {
+                console.warn("Không thể đồng bộ lên Google Apps Script:", cloudErr);
+            }
+
+            if (syncedLocalDisk) {
+                showToast(`⚡ Đã lưu Mẫu Chuẩn & TỰ ĐỘNG ĐỒNG BỘ vào thư mục: ${targetFolder}/${finalFileName} (Google Drive sẽ tự đồng bộ)`, "success");
+            } else if (syncedGDriveCloud) {
+                showToast(`⚡ Đã lưu Mẫu Chuẩn & Đã gửi lên Google Drive Cloud để tự đồng bộ về máy!`, "success");
+            } else {
+                showToast("⚡ Đã lưu làm Mẫu Chuẩn Hệ Thống! Trang Tạo Hồ Sơ sẽ lập tức dùng mẫu này.", "success");
+            }
         } catch (err) {
             console.error("Lỗi khi lưu mẫu chuẩn:", err);
             showToast("Lỗi khi lưu: " + err.message, "error");
