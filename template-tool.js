@@ -903,6 +903,10 @@
                     } else if (local === "hyperlink") {
                         const rNodes = child.getElementsByTagName("w:r");
                         for (let r = 0; r < rNodes.length; r++) innerHtml += parseRun(rNodes[r]);
+                    } else if (local === "sdt") {
+                        // Inline Structured Document Tag
+                        const rNodes = child.getElementsByTagName("w:r");
+                        for (let r = 0; r < rNodes.length; r++) innerHtml += parseRun(rNodes[r]);
                     }
                 }
 
@@ -915,6 +919,33 @@
                 const alignClass = align === "center" ? "text-center" : (align === "right" ? "text-right" : (align === "justify" ? "text-justify" : ""));
 
                 return `<p class="mb-2 leading-relaxed text-slate-800 ${alignClass}"${styleStr}>${innerHtml || "&nbsp;"}</p>`;
+            }
+
+            function parseElement(node) {
+                if (!node || node.nodeType !== 1) return "";
+                const local = node.localName || node.nodeName.split(":").pop();
+                if (local === "p") {
+                    return parseParagraph(node);
+                } else if (local === "tbl") {
+                    return parseTable(node);
+                } else if (local === "sdt") {
+                    // Block Structured Document Tag (Content Control)
+                    let out = "";
+                    const content = node.getElementsByTagName("w:sdtContent")[0] ||
+                                    node.getElementsByTagName("sdtContent")[0] ||
+                                    Array.from(node.childNodes).find(c => (c.localName || c.nodeName.split(":").pop()) === "sdtContent");
+                    if (content) {
+                        for (let sc = 0; sc < content.childNodes.length; sc++) {
+                            out += parseElement(content.childNodes[sc]);
+                        }
+                    } else {
+                        for (let sc = 0; sc < node.childNodes.length; sc++) {
+                            out += parseElement(node.childNodes[sc]);
+                        }
+                    }
+                    return out;
+                }
+                return "";
             }
 
             function parseTable(tblNode) {
@@ -932,13 +963,45 @@
                     }
                 }
 
-                const trNodes = [];
-                for (let i = 0; i < tblNode.childNodes.length; i++) {
-                    const child = tblNode.childNodes[i];
-                    if (!child || child.nodeType !== 1) continue;
-                    const local = child.localName || child.nodeName.split(":").pop();
-                    if (local === "tr") trNodes.push(child);
+                // Kiểm tra xem cell borders có nil không (cell borders tcBorders ghi đè tblBorders)
+                const allTcBorders = tblNode.getElementsByTagName("w:tcBorders");
+                if (allTcBorders.length > 0) {
+                    let hasVisibleCellBorder = false;
+                    for (let t = 0; t < allTcBorders.length; t++) {
+                        const tcB = allTcBorders[t];
+                        for (let b = 0; b < tcB.childNodes.length; b++) {
+                            const bNode = tcB.childNodes[b];
+                            if (!bNode || bNode.nodeType !== 1) continue;
+                            const val = (typeof bNode.getAttribute === "function") ? (bNode.getAttribute("w:val") || bNode.getAttribute("val")) : null;
+                            if (val && val !== "none" && val !== "nil") {
+                                hasVisibleCellBorder = true;
+                                break;
+                            }
+                        }
+                        if (hasVisibleCellBorder) break;
+                    }
+                    if (!hasVisibleCellBorder) {
+                        isBorderless = true;
+                    }
                 }
+
+                const trNodes = [];
+                function collectTr(container) {
+                    for (let i = 0; i < container.childNodes.length; i++) {
+                        const child = container.childNodes[i];
+                        if (!child || child.nodeType !== 1) continue;
+                        const local = child.localName || child.nodeName.split(":").pop();
+                        if (local === "tr") {
+                            trNodes.push(child);
+                        } else if (local === "sdt") {
+                            const sc = child.getElementsByTagName("w:sdtContent")[0] ||
+                                        child.getElementsByTagName("sdtContent")[0] ||
+                                        Array.from(child.childNodes).find(c => (c.localName || c.nodeName.split(":").pop()) === "sdtContent") || child;
+                            collectTr(sc);
+                        }
+                    }
+                }
+                collectTr(tblNode);
 
                 if (trNodes.length <= 4 && isBorderless) {
                     // Header hoặc Signature layout table (2 cột)
@@ -955,16 +1018,13 @@
                         }
                         for (let c = 0; c < tcNodes.length; c++) {
                             const tc = tcNodes[c];
-                            const widthPct = (c === 0) ? "45%" : "55%";
-                            const padStyle = (c === 0) ? "padding: 2px 10px 2px 0;" : "padding: 2px 0 2px 10px;";
+                            const widthPct = (tcNodes.length === 2) ? "50%" : `${Math.round(100 / tcNodes.length)}%`;
+                            const padStyle = (c === 0) ? "padding: 4px 12px 4px 0;" : "padding: 4px 0 4px 12px;";
                             tblHtml += `<td style="vertical-align: top; width: ${widthPct}; border: none; ${padStyle}">`;
                             for (let p = 0; p < tc.childNodes.length; p++) {
                                 const pChild = tc.childNodes[p];
                                 if (!pChild || pChild.nodeType !== 1) continue;
-                                const pLocal = pChild.localName || pChild.nodeName.split(":").pop();
-                                if (pLocal === "p") {
-                                    tblHtml += parseParagraph(pChild);
-                                }
+                                tblHtml += parseElement(pChild);
                             }
                             tblHtml += `</td>`;
                         }
@@ -991,10 +1051,7 @@
                             for (let p = 0; p < tc.childNodes.length; p++) {
                                 const pChild = tc.childNodes[p];
                                 if (!pChild || pChild.nodeType !== 1) continue;
-                                const pLocal = pChild.localName || pChild.nodeName.split(":").pop();
-                                if (pLocal === "p") {
-                                    tblHtml += parseParagraph(pChild);
-                                }
+                                tblHtml += parseElement(pChild);
                             }
                             tblHtml += `</td>`;
                         }
@@ -1006,14 +1063,7 @@
             }
 
             for (let i = 0; i < body.childNodes.length; i++) {
-                const child = body.childNodes[i];
-                if (!child || child.nodeType !== 1) continue;
-                const local = child.localName || child.nodeName.split(":").pop();
-                if (local === "p") {
-                    html += parseParagraph(child);
-                } else if (local === "tbl") {
-                    html += parseTable(child);
-                }
+                html += parseElement(body.childNodes[i]);
             }
 
             // Gán các thực thể tự động nhận diện thành mã {TAG}
@@ -2167,7 +2217,13 @@
             documentContentDisplay.contentEditable = "true";
             documentContentDisplay.classList.remove("bg-amber-50/20");
 
-            if (currentDraft && currentDraft.trim() !== "" && !item?.isUploaded) {
+            if (item && item.styledHtml && item.styledHtml.trim() !== "" && (!currentDraft || item?.isUploaded || (item.styledHtml.length > (currentDraft || "").length + 50) || (item.styledHtml.includes("<table") && !currentDraft.includes("<table")))) {
+                // Hiển thị từ file Word chuẩn OpenXML (bao gồm bảng 2 cột, bảng chữ ký trong SDT, căn giữa, in đậm/nghiêng)
+                documentContentDisplay.innerHTML = formatTemplateHtmlWithBadges(item.styledHtml);
+                workingDraftHtml[docId] = cleanCanvasHtmlForStorage();
+                item.isUploaded = false;
+                if (typeof pushUndoState === "function") pushUndoState("Nạp file Word");
+            } else if (currentDraft && currentDraft.trim() !== "") {
                 // Hiển thị nội dung tùy biến từ bản thảo hoặc đã lưu
                 documentContentDisplay.innerHTML = formatTemplateHtmlWithBadges(currentDraft);
             } else if (item && item.styledHtml && item.styledHtml.trim() !== "") {
