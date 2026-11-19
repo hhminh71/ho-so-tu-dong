@@ -3969,10 +3969,24 @@
         return false;
     }
 
-    async function saveToLocalTemplatesDirectory(folderPath, fileName, arrayBuffer) {
+    async function saveToLocalTemplatesDirectory(folderPath, fileName, arrayBuffer, promptIfMissing = true) {
         if (!window.showDirectoryPicker) return false;
         if (!localTemplatesDirHandle) {
             localTemplatesDirHandle = await getStoredTemplatesDirHandle();
+        }
+        if (!localTemplatesDirHandle && promptIfMissing) {
+            try {
+                localTemplatesDirHandle = await window.showDirectoryPicker({
+                    id: "ho_so_templates_dir",
+                    mode: "readwrite"
+                });
+                if (localTemplatesDirHandle) {
+                    await storeTemplatesDirHandle(localTemplatesDirHandle);
+                    updateFolderConnectionUI();
+                }
+            } catch (userCancel) {
+                return false;
+            }
         }
         if (!localTemplatesDirHandle) return false;
 
@@ -3984,12 +3998,23 @@
             const parts = cleanFolder.split("/").filter(Boolean);
             let currentDir = localTemplatesDirHandle;
 
-            for (let i = 0; i < parts.length; i++) {
-                const part = parts[i];
-                if (i === 0 && (localTemplatesDirHandle.name === part || (part === "templates" && localTemplatesDirHandle.name.toLowerCase().includes("template")))) {
-                    continue;
+            // Kiểm tra xem người dùng đã chọn chính xác thư mục nào (thư mục gốc dự án, thư mục templates, hay thư mục con)
+            const targetBaseName = parts[parts.length - 1];
+            let startIndex = 0;
+            if (localTemplatesDirHandle.name.toLowerCase() === targetBaseName.toLowerCase()) {
+                currentDir = localTemplatesDirHandle;
+                startIndex = parts.length;
+            } else {
+                for (let i = 0; i < parts.length; i++) {
+                    if (localTemplatesDirHandle.name.toLowerCase() === parts[i].toLowerCase()) {
+                        startIndex = i + 1;
+                        break;
+                    }
                 }
-                currentDir = await currentDir.getDirectoryHandle(part, { create: true });
+            }
+
+            for (let i = startIndex; i < parts.length; i++) {
+                currentDir = await currentDir.getDirectoryHandle(parts[i], { create: true });
             }
 
             const fileHandle = await currentDir.getFileHandle(fileName, { create: true });
@@ -4190,28 +4215,34 @@
                 console.warn("Lỗi File System Access API:", fsErr);
             }
 
-            // 2. Thử gửi tới Local Python Server (nếu chạy localhost:8000)
+            // 2. Thử gửi tới Local Python Server (nếu chạy localhost hoặc gọi từ web app sang 127.0.0.1:8000)
             if (!syncedDirectDisk) {
-                try {
-                    const res = await fetch("/api/save-template-file", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            folder: targetFolder,
-                            fileName: finalFileName,
-                            docId: docId,
-                            workflowId: state.activeWorkflow || "",
-                            base64Data: b64
-                        })
-                    });
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data && data.success) {
-                            syncedLocalApi = true;
+                const apiEndpoints = [
+                    "/api/save-template-file",
+                    "http://127.0.0.1:8000/api/save-template-file",
+                    "http://localhost:8000/api/save-template-file"
+                ];
+                for (const endpoint of apiEndpoints) {
+                    try {
+                        const res = await fetch(endpoint, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                folder: targetFolder,
+                                fileName: finalFileName,
+                                docId: docId,
+                                workflowId: state.activeWorkflow || "",
+                                base64Data: b64
+                            })
+                        });
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data && data.success) {
+                                syncedLocalApi = true;
+                                break;
+                            }
                         }
-                    }
-                } catch (netErr) {
-                    // Đang chạy online hoặc không có local API
+                    } catch (netErr) {}
                 }
             }
 
@@ -4252,6 +4283,7 @@
                 try {
                     const blob = new Blob([taggedBuffer], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
                     saveAs(blob, finalFileName);
+                    showToast(`⚡ Đã tải file "${finalFileName}" về máy! Hãy copy file này vào thư mục: ${targetFolder}`, "info", 7000);
                 } catch (dlErr) {}
                 // Mở modal hướng dẫn kết nối thư mục ổ đĩa
                 openFolderSyncPromptModal(targetFolder, finalFileName, taggedBuffer);
