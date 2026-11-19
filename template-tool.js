@@ -3898,6 +3898,218 @@
         });
     }
 
+    // =============================================================
+    // LOCAL DIRECTORY SYNC (File System Access API for Chromium)
+    // Cho phép Web App ghi thẳng file vào ổ đĩa máy tính (I:\My Drive\...)
+    // =============================================================
+    let localTemplatesDirHandle = null;
+    let pendingSyncBlobData = null;
+
+    async function getStoredTemplatesDirHandle() {
+        try {
+            if (!("indexedDB" in window)) return null;
+            return new Promise((resolve) => {
+                const req = indexedDB.open("ho_so_fs_db", 1);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains("handles")) {
+                        db.createObjectStore("handles");
+                    }
+                };
+                req.onsuccess = (e) => {
+                    const db = e.target.result;
+                    const tx = db.transaction("handles", "readonly");
+                    const store = tx.objectStore("handles");
+                    const getReq = store.get("templates_dir");
+                    getReq.onsuccess = () => resolve(getReq.result || null);
+                    getReq.onerror = () => resolve(null);
+                };
+                req.onerror = () => resolve(null);
+            });
+        } catch (e) {
+            return null;
+        }
+    }
+
+    async function storeTemplatesDirHandle(handle) {
+        try {
+            if (!("indexedDB" in window)) return false;
+            return new Promise((resolve) => {
+                const req = indexedDB.open("ho_so_fs_db", 1);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains("handles")) {
+                        db.createObjectStore("handles");
+                    }
+                };
+                req.onsuccess = (e) => {
+                    const db = e.target.result;
+                    const tx = db.transaction("handles", "readwrite");
+                    const store = tx.objectStore("handles");
+                    store.put(handle, "templates_dir");
+                    tx.oncomplete = () => resolve(true);
+                    tx.onerror = () => resolve(false);
+                };
+                req.onerror = () => resolve(false);
+            });
+        } catch (e) {
+            return false;
+        }
+    }
+
+    async function verifyDirectoryPermission(fileHandle, readWrite = true) {
+        if (!fileHandle) return false;
+        const options = readWrite ? { mode: "readwrite" } : {};
+        try {
+            if ((await fileHandle.queryPermission(options)) === "granted") return true;
+            if ((await fileHandle.requestPermission(options)) === "granted") return true;
+        } catch (e) {
+            console.warn("Permission check error:", e);
+        }
+        return false;
+    }
+
+    async function saveToLocalTemplatesDirectory(folderPath, fileName, arrayBuffer) {
+        if (!window.showDirectoryPicker) return false;
+        if (!localTemplatesDirHandle) {
+            localTemplatesDirHandle = await getStoredTemplatesDirHandle();
+        }
+        if (!localTemplatesDirHandle) return false;
+
+        try {
+            const hasPerm = await verifyDirectoryPermission(localTemplatesDirHandle, true);
+            if (!hasPerm) return false;
+
+            const cleanFolder = (folderPath || "").replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+            const parts = cleanFolder.split("/").filter(Boolean);
+            let currentDir = localTemplatesDirHandle;
+
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i];
+                if (i === 0 && (localTemplatesDirHandle.name === part || (part === "templates" && localTemplatesDirHandle.name.toLowerCase().includes("template")))) {
+                    continue;
+                }
+                currentDir = await currentDir.getDirectoryHandle(part, { create: true });
+            }
+
+            const fileHandle = await currentDir.getFileHandle(fileName, { create: true });
+            const writable = await fileHandle.createWritable();
+            await writable.write(arrayBuffer);
+            await writable.close();
+            return true;
+        } catch (e) {
+            console.warn("Lỗi ghi file vào thư mục nội bộ:", e);
+            return false;
+        }
+    }
+
+    async function connectLocalTemplatesFolder() {
+        if (!window.showDirectoryPicker) {
+            showToast("Trình duyệt này không hỗ trợ chọn thư mục trực tiếp. Hãy dùng Chrome, Edge hoặc Cốc Cốc.", "warning");
+            return null;
+        }
+        try {
+            const handle = await window.showDirectoryPicker({
+                id: "ho_so_templates_dir",
+                mode: "readwrite"
+            });
+            if (handle) {
+                localTemplatesDirHandle = handle;
+                await storeTemplatesDirHandle(handle);
+                updateFolderConnectionUI();
+                showToast(`✅ Đã kết nối thư mục máy tính: "${handle.name}". Web App sẽ tự ghi file vào đây!`, "success");
+                return handle;
+            }
+        } catch (err) {
+            if (err.name !== "AbortError") {
+                console.error("Lỗi chọn thư mục:", err);
+                showToast("Lỗi kết nối thư mục: " + err.message, "error");
+            }
+        }
+        return null;
+    }
+
+    async function initFolderConnectionStatus() {
+        const btn = document.getElementById("btnConnectTemplatesDir");
+        if (!window.showDirectoryPicker) {
+            if (btn) btn.classList.add("hidden");
+            return;
+        }
+        localTemplatesDirHandle = await getStoredTemplatesDirHandle();
+        updateFolderConnectionUI();
+
+        if (btn) {
+            btn.onclick = async () => {
+                await connectLocalTemplatesFolder();
+            };
+        }
+
+        const btnPickNow = document.getElementById("btnSyncPickFolderNow");
+        if (btnPickNow) {
+            btnPickNow.onclick = async () => {
+                const handle = await connectLocalTemplatesFolder();
+                if (handle && pendingSyncBlobData) {
+                    try {
+                        const saved = await saveToLocalTemplatesDirectory(
+                            pendingSyncBlobData.folder,
+                            pendingSyncBlobData.fileName,
+                            pendingSyncBlobData.arrayBuffer
+                        );
+                        if (saved) {
+                            showToast(`⚡ Đã ghi file thành công vào máy tính: ${pendingSyncBlobData.fileName}`, "success");
+                            closeFolderSyncPromptModal();
+                        }
+                    } catch (e) {}
+                }
+            };
+        }
+
+        const btnDlNow = document.getElementById("btnSyncDownloadFileNow");
+        if (btnDlNow) {
+            btnDlNow.onclick = () => {
+                if (pendingSyncBlobData) {
+                    const blob = new Blob([pendingSyncBlobData.arrayBuffer], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+                    saveAs(blob, pendingSyncBlobData.fileName);
+                    showToast("Đã tải file Word về máy!", "success");
+                }
+                closeFolderSyncPromptModal();
+            };
+        }
+
+        const btnCloseModal = document.getElementById("btnCloseFolderSyncPrompt");
+        if (btnCloseModal) {
+            btnCloseModal.onclick = closeFolderSyncPromptModal;
+        }
+    }
+
+    function updateFolderConnectionUI() {
+        const lbl = document.getElementById("lblConnectDirStatus");
+        const btn = document.getElementById("btnConnectTemplatesDir");
+        if (!lbl || !btn) return;
+        if (localTemplatesDirHandle) {
+            lbl.innerHTML = `<span class="text-emerald-700 font-semibold flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Đã nối: ${localTemplatesDirHandle.name}</span>`;
+            btn.classList.remove("bg-slate-50", "border-slate-300");
+            btn.classList.add("bg-emerald-50", "border-emerald-300");
+            btn.title = `Đang kết nối thư mục máy tính: "${localTemplatesDirHandle.name}". Click để đổi thư mục khác.`;
+        } else {
+            lbl.textContent = "Đồng bộ Ổ đĩa";
+            btn.classList.remove("bg-emerald-50", "border-emerald-300");
+            btn.classList.add("bg-slate-50", "border-slate-300");
+            btn.title = "Kết nối trực tiếp thư mục templates trên máy tính (Google Drive) để Web App tự động lưu file vào ổ cứng";
+        }
+    }
+
+    function openFolderSyncPromptModal(folder, fileName, arrayBuffer) {
+        pendingSyncBlobData = { folder, fileName, arrayBuffer };
+        const modal = document.getElementById("modalFolderSyncPrompt");
+        if (modal) modal.classList.remove("hidden");
+    }
+
+    function closeFolderSyncPromptModal() {
+        const modal = document.getElementById("modalFolderSyncPrompt");
+        if (modal) modal.classList.add("hidden");
+    }
+
     // Save modified template as System Default
     async function applyAsSystemDefaultTemplate() {
         const docId = state.activeDocId;
@@ -3967,40 +4179,54 @@
             const safeDocName = (docObj.name || "Template").replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9]+/g, "_");
             const finalFileName = `${safeDocCode}_${safeDocName}.docx`;
 
-            let syncedLocalDisk = false;
+            let syncedDirectDisk = false;
+            let syncedLocalApi = false;
+            let syncedGDriveCloud = false;
+
+            // 1. Thử ghi trực tiếp vào ổ đĩa thông qua File System Access API (kể cả khi chạy Web App online trên GitHub Pages)
             try {
-                const res = await fetch("/api/save-template-file", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        folder: targetFolder,
-                        fileName: finalFileName,
-                        docId: docId,
-                        workflowId: state.activeWorkflow || "",
-                        base64Data: b64
-                    })
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.success) {
-                        syncedLocalDisk = true;
-                    }
-                }
-            } catch (netErr) {
-                // Đang chạy online hoặc không có local API
+                syncedDirectDisk = await saveToLocalTemplatesDirectory(targetFolder, finalFileName, taggedBuffer);
+            } catch (fsErr) {
+                console.warn("Lỗi File System Access API:", fsErr);
             }
 
-            // Đồng bộ lên Google Drive qua Google Apps Script (nếu có cấu hình Web App URL)
-            let syncedGDriveCloud = false;
-            try {
-                const gsheetUrl = localStorage.getItem("ho_so_gsheet_url") || (typeof GSHEET_CONFIG !== "undefined" ? GSHEET_CONFIG.webAppUrl : "");
-                if (gsheetUrl && gsheetUrl.includes("/exec")) {
+            // 2. Thử gửi tới Local Python Server (nếu chạy localhost:8000)
+            if (!syncedDirectDisk) {
+                try {
+                    const res = await fetch("/api/save-template-file", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            folder: targetFolder,
+                            fileName: finalFileName,
+                            docId: docId,
+                            workflowId: state.activeWorkflow || "",
+                            base64Data: b64
+                        })
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data && data.success) {
+                            syncedLocalApi = true;
+                        }
+                    }
+                } catch (netErr) {
+                    // Đang chạy online hoặc không có local API
+                }
+            }
+
+            // 3. Đồng bộ lên Google Drive qua Google Apps Script (nếu có cấu hình Web App URL)
+            const gsheetUrl = localStorage.getItem("ho_so_gsheet_url") || (window.APP_CONFIG ? window.APP_CONFIG.GSHEET_API_URL : "") || (typeof GSHEET_CONFIG !== "undefined" ? GSHEET_CONFIG.webAppUrl : "");
+            const adminKey = localStorage.getItem("ho_so_admin_key") || (window.APP_CONFIG ? window.APP_CONFIG.GSHEET_ADMIN_KEY : "admin123");
+            if (gsheetUrl && gsheetUrl.includes("/exec")) {
+                try {
                     await fetch(gsheetUrl, {
                         method: "POST",
                         mode: "no-cors",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
                             action: "saveTemplateFile",
+                            adminKey: adminKey,
                             folder: targetFolder,
                             fileName: finalFileName,
                             docId: docId,
@@ -4009,17 +4235,26 @@
                         })
                     });
                     syncedGDriveCloud = true;
+                } catch (cloudErr) {
+                    console.warn("Không thể đồng bộ lên Google Apps Script:", cloudErr);
                 }
-            } catch (cloudErr) {
-                console.warn("Không thể đồng bộ lên Google Apps Script:", cloudErr);
             }
 
-            if (syncedLocalDisk) {
+            if (syncedDirectDisk) {
+                showToast(`⚡ Đã lưu Mẫu Chuẩn & GHI TRỰC TIẾP vào thư mục máy tính: ${targetFolder}/${finalFileName}`, "success");
+            } else if (syncedLocalApi) {
                 showToast(`⚡ Đã lưu Mẫu Chuẩn & TỰ ĐỘNG ĐỒNG BỘ vào thư mục: ${targetFolder}/${finalFileName} (Google Drive sẽ tự đồng bộ)`, "success");
             } else if (syncedGDriveCloud) {
                 showToast(`⚡ Đã lưu Mẫu Chuẩn & Đã gửi lên Google Drive Cloud để tự đồng bộ về máy!`, "success");
             } else {
-                showToast("⚡ Đã lưu làm Mẫu Chuẩn Hệ Thống! Trang Tạo Hồ Sơ sẽ lập tức dùng mẫu này.", "success");
+                // Đang chạy online thuần túy, chưa có kết nối ổ đĩa:
+                // Tự động tải file Word về máy để đảm bảo không bị thất lạc
+                try {
+                    const blob = new Blob([taggedBuffer], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+                    saveAs(blob, finalFileName);
+                } catch (dlErr) {}
+                // Mở modal hướng dẫn kết nối thư mục ổ đĩa
+                openFolderSyncPromptModal(targetFolder, finalFileName, taggedBuffer);
             }
         } catch (err) {
             console.error("Lỗi khi lưu mẫu chuẩn:", err);
@@ -6938,8 +7173,11 @@
     });
     setInterval(syncStudioIfUpdated, 800);
 
-    // Tự động tải từ Google Sheets khi khởi động Template Studio (hỗ trợ cả Tab Ẩn danh)
+    // Tự động tải từ Google Sheets và kiểm tra kết nối ổ đĩa khi khởi động Template Studio
     setTimeout(() => {
         pullStudioDataFromGoogleSheet(true);
+        if (typeof initFolderConnectionStatus === "function") {
+            initFolderConnectionStatus();
+        }
     }, 400);
 })();
