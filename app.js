@@ -8684,6 +8684,11 @@
                         <select class="doc-tpl-select flex-1 rounded px-1.5 py-0.5 h-6 text-[10px] transition-colors ${hasTpl ? 'bg-emerald-50/70 border border-emerald-300 text-emerald-950 font-medium' : 'bg-amber-50 border border-amber-300 text-amber-900 font-bold'}">
                             ${optionsHtml}
                         </select>
+                        ${hasCustomStorage ? `
+                        <button type="button" class="btn-download-custom-tpl text-slate-400 hover:text-indigo-600 p-0.5 shrink-0" title="Tải file Word .docx của mẫu tùy biến này về máy">
+                            <i class="fa-solid fa-download text-xs"></i>
+                        </button>
+                        ` : ''}
                         <label class="cursor-pointer text-slate-400 hover:text-emerald-700 p-0.5 shrink-0" title="Tải file Word .docx mẫu từ máy tính để gán cho văn bản này">
                             <i class="fa-solid fa-file-arrow-up text-xs"></i>
                             <input type="file" accept=".docx" class="hidden doc-tpl-upload">
@@ -8733,6 +8738,27 @@
                     } else {
                         tplSelect.className = "doc-tpl-select flex-1 rounded px-1.5 py-0.5 h-6 text-[10px] transition-colors bg-amber-50 border border-amber-300 text-amber-900 font-bold";
                         if (tplIndicator) tplIndicator.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-amber-500 text-[11px]" title="Chưa có mẫu template"></i>';
+                    }
+                });
+            }
+
+            const btnDownloadCustom = tr.querySelector(".btn-download-custom-tpl");
+            if (btnDownloadCustom) {
+                btnDownloadCustom.addEventListener("click", () => {
+                    const customB64 = localStorage.getItem("ho_so_custom_template_" + doc.id);
+                    if (customB64) {
+                        try {
+                            const cleanB64 = customB64.includes(",") ? customB64.split(",")[1] : customB64;
+                            const u8 = base64ToUint8Array(cleanB64);
+                            const blob = new Blob([u8], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+                            const cleanCode = (doc.code || doc.id).replace(/[^a-zA-Z0-9_-]/g, "_");
+                            const cleanName = (doc.name || "Template").replace(/[^a-zA-Z0-9_\u00C0-\u024F\u1EA0-\u1EF9]+/g, "_");
+                            const fName = `${cleanCode}_${cleanName}.docx`;
+                            saveAs(blob, fName);
+                            showToast(`Đã tải file "${fName}" về máy!`, "success");
+                        } catch(e) {
+                            showToast("Lỗi tải file mẫu: " + e.message, "error");
+                        }
                     }
                 });
             }
