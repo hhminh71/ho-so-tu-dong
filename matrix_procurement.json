@@ -29,7 +29,8 @@
                 "TEN_CHU_DAU_TU",
                 "TEN_GOI_THAU",
                 "GIA_GOI_THAU"
-              ]
+              ],
+              "templateFile": "templates/Hinh_thuc_LCNT/Mua_sam_chao_gia_han_che/01.TTr-CT_01_Tờ_trình_phê_duyệt_chủ_trương_chào_giá.docx"
             },
             {
               "id": "cghc_2",
@@ -39,7 +40,8 @@
               "requiredVars": [
                 "TEN_CHU_DAU_TU",
                 "DANH_SACH_3_NHA_THAU"
-              ]
+              ],
+              "templateFile": "templates/Hinh_thuc_LCNT/Mua_sam_chao_gia_han_che/02.BC-MS_02_Báo_cáo_mua_sắm.docx"
             },
             {
               "id": "cghc_3",
